@@ -1,0 +1,20 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCj3EnEG1XhF7_xWgt1vQK_VkT7288yd64",
+  authDomain: "denr-d02ae.firebaseapp.com",
+  projectId: "denr-d02ae",
+  storageBucket: "denr-d02ae.firebasestorage.app",
+  messagingSenderId: "499245517370",
+  appId: "1:499245517370:web:c66598d7c86d5567a64303"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+export { app, auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, googleProvider, signInWithPopup };

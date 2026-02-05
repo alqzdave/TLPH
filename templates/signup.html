@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - DENR TLPH</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-content">
+                <h1>Register with DENR</h1>
+                <p>Create your account to access TLPH services</p>
+            </div>
+        </div>
+        
+        <div class="auth-right">
+            <div class="auth-box">
+                <div class="auth-header">
+                    <h2>Farmer Registration</h2>
+                    <p>Fill in your details to register</p>
+                </div>
+                
+                <form class="auth-form" id="signupForm">
+                    <!-- Step 1: Basic Information -->
+                    <div id="step1" class="form-step active">
+                        <h3 class="step-title">Basic Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="applicationType">Application Type <span class="required">*</span></label>
+                            <select id="applicationType" name="applicationType" required>
+                                <option value="">Select Application Type</option>
+                                <option value="tenant">Tenant/Individual</option>
+                                <option value="cooperative">Cooperative</option>
+                                <option value="agribusiness">Agribusiness Company</option>
+                                <option value="research">Research Institution</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name <span class="required">*</span></label>
+                                <input type="text" id="firstName" name="firstName" placeholder="First name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="lastName">Last Name <span class="required">*</span></label>
+                                <input type="text" id="lastName" name="lastName" placeholder="Last name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" placeholder="+63 XXX XXX XXXX" required>
+                        </div>
+                        
+                        <button type="button" class="btn-primary" onclick="sendOTP()">Send OTP & Continue</button>
+                    </div>
+                    
+                    <!-- Step 2: OTP Verification -->
+                    <div id="step2" class="form-step">
+                        <h3 class="step-title">Email Verification</h3>
+                        
+                        <p class="otp-message">We've sent a verification code to your email</p>
+                        
+                        <div class="form-group">
+                            <label for="otpCode">Enter OTP Code <span class="required">*</span></label>
+                            <input type="text" id="otpCode" name="otpCode" placeholder="Enter 6-digit code" maxlength="6" required>
+                        </div>
+                        
+                        <div class="otp-actions">
+                            <button type="button" class="btn-link" onclick="resendOTP()">Resend OTP</button>
+                        </div>
+                        
+                        <button type="button" class="btn-primary" onclick="verifyOTP()">Verify & Continue</button>
+                        <button type="button" class="btn-secondary" onclick="goToStep(1)">Back</button>
+                    </div>
+                    
+                    <!-- Step 3: Bio Profile & Password -->
+                    <div id="step3" class="form-step">
+                        <h3 class="step-title">Complete Your Profile</h3>
+                        
+                        <div class="form-group">
+                            <label for="address">Address <span class="required">*</span></label>
+                            <input type="text" id="address" name="address" placeholder="Street, Barangay" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="municipality">Municipality <span class="required">*</span></label>
+                                <input type="text" id="municipality" name="municipality" placeholder="Municipality" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="province">Province <span class="required">*</span></label>
+                                <input type="text" id="province" name="province" placeholder="Province" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="farmSize">Farm Size (hectares)</label>
+                            <input type="number" id="farmSize" name="farmSize" placeholder="0.00" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cropType">Primary Crop Type</label>
+                            <input type="text" id="cropType" name="cropType" placeholder="e.g., Rice, Corn, Vegetables">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Create Password <span class="required">*</span></label>
+                            <input type="password" id="password" name="password" placeholder="Create a password" required>
+                            <small class="form-hint">Must be at least 8 characters</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" name="terms" required>
+                                <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Complete Registration</button>
+                        <button type="button" class="btn-secondary" onclick="goToStep(2)">Back</button>
+                    </div>
+                    
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="{{ url_for('main.login') }}">Sign In</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

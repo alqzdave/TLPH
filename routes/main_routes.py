@@ -1,11 +1,19 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, redirect, url_for
 
 bp = Blueprint('main', __name__)
 
-@bp.route('/inventory')
-def inventory():
-    return render_template('inventory.html')
+@bp.route('/')
+def index():
+    return redirect(url_for('main.login'))
 
-@bp.route('/about')
-def about():
-    return render_template('about.html')
+@bp.route('/login')
+def login():
+    return render_template('login.html')
+
+@bp.route('/register')
+def signup():
+    return render_template('signup.html')
+
+@bp.route('/farmer/dashboard')
+def farmer_dashboard():
+    return render_template('farmer_dashboard.html')
