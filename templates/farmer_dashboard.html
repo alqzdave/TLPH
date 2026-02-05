@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Dashboard - DENR TLPH</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: rgba(45, 80, 22, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .navbar-menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: opacity 0.3s;
+        }
+
+        .navbar-menu a:hover {
+            opacity: 0.8;
+        }
+
+        .dashboard-container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .welcome-card {
+            background: white;
+            border-radius: 15px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .welcome-card h1 {
+            color: #2d5016;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-card p {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #ffc107;
+            color: #000;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        .info-text {
+            color: #888;
+            font-size: 1rem;
+            margin-top: 2rem;
+            line-height: 1.6;
+        }
+
+        .logout-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">DENR TLPH - Farmer Portal</div>
+        <div class="navbar-menu">
+            <a href="/farmer/dashboard">Dashboard</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="welcome-card">
+            <h1>Welcome to DENR TLPH</h1>
+            <p>Your registration has been submitted successfully!</p>
+            
+            <div class="status-badge">
+                Status: Pending Approval
+            </div>
+            
+            <div class="info-text">
+                <p>Your application is currently being reviewed by DENR administrators.</p>
+                <p>You will receive an email notification once your account has been approved.</p>
+                <p>Thank you for your patience!</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from '/static/js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                alert('Logged out successfully');
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Error logging out: ' + error.message);
+            }
+        }
+
+        // Check if user is logged in
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                // Not logged in, redirect to login
+                window.location.href = '/login';
+            }
+        });
+    </script>
+</body>
+</html>
