@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Header</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-100"> 
+<header class="bg-green-700 text-white shadow-lg sticky top-0 z-50">
+  <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+    
+    <div class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='images/denr.jpg') }}" 
+           alt="DENR Logo" 
+           class="h-12 w-12 object-contain">
+      <h1 class="text-white text-3xl font-bold tracking-tight">DENR</h1>
+    </div>
+
+    <div class="dropdown">
+      <button class="hover:opacity-80 transition-all focus:outline-none flex items-center" 
+              type="button" 
+              id="profileDropdown" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false">
+        <img src="https://ui-avatars.com/api/?name=User&background=fff&color=15803d" 
+             alt="Profile" 
+             class="h-10 w-10 rounded-full border-2 border-white shadow-md">
+      </button>
+      
+      <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="profileDropdown">
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>👤</span> Profile
+            </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item py-2 text-danger flex items-center gap-2" href="#">
+                <span>Logout</span>
+            </a>
+        </li>
+      </ul>
+    </div>
+
+  </nav>
+</header>
+
+<div class="container mx-auto px-6 py-4 flex gap-4">
+    <button class="flex-1 bg-green-600 hover:bg-green-700 text-white text-3xl font-bold py-3 px-6 rounded-lg shadow-md transition-colors">
+        Applications
+    </button>
+    
+    <button class="flex-1 bg-white border-2 border-green-600 text-green-700 text-3xl font-bold py-3 px-6 rounded-lg shadow-md hover:bg-green-50 transition-colors">
+        Inventory
+    </button>
+</div>
+
+<div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="static/images/denr.jpg" class="d-block w-100" alt="...">
+    </div>
+    <div class="carousel-item">
+      <img src="..." class="d-block w-100" alt="...">
+    </div>
+    <div class="carousel-item">
+      <img src="..." class="d-block w-100" alt="...">
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+
+</body>
+</html>
