@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR - Department of Environment and Natural Resources</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo">
+                <span>DENR</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><a href="/login" class="nav-btn">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Department of Environment and Natural Resources</h1>
+            <p class="hero-subtitle">Protecting, Conserving, and Managing the Environment for Future Generations</p>
+            <div class="hero-buttons">
+                <a href="/register" class="btn btn-primary">Get Started</a>
+                <a href="#about" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <a href="#about">
+                <i class="fas fa-chevron-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title">About</h2>
+            
+            <!-- Mandate -->
+            <div class="about-card mandate-card">
+                <div class="card-icon">
+                    <i class="fas fa-landmark"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Mandate</h3>
+                    <p>The Department of Environment and Natural Resources (DENR) through Executive Order 192, Series of 1987 is mandated to be the government agency primarily responsible for the conservation, management, development, and proper use of the country's environment and natural resources, specifically forest and grazing lands, mineral resources, including those in reservation and watershed areas, and lands of the public domain, as well as the licensing and regulation of all natural resources as may be provided for by law in order to ensure equitable sharing of the benefits derived therefrom for the welfare of the present and future generations of Filipinos.</p>
+                </div>
+            </div>
+
+            <!-- Vision, Mission, Core Function -->
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="card-icon">
+                        <i class="fas fa-binoculars"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Vision</h3>
+                        <p>A nation enjoying and sustaining its natural resources and a clean and healthy environment.</p>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <div class="card-icon">
+                        <i class="fas fa-compass"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Mission</h3>
+                        <p>To mobilize our citizenry in protecting, conserving, and managing the environment and natural resources for the present and future generations.</p>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <div class="card-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Core Function</h3>
+                        <p>DENR is tasked to formulate and implement policies, guidelines, rules and regulations relating to environmental management and pollution prevention and control.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Department of Environment and Natural Resources. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 // Import Firebase
 import { app, auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, googleProvider, signInWithPopup } from './firebase-config.js';
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { philippineLocations } from './ph-locations.js';
 
 // Initialize Firestore
 const db = getFirestore(app);
@@ -15,12 +16,249 @@ function validateEmail(email) {
     return re.test(email);
 }
 
+// Initialize location dropdowns
+function initializeLocationDropdowns() {
+    const provinceSelects = ['province', 'coopProvince', 'businessProvince', 'institutionProvince'];
+    const provinces = Object.keys(philippineLocations).sort();
+    
+    // Populate all province dropdowns
+    provinceSelects.forEach(selectId => {
+        const selectElement = document.getElementById(selectId);
+        if (selectElement) {
+            provinces.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province;
+                option.textContent = province;
+                selectElement.appendChild(option);
+            });
+        }
+    });
+    
+    // Set up province change listeners
+    setupProvinceListener('province', 'municipality');
+    setupProvinceListener('coopProvince', 'coopMunicipality');
+    setupProvinceListener('businessProvince', 'businessMunicipality');
+    setupProvinceListener('institutionProvince', 'institutionMunicipality');
+}
+
+function setupProvinceListener(provinceId, municipalityId) {
+    const provinceSelect = document.getElementById(provinceId);
+    const municipalitySelect = document.getElementById(municipalityId);
+    
+    if (provinceSelect && municipalitySelect) {
+        provinceSelect.addEventListener('change', function() {
+            const selectedProvince = this.value;
+            
+            // Clear and reset municipality dropdown
+            municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
+            municipalitySelect.disabled = !selectedProvince;
+            
+            if (selectedProvince && philippineLocations[selectedProvince]) {
+                const municipalities = philippineLocations[selectedProvince].sort();
+                municipalities.forEach(municipality => {
+                    const option = document.createElement('option');
+                    option.value = municipality;
+                    option.textContent = municipality;
+                    municipalitySelect.appendChild(option);
+                });
+            }
+        });
+    }
+}
+
+// Handle application type change
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize location dropdowns
+    initializeLocationDropdowns();
+    
+    const appTypeSelect = document.getElementById('applicationType');
+    if (appTypeSelect) {
+        appTypeSelect.addEventListener('change', function() {
+            updateFormFields(this.value);
+        });
+    }
+});
+
+function updateFormFields(applicationType) {
+    const firstNameGroup = document.getElementById('firstNameGroup');
+    const lastNameGroup = document.getElementById('lastNameGroup');
+    const firstNameLabel = document.getElementById('firstNameLabel');
+    const lastNameLabel = document.getElementById('lastNameLabel');
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    
+    const tenantFields = document.getElementById('tenantFields');
+    const cooperativeFields = document.getElementById('cooperativeFields');
+    const agribusinessFields = document.getElementById('agribusinessFields');
+    const researchFields = document.getElementById('researchFields');
+    
+    // Hide all fields first
+    if (tenantFields) tenantFields.style.display = 'none';
+    if (cooperativeFields) cooperativeFields.style.display = 'none';
+    if (agribusinessFields) agribusinessFields.style.display = 'none';
+    if (researchFields) researchFields.style.display = 'none';
+    
+    if (applicationType === 'cooperative') {
+        // Change to Cooperative fields in Step 1
+        firstNameLabel.innerHTML = 'Cooperative Name <span class="required">*</span>';
+        lastNameLabel.innerHTML = 'Contact Person Name <span class="required">*</span>';
+        firstNameInput.placeholder = 'Enter cooperative name';
+        lastNameInput.placeholder = 'Contact person full name';
+        
+        // Show cooperative fields in Step 3
+        if (cooperativeFields) cooperativeFields.style.display = 'block';
+        
+        // Update required status for cooperative
+        setRequiredFields(['cdaNumber', 'registrationDate', 'officeAddress', 'coopMunicipality', 'coopProvince', 'primaryActivity'], true);
+        setRequiredFields(['address', 'municipality', 'province', 'businessRegNumber', 'businessType', 'businessRegDate', 'businessAddress', 'businessMunicipality', 'businessProvince', 'natureOfBusiness', 'businessScale', 'accreditationNumber', 'institutionType', 'institutionAddress', 'institutionMunicipality', 'institutionProvince', 'researchFocus'], false);
+        
+    } else if (applicationType === 'agribusiness') {
+        // Change to Agribusiness Company fields in Step 1
+        firstNameLabel.innerHTML = 'Company Name <span class="required">*</span>';
+        lastNameLabel.innerHTML = 'Authorized Representative Name <span class="required">*</span>';
+        firstNameInput.placeholder = 'Enter company name';
+        lastNameInput.placeholder = 'Representative full name';
+        
+        // Show agribusiness fields in Step 3
+        if (agribusinessFields) agribusinessFields.style.display = 'block';
+        
+        // Update required status for agribusiness
+        setRequiredFields(['businessRegNumber', 'businessType', 'businessRegDate', 'businessAddress', 'businessMunicipality', 'businessProvince', 'natureOfBusiness', 'businessScale'], true);
+        setRequiredFields(['address', 'municipality', 'province', 'cdaNumber', 'registrationDate', 'officeAddress', 'coopMunicipality', 'coopProvince', 'primaryActivity', 'accreditationNumber', 'institutionType', 'institutionAddress', 'institutionMunicipality', 'institutionProvince', 'researchFocus'], false);
+        
+    } else if (applicationType === 'research') {
+        // Change to Research Institution fields in Step 1
+        firstNameLabel.innerHTML = 'Institution Name <span class="required">*</span>';
+        lastNameLabel.innerHTML = 'Contact Person Name <span class="required">*</span>';
+        firstNameInput.placeholder = 'Enter institution name';
+        lastNameInput.placeholder = 'Contact person full name';
+        
+        // Show research fields in Step 3
+        if (researchFields) researchFields.style.display = 'block';
+        
+        // Update required status for research institution
+        setRequiredFields(['accreditationNumber', 'institutionType', 'institutionAddress', 'institutionMunicipality', 'institutionProvince', 'researchFocus'], true);
+        setRequiredFields(['address', 'municipality', 'province', 'cdaNumber', 'registrationDate', 'officeAddress', 'coopMunicipality', 'coopProvince', 'primaryActivity', 'businessRegNumber', 'businessType', 'businessRegDate', 'businessAddress', 'businessMunicipality', 'businessProvince', 'natureOfBusiness', 'businessScale'], false);
+        
+    } else {
+        // Default to Tenant/Individual fields
+        firstNameLabel.innerHTML = 'First Name <span class="required">*</span>';
+        lastNameLabel.innerHTML = 'Last Name <span class="required">*</span>';
+        firstNameInput.placeholder = 'First name';
+        lastNameInput.placeholder = 'Last name';
+        
+        // Show tenant fields in Step 3
+        if (tenantFields) tenantFields.style.display = 'block';
+        
+        // Update required status for tenant
+        setRequiredFields(['address', 'municipality', 'province'], true);
+        setRequiredFields(['cdaNumber', 'registrationDate', 'officeAddress', 'coopMunicipality', 'coopProvince', 'primaryActivity', 'businessRegNumber', 'businessType', 'businessRegDate', 'businessAddress', 'businessMunicipality', 'businessProvince', 'natureOfBusiness', 'businessScale', 'accreditationNumber', 'institutionType', 'institutionAddress', 'institutionMunicipality', 'institutionProvince', 'researchFocus'], false);
+    }
+}
+
+function setRequiredFields(fieldIds, isRequired) {
+    fieldIds.forEach(id => {
+        const field = document.getElementById(id);
+        if (field) {
+            field.required = isRequired;
+        }
+    });
+}
+
 // Multi-step navigation
 window.goToStep = function(stepNumber) {
     document.querySelectorAll('.form-step').forEach(step => {
         step.classList.remove('active');
     });
     document.getElementById('step' + stepNumber).classList.add('active');
+    
+    // If going to step 3a, update form fields based on application type
+    if (stepNumber === '3a') {
+        const applicationType = registrationData.applicationType || document.getElementById('applicationType').value;
+        if (applicationType) {
+            updateFormFields(applicationType);
+        }
+    }
+}
+
+// Validate Step 3A and proceed to Step 3B
+window.validateAndGoToStep3b = function() {
+    const applicationType = registrationData.applicationType;
+    let isValid = true;
+    let missingFields = [];
+    
+    if (applicationType === 'tenant') {
+        const address = document.getElementById('address').value;
+        const province = document.getElementById('province').value;
+        const municipality = document.getElementById('municipality').value;
+        
+        if (!address) missingFields.push('Address');
+        if (!province) missingFields.push('Province');
+        if (!municipality) missingFields.push('Municipality');
+        
+        isValid = address && province && municipality;
+        
+    } else if (applicationType === 'cooperative') {
+        const cdaNumber = document.getElementById('cdaNumber').value;
+        const registrationDate = document.getElementById('registrationDate').value;
+        const officeAddress = document.getElementById('officeAddress').value;
+        const coopProvince = document.getElementById('coopProvince').value;
+        const coopMunicipality = document.getElementById('coopMunicipality').value;
+        const primaryActivity = document.getElementById('primaryActivity').value;
+        
+        if (!cdaNumber) missingFields.push('CDA Number');
+        if (!registrationDate) missingFields.push('Registration Date');
+        if (!officeAddress) missingFields.push('Office Address');
+        if (!coopProvince) missingFields.push('Province');
+        if (!coopMunicipality) missingFields.push('Municipality');
+        if (!primaryActivity) missingFields.push('Primary Activity');
+        
+        isValid = cdaNumber && registrationDate && officeAddress && coopProvince && coopMunicipality && primaryActivity;
+        
+    } else if (applicationType === 'agribusiness') {
+        const businessRegNumber = document.getElementById('businessRegNumber').value;
+        const businessType = document.getElementById('businessType').value;
+        const businessRegDate = document.getElementById('businessRegDate').value;
+        const businessAddress = document.getElementById('businessAddress').value;
+        const businessProvince = document.getElementById('businessProvince').value;
+        const businessMunicipality = document.getElementById('businessMunicipality').value;
+        const natureOfBusiness = document.getElementById('natureOfBusiness').value;
+        const businessScale = document.getElementById('businessScale').value;
+        
+        if (!businessRegNumber) missingFields.push('Business Registration Number');
+        if (!businessType) missingFields.push('Business Type');
+        if (!businessRegDate) missingFields.push('Registration Date');
+        if (!businessAddress) missingFields.push('Business Address');
+        if (!businessProvince) missingFields.push('Province');
+        if (!businessMunicipality) missingFields.push('Municipality');
+        if (!natureOfBusiness) missingFields.push('Nature of Business');
+        if (!businessScale) missingFields.push('Business Scale');
+        
+        isValid = businessRegNumber && businessType && businessRegDate && businessAddress && businessProvince && businessMunicipality && natureOfBusiness && businessScale;
+        
+    } else if (applicationType === 'research') {
+        const accreditationNumber = document.getElementById('accreditationNumber').value;
+        const institutionType = document.getElementById('institutionType').value;
+        const institutionAddress = document.getElementById('institutionAddress').value;
+        const institutionProvince = document.getElementById('institutionProvince').value;
+        const institutionMunicipality = document.getElementById('institutionMunicipality').value;
+        const researchFocus = document.getElementById('researchFocus').value;
+        
+        if (!accreditationNumber) missingFields.push('Accreditation Number');
+        if (!institutionType) missingFields.push('Institution Type');
+        if (!institutionAddress) missingFields.push('Institution Address');
+        if (!institutionProvince) missingFields.push('Province');
+        if (!institutionMunicipality) missingFields.push('Municipality');
+        if (!researchFocus) missingFields.push('Research Focus');
+        
+        isValid = accreditationNumber && institutionType && institutionAddress && institutionProvince && institutionMunicipality && researchFocus;
+    }
+    
+    if (isValid) {
+        goToStep('3b');
+    } else {
+        alert('Please fill in all required fields:\n- ' + missingFields.join('\n- '));
+    }
 }
 
 // Send OTP
@@ -100,7 +338,7 @@ window.verifyOTP = async function() {
         
         if (result.success) {
             alert('Email verified successfully!');
-            goToStep(3);
+            goToStep('3a');
         } else {
             alert('Verification failed: ' + result.message);
         }
@@ -118,17 +356,103 @@ if (signupForm) {
         
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
-        const address = document.getElementById('address').value;
-        const municipality = document.getElementById('municipality').value;
-        const province = document.getElementById('province').value;
-        const farmSize = document.getElementById('farmSize').value;
-        const cropType = document.getElementById('cropType').value;
         const terms = document.querySelector('input[name="terms"]').checked;
+        const applicationType = registrationData.applicationType;
         
-        // Validation
-        if (!address || !municipality || !province || !password || !confirmPassword) {
-            alert('Please fill in all required fields');
-            return;
+        // Get fields based on application type
+        let profileData = {};
+        
+        if (applicationType === 'cooperative') {
+            const cdaNumber = document.getElementById('cdaNumber').value;
+            const registrationDate = document.getElementById('registrationDate').value;
+            const officeAddress = document.getElementById('officeAddress').value;
+            const coopMunicipality = document.getElementById('coopMunicipality').value;
+            const coopProvince = document.getElementById('coopProvince').value;
+            const primaryActivity = document.getElementById('primaryActivity').value;
+            
+            // Validation for cooperative
+            if (!cdaNumber || !registrationDate || !officeAddress || !coopMunicipality || !coopProvince || !primaryActivity || !password || !confirmPassword) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            profileData = {
+                cdaNumber,
+                registrationDate,
+                officeAddress,
+                municipality: coopMunicipality,
+                province: coopProvince,
+                primaryActivity
+            };
+        } else if (applicationType === 'agribusiness') {
+            const businessRegNumber = document.getElementById('businessRegNumber').value;
+            const businessType = document.getElementById('businessType').value;
+            const businessRegDate = document.getElementById('businessRegDate').value;
+            const businessAddress = document.getElementById('businessAddress').value;
+            const businessMunicipality = document.getElementById('businessMunicipality').value;
+            const businessProvince = document.getElementById('businessProvince').value;
+            const natureOfBusiness = document.getElementById('natureOfBusiness').value;
+            const businessScale = document.getElementById('businessScale').value;
+            
+            // Validation for agribusiness
+            if (!businessRegNumber || !businessType || !businessRegDate || !businessAddress || !businessMunicipality || !businessProvince || !natureOfBusiness || !businessScale || !password || !confirmPassword) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            profileData = {
+                businessRegNumber,
+                businessType,
+                registrationDate: businessRegDate,
+                businessAddress,
+                municipality: businessMunicipality,
+                province: businessProvince,
+                natureOfBusiness,
+                businessScale
+            };
+        } else if (applicationType === 'research') {
+            const accreditationNumber = document.getElementById('accreditationNumber').value;
+            const institutionType = document.getElementById('institutionType').value;
+            const institutionAddress = document.getElementById('institutionAddress').value;
+            const institutionMunicipality = document.getElementById('institutionMunicipality').value;
+            const institutionProvince = document.getElementById('institutionProvince').value;
+            const researchFocus = document.getElementById('researchFocus').value;
+            
+            // Validation for research institution
+            if (!accreditationNumber || !institutionType || !institutionAddress || !institutionMunicipality || !institutionProvince || !researchFocus || !password || !confirmPassword) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            profileData = {
+                accreditationNumber,
+                institutionType,
+                institutionAddress,
+                municipality: institutionMunicipality,
+                province: institutionProvince,
+                researchFocus
+            };
+        } else {
+            // Tenant/Individual and other types
+            const address = document.getElementById('address').value;
+            const municipality = document.getElementById('municipality').value;
+            const province = document.getElementById('province').value;
+            const farmSize = document.getElementById('farmSize').value;
+            const cropType = document.getElementById('cropType').value;
+            
+            // Validation for tenant
+            if (!address || !municipality || !province || !password || !confirmPassword) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            profileData = {
+                address,
+                municipality,
+                province,
+                farmSize: farmSize || null,
+                cropType: cropType || null
+            };
         }
         
         if (password.length < 8) {
@@ -158,11 +482,7 @@ if (signupForm) {
                 email: registrationData.email,
                 phone: registrationData.phone,
                 applicationType: registrationData.applicationType,
-                address: address,
-                municipality: municipality,
-                province: province,
-                farmSize: farmSize || null,
-                cropType: cropType || null,
+                ...profileData,
                 userType: 'farmer',
                 status: 'pending',
                 createdAt: new Date().toISOString()
@@ -206,8 +526,8 @@ if (loginForm) {
             
             console.log('Login successful:', user);
             
-            // Redirect to dashboard
-            window.location.href = '/dashboard';
+            // Redirect to farmer dashboard (pending approval)
+            window.location.href = '/farmer/dashboard';
         } catch (error) {
             console.error('Login error:', error);
             alert('Login failed: ' + error.message);
@@ -225,9 +545,8 @@ googleButtons.forEach(button => {
             
             console.log('Google sign in successful:', user);
             
-            // Redirect to dashboard
-            window.location.href = '/dashboard';
-            // window.location.href = '/dashboard';
+            // Redirect to farmer dashboard
+            window.location.href = '/farmer/dashboard';
         } catch (error) {
             console.error('Google sign in error:', error);
             alert('Google sign in failed: ' + error.message);

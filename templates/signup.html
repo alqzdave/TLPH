@@ -19,7 +19,7 @@
         <div class="auth-right">
             <div class="auth-box">
                 <div class="auth-header">
-                    <h2>Farmer Registration</h2>
+                    <h2>Registration</h2>
                     <p>Fill in your details to register</p>
                 </div>
                 
@@ -40,13 +40,13 @@
                         </div>
                         
                         <div class="form-row">
-                            <div class="form-group">
-                                <label for="firstName">First Name <span class="required">*</span></label>
+                            <div class="form-group" id="firstNameGroup">
+                                <label for="firstName" id="firstNameLabel">First Name <span class="required">*</span></label>
                                 <input type="text" id="firstName" name="firstName" placeholder="First name" required>
                             </div>
                             
-                            <div class="form-group">
-                                <label for="lastName">Last Name <span class="required">*</span></label>
+                            <div class="form-group" id="lastNameGroup">
+                                <label for="lastName" id="lastNameLabel">Last Name <span class="required">*</span></label>
                                 <input type="text" id="lastName" name="lastName" placeholder="Last name" required>
                             </div>
                         </div>
@@ -83,36 +83,193 @@
                         <button type="button" class="btn-secondary" onclick="goToStep(1)">Back</button>
                     </div>
                     
-                    <!-- Step 3: Bio Profile & Password -->
-                    <div id="step3" class="form-step">
-                        <h3 class="step-title">Complete Your Profile</h3>
+                    <!-- Step 3A: Profile Information -->
+                    <div id="step3a" class="form-step">
+                        <h3 class="step-title">Complete Your Profile (1/2)</h3>
                         
-                        <div class="form-group">
-                            <label for="address">Address <span class="required">*</span></label>
-                            <input type="text" id="address" name="address" placeholder="Street, Barangay" required>
-                        </div>
-                        
-                        <div class="form-row">
+                        <!-- Fields for Tenant/Individual -->
+                        <div id="tenantFields" style="display: none;">
                             <div class="form-group">
-                                <label for="municipality">Municipality <span class="required">*</span></label>
-                                <input type="text" id="municipality" name="municipality" placeholder="Municipality" required>
+                                <label for="address">Address <span class="required">*</span></label>
+                                <input type="text" id="address" name="address" placeholder="Street, Barangay">
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="province">Province <span class="required">*</span></label>
+                                    <select id="province" name="province">
+                                        <option value="">Select Province</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="municipality">Municipality <span class="required">*</span></label>
+                                    <select id="municipality" name="municipality" disabled>
+                                        <option value="">Select Province First</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div class="form-group">
-                                <label for="province">Province <span class="required">*</span></label>
-                                <input type="text" id="province" name="province" placeholder="Province" required>
+                                <label for="farmSize">Farm Size (hectares)</label>
+                                <input type="number" id="farmSize" name="farmSize" placeholder="0.00" step="0.01">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="cropType">Primary Crop Type</label>
+                                <input type="text" id="cropType" name="cropType" placeholder="e.g., Rice, Corn, Vegetables">
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="farmSize">Farm Size (hectares)</label>
-                            <input type="number" id="farmSize" name="farmSize" placeholder="0.00" step="0.01">
+                        <!-- Fields for Cooperative -->
+                        <div id="cooperativeFields" style="display: none;">
+                            <div class="form-group">
+                                <label for="cdaNumber">Registration Number (CDA) <span class="required">*</span></label>
+                                <input type="text" id="cdaNumber" name="cdaNumber" placeholder="CDA Registration Number">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="registrationDate">Date of Registration <span class="required">*</span></label>
+                                <input type="date" id="registrationDate" name="registrationDate">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="officeAddress">Office Address <span class="required">*</span></label>
+                                <input type="text" id="officeAddress" name="officeAddress" placeholder="Complete office address">
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="coopProvince">Province <span class="required">*</span></label>
+                                    <select id="coopProvince" name="coopProvince">
+                                        <option value="">Select Province</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="coopMunicipality">Municipality <span class="required">*</span></label>
+                                    <select id="coopMunicipality" name="coopMunicipality" disabled>
+                                        <option value="">Select Province First</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="primaryActivity">Primary Agricultural Activity/Crops <span class="required">*</span></label>
+                                <input type="text" id="primaryActivity" name="primaryActivity" placeholder="e.g., Rice Production, Vegetable Farming">
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="cropType">Primary Crop Type</label>
-                            <input type="text" id="cropType" name="cropType" placeholder="e.g., Rice, Corn, Vegetables">
+                        <!-- Fields for Agribusiness Company -->
+                        <div id="agribusinessFields" style="display: none;">
+                            <div class="form-group">
+                                <label for="businessRegNumber">Business Registration Number (DTI/SEC) <span class="required">*</span></label>
+                                <input type="text" id="businessRegNumber" name="businessRegNumber" placeholder="DTI/SEC Registration Number">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="businessType">Type of Business <span class="required">*</span></label>
+                                <select id="businessType" name="businessType">
+                                    <option value="">Select Business Type</option>
+                                    <option value="corporation">Corporation</option>
+                                    <option value="partnership">Partnership</option>
+                                    <option value="sole_proprietorship">Sole Proprietorship</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="businessRegDate">Date of Registration <span class="required">*</span></label>
+                                <input type="date" id="businessRegDate" name="businessRegDate">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="businessAddress">Business Address <span class="required">*</span></label>
+                                <input type="text" id="businessAddress" name="businessAddress" placeholder="Complete business address">
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="businessProvince">Province <span class="required">*</span></label>
+                                    <select id="businessProvince" name="businessProvince">
+                                        <option value="">Select Province</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="businessMunicipality">Municipality <span class="required">*</span></label>
+                                    <select id="businessMunicipality" name="businessMunicipality" disabled>
+                                        <option value="">Select Province First</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="natureOfBusiness">Nature of Business/Products <span class="required">*</span></label>
+                                <input type="text" id="natureOfBusiness" name="natureOfBusiness" placeholder="e.g., Agricultural Products Trading, Food Processing">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="businessScale">Business Scale <span class="required">*</span></label>
+                                <select id="businessScale" name="businessScale">
+                                    <option value="">Select Business Scale</option>
+                                    <option value="small">Small</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="large">Large</option>
+                                </select>
+                            </div>
                         </div>
+                        
+                        <!-- Fields for Research Institution -->
+                        <div id="researchFields" style="display: none;">
+                            <div class="form-group">
+                                <label for="accreditationNumber">Registration/Accreditation Number <span class="required">*</span></label>
+                                <input type="text" id="accreditationNumber" name="accreditationNumber" placeholder="Registration/Accreditation Number">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="institutionType">Type of Institution <span class="required">*</span></label>
+                                <select id="institutionType" name="institutionType">
+                                    <option value="">Select Institution Type</option>
+                                    <option value="government">Government</option>
+                                    <option value="private">Private</option>
+                                    <option value="academic">Academic</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="institutionAddress">Institution Address <span class="required">*</span></label>
+                                <input type="text" id="institutionAddress" name="institutionAddress" placeholder="Complete institution address">
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="institutionProvince">Province <span class="required">*</span></label>
+                                    <select id="institutionProvince" name="institutionProvince">
+                                        <option value="">Select Province</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="institutionMunicipality">Municipality <span class="required">*</span></label>
+                                    <select id="institutionMunicipality" name="institutionMunicipality" disabled>
+                                        <option value="">Select Province First</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="researchFocus">Research Focus/Specialization <span class="required">*</span></label>
+                                <input type="text" id="researchFocus" name="researchFocus" placeholder="e.g., Agricultural Technology, Crop Science">
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn-primary" onclick="validateAndGoToStep3b()">Next: Password & Terms</button>
+                        <button type="button" class="btn-secondary" onclick="goToStep(2)">Back</button>
+                    </div>
+                    
+                    <!-- Step 3B: Password & Terms -->
+                    <div id="step3b" class="form-step">
+                        <h3 class="step-title">Complete Your Profile (2/2)</h3>
                         
                         <div class="form-group">
                             <label for="password">Create Password <span class="required">*</span></label>
@@ -133,7 +290,7 @@
                         </div>
                         
                         <button type="submit" class="btn-primary">Complete Registration</button>
-                        <button type="button" class="btn-secondary" onclick="goToStep(2)">Back</button>
+                        <button type="button" class="btn-secondary" onclick="goToStep('3a')">Back</button>
                     </div>
                     
                     <div class="auth-footer">
@@ -144,6 +301,7 @@
         </div>
     </div>
     
+    <script type="module" src="{{ url_for('static', filename='js/ph-locations.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </body>
 </html>
