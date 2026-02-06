@@ -13,7 +13,7 @@ mail = Mail(app)
 # initialize_firebase_admin()
 
 # Import routes
-from routes import main_routes, api_routes
+from routes import main_routes, api_routes, seminar_routes, service_routes
 
 # Initialize mail in api_routes
 api_routes.init_mail(mail)
@@ -21,6 +21,8 @@ api_routes.init_mail(mail)
 # Register blueprints
 app.register_blueprint(main_routes.bp)
 app.register_blueprint(api_routes.bp)
+app.register_blueprint(seminar_routes.bp)
+app.register_blueprint(service_routes.bp)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)

@@ -490,8 +490,8 @@ if (signupForm) {
             
             console.log('Registration successful:', user);
             
-            // Redirect to farmer dashboard immediately
-            window.location.href = '/farmer/dashboard';
+            // Redirect to approval status page immediately
+            window.location.href = '/approval-status';
         } catch (error) {
             console.error('Registration error:', error);
             alert('Registration failed: ' + error.message);
@@ -526,8 +526,8 @@ if (loginForm) {
             
             console.log('Login successful:', user);
             
-            // Redirect to farmer dashboard (pending approval)
-            window.location.href = '/farmer/dashboard';
+            // Redirect to user dashboard
+            window.location.href = '/user/dashboard';
         } catch (error) {
             console.error('Login error:', error);
             alert('Login failed: ' + error.message);
@@ -545,8 +545,8 @@ googleButtons.forEach(button => {
             
             console.log('Google sign in successful:', user);
             
-            // Redirect to farmer dashboard
-            window.location.href = '/farmer/dashboard';
+            // Redirect to user dashboard
+            window.location.href = '/user/dashboard';
         } catch (error) {
             console.error('Google sign in error:', error);
             alert('Google sign in failed: ' + error.message);

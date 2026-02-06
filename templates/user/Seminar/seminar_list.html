@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seminar & Training - DENR TLPH</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/seminar.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="seminar-container">
+        <!-- Header -->
+        <header class="seminar-header">
+            <div class="header-left">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo" class="header-logo">
+                    <span class="logo-text">DENR</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/user/dashboard" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>BACK</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>SEMINAR / TRAINING</h1>
+        </div>
+
+        <!-- Seminar List -->
+        <div class="seminar-list">
+            <!-- GAP Training -->
+            <div class="seminar-card">
+                <div class="seminar-info">
+                    <h3 class="seminar-title">GOOD AGRICULTURAL PRACTICES (GAP) TRAINING</h3>
+                    <p class="seminar-description">Learn sustainable farming techniques and best practices to improve crop yields while protecting the environment.</p>
+                    <div class="seminar-meta">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 2 Days</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 30 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/gap/apply" class="apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Pest & Disease Management -->
+            <div class="seminar-card">
+                <div class="seminar-info">
+                    <h3 class="seminar-title">PEST & DISEASE MANAGEMENT SEMINAR</h3>
+                    <p class="seminar-description">Master integrated pest management strategies and disease prevention techniques for healthy crops.</p>
+                    <div class="seminar-meta">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 1 Day</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 40 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/pest-disease/apply" class="apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Safe Pesticide Handling -->
+            <div class="seminar-card">
+                <div class="seminar-info">
+                    <h3 class="seminar-title">SAFE PESTICIDE HANDLING TRAINING</h3>
+                    <p class="seminar-description">Essential training on proper pesticide application, storage, and safety measures to protect farmers and the environment.</p>
+                    <div class="seminar-meta">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 1 Day</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 35 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/pesticide/apply" class="apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Nursery/Propagation -->
+            <div class="seminar-card">
+                <div class="seminar-info">
+                    <h3 class="seminar-title">NURSERY/PROPAGATION SEMINAR</h3>
+                    <p class="seminar-description">Comprehensive training on plant propagation techniques, nursery management, and seedling production.</p>
+                    <div class="seminar-meta">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 2 Days</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 25 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/nursery/apply" class="apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Regulatory Compliance -->
+            <div class="seminar-card">
+                <div class="seminar-info">
+                    <h3 class="seminar-title">REGULATORY COMPLIANCE ORIENTATION</h3>
+                    <p class="seminar-description">Understanding agricultural regulations, compliance requirements, and proper documentation procedures.</p>
+                    <div class="seminar-meta">
+                        <span class="meta-item"><i class="fas fa-clock"></i> Half Day</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 50 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/regulatory/apply" class="apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
