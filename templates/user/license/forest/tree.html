@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Cutting Permit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="min-h-screen bg-slate-50 py-12 px-4">
+        <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-green-900 overflow-hidden text-slate-900">
+            
+            <div class="bg-green-900 p-10 text-center">
+                <h1 class="text-3xl font-black text-white uppercase tracking-widest">Tree Cutting Permit</h1>
+                <p class="text-green-100 text-sm mt-2 opacity-90 font-medium">Forest Management Bureau - Resource Use Regulation Section</p>
+            </div>
+
+            <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-10">
+                
+                <div class="space-y-6">
+                    <label class="text-sm font-black text-green-950 uppercase tracking-wider block">Inventory Details</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Tree Species</label>
+                            <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-700 outline-none transition-all duration-300 hover:scale-[1.01] appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select species...</option>
+                                <option value="narra">Narra (Pterocarpus indicus)</option>
+                                <option value="mahogany">Mahogany (Swietenia macrophylla)</option>
+                                <option value="gmelina">Gmelina (Gmelina arborea)</option>
+                                <option value="falcataria">Falcataria (Falcataria moluccana)</option>
+                                <option value="fruit_trees">Fruit-bearing Trees</option>
+                                <option value="others">Other Native Species</option>
+                            </select>
+                        </div>
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Number of Trees</label>
+                            <input type="number" required placeholder="Quantity to be cut" 
+                                   class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-700 outline-none transition-all duration-300 hover:scale-[1.01]">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <label class="text-sm font-black text-green-950 uppercase tracking-wider block">Site Information</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Exact Location</label>
+                            <input type="text" required placeholder="Sitio/Barangay, Municipality, Province" 
+                                   class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-700 outline-none transition-all duration-300 hover:scale-[1.01]">
+                        </div>
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Land Classification</label>
+                            <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-700 outline-none transition-all duration-300 hover:scale-[1.01] appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select classification...</option>
+                                <option value="private">Private Titled Land</option>
+                                <option value="alienable">Alienable and Disposable (A&D)</option>
+                                <option value="forest_land">Public Forest Land</option>
+                                <option value="ancestral">Ancestral Domain</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-green-950 uppercase tracking-wider block">Purpose of Cutting</label>
+                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-700 outline-none transition-all duration-300 hover:scale-[1.01] appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select purpose...</option>
+                        <option value="construction">Personal Construction / Housing</option>
+                        <option value="safety">Public Safety / Hazard Removal</option>
+                        <option value="infrastructure">Infrastructure Development</option>
+                        <option value="agricultural">Agricultural Land Preparation</option>
+                        <option value="sustainable">Sustainable Harvest / Logging</option>
+                    </select>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-6">
+                    <label class="text-sm font-black text-green-950 uppercase tracking-wider block">Required Documentation</label>
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Site Photo (Geotagged with Tree Marker)</label>
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-green-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-green-50 hover:border-green-700 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group">
+                                <span class="text-[12px] font-black text-green-900 uppercase group-hover:text-green-700 transition-colors">Attach Site Photo</span>
+                                <input type="file" required class="hidden">
+                            </label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Barangay Endorsement / No-Objection Certificate</label>
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-green-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-green-50 hover:border-green-700 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group">
+                                <span class="text-[12px] font-black text-green-900 uppercase group-hover:text-green-700 transition-colors">Attach Barangay Endorsement</span>
+                                <input type="file" required class="hidden">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" class="w-full bg-green-900 hover:bg-green-950 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
+                        Submit Permit Application
+                    </button>
+                    <p class="text-center text-[10px] text-slate-400 mt-6 font-bold uppercase tracking-tighter">Forest Management Act - DENR Regulatory Compliance</p>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</body>
+</html>
