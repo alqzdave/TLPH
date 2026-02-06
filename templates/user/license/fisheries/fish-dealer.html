@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Fish Dealer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <div class="min-h-screen bg-slate-50 py-12 px-4">
+    <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-blue-700 overflow-hidden">
+        
+        <div class="bg-blue-700 p-10 text-center">
+            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Fish Dealer / Trade License</h1>
+            <p class="text-blue-100 text-sm mt-2 opacity-90 font-medium">Market Regulatory and Trade Licensing Division</p>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl">🏢</span> Business Type
+                    </label>
+                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select business type...</option>
+                        <option value="single">Single Proprietorship</option>
+                        <option value="corp">Corporation</option>
+                        <option value="partnership">Partnership</option>
+                        <option value="coop">Cooperative</option>
+                        <option value="lgu">Local Government Unit (LGU)</option>
+                    </select>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl">🧊</span> Storage Capacity
+                    </label>
+                    <div class="relative">
+                        <input type="number" required placeholder="0.00" 
+                               class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs uppercase">KG / MT</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                    <span class="text-xl">📍</span> Market Location / Address
+                </label>
+                <input type="text" required placeholder="Ex: Agora Public Market, Stall #12, San Juan City" 
+                       class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            </div>
+
+            <hr class="border-slate-100">
+
+            <label class="text-sm font-black text-blue-900 uppercase tracking-wider block mb-4">
+                Required Documents (PDF or Image)
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="space-y-2 text-center">
+                    <div class="relative border-2 border-dashed border-blue-200 rounded-2xl p-6 bg-slate-50 hover:bg-blue-50 transition-all group">
+                        <input type="file" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <span class="text-3xl block mb-2">📜</span>
+                        <p class="text-[10px] font-black text-blue-700 uppercase">Business Registration</p>
+                        <p class="text-[9px] text-slate-400 mt-1">DTI / SEC / CDA</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-center">
+                    <div class="relative border-2 border-dashed border-blue-200 rounded-2xl p-6 bg-slate-50 hover:bg-blue-50 transition-all group">
+                        <input type="file" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <span class="text-3xl block mb-2">🏪</span>
+                        <p class="text-[10px] font-black text-blue-700 uppercase">Market/Stall Proof</p>
+                        <p class="text-[9px] text-slate-400 mt-1">Contract or Permit</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-center">
+                    <div class="relative border-2 border-dashed border-blue-200 rounded-2xl p-6 bg-slate-50 hover:bg-blue-50 transition-all group">
+                        <input type="file" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <span class="text-3xl block mb-2">🧼</span>
+                        <p class="text-[10px] font-black text-blue-700 uppercase">Sanitation Cert.</p>
+                        <p class="text-[9px] text-slate-400 mt-1">Health Office Clearance</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
+                    Submit License Application
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>

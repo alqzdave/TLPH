@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Fish Transport</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <div class="min-h-screen bg-slate-50 py-12 px-4">
+    <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-blue-700 overflow-hidden">
+        
+        <div class="bg-blue-700 p-10 text-center">
+            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Fish Transport Permit</h1>
+            <p class="text-blue-100 text-sm mt-2 opacity-90 font-medium">Fisheries Logistics and Resource Movement Office</p>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Origin
+                    </label>
+                    <input type="text" required placeholder="Point of Loading" 
+                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Destination
+                    </label>
+                    <input type="text" required placeholder="Point of Unloading" 
+                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Species
+                    </label>
+                    <input type="text" required placeholder="Ex: Bangus, Tilapia, Tuna" 
+                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Quantity
+                    </label>
+                    <div class="relative">
+                        <input type="number" required placeholder="0.00" 
+                               class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs uppercase">KG / Bkt</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Transport Method
+                    </label>
+                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select method...</option>
+                        <option value="open">Open Container</option>
+                        <option value="closed">Closed Container</option>
+                        <option value="specialized">Specialized Container</option>
+                    </select>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Intended Route
+                    </label>
+                    <input type="text" required placeholder="Ex: SLEX, Coastal Road, Maharlika Hwy" 
+                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                    <span class="text-xl"></span> Schedule of Transport
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="date" required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <input type="time" required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Attach Invoice
+                    </label>
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-200 rounded-2xl cursor-pointer bg-slate-50 hover:bg-blue-50 transition-all group">
+                        <p class="text-xs font-bold text-blue-700">UPLOAD INVOICE / RECEIPT</p>
+                        <input type="file" required class="hidden">
+                    </label>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Vehicle Details
+                    </label>
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-200 rounded-2xl cursor-pointer bg-slate-50 hover:bg-blue-50 transition-all group">
+                        <p class="text-xs font-bold text-blue-700">UPLOAD OR/CR & PLATE PHOTO</p>
+                        <input type="file" required class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
+                    Submit Permit Application
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>

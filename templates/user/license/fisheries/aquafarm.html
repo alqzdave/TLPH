@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquatic Farm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <div class="min-h-screen bg-slate-50 py-12 px-4">
+    <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-blue-700 overflow-hidden">
+        
+        <div class="bg-blue-700 p-10 text-center">
+            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Aquaculture Farm Registration</h1>
+            <p class="text-blue-100 text-sm mt-2 opacity-90 font-medium">Fisheries and Aquatic Resources Production Division</p>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Farm Type
+                    </label>
+                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select farm type...</option>
+                        <option value="fishpond">Fishpond</option>
+                        <option value="fish_pen">Fish Pen</option>
+                        <option value="fish_cage">Fish Cage</option>
+                        <option value="hatchery">Hatchery / Nursery</option>
+                        <option value="shellfish">Shellfish Farm</option>
+                        <option value="seaweed">Seaweed Farm</option>
+                    </select>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Water Source
+                    </label>
+                    <input type="text" required placeholder="Ex: Freshwater, Brackish, Marine" 
+                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Farm Volume / Area
+                    </label>
+                    <div class="relative">
+                        <input type="text" required placeholder="Ex: 500" 
+                               class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs uppercase">m³ / ha</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-xl"></span> Species Cultured
+                    </label>
+                    <input type="text" required placeholder="Ex: Tilapia, Prawns, Seaweeds" 
+                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                    <span class="text-xl"></span> Stocking Density
+                </label>
+                <input type="text" required placeholder="Ex: 50 pcs per cubic meter" 
+                       class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div class="space-y-3">
+                <label class="text-sm font-black text-blue-900 uppercase tracking-wider">
+                    Photos of Facility <span class="text-xs text-slate-400 font-normal italic">(Upload multiple photos showing the farm setup)</span>
+                </label>
+                <div class="relative border-2 border-dashed border-blue-200 rounded-[2rem] p-12 hover:border-blue-500 transition-all bg-slate-50 group text-center">
+                    <input type="file" required multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="space-y-2">
+                        <div class="text-5xl group-hover:scale-110 transition-transform duration-300">📸</div>
+                        <p class="text-sm font-bold text-slate-400 group-hover:text-blue-700 uppercase tracking-widest">Upload Farm Photos</p>
+                        <p class="text-[10px] text-slate-300 uppercase">Support: JPG, PNG (Max 5 photos)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
+                    Register Aquaculture Farm
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>
