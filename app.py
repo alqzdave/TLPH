@@ -1,7 +1,5 @@
 from flask import Flask, render_template
 from flask_mail import Mail
-from flask import Flask, render_template, url_for
-
 from config import Config
 # from firebase_config import initialize_firebase_admin  # Temporarily disabled
 
@@ -23,11 +21,6 @@ api_routes.init_mail(mail)
 # Register blueprints
 app.register_blueprint(main_routes.bp)
 app.register_blueprint(api_routes.bp)
-
-@app.route('/')
-def app_form():
-    return render_template('app-form.html')
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)

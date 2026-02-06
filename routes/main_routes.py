@@ -14,6 +14,6 @@ def login():
 def signup():
     return render_template('signup.html')
 
-@bp.route('/farmer/dashboard')
-def farmer_dashboard():
-    return render_template('farmer_dashboard.html')
+@bp.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')

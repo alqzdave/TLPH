@@ -206,8 +206,8 @@ if (loginForm) {
             
             console.log('Login successful:', user);
             
-            // Redirect to farmer dashboard
-            window.location.href = '/farmer/dashboard';
+            // Redirect to dashboard
+            window.location.href = '/dashboard';
         } catch (error) {
             console.error('Login error:', error);
             alert('Login failed: ' + error.message);
@@ -225,8 +225,8 @@ googleButtons.forEach(button => {
             
             console.log('Google sign in successful:', user);
             
-            // Redirect to farmer dashboard
-            window.location.href = '/farmer/dashboard';
+            // Redirect to dashboard
+            window.location.href = '/dashboard';
             // window.location.href = '/dashboard';
         } catch (error) {
             console.error('Google sign in error:', error);
