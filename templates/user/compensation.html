@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Compensation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+        <div class="min-h-screen bg-gray-50 py-12 px-4">
+    <div class="max-w-4xl mx-auto">
+        
+        <h1 class="text-5xl font-black text-green-800 text-center mb-12 tracking-tight uppercase">
+            Compensation Request
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <button class="aspect-square bg-green-700 hover:bg-green-800 text-white rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center p-8 group">
+                <div class="bg-white/20 p-6 rounded-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <span class="text-6xl">🌀</span>
+                </div>
+                <span class="text-2xl md:text-3xl font-black uppercase tracking-wide text-center">
+                    Typhoon Damage
+                </span>
+                <p class="text-green-100 mt-4 text-sm opacity-80 font-medium">Report crop loss due to storm</p>
+            </button>
+
+            <button class="aspect-square bg-green-700 hover:bg-green-800 text-white rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center p-8 group">
+                <div class="bg-white/20 p-6 rounded-2xl mb-6 group-hover:scale-110 transition-transform">
+                    <span class="text-6xl">🐛</span>
+                </div>
+                <span class="text-2xl md:text-3xl font-black uppercase tracking-wide text-center">
+                    Pest Damage
+                </span>
+                <p class="text-green-100 mt-4 text-sm opacity-80 font-medium">Report infestation or crop disease</p>
+            </button>
+
+        </div>
+
+        <p class="text-center text-gray-400 mt-12 text-sm font-bold uppercase tracking-widest">
+            TLPH Damage Assessment Portal
+        </p>
+    </div>
+</div>
+</body>
+</html>

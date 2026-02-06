@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+        {% include 'header.html' %}
+
+        <div class="min-h-screen bg-gray-50 py-12 px-4">
+    <div class="max-w-2xl mx-auto">
+        
+        <h1 class="text-5xl font-black text-green-800 text-center mb-10 tracking-tight uppercase">
+            Service Request
+        </h1>
+
+        <div class="flex flex-col gap-4">
+            
+            <button class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group">
+                <span class="flex items-center gap-4">
+                    <span class="text-2xl">🚜</span> Farm Visit
+                </span>
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+            </button>
+
+            <button class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group">
+                <span class="flex items-center gap-4">
+                    <span class="text-2xl">🎓</span> Seminar Training
+                </span>
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+            </button>
+
+            <button class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group">
+                <span class="flex items-center gap-4">
+                    <span class="text-2xl">🌱</span> Fertilizer / Pesticide
+                </span>
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+            </button>
+
+            <button class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group">
+                <span class="flex items-center gap-4">
+                    <span class="text-2xl">💵</span> Financial Assistance
+                </span>
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+            </button>
+
+        </div>
+
+        <p class="text-center mt-8">
+            <a href="#" class="text-gray-500 hover:text-green-700 font-medium transition-colors">
+                ← Go back to Dashboard
+            </a>
+        </p>
+    </div>
+</div>
+
+</body>
+</html>
