@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Compliance Inspection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <div class="min-h-screen bg-gray-50 py-12 px-4">
+    <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
+        
+        <div class="bg-green-700 p-10 text-center">
+            <h1 class="text-3xl font-black text-white uppercase tracking-widest text-wrap">Compliance Inspection</h1>
+            <p class="text-green-100 text-sm mt-2 opacity-90 font-medium">DENR Environmental Standards</p>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-green-600">🛡️</span> Compliance Type <span class="text-red-500">*</span>
+                    </label>
+                    <select required class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition-all appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select compliance type...</option>
+                        <option value="ecc">Environmental Compliance Certificate (ECC)</option>
+                        <option value="pto">Permit to Operate (PTO)</option>
+                        <option value="wdp">Wastewater Discharge Permit (WDP)</option>
+                        <option value="hwg">Hazardous Waste Generator (HWG)</option>
+                        <option value="pco">Pollution Control Officer Accreditation</option>
+                        <option value="cnc">Certificate of Non-Coverage (CNC)</option>
+                    </select>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                        <span class="text-green-600">📝</span> Application Type <span class="text-red-500">*</span>
+                    </label>
+                    <select id="appType" onchange="togglePreviousPermit()" required class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition-all appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select application type...</option>
+                        <option value="new">New Application</option>
+                        <option value="renewal">Renewal Application</option>
+                        <option value="modification">Modification / Amendment</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <div class="space-y-6">
+                <div id="previousPermitSection" class="space-y-3 hidden transition-all duration-500">
+                    <label class="text-sm font-black text-gray-700 uppercase tracking-wider flex items-center justify-between">
+                        <span>Previous Permit / Certificate <span class="text-red-500 font-bold">*</span></span>
+                        <span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded">REQUIRED FOR RENEWAL</span>
+                    </label>
+                    <div class="relative border-2 border-red-200 bg-red-50/30 rounded-2xl p-4 hover:border-red-400 transition-colors group">
+                        <input type="file" id="prevPermitInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="flex items-center gap-4">
+                            <span class="text-2xl">📁</span>
+                            <span class="text-sm font-bold text-gray-500 group-hover:text-red-700">Attach your expired or existing permit here...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-gray-700 uppercase tracking-wider">
+                        Environmental Compliance Proof / Condition Upload
+                    </label>
+                    <div class="relative border-2 border-dashed border-gray-200 rounded-[2rem] p-10 hover:border-green-500 transition-all bg-gray-50 group text-center">
+                        <input type="file" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="space-y-2">
+                            <div class="text-5xl">📄</div>
+                            <p class="text-sm font-bold text-gray-400 group-hover:text-green-700">Drag and drop documents or click to browse</p>
+                            <p class="text-xs text-gray-300 uppercase tracking-tighter">Support PDF, JPG, PNG (Max 10MB)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-black py-6 px-8 rounded-3xl shadow-2xl transition-all transform hover:-translate-y-1 active:scale-95 uppercase tracking-widest text-xl">
+                    Submit Application
+                </button>
+                <p class="text-center text-[10px] text-gray-400 mt-6 font-bold uppercase">Official Document Submission • DENR-EMB Portal</p>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePreviousPermit() {
+        const appType = document.getElementById('appType').value;
+        const section = document.getElementById('previousPermitSection');
+        const input = document.getElementById('prevPermitInput');
+
+        if (appType === 'renewal') {
+            section.classList.remove('hidden');
+            input.required = true;
+        } else {
+            section.classList.add('hidden');
+            input.required = false;
+        }
+    }
+</script>
+
+</body>
+</html>

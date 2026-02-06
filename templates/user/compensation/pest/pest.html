@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+</head>
+<body>
+    <header class="bg-green-700 text-white shadow-lg sticky top-0 z-50">
+  <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+    
+    <div class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='images/denr.jpg') }}" 
+           alt="DENR Logo" 
+           class="h-12 w-12 object-contain bg-white rounded-full p-0.5">
+      <h1 class="text-white text-3xl font-bold tracking-tight">DENR</h1>
+    </div>
+
+    <div class="flex items-center gap-8">
+      
+      <div class="hidden md:flex items-center gap-6 border-r border-green-600 pr-8">
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Home</a>
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Application</a>
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Inventory</a>
+        <div class="dropdown">
+    <a href="#" 
+       class="text-white hover:text-green-200 font-medium transition-colors dropdown-toggle flex items-center gap-1" 
+       id="requestDropdown" 
+       data-bs-toggle="dropdown" 
+       aria-expanded="false">
+        Request
+    </a>
+    
+    <ul class="dropdown-menu shadow-lg border-0 mt-2" aria-labelledby="requestDropdown">
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>🛠️</span> Service Request
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>💰</span> Compensation Request
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>📜</span> Licensing/Permit Request
+            </a>
+        </li>
+    </ul>
+</div>
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">History</a>
+      </div>
+
+      <div class="dropdown">
+        <button class="hover:opacity-80 transition-all focus:outline-none flex items-center" 
+                type="button" 
+                id="profileDropdown" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false">
+          <img src="https://ui-avatars.com/api/?name=User&background=fff&color=15803d" 
+               alt="Profile" 
+               class="h-10 w-10 rounded-full border-2 border-white shadow-md">
+        </button>
+        
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="profileDropdown">
+          <li>
+              <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                  <span>👤</span> Profile
+              </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+              <a class="dropdown-item py-2 text-danger flex items-center gap-2" href="#">
+                  <span>🚪</span> Logout
+              </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </nav>
+</header>
+
+<section class="container mx-auto px-6 py-10">
+  <!-- Page header -->
+  <div class="bg-white rounded-2xl shadow-lg border border-green-100 p-6 md:p-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <p class="text-sm font-semibold text-green-700 uppercase tracking-widest">Compensation Request</p>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mt-1">Pest Damage</h2>
+        <p class="text-slate-600 mt-2">
+          Provide pest-related damage details. Fields marked <span class="text-red-600 font-semibold">*</span> are required.
+        </p>
+      </div>
+
+      <a href="#"
+         class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-slate-200
+                text-slate-700 hover:bg-slate-50 transition">
+        ← Back
+      </a>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main columns -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Pest details -->
+      <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 md:p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-bold text-slate-900">Pest & Crop Details</h3>
+          <span class="text-xs px-3 py-1 rounded-full bg-green-50 text-green-700 font-semibold">
+            Step 1
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Crop / Species (text) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Crop / Species <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="crop_species"
+              placeholder="e.g., Rice, Corn, Tilapia"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              required
+            />
+          </div>
+
+          <!-- Pest Type (dropdown) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Pest Type <span class="text-red-600">*</span>
+            </label>
+            <select
+              name="pest_type"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              required
+            >
+              <option value="" disabled selected>Select pest type</option>
+              <option value="Insects">Insects</option>
+              <option value="Weeds">Weeds</option>
+              <option value="Disease">Disease</option>
+              <option value="Vertebrates">Vertebrates</option>
+            </select>
+          </div>
+
+          <!-- Area Damaged (number) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Area Damaged (hectares) <span class="text-red-600">*</span>
+            </label>
+            <div class="relative">
+              <input
+                type="number"
+                name="area_damaged"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-16 text-slate-900
+                       placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+              />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
+                hectares
+              </span>
+            </div>
+          </div>
+
+          <!-- Estimated Value of Lost (peso number) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Estimated Value of Loss (₱) <span class="text-red-600">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">₱</span>
+              <input
+                type="number"
+                name="estimated_value_loss"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                class="w-full pl-10 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                       placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 md:p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-bold text-slate-900">Dates</h3>
+          <span class="text-xs px-3 py-1 rounded-full bg-green-50 text-green-700 font-semibold">
+            Step 2
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Date of first damage observed -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Date of First Damage Observed <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="date"
+              name="first_damage_date"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              required
+            />
+          </div>
+
+          <!-- Date of last pesticide application -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Date of Last Pesticide Application <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="date"
+              name="last_pesticide_date"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              required
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column: attachments + hints -->
+    <aside class="lg:col-span-1 space-y-6">
+      <!-- Photos upload -->
+      <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 md:p-8">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-900">Photos</h3>
+          <span class="text-xs px-3 py-1 rounded-full bg-slate-50 text-slate-700 font-semibold">
+            Upload
+          </span>
+        </div>
+
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+          Attach Photos <span class="text-red-600">*</span>
+        </label>
+
+        <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+          <div class="text-3xl">📷</div>
+          <p class="mt-2 text-slate-700 font-semibold">Drop images here</p>
+          <p class="text-sm text-slate-500">or click to browse</p>
+
+          <input
+            type="file"
+            name="photos"
+            accept=".jpg,.jpeg,.png"
+            multiple
+            class="mt-4 w-full text-sm text-slate-700
+                   file:mr-4 file:rounded-xl file:border-0 file:bg-green-700 file:px-4 file:py-2 file:text-white
+                   hover:file:bg-green-800 cursor-pointer"
+            required
+          />
+
+          <p class="text-xs text-slate-500 mt-3">Accepted: JPG, PNG (multiple allowed)</p>
+        </div>
+      </div>
+
+      <!-- Spray record upload -->
+      <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 md:p-8">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-900">Spray Record</h3>
+          <span class="text-xs px-3 py-1 rounded-full bg-slate-50 text-slate-700 font-semibold">
+            Upload
+          </span>
+        </div>
+
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+          Attach Spray Record <span class="text-red-600">*</span>
+        </label>
+
+        <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+          <div class="text-3xl">🧾</div>
+          <p class="mt-2 text-slate-700 font-semibold">Drop file here</p>
+          <p class="text-sm text-slate-500">or click to browse</p>
+
+          <input
+            type="file"
+            name="spray_record"
+            accept=".pdf,.jpg,.jpeg,.png"
+            class="mt-4 w-full text-sm text-slate-700
+                   file:mr-4 file:rounded-xl file:border-0 file:bg-green-700 file:px-4 file:py-2 file:text-white
+                   hover:file:bg-green-800 cursor-pointer"
+            required
+          />
+
+          <p class="text-xs text-slate-500 mt-3">Accepted: PDF, JPG, PNG</p>
+        </div>
+      </div>
+
+      <!-- Helpful note -->
+      <div class="bg-green-700 rounded-2xl shadow-md p-6 md:p-8 text-white">
+        <h3 class="text-lg font-bold">Tip</h3>
+        <p class="mt-2 text-sm text-green-50">
+          Upload clear photos of affected areas and include spray records showing recent applications.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Sticky action bar -->
+    <div class="lg:col-span-3 sticky bottom-0 z-10">
+      <div class="mt-2 bg-white/90 backdrop-blur rounded-2xl border border-slate-200 shadow-lg p-4
+                  flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+        <p class="text-sm text-slate-600">
+          Review your entries, then click <span class="font-semibold text-slate-900">Submit Application</span>.
+        </p>
+
+        <div class="flex gap-3">
+          <button type="reset"
+            class="w-full md:w-auto px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
+            Clear
+          </button>
+
+          <button type="submit"
+            class="w-full md:w-auto px-7 py-3 rounded-xl bg-green-700 text-white font-semibold
+                   hover:bg-green-800 transition shadow-md">
+            Submit Application
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+    
+</body>
+</html>

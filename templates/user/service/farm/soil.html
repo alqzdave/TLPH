@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Soil/Crop Evaluation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="min-h-screen bg-gray-50 py-12 px-4">
+    <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
+        
+        <div class="bg-green-700 p-10 text-center">
+            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Soil / Crop Evaluation</h1>
+            <p class="text-green-100 text-sm mt-2 opacity-90 font-medium">Field Assessment and Analytical Data Submission</p>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-10">
+            
+            <div class="space-y-3">
+                <label class="text-sm font-black text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                    <span class="text-green-600">🌱</span> Current Crop Stage <span class="text-red-500">*</span>
+                </label>
+                <select required class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer">
+                    <option value="" disabled selected>Select current stage...</option>
+                    <option value="seedling">Seedling Stage</option>
+                    <option value="stem_growth">Stem Growth</option>
+                    <option value="flowering">Flowering Stage</option>
+                    <option value="ripening">Ripening / Harvest Ready</option>
+                </select>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-gray-700 uppercase tracking-wider">
+                        Fertilization History <span class="text-red-500">*</span>
+                    </label>
+                    <input type="file" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer border-2 border-gray-100 p-2 rounded-2xl bg-gray-50">
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-gray-700 uppercase tracking-wider flex justify-between">
+                        Soil Test Result
+                        <span class="text-[10px] text-green-600 font-bold">PDF / JPG ONLY</span>
+                    </label>
+                    <input type="file" id="soilFileInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer border-2 border-gray-100 p-2 rounded-2xl bg-gray-50 mb-2">
+                    
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer">
+                        <span class="text-sm font-bold text-gray-500 group-hover:text-green-700 transition-colors">Request for Soil Collection (To be collected)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-4">
+                <label class="text-sm font-black text-gray-700 uppercase tracking-wider">
+                    Upload Farm Photos <span class="text-red-500">*</span>
+                </label>
+                <div class="relative border-2 border-dashed border-gray-200 rounded-[2rem] p-10 hover:border-green-500 transition-all bg-gray-50 group text-center">
+                    <input type="file" required multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="space-y-2">
+                        <div class="text-5xl">🖼️</div>
+                        <p class="text-sm font-bold text-gray-400 group-hover:text-green-700">Drag and drop or click to upload farm images</p>
+                        <p class="text-xs text-gray-300">Minimum 3 photos recommended (Close-up, Wide, and Soil view)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8">
+                <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-black py-6 px-8 rounded-3xl shadow-2xl hover:shadow-green-900/40 transition-all transform hover:-translate-y-1 active:scale-95 uppercase tracking-widest text-xl">
+                    Submit Evaluation
+                </button>
+                <p class="text-center text-[10px] text-gray-400 mt-6 font-bold uppercase tracking-tighter">DENR Agricultural Division • Data Management System</p>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>
