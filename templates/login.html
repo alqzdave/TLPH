@@ -6,8 +6,13 @@
     <title>Login - TLPH</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <a href="/" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    
     <div class="auth-container">
         <div class="auth-left">
             <div class="auth-content">
@@ -59,7 +64,7 @@
                     </button>
                     
                     <div class="auth-footer">
-                        <p>Don't have an account? <a href="{{ url_for('main.signup') }}">Register Now</a></p>
+                        <p>Don't have an account? <a href="{{ url_for('main.register') }}">Register Now</a></p>
                     </div>
                 </form>
             </div>
