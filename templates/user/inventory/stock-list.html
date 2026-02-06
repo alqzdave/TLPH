@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR | Inventory Stock List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 pb-32">
+    {% include 'header.html' %}
+    <header class="bg-emerald-950 text-white py-20 px-6 shadow-2xl mb-12">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tighter italic">Inventory Stock List</h1>
+            <div class="w-24 h-1.5 bg-emerald-500 mx-auto my-6 rounded-full"></div>
+            <p class="text-emerald-200 text-sm font-bold uppercase tracking-[0.3em]">Resources Monitoring & Logistics Portal</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            
+            <a href="/species/narra" class="group flex flex-col bg-white border-2 border-slate-200 rounded-[3rem] overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:-translate-y-3 hover:border-emerald-600 hover:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.2)]">
+                <div class="h-64 overflow-hidden bg-slate-100">
+                    <img src="https://images.unsplash.com/photo-1599009434802-ca1dd09895e7?q=80&w=1000&auto=format&fit=crop" 
+                         alt="Narra" 
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                </div>
+                
+                <div class="p-8 flex flex-col flex-grow">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-[10px] font-black bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full uppercase tracking-tighter">Forestry</span>
+                        <h3 class="text-2xl font-black text-emerald-950">Narra</h3>
+                    </div>
+                    
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">Click to manage Narra seedling distribution and nursery logs for reforestation.</p>
+                    
+                    <div class="mt-auto pt-6 border-t border-slate-100 grid grid-cols-2">
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Max Stock</label>
+                            <span class="text-xl font-black text-slate-900">2,500 <small class="text-xs text-slate-400">PCS</small></span>
+                        </div>
+                        <div class="text-right">
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit Price</label>
+                            <span class="text-xl font-black text-emerald-700">₱75.00</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/species/mahogany" class="group flex flex-col bg-white border-2 border-slate-200 rounded-[3rem] overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:-translate-y-3 hover:border-emerald-600 hover:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.2)]">
+                <div class="h-64 overflow-hidden bg-slate-100">
+                    <img src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1000&auto=format&fit=crop" 
+                         alt="Mahogany" 
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                </div>
+                <div class="p-8 flex flex-col flex-grow">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-[10px] font-black bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full uppercase tracking-tighter">Timber</span>
+                        <h3 class="text-2xl font-black text-emerald-950">Mahogany</h3>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">Review current mahogany inventory, height monitoring, and transport permits.</p>
+                    <div class="mt-auto pt-6 border-t border-slate-100 grid grid-cols-2">
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Max Stock</label>
+                            <span class="text-xl font-black text-slate-900">4,200 <small class="text-xs text-slate-400">PCS</small></span>
+                        </div>
+                        <div class="text-right">
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit Price</label>
+                            <span class="text-xl font-black text-emerald-700">₱50.00</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/crops/corn" class="group flex flex-col bg-white border-2 border-slate-200 rounded-[3rem] overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:-translate-y-3 hover:border-emerald-600 hover:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.2)]">
+                <div class="h-64 overflow-hidden bg-slate-100">
+                    <img src="https://images.unsplash.com/photo-1592534571990-285663673f3c?q=80&w=1000&auto=format&fit=crop" 
+                         alt="Corn" 
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                </div>
+                <div class="p-8 flex flex-col flex-grow">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-[10px] font-black bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full uppercase tracking-tighter">Agri-Crop</span>
+                        <h3 class="text-2xl font-black text-emerald-950">Yellow Corn</h3>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">Access agricultural yield data, storage facility status, and moisture levels.</p>
+                    <div class="mt-auto pt-6 border-t border-slate-100 grid grid-cols-2">
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Max Stock</label>
+                            <span class="text-xl font-black text-slate-900">850 <small class="text-xs text-slate-400">SKS</small></span>
+                        </div>
+                        <div class="text-right">
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit Price</label>
+                            <span class="text-xl font-black text-emerald-700">₱1,900</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200 py-6 z-50">
+        <div class="max-w-7xl mx-auto flex justify-center">
+            <a href="/history" class="group flex items-center gap-4 px-12 py-3 rounded-full hover:bg-emerald-50 transition-all">
+                <span class="material-icons-round text-emerald-700 group-hover:rotate-90 transition-transform duration-500">history</span>
+                <span class="font-black text-emerald-950 uppercase tracking-[0.2em] text-xs">Inventory History & Logs</span>
+            </a>
+        </div>
+    </nav>
+
+</body>
+</html>
