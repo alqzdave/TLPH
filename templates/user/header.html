@@ -14,7 +14,33 @@
         <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Home</a>
         <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Application</a>
         <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Inventory</a>
-        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Request</a>
+        <div class="dropdown">
+    <a href="#" 
+       class="text-white hover:text-green-200 font-medium transition-colors dropdown-toggle flex items-center gap-1" 
+       id="requestDropdown" 
+       data-bs-toggle="dropdown" 
+       aria-expanded="false">
+        Request
+    </a>
+    
+    <ul class="dropdown-menu shadow-lg border-0 mt-2" aria-labelledby="requestDropdown">
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>🛠️</span> Service Request
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>💰</span> Compensation Request
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>📜</span> Licensing/Permit Request
+            </a>
+        </li>
+    </ul>
+</div>
         <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">History</a>
       </div>
 
