@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>loan</title>
+     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header class="bg-green-700 text-white shadow-lg sticky top-0 z-50">
+  <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+    
+    <div class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='images/denr.jpg') }}" 
+           alt="DENR Logo" 
+           class="h-12 w-12 object-contain bg-white rounded-full p-0.5">
+      <h1 class="text-white text-3xl font-bold tracking-tight">DENR</h1>
+    </div>
+
+    <div class="flex items-center gap-8">
+      
+      <div class="hidden md:flex items-center gap-6 border-r border-green-600 pr-8">
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Home</a>
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Application</a>
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Inventory</a>
+        <div class="dropdown">
+    <a href="#" 
+       class="text-white hover:text-green-200 font-medium transition-colors dropdown-toggle flex items-center gap-1" 
+       id="requestDropdown" 
+       data-bs-toggle="dropdown" 
+       aria-expanded="false">
+        Request
+    </a>
+    
+    <ul class="dropdown-menu shadow-lg border-0 mt-2" aria-labelledby="requestDropdown">
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>🛠️</span> Service Request
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>💰</span> Compensation Request
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                <span>📜</span> Licensing/Permit Request
+            </a>
+        </li>
+    </ul>
+</div>
+        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">History</a>
+      </div>
+
+      <div class="dropdown">
+        <button class="hover:opacity-80 transition-all focus:outline-none flex items-center" 
+                type="button" 
+                id="profileDropdown" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false">
+          <img src="https://ui-avatars.com/api/?name=User&background=fff&color=15803d" 
+               alt="Profile" 
+               class="h-10 w-10 rounded-full border-2 border-white shadow-md">
+        </button>
+        
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="profileDropdown">
+          <li>
+              <a class="dropdown-item py-2 flex items-center gap-2" href="#">
+                  <span>👤</span> Profile
+              </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+              <a class="dropdown-item py-2 text-danger flex items-center gap-2" href="#">
+                  <span>🚪</span> Logout
+              </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </nav>
+</header>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  <!-- Title -->
+  <div class="mt-5 rounded-2xl bg-white border border-green-200 p-6">
+    <h2 class="text-center text-2xl md:text-3xl font-bold text-slate-900 text-green-700">
+      LOAN ENDORSEMENT APPLICATION
+    </h2>
+    <p class="mt-2 text-center text-slate-500 text-sm">
+      Enter loan details and upload the required supporting documents.
+    </p>
+  </div>
+
+  <!-- Instructions -->
+  <div class="mt-4 rounded-2xl bg-green-50 border border-green-200 p-5">
+    <h3 class="text-sm font-semibold text-green-800 mb-2">Instructions</h3>
+    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-600">
+      <li>Enter the requested loan amount (in Philippine Peso).</li>
+      <li>Provide a clear purpose for the loan (short description).</li>
+      <li>Select whether you have existing loans.</li>
+      <li>If <strong>Yes</strong>, attach supporting document for existing loans. If <strong>No</strong>, proceed.</li>
+      <li>Attach proof of income (required).</li>
+      <li>The <strong>Apply</strong> button will activate once all required fields are completed.</li>
+    </ol>
+  </div>
+
+  <!-- Form -->
+  <form id="loanForm" class="mt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- Left: Inputs -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6">
+        <h3 class="text-slate-900 font-semibold text-lg">Loan Details</h3>
+        <p class="text-slate-500 text-sm mt-1">Fill out all required fields.</p>
+
+        <div class="mt-5 space-y-4">
+          <!-- Loan Amount (peso number) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Loan Amount (₱) <span class="text-red-600">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">₱</span>
+              <input
+                type="number"
+                name="loan_amount"
+                id="loanAmount"
+                required
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                class="w-full pl-10 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                       placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Enter numeric amount only (e.g., 50000).</p>
+          </div>
+
+          <!-- Purpose (text) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Purpose <span class="text-red-600">*</span>
+            </label>
+            <textarea
+              name="purpose"
+              id="purpose"
+              required
+              rows="4"
+              placeholder="Briefly describe why you need this loan..."
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            ></textarea>
+            <p class="text-xs text-slate-500 mt-2">Keep it short and specific (1–3 sentences).</p>
+          </div>
+
+          <!-- Existing Loans (yes/no) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Existing Loans? <span class="text-red-600">*</span>
+            </label>
+
+            <div class="flex gap-3">
+              <label class="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 bg-white cursor-pointer">
+                <input type="radio" name="existing_loans" value="No" class="accent-green-700" required />
+                <span class="text-slate-700 text-sm font-medium">No</span>
+              </label>
+
+              <label class="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 bg-white cursor-pointer">
+                <input type="radio" name="existing_loans" value="Yes" class="accent-green-700" required />
+                <span class="text-slate-700 text-sm font-medium">Yes</span>
+              </label>
+            </div>
+
+            <p class="text-xs text-slate-500 mt-2">
+              If you select <strong>Yes</strong>, you must upload supporting document.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Uploads -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6">
+        <h3 class="text-slate-900 font-semibold text-lg">Attachments</h3>
+        <p class="text-slate-500 text-sm mt-1">Upload clear and readable documents.</p>
+
+        <div class="mt-5 space-y-5">
+          <!-- Existing Loans Attachment (conditional) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Existing Loans Document
+              </label>
+              <span id="existingTag"
+                class="text-[11px] px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-semibold">
+                OPTIONAL
+              </span>
+            </div>
+
+            <div id="existingBox"
+                 class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 opacity-50">
+              <p class="text-slate-500 text-sm">Upload only if you selected <strong>Yes</strong>.</p>
+              <input
+                id="existingFile"
+                type="file"
+                name="existing_loans_file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                class="mt-4 w-full text-sm text-slate-700
+                       file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                       file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer"
+                disabled
+              />
+              <p id="existingName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Proof of Income (required) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Proof of Income <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">
+                REQUIRED
+              </span>
+            </div>
+
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5">
+              <p class="text-slate-500 text-sm">Payslip, certificate, or other proof.</p>
+              <input
+                id="incomeFile"
+                type="file"
+                name="proof_of_income"
+                required
+                accept=".pdf,.jpg,.jpeg,.png"
+                class="mt-4 w-full text-sm text-slate-700
+                       file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                       file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer"
+              />
+              <p id="incomeName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Minimal sticky action -->
+    <div class="sticky bottom-0 mt-6">
+      <div class="rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4
+                  flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <p class="text-slate-500 text-sm">
+          Apply is enabled when required fields are complete and required documents are uploaded.
+        </p>
+
+        <div class="flex gap-3">
+          <button type="reset"
+            class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
+            Clear
+          </button>
+
+          <button id="submitBtn" type="submit" disabled
+            class="px-7 py-3 rounded-xl bg-slate-200 text-slate-400 font-semibold cursor-not-allowed transition">
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("loanForm");
+  const submitBtn = document.getElementById("submitBtn");
+
+  const loanAmount = document.getElementById("loanAmount");
+  const purpose = document.getElementById("purpose");
+
+  const existingYesNo = () => form.querySelector('input[name="existing_loans"]:checked')?.value || "";
+
+  const existingBox = document.getElementById("existingBox");
+  const existingFile = document.getElementById("existingFile");
+  const existingName = document.getElementById("existingName");
+  const existingTag = document.getElementById("existingTag");
+
+  const incomeFile = document.getElementById("incomeFile");
+  const incomeName = document.getElementById("incomeName");
+
+  const setName = (labelEl, inputEl) => {
+    labelEl.textContent = (inputEl.files && inputEl.files.length)
+      ? `Selected: ${inputEl.files[0].name}`
+      : "";
+  };
+
+  function updateExistingLoanUploadUI() {
+    const val = existingYesNo();
+
+    if (val === "Yes") {
+      existingFile.disabled = false;
+      existingFile.required = true;
+      existingBox.classList.remove("opacity-50");
+      existingTag.classList.remove("bg-slate-100", "text-slate-500");
+      existingTag.classList.add("bg-green-700", "text-white");
+      existingTag.textContent = "REQUIRED";
+    } else {
+      existingFile.disabled = true;
+      existingFile.required = false;
+      existingFile.value = "";
+      existingName.textContent = "";
+      existingBox.classList.add("opacity-50");
+      existingTag.classList.remove("bg-green-700", "text-white");
+      existingTag.classList.add("bg-slate-100", "text-slate-500");
+      existingTag.textContent = "OPTIONAL";
+    }
+  }
+
+  function isValid() {
+    const hasAmount = loanAmount.value && Number(loanAmount.value) >= 0;
+    const hasPurpose = purpose.value && purpose.value.trim().length > 0;
+    const hasExistingChoice = !!existingYesNo();
+    const hasIncome = incomeFile.files.length > 0;
+
+    if (!hasAmount || !hasPurpose || !hasExistingChoice || !hasIncome) return false;
+
+    if (existingYesNo() === "Yes") {
+      return existingFile.files.length > 0;
+    }
+    return true;
+  }
+
+  function toggleSubmit() {
+    if (isValid()) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.add("bg-green-700", "text-white", "hover:bg-green-800");
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.remove("bg-green-700", "text-white", "hover:bg-green-800");
+    }
+  }
+
+  // Listeners
+  form.addEventListener("input", () => { toggleSubmit(); });
+  form.addEventListener("change", () => {
+    updateExistingLoanUploadUI();
+    toggleSubmit();
+  });
+
+  existingFile.addEventListener("change", () => { setName(existingName, existingFile); toggleSubmit(); });
+  incomeFile.addEventListener("change", () => { setName(incomeName, incomeFile); toggleSubmit(); });
+
+  form.addEventListener("reset", () => {
+    setTimeout(() => {
+      existingName.textContent = "";
+      incomeName.textContent = "";
+      updateExistingLoanUploadUI();
+      toggleSubmit();
+    }, 0);
+  });
+
+  // Init
+  updateExistingLoanUploadUI();
+  toggleSubmit();
+});
+</script>
+
+    
+</body>
+</html>

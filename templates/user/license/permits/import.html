@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+        {% include 'header.html' %}
+
+
+
+        <!-- Import Permit (Minimalist, header-based green accents, hover effects) -->
+<section class="w-full px-4 md:px-10 py-8">
+  <!-- Title -->
+  <div class="rounded-2xl bg-white border border-green-200 p-6">
+    <h2 class="text-center text-2xl md:text-3xl font-semibold text-slate-900">
+      IMPORT PERMIT
+    </h2>
+    <p class="mt-2 text-center text-slate-500 text-sm">
+    </p>
+  </div>
+
+  <!-- Instructions -->
+  <div class="mt-4 rounded-2xl bg-green-50 border border-green-200 p-5">
+    <h3 class="text-sm font-semibold text-green-800 mb-2">Instructions</h3>
+    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-600">
+      <li>Enter origin country, port of entry, and intended use.</li>
+      <li>Select whether quarantine requirements apply.</li>
+      <li>Upload all required documents (Supplier/Exporter Detail, Proforma Invoice, Packing List, Supplier Registration, Health Certificate).</li>
+      <li>The <strong>Apply</strong> button will activate once all required fields and files are complete.</li>
+    </ol>
+  </div>
+
+  <!-- Form -->
+  <form id="importForm" class="mt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- Left: Import Info -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
+        <h3 class="text-slate-900 font-semibold text-lg">Import Information</h3>
+        <p class="text-slate-500 text-sm mt-1">Fill out required fields.</p>
+
+        <div class="mt-5 space-y-4">
+          <!-- Origin Country -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Origin Country <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="origin_country"
+              id="originCountry"
+              required
+              placeholder="e.g., Thailand"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 transition hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <!-- Port of Entry -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Port of Entry <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="port_of_entry"
+              id="portOfEntry"
+              required
+              placeholder="e.g., Cebu Port"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 transition hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <!-- Intended Use -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Intended Use <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="intended_use"
+              id="intendedUse"
+              required
+              placeholder="e.g., Commercial sale, Research, Breeding"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 transition hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+            <p class="text-xs text-slate-500 mt-2">Provide a short description of the purpose.</p>
+          </div>
+
+          <!-- Quarantine Requirement (Yes/No) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Quarantine Requirement <span class="text-red-600">*</span>
+            </label>
+
+            <div class="flex flex-wrap gap-3">
+              <label class="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 bg-white cursor-pointer
+                            transition hover:border-green-300 hover:bg-green-50/40">
+                <input type="radio" name="quarantine_required" value="No" class="accent-green-700" required />
+                <span class="text-slate-700 text-sm font-medium">No</span>
+              </label>
+
+              <label class="flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 bg-white cursor-pointer
+                            transition hover:border-green-300 hover:bg-green-50/40">
+                <input type="radio" name="quarantine_required" value="Yes" class="accent-green-700" required />
+                <span class="text-slate-700 text-sm font-medium">Yes</span>
+              </label>
+            </div>
+
+            <p class="text-xs text-slate-500 mt-2">
+              Select based on the commodity classification and applicable rules.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Uploads -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
+        <h3 class="text-slate-900 font-semibold text-lg">Attachments</h3>
+        <p class="text-slate-500 text-sm mt-1">Upload clear and readable documents.</p>
+
+        <div class="mt-5 space-y-5">
+          <!-- Supplier/Exporter Detail -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Supplier / Exporter Detail <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="supplierFile" type="file" name="supplier_exporter_detail" required
+                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="supplierName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Proforma Invoice -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Proforma Invoice <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="proformaFile" type="file" name="proforma_invoice" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="proformaName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Packing List -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Packing List <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="packingFile" type="file" name="packing_list" required
+                     accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="packingName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Supplier Registration -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Supplier Registration <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="registrationFile" type="file" name="supplier_registration" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="registrationName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Health Certificate -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Health Certificate <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="healthFile" type="file" name="health_certificate" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="healthName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky action bar -->
+    <div class="sticky bottom-0 mt-6">
+      <div class="rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4
+                  flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <p class="text-slate-500 text-sm">
+          Apply is enabled when all required fields and documents are provided.
+        </p>
+
+        <div class="flex gap-3">
+          <button type="reset"
+            class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
+            Clear
+          </button>
+
+          <button id="submitBtn" type="submit" disabled
+            class="px-7 py-3 rounded-xl bg-slate-200 text-slate-400 font-semibold cursor-not-allowed transition">
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("importForm");
+  const submitBtn = document.getElementById("submitBtn");
+
+  // inputs
+  const originCountry = document.getElementById("originCountry");
+  const portOfEntry = document.getElementById("portOfEntry");
+  const intendedUse = document.getElementById("intendedUse");
+
+  const quarantineChoice = () =>
+    form.querySelector('input[name="quarantine_required"]:checked')?.value || "";
+
+  // files
+  const supplierFile = document.getElementById("supplierFile");
+  const proformaFile = document.getElementById("proformaFile");
+  const packingFile = document.getElementById("packingFile");
+  const registrationFile = document.getElementById("registrationFile");
+  const healthFile = document.getElementById("healthFile");
+
+  // filename labels
+  const supplierName = document.getElementById("supplierName");
+  const proformaName = document.getElementById("proformaName");
+  const packingName = document.getElementById("packingName");
+  const registrationName = document.getElementById("registrationName");
+  const healthName = document.getElementById("healthName");
+
+  const setName = (labelEl, inputEl) => {
+    labelEl.textContent = (inputEl.files && inputEl.files.length)
+      ? `Selected: ${inputEl.files[0].name}`
+      : "";
+  };
+
+  function isValid() {
+    // required text
+    if (!originCountry.value.trim()) return false;
+    if (!portOfEntry.value.trim()) return false;
+    if (!intendedUse.value.trim()) return false;
+
+    // quarantine required yes/no chosen
+    if (!quarantineChoice()) return false;
+
+    // required uploads
+    if (supplierFile.files.length === 0) return false;
+    if (proformaFile.files.length === 0) return false;
+    if (packingFile.files.length === 0) return false;
+    if (registrationFile.files.length === 0) return false;
+    if (healthFile.files.length === 0) return false;
+
+    return true;
+  }
+
+  function toggleSubmit() {
+    if (isValid()) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.add("bg-green-700", "text-white", "hover:bg-green-800");
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.remove("bg-green-700", "text-white", "hover:bg-green-800");
+    }
+  }
+
+  // listeners
+  form.addEventListener("input", toggleSubmit);
+  form.addEventListener("change", toggleSubmit);
+
+  supplierFile.addEventListener("change", () => { setName(supplierName, supplierFile); toggleSubmit(); });
+  proformaFile.addEventListener("change", () => { setName(proformaName, proformaFile); toggleSubmit(); });
+  packingFile.addEventListener("change", () => { setName(packingName, packingFile); toggleSubmit(); });
+  registrationFile.addEventListener("change", () => { setName(registrationName, registrationFile); toggleSubmit(); });
+  healthFile.addEventListener("change", () => { setName(healthName, healthFile); toggleSubmit(); });
+
+  form.addEventListener("reset", () => {
+    setTimeout(() => {
+      supplierName.textContent = "";
+      proformaName.textContent = "";
+      packingName.textContent = "";
+      registrationName.textContent = "";
+      healthName.textContent = "";
+      toggleSubmit();
+    }, 0);
+  });
+
+  // init
+  toggleSubmit();
+});
+</script>
+
+
+    
+</body>
+</html>

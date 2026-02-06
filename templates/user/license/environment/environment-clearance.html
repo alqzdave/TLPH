@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environmental Compliance Certificate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <div class="min-h-screen bg-slate-50 py-12 px-4">
+        <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-emerald-900 overflow-hidden text-slate-900">
+            
+            <div class="bg-emerald-900 p-10 text-center">
+                <h1 class="text-3xl font-black text-white uppercase tracking-widest">Environment Compliance Certificate (ECC)</h1>
+                <p class="text-emerald-100 text-sm mt-2 opacity-90 font-medium">Environmental Management Bureau - Project Screening & Assessment</p>
+            </div>
+
+            <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-10">
+                
+                <div class="space-y-6">
+                    <label class="text-sm font-black text-emerald-950 uppercase tracking-wider block">Detailed Project Description</label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Project Title / Name</label>
+                            <input type="text" required placeholder="Ex: South Harbor Expansion" 
+                                   class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.01]">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Project Category / Industry</label>
+                            <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.01] appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select industry...</option>
+                                <option value="extractive">Resource Extractive / Mining</option>
+                                <option value="infra">Infrastructure / Construction</option>
+                                <option value="manufacturing">Manufacturing / Industry</option>
+                                <option value="energy">Energy / Power Generation</option>
+                                <option value="waste">Waste Management Facility</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Operational Capacity</label>
+                            <input type="text" required placeholder="Ex: 50,000 MT per annum" 
+                                   class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.01]">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Current Project Phase</label>
+                            <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.01] appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select phase...</option>
+                                <option value="pre-con">Pre-Construction</option>
+                                <option value="construction">Construction Phase</option>
+                                <option value="operation">Operational Phase</option>
+                                <option value="decommissioning">Decommissioning / Abandonment</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Process Flow / Technology Used</label>
+                        <textarea required rows="3" placeholder="Describe the technology, machinery, or process flow to be used in the project..." 
+                                  class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.01] hover:border-emerald-200"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-3">
+                        <label class="text-sm font-black text-emerald-950 uppercase tracking-wider">Site Area</label>
+                        <div class="relative">
+                            <input type="text" required placeholder="Ex: 5.4" 
+                                   class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.02]">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs uppercase tracking-widest">Hectares / SQM</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <label class="text-sm font-black text-emerald-950 uppercase tracking-wider">Geographic Coordinates</label>
+                        <input type="text" required placeholder="Longitude and Latitude" 
+                               class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.02]">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-emerald-950 uppercase tracking-wider">Expected Environmental Impacts</label>
+                    <textarea required rows="3" placeholder="Identify potential impacts on air, water, land, and local community" 
+                              class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 hover:scale-[1.01] hover:border-emerald-200"></textarea>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-6">
+                    <label class="text-sm font-black text-emerald-950 uppercase tracking-wider block">Required Technical Submissions</label>
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Project Description Document (PDD)</label>
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-emerald-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-emerald-50 hover:border-emerald-700 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group">
+                                <span class="text-[10px] font-black text-emerald-900 uppercase group-hover:text-emerald-700 transition-colors">Attach Detailed Project Description</span>
+                                <input type="file" required class="hidden">
+                            </label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Site Map / Geotagged Photos</label>
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-emerald-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-emerald-50 hover:border-emerald-700 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group">
+                                <span class="text-[10px] font-black text-emerald-900 uppercase group-hover:text-emerald-700 transition-colors">Attach Map of the Area</span>
+                                <input type="file" required class="hidden">
+                            </label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Proof of Land Rights (TCT / Lease Contract)</label>
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-emerald-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-emerald-50 hover:border-emerald-700 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group">
+                                <span class="text-[10px] font-black text-emerald-900 uppercase group-hover:text-emerald-700 transition-colors">Attach Proof of Land Ownership/Rights</span>
+                                <input type="file" required class="hidden">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" class="w-full bg-emerald-900 hover:bg-emerald-950 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
+                        Submit ECC Application
+                    </button>
+                    <p class="text-center text-[10px] text-slate-400 mt-6 font-bold uppercase tracking-tighter">Philippine Environmental Impact Statement System (PEISS) Compliance</p>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</body>
+</html>
