@@ -22,3 +22,17 @@ def farmer_dashboard():
 @bp.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
+
+@bp.route('/user/dashboard')
+def user_dashboard():
+    return render_template('user/dashboard.html')
+
+@bp.route('/user/profile')
+def user_profile():
+    return render_template('user/profile.html')
+
+@bp.route('/approval-status')
+def approval_status():
+    return render_template('approval_status.html')
+
+

@@ -1,0 +1,559 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+.seminar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Header Styles */
+.seminar-header {
+    background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(45, 80, 22, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.header-right {
+    flex: 0;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.logo-text {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+
+
+.back-button {
+    background: white;
+    color: #2d5016;
+    padding: 12px 28px;
+    border-radius: 30px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: #1a3d0f;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26, 61, 15, 0.4);
+}
+
+.back-button i {
+    font-size: 1rem;
+}
+
+/* Page Title */
+.page-title {
+    text-align: center;
+    padding: 50px 40px 30px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.5));
+}
+
+.page-title h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #2d5016;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    position: relative;
+    display: inline-block;
+    text-shadow: 2px 2px 4px rgba(45, 80, 22, 0.1);
+}
+
+.page-title h1::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #2d5016, #4a7c59, #2d5016);
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(45, 80, 22, 0.3);
+}
+
+/* Seminar List */
+.seminar-list {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Seminar Card */
+.seminar-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 8px 30px rgba(45, 80, 22, 0.1);
+    transition: all 0.4s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.seminar-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, #2d5016 0%, #4a7c59 100%);
+    transition: width 0.4s ease;
+}
+
+.seminar-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(45, 80, 22, 0.2);
+    border-color: #4a7c59;
+}
+
+.seminar-card:hover::before {
+    width: 100%;
+    opacity: 0.05;
+}
+
+/* Seminar Info */
+.seminar-info {
+    flex: 1;
+}
+
+.seminar-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2d5016;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.seminar-description {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.seminar-meta {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.meta-item i {
+    color: #4a7c59;
+    font-size: 1rem;
+}
+
+/* Apply Button */
+.apply-btn {
+    background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 6px 20px rgba(45, 80, 22, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.apply-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.apply-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.apply-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(45, 80, 22, 0.4);
+}
+
+.apply-btn:active {
+    transform: scale(0.98);
+}
+
+.apply-btn i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.apply-btn:hover i {
+    transform: translateX(5px);
+}
+
+/* Application Form Styles */
+.application-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 40px;
+}
+
+.form-header {
+    text-align: center;
+    padding: 40px 0;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.5));
+}
+
+.form-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #2d5016;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    position: relative;
+    display: inline-block;
+    text-shadow: 2px 2px 4px rgba(45, 80, 22, 0.1);
+}
+
+.form-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #2d5016, #4a7c59, #2d5016);
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(45, 80, 22, 0.3);
+}
+
+.application-form {
+    background: white;
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 10px 40px rgba(45, 80, 22, 0.15);
+    border: 2px solid #e8f5e9;
+}
+
+.form-group {
+    margin-bottom: 30px;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2d5016;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-label i {
+    font-size: 1.1rem;
+    color: #4a7c59;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-input:focus,
+.form-select:focus {
+    background: white;
+    border-color: #4a7c59;
+    box-shadow: 0 0 0 4px rgba(74, 124, 89, 0.1);
+}
+
+.form-input:hover,
+.form-select:hover {
+    border-color: #4a7c59;
+}
+
+.form-input::placeholder {
+    color: #999;
+}
+
+.form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a7c59' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
+    padding-right: 45px;
+}
+
+.form-select option {
+    padding: 10px;
+}
+
+.form-apply-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    box-shadow: 0 8px 25px rgba(45, 80, 22, 0.3);
+    transition: all 0.3s ease;
+    margin-top: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-apply-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.form-apply-btn:hover::before {
+    width: 400px;
+    height: 400px;
+}
+
+.form-apply-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(45, 80, 22, 0.4);
+}
+
+.form-apply-btn:active {
+    transform: translateY(-1px);
+}
+
+.form-apply-btn i {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.form-apply-btn:hover i {
+    transform: translateX(5px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .seminar-header {
+        padding: 15px 30px;
+    }
+    
+    .page-title h1 {
+        font-size: 2rem;
+    }
+    
+    .seminar-list {
+        padding: 30px;
+    }
+    
+    .seminar-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .apply-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .seminar-header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    .header-left,
+    .header-right {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logo-section {
+        justify-content: center;
+    }
+    
+    .page-title {
+        padding: 30px 20px 20px;
+    }
+    
+    .page-title h1 {
+        font-size: 1.5rem;
+        letter-spacing: 2px;
+    }
+    
+    .seminar-list {
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .seminar-card {
+        padding: 20px;
+    }
+    
+    .seminar-title {
+        font-size: 1.1rem;
+    }
+    
+    .seminar-description {
+        font-size: 0.9rem;
+    }
+    
+    .seminar-meta {
+        gap: 15px;
+    }
+    
+    .apply-btn {
+        padding: 12px 30px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text {
+        font-size: 1.1rem;
+    }
+    
+    .header-logo {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .back-button {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+    
+    .page-title h1 {
+        font-size: 1.2rem;
+    }
+    
+    .application-container {
+        padding: 0 20px;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+    }
+    
+    .application-form {
+        padding: 30px 20px;
+    }
+    
+    .form-label {
+        font-size: 0.85rem;
+    }
+    
+    .form-input,
+    .form-select {
+        padding: 14px 16px;
+        font-size: 0.95rem;
+    }
+    
+    .form-apply-btn {
+        padding: 15px 30px;
+        font-size: 1rem;
+    }
+}
