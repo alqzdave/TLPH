@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+</head>
+<body>
+        {% include 'header.html' %}
+
+
+
+        <!-- Export Permit (Minimalist, header-based green accents, hover effects, conditional CITES) -->
+<section class="w-full px-4 md:px-10 py-8">
+  <!-- Title -->
+  <div class="rounded-2xl bg-white border border-green-200 p-6">
+    <h2 class="text-center text-2xl md:text-3xl font-semibold text-slate-900">
+      EXPORT PERMIT
+    </h2>
+    <p class="mt-2 text-center text-slate-500 text-sm">
+    </p>
+  </div>
+
+  <!-- Instructions -->
+  <div class="mt-4 rounded-2xl bg-green-50 border border-green-200 p-5">
+    <h3 class="text-sm font-semibold text-green-800 mb-2">Instructions</h3>
+    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-600">
+      <li>Enter destination country and port of exit.</li>
+      <li>Select packaging method and shipment schedule (date & time).</li>
+      <li>Upload the required documents (Invoice, Packing List, Proof of Legal Origin, Inspection Report, Exporter Detail).</li>
+      <li>If exporting wildlife/protected species, enable and upload <strong>CITES Documents</strong>.</li>
+      <li>The <strong>Apply</strong> button will activate once all required fields and files are complete.</li>
+    </ol>
+  </div>
+
+  <!-- Form -->
+  <form id="exportForm" class="mt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- Left: Shipment Info -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
+        <h3 class="text-slate-900 font-semibold text-lg">Shipment Information</h3>
+        <p class="text-slate-500 text-sm mt-1">Fill out required fields.</p>
+
+        <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Destination Country -->
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Destination Country <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="destination_country"
+              id="destinationCountry"
+              required
+              placeholder="e.g., Japan"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 transition hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <!-- Port of Exit -->
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Port of Exit <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="port_of_exit"
+              id="portOfExit"
+              required
+              placeholder="e.g., Manila Port"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 transition hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <!-- Packaging Method -->
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Packaging Method <span class="text-red-600">*</span>
+            </label>
+            <select
+              name="packaging_method"
+              id="packagingMethod"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
+                     hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="" disabled selected>Select method</option>
+              <option value="Box-in-Box Method">Box-in-Box Method</option>
+              <option value="Single-Box Method">Single-Box Method</option>
+              <option value="Wooden Crates/Cases">Wooden Crates/Cases</option>
+              <option value="Barrier Packaging">Barrier Packaging</option>
+              <option value="Palletization">Palletization</option>
+            </select>
+          </div>
+
+          <!-- Shipment Schedule (date & time) -->
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Shipment Schedule <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="datetime-local"
+              name="shipment_schedule"
+              id="shipmentSchedule"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
+                     hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <!-- Wildlife toggle (controls CITES requirement) -->
+          <div class="md:col-span-2">
+            <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Wildlife / Protected Species</p>
+                  <p class="text-sm text-slate-500 mt-1">
+                    If this export includes wildlife/protected species, enable this to require CITES documents.
+                  </p>
+                </div>
+
+                <label class="inline-flex items-center cursor-pointer select-none">
+                  <input id="wildlifeToggle" type="checkbox" class="sr-only">
+                  <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 transition">
+                    <span class="inline-block h-5 w-5 transform rounded-full bg-white transition translate-x-1" id="toggleKnob"></span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <p id="citesHint" class="text-xs text-slate-500 mt-2">
+              CITES Documents are optional unless wildlife/protected species is enabled.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Uploads -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
+        <h3 class="text-slate-900 font-semibold text-lg">Attachments</h3>
+        <p class="text-slate-500 text-sm mt-1">Upload clear and readable documents.</p>
+
+        <div class="mt-5 space-y-5">
+          <!-- Exporter Detail -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Exporter Detail <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="exporterFile" type="file" name="exporter_detail" required
+                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="exporterName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Invoice -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Invoice <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="invoiceFile" type="file" name="invoice" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="invoiceName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Packing List -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Packing List <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="packingFile" type="file" name="packing_list" required
+                     accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="packingName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Proof of Legal Origin -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Proof of Legal Origin <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="legalFile" type="file" name="proof_legal_origin" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="legalName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Inspection Report -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Inspection Report <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="inspectFile" type="file" name="inspection_report" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="inspectName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- CITES Documents (conditional) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                CITES Documents (Wildlife/Protected Species)
+              </label>
+              <span id="citesTag"
+                class="text-[11px] px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-semibold">
+                OPTIONAL
+              </span>
+            </div>
+
+            <div id="citesBox"
+                 class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 opacity-60 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="citesFile" type="file" name="cites_documents"
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer"
+                     disabled />
+              <p id="citesName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky action bar -->
+    <div class="sticky bottom-0 mt-6">
+      <div class="rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4
+                  flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <p class="text-slate-500 text-sm">
+          Apply is enabled when all required fields and documents are provided.
+        </p>
+
+        <div class="flex gap-3">
+          <button type="reset"
+            class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
+            Clear
+          </button>
+
+          <button id="submitBtn" type="submit" disabled
+            class="px-7 py-3 rounded-xl bg-slate-200 text-slate-400 font-semibold cursor-not-allowed transition">
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("exportForm");
+  const submitBtn = document.getElementById("submitBtn");
+
+  // fields
+  const destinationCountry = document.getElementById("destinationCountry");
+  const portOfExit = document.getElementById("portOfExit");
+  const packagingMethod = document.getElementById("packagingMethod");
+  const shipmentSchedule = document.getElementById("shipmentSchedule");
+
+  // files
+  const exporterFile = document.getElementById("exporterFile");
+  const invoiceFile = document.getElementById("invoiceFile");
+  const packingFile = document.getElementById("packingFile");
+  const legalFile = document.getElementById("legalFile");
+  const inspectFile = document.getElementById("inspectFile");
+
+  const citesFile = document.getElementById("citesFile");
+  const citesBox = document.getElementById("citesBox");
+  const citesTag = document.getElementById("citesTag");
+  const citesHint = document.getElementById("citesHint");
+
+  // filenames
+  const exporterName = document.getElementById("exporterName");
+  const invoiceName = document.getElementById("invoiceName");
+  const packingName = document.getElementById("packingName");
+  const legalName = document.getElementById("legalName");
+  const inspectName = document.getElementById("inspectName");
+  const citesName = document.getElementById("citesName");
+
+  // toggle
+  const wildlifeToggle = document.getElementById("wildlifeToggle");
+  const toggleKnob = document.getElementById("toggleKnob");
+
+  const setName = (labelEl, inputEl) => {
+    labelEl.textContent = (inputEl.files && inputEl.files.length)
+      ? `Selected: ${inputEl.files[0].name}`
+      : "";
+  };
+
+  function updateWildlifeUI() {
+    const enabled = wildlifeToggle.checked;
+
+    // switch visuals
+    if (enabled) {
+      wildlifeToggle.nextElementSibling.classList.remove("bg-slate-200");
+      wildlifeToggle.nextElementSibling.classList.add("bg-green-700");
+      toggleKnob.classList.remove("translate-x-1");
+      toggleKnob.classList.add("translate-x-5");
+    } else {
+      wildlifeToggle.nextElementSibling.classList.add("bg-slate-200");
+      wildlifeToggle.nextElementSibling.classList.remove("bg-green-700");
+      toggleKnob.classList.add("translate-x-1");
+      toggleKnob.classList.remove("translate-x-5");
+    }
+
+    // cites required state
+    if (enabled) {
+      citesFile.disabled = false;
+      citesFile.required = true;
+      citesBox.classList.remove("opacity-60");
+      citesTag.classList.remove("bg-slate-100", "text-slate-500");
+      citesTag.classList.add("bg-green-700", "text-white");
+      citesTag.textContent = "REQUIRED";
+      citesHint.textContent = "CITES Documents are required because wildlife/protected species is enabled.";
+      citesHint.className = "text-xs text-green-700 mt-2";
+    } else {
+      citesFile.disabled = true;
+      citesFile.required = false;
+      citesFile.value = "";
+      citesName.textContent = "";
+      citesBox.classList.add("opacity-60");
+      citesTag.classList.add("bg-slate-100", "text-slate-500");
+      citesTag.classList.remove("bg-green-700", "text-white");
+      citesTag.textContent = "OPTIONAL";
+      citesHint.textContent = "CITES Documents are optional unless wildlife/protected species is enabled.";
+      citesHint.className = "text-xs text-slate-500 mt-2";
+    }
+  }
+
+  function isValid() {
+    // text/select/datetime required
+    if (!destinationCountry.value.trim()) return false;
+    if (!portOfExit.value.trim()) return false;
+    if (!packagingMethod.value) return false;
+    if (!shipmentSchedule.value) return false;
+
+    // required uploads
+    if (exporterFile.files.length === 0) return false;
+    if (invoiceFile.files.length === 0) return false;
+    if (packingFile.files.length === 0) return false;
+    if (legalFile.files.length === 0) return false;
+    if (inspectFile.files.length === 0) return false;
+
+    // conditional cites
+    if (wildlifeToggle.checked && citesFile.files.length === 0) return false;
+
+    return true;
+  }
+
+  function toggleSubmit() {
+    if (isValid()) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.add("bg-green-700", "text-white", "hover:bg-green-800");
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.remove("bg-green-700", "text-white", "hover:bg-green-800");
+    }
+  }
+
+  // listeners (names + validation)
+  exporterFile.addEventListener("change", () => { setName(exporterName, exporterFile); toggleSubmit(); });
+  invoiceFile.addEventListener("change", () => { setName(invoiceName, invoiceFile); toggleSubmit(); });
+  packingFile.addEventListener("change", () => { setName(packingName, packingFile); toggleSubmit(); });
+  legalFile.addEventListener("change", () => { setName(legalName, legalFile); toggleSubmit(); });
+  inspectFile.addEventListener("change", () => { setName(inspectName, inspectFile); toggleSubmit(); });
+  citesFile.addEventListener("change", () => { setName(citesName, citesFile); toggleSubmit(); });
+
+  wildlifeToggle.addEventListener("change", () => {
+    updateWildlifeUI();
+    toggleSubmit();
+  });
+
+  form.addEventListener("input", toggleSubmit);
+  form.addEventListener("change", toggleSubmit);
+
+  form.addEventListener("reset", () => {
+    setTimeout(() => {
+      exporterName.textContent = "";
+      invoiceName.textContent = "";
+      packingName.textContent = "";
+      legalName.textContent = "";
+      inspectName.textContent = "";
+      citesName.textContent = "";
+      wildlifeToggle.checked = false;
+      updateWildlifeUI();
+      toggleSubmit();
+    }, 0);
+  });
+
+  // init
+  updateWildlifeUI();
+  toggleSubmit();
+});
+</script>
+
+
+    
+</body>
+</html>

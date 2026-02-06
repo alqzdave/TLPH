@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Transport Permit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+        {% include 'header.html' %}
+
+
+        <!-- Transport Local Permit (Minimalist, header-based green accents, hover effects) -->
+<section class="w-full px-4 md:px-10 py-8">
+  <!-- Title -->
+  <div class="rounded-2xl bg-white border border-green-200 p-6">
+    <h2 class="text-center text-2xl md:text-3xl font-semibold text-slate-900">
+      TRANSPORT LOCAL PERMIT
+    </h2>
+    <p class="mt-2 text-center text-slate-500 text-sm">
+    </p>
+  </div>
+
+  <!-- Instructions -->
+  <div class="mt-4 rounded-2xl bg-green-50 border border-green-200 p-5">
+    <h3 class="text-sm font-semibold text-green-800 mb-2">Instructions</h3>
+    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-600">
+      <li>Enter origin and destination.</li>
+      <li>Select the mode of transportation and set date & time.</li>
+      <li>Upload Route document, Vehicle Information, Supplier Registration, and Health Certificate.</li>
+      <li>The <strong>Apply</strong> button will activate once all required fields and files are complete.</li>
+    </ol>
+  </div>
+
+  <!-- Form -->
+  <form id="transportForm" class="mt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- Left: Trip Info -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
+        <h3 class="text-slate-900 font-semibold text-lg">Trip Information</h3>
+        <p class="text-slate-500 text-sm mt-1">Fill out required fields.</p>
+
+        <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Origin -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Origin <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="origin"
+              id="origin"
+              required
+              placeholder="e.g., Barangay, City, Province"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 transition hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <!-- Destination -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Destination <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              name="destination"
+              id="destination"
+              required
+              placeholder="e.g., Barangay, City, Province"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
+                     placeholder:text-slate-400 transition hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <!-- Mode of Transportation (dropdown) -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Mode of Transportation <span class="text-red-600">*</span>
+            </label>
+            <select
+              name="mode"
+              id="mode"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
+                     hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="" disabled selected>Select mode</option>
+              <option value="Land (Truck/Van)">Land (Truck/Van)</option>
+              <option value="Land (Motorcycle)">Land (Motorcycle)</option>
+              <option value="Sea (Vessel/Ferry)">Sea (Vessel/Ferry)</option>
+              <option value="Air (Cargo)">Air (Cargo)</option>
+            </select>
+            <p class="text-xs text-slate-500 mt-2">Choose the primary transport mode.</p>
+          </div>
+
+          <!-- Date & Time -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Date & Time <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="datetime-local"
+              name="date_time"
+              id="dateTime"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
+                     hover:border-green-300
+                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Uploads -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
+        <h3 class="text-slate-900 font-semibold text-lg">Attachments</h3>
+        <p class="text-slate-500 text-sm mt-1">Upload clear and readable documents.</p>
+
+        <div class="mt-5 space-y-5">
+          <!-- Route (attach) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Route <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="routeFile" type="file" name="route" required
+                     accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="routeName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Vehicle Information (attach) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Vehicle Information <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="vehicleFile" type="file" name="vehicle_information" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="vehicleName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Supplier Registration (attach) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Supplier Registration <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="supplierFile" type="file" name="supplier_registration" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="supplierName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+          <!-- Health Certificate (attach) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold text-slate-700">
+                Health Certificate <span class="text-red-600">*</span>
+              </label>
+              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
+            </div>
+
+            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
+                        hover:border-green-300 hover:bg-green-50/40">
+              <input id="healthFile" type="file" name="health_certificate" required
+                     accept=".pdf,.jpg,.jpeg,.png"
+                     class="w-full text-sm text-slate-700
+                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
+                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
+              <p id="healthName" class="mt-3 text-xs text-slate-500"></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky action bar -->
+    <div class="sticky bottom-0 mt-6">
+      <div class="rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4
+                  flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <p class="text-slate-500 text-sm">
+          Apply is enabled when all required fields and documents are provided.
+        </p>
+
+        <div class="flex gap-3">
+          <button type="reset"
+            class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
+            Clear
+          </button>
+
+          <button id="submitBtn" type="submit" disabled
+            class="px-7 py-3 rounded-xl bg-slate-200 text-slate-400 font-semibold cursor-not-allowed transition">
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("transportForm");
+  const submitBtn = document.getElementById("submitBtn");
+
+  // inputs
+  const origin = document.getElementById("origin");
+  const destination = document.getElementById("destination");
+  const mode = document.getElementById("mode");
+  const dateTime = document.getElementById("dateTime");
+
+  // files
+  const routeFile = document.getElementById("routeFile");
+  const vehicleFile = document.getElementById("vehicleFile");
+  const supplierFile = document.getElementById("supplierFile");
+  const healthFile = document.getElementById("healthFile");
+
+  // filename labels
+  const routeName = document.getElementById("routeName");
+  const vehicleName = document.getElementById("vehicleName");
+  const supplierName = document.getElementById("supplierName");
+  const healthName = document.getElementById("healthName");
+
+  const setName = (labelEl, inputEl) => {
+    labelEl.textContent = (inputEl.files && inputEl.files.length)
+      ? `Selected: ${inputEl.files[0].name}`
+      : "";
+  };
+
+  function isValid() {
+    if (!origin.value.trim()) return false;
+    if (!destination.value.trim()) return false;
+    if (!mode.value) return false;
+    if (!dateTime.value) return false;
+
+    if (routeFile.files.length === 0) return false;
+    if (vehicleFile.files.length === 0) return false;
+    if (supplierFile.files.length === 0) return false;
+    if (healthFile.files.length === 0) return false;
+
+    return true;
+  }
+
+  function toggleSubmit() {
+    if (isValid()) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.add("bg-green-700", "text-white", "hover:bg-green-800");
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("bg-slate-200", "text-slate-400", "cursor-not-allowed");
+      submitBtn.classList.remove("bg-green-700", "text-white", "hover:bg-green-800");
+    }
+  }
+
+  // listeners
+  form.addEventListener("input", toggleSubmit);
+  form.addEventListener("change", toggleSubmit);
+
+  routeFile.addEventListener("change", () => { setName(routeName, routeFile); toggleSubmit(); });
+  vehicleFile.addEventListener("change", () => { setName(vehicleName, vehicleFile); toggleSubmit(); });
+  supplierFile.addEventListener("change", () => { setName(supplierName, supplierFile); toggleSubmit(); });
+  healthFile.addEventListener("change", () => { setName(healthName, healthFile); toggleSubmit(); });
+
+  form.addEventListener("reset", () => {
+    setTimeout(() => {
+      routeName.textContent = "";
+      vehicleName.textContent = "";
+      supplierName.textContent = "";
+      healthName.textContent = "";
+      toggleSubmit();
+    }, 0);
+  });
+
+  // init
+  toggleSubmit();
+});
+</script>
+
+
+
+</body>
+</html>

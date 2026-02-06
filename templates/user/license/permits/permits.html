@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permits</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+            {% include 'header.html' %}
+
+           <!-- Other Permit (Interactive list w/ hover + click ripple feel, header-based green accents) -->
+<section class="w-full px-4 md:px-10 py-8">
+  <!-- Title -->
+  <div class="rounded-2xl bg-white border border-green-200 p-6">
+    <h2 class="text-center text-2xl md:text-3xl font-semibold text-slate-900">
+      OTHER PERMITS
+    </h2>
+    <p class="mt-2 text-center text-slate-500 text-sm">
+      
+    </p>
+  </div>
+
+  <!-- List -->
+  <div class="mt-6 space-y-4">
+    <!-- Row template:
+      - whole row is hoverable
+      - subtle left accent appears on hover
+      - Apply button animates + focus ring
+      - arrow appears on hover
+      - slight lift + shadow on hover
+    -->
+
+    <!-- Export Permit -->
+    <div
+      class="group relative overflow-hidden bg-white border border-slate-200 rounded-2xl px-5 py-4
+             flex items-center justify-between gap-4
+             transition duration-200
+             hover:border-green-300 hover:shadow-md hover:-translate-y-[1px]"
+    >
+      <!-- Left hover accent -->
+      <span class="absolute left-0 top-0 h-full w-1 bg-green-700 opacity-0 transition group-hover:opacity-100"></span>
+
+      <div class="min-w-0">
+        <p class="text-slate-900 font-semibold truncate">EXPORT PERMIT</p>
+        <p class="text-slate-500 text-sm truncate">
+          
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <!-- Hover arrow -->
+        <span class="text-slate-300 transition opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0">
+          →
+        </span>
+
+        <a href="#"
+           class="inline-flex items-center justify-center px-6 py-3 rounded-xl
+                  bg-green-700 text-white font-semibold
+                  transition duration-200
+                  hover:bg-green-800 hover:shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white
+                  active:scale-[0.98]">
+          Apply
+        </a>
+      </div>
+    </div>
+
+    <!-- Operation Permit -->
+    <div
+      class="group relative overflow-hidden bg-white border border-slate-200 rounded-2xl px-5 py-4
+             flex items-center justify-between gap-4
+             transition duration-200
+             hover:border-green-300 hover:shadow-md hover:-translate-y-[1px]"
+    >
+      <span class="absolute left-0 top-0 h-full w-1 bg-green-700 opacity-0 transition group-hover:opacity-100"></span>
+
+      <div class="min-w-0">
+        <p class="text-slate-900 font-semibold truncate">OPERATION PERMIT</p>
+        <p class="text-slate-500 text-sm truncate">
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-slate-300 transition opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0">
+          →
+        </span>
+
+        <a href="#"
+           class="inline-flex items-center justify-center px-6 py-3 rounded-xl
+                  bg-green-700 text-white font-semibold
+                  transition duration-200
+                  hover:bg-green-800 hover:shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white
+                  active:scale-[0.98]">
+          Apply
+        </a>
+      </div>
+    </div>
+
+    <!-- Import Permit -->
+    <div
+      class="group relative overflow-hidden bg-white border border-slate-200 rounded-2xl px-5 py-4
+             flex items-center justify-between gap-4
+             transition duration-200
+             hover:border-green-300 hover:shadow-md hover:-translate-y-[1px]"
+    >
+      <span class="absolute left-0 top-0 h-full w-1 bg-green-700 opacity-0 transition group-hover:opacity-100"></span>
+
+      <div class="min-w-0">
+        <p class="text-slate-900 font-semibold truncate">IMPORT PERMIT</p>
+        <p class="text-slate-500 text-sm truncate">
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-slate-300 transition opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0">
+          →
+        </span>
+
+        <a href="#"
+           class="inline-flex items-center justify-center px-6 py-3 rounded-xl
+                  bg-green-700 text-white font-semibold
+                  transition duration-200
+                  hover:bg-green-800 hover:shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white
+                  active:scale-[0.98]">
+          Apply
+        </a>
+      </div>
+    </div>
+
+    <!-- Wildlife Trade Permit -->
+    <div
+      class="group relative overflow-hidden bg-white border border-slate-200 rounded-2xl px-5 py-4
+             flex items-center justify-between gap-4
+             transition duration-200
+             hover:border-green-300 hover:shadow-md hover:-translate-y-[1px]"
+    >
+      <span class="absolute left-0 top-0 h-full w-1 bg-green-700 opacity-0 transition group-hover:opacity-100"></span>
+
+      <div class="min-w-0">
+        <p class="text-slate-900 font-semibold truncate">WILDLIFE TRADE PERMIT</p>
+        <p class="text-slate-500 text-sm truncate">
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-slate-300 transition opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0">
+          →
+        </span>
+
+        <a href="#"
+           class="inline-flex items-center justify-center px-6 py-3 rounded-xl
+                  bg-green-700 text-white font-semibold
+                  transition duration-200
+                  hover:bg-green-800 hover:shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white
+                  active:scale-[0.98]">
+          Apply
+        </a>
+      </div>
+    </div>
+
+    <!-- Transport Local Permit -->
+    <div
+      class="group relative overflow-hidden bg-white border border-slate-200 rounded-2xl px-5 py-4
+             flex items-center justify-between gap-4
+             transition duration-200
+             hover:border-green-300 hover:shadow-md hover:-translate-y-[1px]"
+    >
+      <span class="absolute left-0 top-0 h-full w-1 bg-green-700 opacity-0 transition group-hover:opacity-100"></span>
+
+      <div class="min-w-0">
+        <p class="text-slate-900 font-semibold truncate">TRANSPORT LOCAL PERMIT</p>
+        <p class="text-slate-500 text-sm truncate">
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-slate-300 transition opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0">
+          →
+        </span>
+
+        <a href="#"
+           class="inline-flex items-center justify-center px-6 py-3 rounded-xl
+                  bg-green-700 text-white font-semibold
+                  transition duration-200
+                  hover:bg-green-800 hover:shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white
+                  active:scale-[0.98]">
+          Apply
+        </a>
+      </div>
+    </div>
+
+    <!-- Harvest Permit -->
+    <div
+      class="group relative overflow-hidden bg-white border border-slate-200 rounded-2xl px-5 py-4
+             flex items-center justify-between gap-4
+             transition duration-200
+             hover:border-green-300 hover:shadow-md hover:-translate-y-[1px]"
+    >
+      <span class="absolute left-0 top-0 h-full w-1 bg-green-700 opacity-0 transition group-hover:opacity-100"></span>
+
+      <div class="min-w-0">
+        <p class="text-slate-900 font-semibold truncate">HARVEST PERMIT</p>
+        <p class="text-slate-500 text-sm truncate">
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-slate-300 transition opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0">
+          →
+        </span>
+
+        <a href="#"
+           class="inline-flex items-center justify-center px-6 py-3 rounded-xl
+                  bg-green-700 text-white font-semibold
+                  transition duration-200
+                  hover:bg-green-800 hover:shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-white
+                  active:scale-[0.98]">
+          Apply
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
