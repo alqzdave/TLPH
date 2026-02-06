@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Health Veterinary Clearance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="min-h-screen bg-slate-50 py-12 px-4">
+        <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-red-900 overflow-hidden text-slate-900">
+            
+            <div class="bg-red-900 p-10 text-center">
+                <h1 class="text-3xl font-black text-white uppercase tracking-widest">Animal Health Veterinary Clearance</h1>
+                <p class="text-red-100 text-sm mt-2 opacity-90 font-medium">Bureau of Animal Industry - Veterinary Services</p>
+            </div>
+
+            <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-10">
+                
+                <div class="space-y-6">
+                    <label class="text-sm font-black text-red-950 uppercase tracking-wider block">Detailed Animal Information</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="text" required placeholder="Species / Breed" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02]">
+                        <input type="text" required placeholder="Age / Birthdate" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02]">
+                        <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02] appearance-none cursor-pointer">
+                            <option value="" disabled selected>Select sex...</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                        <input type="text" required placeholder="Color / Distinct Markings" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02]">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-sm font-black text-red-950 uppercase tracking-wider">Purpose of Clearance</label>
+                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02] appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select purpose...</option>
+                        <option value="meat">Meat Production</option>
+                        <option value="breeding">Breeding and Propagation</option>
+                        <option value="commercial">Commercial Trade / Dealing</option>
+                        <option value="exhibition">Exhibition / Animal Show</option>
+                        <option value="research">Scientific Research</option>
+                    </select>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-6">
+                    <label class="text-sm font-black text-red-950 uppercase tracking-wider block">Required Health Documentation</label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Vaccination Record / Card</label>
+                            <label class="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-red-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-700 transition-all duration-300 hover:scale-[1.05] hover:-translate-y-2 group">
+                                <span class="text-[10px] font-black text-red-900 uppercase group-hover:text-red-700 text-center px-4">Attach Vaccination Record</span>
+                                <input type="file" required class="hidden">
+                            </label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Veterinarian Check Details</label>
+                            <label class="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-red-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-700 transition-all duration-300 hover:scale-[1.05] hover:-translate-y-2 group">
+                                <span class="text-[10px] font-black text-red-900 uppercase group-hover:text-red-700 text-center px-4">Attach Check Request Details</span>
+                                <input type="file" required class="hidden">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" class="w-full bg-red-900 hover:bg-red-950 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
+                        Request Veterinary Clearance
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</body>
+</html>
