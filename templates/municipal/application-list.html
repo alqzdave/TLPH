@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Dashboard | Final Balanced View</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        /* Global CSS Fixes */
+        * { box-sizing: border-box; }
+        
+        body { background-color: #f8fafc; }
+
+        /* FIX: Siguraduhin na hindi mapuputol ang mahabang dropdown list */
+        .filter-row-container {
+            overflow: visible !important;
+            z-index: 50;
+            position: relative;
+        }
+        
+        select option {
+            padding: 12px !important;
+            font-weight: 600;
+        }
+
+        /* Custom Dropdown Arrow Positioning */
+        .select-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .select-wrapper .material-icons-round {
+            position: absolute;
+            right: 1.25rem;
+            pointer-events: none;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid px-5 py-5">
+
+    <div class="row g-4 mb-10">
+        <div class="col-md-4">
+            <button class="w-full bg-slate-100 p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-emerald-500 transition-all group border-0 text-left">
+                <div class="flex items-center gap-5">
+                    <div class="p-5 bg-white text-slate-400 rounded-[1.5rem] group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all shadow-sm">
+                        <span class="material-icons-round text-4xl">task_alt</span>
+                    </div>
+                    <div>
+                        <p class="text-[13px] font-black text-emerald-600 uppercase tracking-[0.2em] m-0 mb-1">Accepted Today</p>
+                        <h3 class="text-5xl font-black text-emerald-950 m-0 tracking-tighter">24</h3>
+                    </div>
+                </div>
+                <span class="material-icons-round text-slate-300 group-hover:text-emerald-500 text-3xl">chevron_right</span>
+            </button>
+        </div>
+
+        <div class="col-md-4">
+            <button class="w-full bg-slate-100 p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-rose-500 transition-all group border-0 text-left">
+                <div class="flex items-center gap-5">
+                    <div class="p-5 bg-white text-slate-400 rounded-[1.5rem] group-hover:bg-rose-50 group-hover:text-rose-600 transition-all shadow-sm">
+                        <span class="material-icons-round text-4xl">unpublished</span>
+                    </div>
+                    <div>
+                        <p class="text-[13px] font-black text-rose-600 uppercase tracking-[0.2em] m-0 mb-1">Rejected Today</p>
+                        <h3 class="text-5xl font-black text-emerald-950 m-0 tracking-tighter">08</h3>
+                    </div>
+                </div>
+                <span class="material-icons-round text-slate-300 group-hover:text-rose-500 text-3xl">chevron_right</span>
+            </button>
+        </div>
+
+        <div class="col-md-4">
+            <button class="w-full bg-slate-100 p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-amber-500 transition-all group border-0 text-left">
+                <div class="flex items-center gap-5">
+                    <div class="p-5 bg-white text-slate-400 rounded-[1.5rem] group-hover:bg-amber-50 group-hover:text-amber-600 transition-all shadow-sm">
+                        <span class="material-icons-round text-4xl">pending_actions</span>
+                    </div>
+                    <div>
+                        <p class="text-[13px] font-black text-amber-600 uppercase tracking-[0.2em] m-0 mb-1">Pending Review</p>
+                        <h3 class="text-5xl font-black text-emerald-950 m-0 tracking-tighter">156</h3>
+                    </div>
+                </div>
+                <span class="material-icons-round text-slate-300 group-hover:text-amber-500 text-3xl">chevron_right</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-[3rem] border-2 border-slate-100 shadow-sm mb-10 filter-row-container">
+        <div class="flex flex-nowrap items-center justify-between gap-5 px-3">
+            
+            <div class="flex items-center gap-4 flex-shrink-0">
+                <div class="bg-emerald-950 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-tighter text-sm shadow-lg shadow-emerald-900/20">
+                    All Types
+                </div>
+                <div class="h-10 w-px bg-slate-200 mx-2"></div>
+                <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Master List Filters</span>
+            </div>
+
+            <div class="flex flex-grow items-center gap-4">
+                
+                <div class="w-[280px] flex-shrink-0 select-wrapper">
+                    <select class="w-full bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] px-6 py-4 text-[13px] font-black uppercase tracking-widest text-slate-500 outline-none cursor-pointer appearance-none hover:border-emerald-700 transition-all shadow-sm">
+                        <option selected disabled>Select Category</option>
+                        <option value="farming">Crop & Plant</option>
+                        <option value="livestock">Fisheries & Agriculture</option>
+                        <option value="agribusiness">Agribusiness & Agro-Processing</option>
+                        <option value="trade">Agricultural Trade (Import & Export)</option>
+                        <option value="infrastructure">Land Use & Farm Development Infrastructure</option>
+                        <option value="innovation">Research, Technology, & Innovation</option>
+                        <option value="subsidies">Farmer Support, Subsidies, & Insurance</option>
+                        <option value="food_safety">Food Safety & Quality</option>
+                        <option value="extension">Extension Services & Capacity Building</option>
+                        <option value="climate">Climate Change, Disaster & Risk Management</option>
+                        <option value="digital">Data, Monitoring & Digital Agriculture</option>
+                        <option value="compliance">Compliance, Inspection, & Enforcement</option>
+                        <option value="institutional">Institutional & Cooperative Development</option>
+                    </select>
+                    <span class="material-icons-round text-xl">expand_more</span>
+                </div>
+
+                <div class="flex-grow flex items-center gap-3 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] px-4 focus-within:border-emerald-700 transition-all shadow-sm">
+                    <span class="material-icons-round text-slate-400 text-2xl">search</span>
+                    <input type="text" placeholder="Search by name, reference, or date..." class="w-full bg-transparent border-none py-4 px-2 text-base font-bold text-slate-700 outline-none placeholder:text-slate-400">
+                    <button class="bg-emerald-800 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-tighter text-xs hover:bg-emerald-950 transition-colors border-0 shadow-sm flex-shrink-0">
+                        Search
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-4">
+        <div class="flex items-center px-14 text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">
+            <div class="w-1/3">Reference & Applicant</div>
+            <div class="w-1/4">Application Category</div>
+            <div class="w-1/6">Filed Date</div>
+            <div class="w-1/6">Status</div>
+            <div class="w-14"></div>
+        </div>
+
+        <div class="bg-white p-6 px-14 rounded-[3rem] border border-slate-100 flex items-center hover:border-emerald-600 transition-all group shadow-sm hover:shadow-md">
+            <div class="w-1/3">
+                <p class="text-base font-black text-emerald-950 m-0 italic tracking-tighter">DENR-2026-0042</p>
+                <p class="text-[13px] font-bold text-slate-400 m-0 uppercase tracking-widest">Paolo Dave Alqzd</p>
+            </div>
+            <div class="w-1/4">
+                <span class="bg-emerald-50 text-emerald-800 px-5 py-2 rounded-2xl text-[11px] font-black uppercase border border-emerald-100 shadow-sm">Land Management</span>
+            </div>
+            <div class="w-1/6 text-sm font-bold text-slate-500 italic">Feb 07, 2026</div>
+            <div class="w-1/6">
+                <span class="flex items-center gap-3 text-amber-600 font-black text-[12px] uppercase italic tracking-tighter">
+                    <span class="w-3 h-3 bg-amber-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.6)]"></span>
+                    Pending Review
+                </span>
+            </div>
+            <div class="w-14 text-right">
+                <button class="text-slate-300 group-hover:text-emerald-700 group-hover:bg-emerald-50 p-3 rounded-2xl bg-transparent border-0 transition-all hover:scale-110">
+                    <span class="material-icons-round text-2xl">visibility</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

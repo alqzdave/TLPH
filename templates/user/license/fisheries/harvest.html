@@ -7,7 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-</head>
+    
+    <!-- Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Draw -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -58,19 +65,54 @@
 
             <hr class="border-slate-100">
 
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center justify-between">
-                    <span>Map of Collection Sites</span>
-                    <span class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full uppercase">Upload KML or Image</span>
+                    <span class="flex items-center gap-2">
+                        <span class="text-xl">🏝️</span> Mark Your Fishing Site Boundaries
+                    </span>
+                    <span class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full uppercase">Draw on Map</span>
                 </label>
-                <div class="relative border-2 border-dashed border-blue-200 rounded-[2rem] p-12 hover:border-blue-500 transition-all bg-slate-50 group text-center">
-                    <input type="file" required accept="image/*,.pdf,.kml" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div class="space-y-2">
-                        <div class="text-5xl group-hover:scale-110 transition-transform duration-300">🗺️</div>
-                        <p class="text-sm font-bold text-slate-400 group-hover:text-blue-700">Drag and drop site map or click to browse</p>
-                        <p class="text-[10px] text-slate-300">Supported: JPG, PNG, PDF, or Google Earth KML</p>
+                
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">💡</span>
+                        <div class="text-xs text-blue-900 space-y-1">
+                            <p class="font-bold">How to mark your fishing area:</p>
+                            <ol class="list-decimal list-inside space-y-1 text-blue-700">
+                                <li>Click the <strong>polygon tool</strong> (■) on the map</li>
+                                <li>Click multiple points on the map to draw your boundary</li>
+                                <li>Click the first point again to close the area</li>
+                                <li>Use dashed lines to show your fishing site boundaries</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Map Container -->
+                <div class="relative">
+                    <div id="harvestMap" class="w-full h-[500px] rounded-2xl border-2 border-blue-200 relative z-10"></div>
+                    <button type="button" id="fullscreenHarvestBtn" class="absolute top-4 right-4 z-20 bg-white hover:bg-gray-100 p-2 rounded-lg shadow-md transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Area Info Display -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-xl p-4">
+                        <p class="text-xs font-bold text-slate-500 uppercase mb-2">Marked Area</p>
+                        <p id="areaDisplay" class="text-lg font-black text-blue-700">No area marked yet</p>
+                    </div>
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-xl p-4">
+                        <p class="text-xs font-bold text-slate-500 uppercase mb-2">Boundary Points</p>
+                        <p id="pointsDisplay" class="text-lg font-black text-blue-700">0 points</p>
+                    </div>
+                </div>
+                
+                <!-- Hidden input for coordinates -->
+                <input type="hidden" name="site_coordinates" id="siteCoordinates" required>
+                <input type="hidden" name="site_area" id="siteArea">
             </div>
 
             <div class="pt-6">
@@ -82,5 +124,153 @@
         </form>
     </div>
 </div>
+
+<script>
+// Initialize map
+const harvestMap = L.map('harvestMap').setView([12.8797, 121.7740], 6);
+
+// Add OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(harvestMap);
+
+// Feature group for drawn items
+const drawnItems = new L.FeatureGroup();
+harvestMap.addLayer(drawnItems);
+
+// Drawing controls
+const drawControl = new L.Control.Draw({
+    position: 'topright',
+    draw: {
+        polygon: {
+            shapeOptions: {
+                color: '#3b82f6',
+                weight: 3,
+                opacity: 0.8,
+                dashArray: '10, 10',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.2
+            },
+            allowIntersection: false,
+            drawError: {
+                color: '#ef4444',
+                message: '<strong>Error!</strong> Boundaries cannot cross each other.'
+            }
+        },
+        polyline: false,
+        circle: false,
+        rectangle: false,
+        marker: false,
+        circlemarker: false
+    },
+    edit: {
+        featureGroup: drawnItems,
+        remove: true
+    }
+});
+harvestMap.addControl(drawControl);
+
+// Handle polygon creation
+harvestMap.on('draw:created', function (e) {
+    const layer = e.layer;
+    
+    // Clear previous drawings
+    drawnItems.clearLayers();
+    
+    // Add new drawing
+    drawnItems.addLayer(layer);
+    
+    // Get coordinates
+    const coords = layer.getLatLngs()[0];
+    const coordsArray = coords.map(c => [c.lat, c.lng]);
+    
+    // Calculate area (approximate)
+    const area = L.GeometryUtil.geodesicArea(coords);
+    const areaInHectares = (area / 10000).toFixed(2); // Convert to hectares
+    
+    // Update displays
+    document.getElementById('areaDisplay').textContent = `${areaInHectares} hectares`;
+    document.getElementById('pointsDisplay').textContent = `${coords.length} points`;
+    
+    // Save to hidden input
+    document.getElementById('siteCoordinates').value = JSON.stringify(coordsArray);
+    document.getElementById('siteArea').value = areaInHectares;
+});
+
+// Handle polygon deletion
+harvestMap.on('draw:deleted', function () {
+    document.getElementById('areaDisplay').textContent = 'No area marked yet';
+    document.getElementById('pointsDisplay').textContent = '0 points';
+    document.getElementById('siteCoordinates').value = '';
+    document.getElementById('siteArea').value = '';
+});
+
+// Handle polygon edit
+harvestMap.on('draw:edited', function (e) {
+    const layers = e.layers;
+    layers.eachLayer(function (layer) {
+        const coords = layer.getLatLngs()[0];
+        const coordsArray = coords.map(c => [c.lat, c.lng]);
+        
+        const area = L.GeometryUtil.geodesicArea(coords);
+        const areaInHectares = (area / 10000).toFixed(2);
+        
+        document.getElementById('areaDisplay').textContent = `${areaInHectares} hectares`;
+        document.getElementById('pointsDisplay').textContent = `${coords.length} points`;
+        document.getElementById('siteCoordinates').value = JSON.stringify(coordsArray);
+        document.getElementById('siteArea').value = areaInHectares;
+    });
+});
+
+// Fullscreen toggle
+document.getElementById('fullscreenHarvestBtn').addEventListener('click', function() {
+    const mapContainer = document.getElementById('harvestMap');
+    
+    if (!document.fullscreenElement) {
+        if (mapContainer.requestFullscreen) {
+            mapContainer.requestFullscreen();
+        } else if (mapContainer.webkitRequestFullscreen) {
+            mapContainer.webkitRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+});
+
+// Handle fullscreen change
+document.addEventListener('fullscreenchange', function() {
+    setTimeout(() => harvestMap.invalidateSize(), 100);
+});
+
+document.addEventListener('webkitfullscreenchange', function() {
+    setTimeout(() => harvestMap.invalidateSize(), 100);
+});
+
+// Add area calculation utility
+L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
+    geodesicArea: function (latLngs) {
+        let area = 0;
+        const len = latLngs.length;
+        
+        if (len > 2) {
+            for (let i = 0; i < len; i++) {
+                const j = (i + 1) % len;
+                area += (latLngs[j].lng - latLngs[i].lng) * 
+                       (2 + Math.sin(latLngs[i].lat * Math.PI / 180) + 
+                        Math.sin(latLngs[j].lat * Math.PI / 180));
+            }
+            area = area * 6378137 * 6378137 / 2;
+        }
+        
+        return Math.abs(area);
+    }
+});
+</script>
+
 </body>
 </html>
