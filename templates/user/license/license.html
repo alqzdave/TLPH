@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </head>
 <body>
-        {% include 'header.html' %}
+        {% include 'user/header.html' %}
         <div class="min-h-screen bg-gray-50 py-12 px-4">
     <div class="max-w-6xl mx-auto">
         
@@ -23,33 +23,29 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <button class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500">
+            <a href="/user/license/fisheries" class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500 no-underline">
                 <span class="text-xl font-black uppercase tracking-widest text-center">Fisheries & Aquatic Resources Department</span>
-            </button>
+            </a>
 
-            <button class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500">
-
+            <a href="/user/license/wildlife" class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500 no-underline">
                 <span class="text-xl font-black uppercase tracking-widest text-center">Wildlife & Endangered Species Department</span>
-            </button>
+            </a>
 
-            <button class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500">
-
+            <a href="/user/license/livestock" class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500 no-underline">
                 <span class="text-xl font-black uppercase tracking-widest text-center">Livestock, Poultry, & Meat Products</span>
-            </button>
+            </a>
 
-            <button class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500">
-
+            <a href="/user/license/environment" class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500 no-underline">
                 <span class="text-xl font-black uppercase tracking-widest text-center">Environment & Mine Sectors Clearance</span>
-            </button>
+            </a>
 
-            <button class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500">
-
+            <a href="/user/license/forest" class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500 no-underline">
                 <span class="text-xl font-black uppercase tracking-widest text-center">Forest Sector Agreement Permits</span>
-            </button>
+            </a>
 
-            <button class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500">
+            <a href="/user/license/permits" class="bg-green-700 hover:bg-green-800 text-white p-10 rounded-3xl shadow-xl transition-all transform hover:-translate-y-2 active:scale-95 flex flex-col items-center justify-center gap-4 group border-4 border-transparent hover:border-green-500 no-underline">
                 <span class="text-xl font-black uppercase tracking-widest text-center">Other Permits</span>
-            </button>
+            </a>
 
         </div>
 
@@ -58,5 +54,11 @@
         </div>
     </div>
 </div>
+        
+        <div class="mt-8 text-center">
+            <a href="/user/dashboard" class="text-gray-500 hover:text-green-700 font-medium transition-colors">
+                ← Go back to Dashboard
+            </a>
+        </div>
 </body>
 </html>
