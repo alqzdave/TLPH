@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initial Farm Visit | DENR Logistics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+</head>
+<body class="bg-slate-50 min-h-screen py-12 px-4">
+    {% include 'header.html' %}
+    <div class="max-w-5xl mx-auto bg-white rounded-[3rem] border-2 border-emerald-900 overflow-hidden shadow-sm">
+        
+        <div class="bg-emerald-900 p-10 text-center">
+            <h1 class="text-3xl font-black text-white uppercase tracking-widest italic">Initial Farm Visit</h1>
+            <p class="text-emerald-100 text-sm mt-2 opacity-90 font-bold uppercase tracking-[0.2em]">Agricultural Assessment & Field Monitoring</p>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-14 space-y-10">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Farm Size</label>
+                    <div class="relative group">
+                        <input type="number" step="0.01" required placeholder="0.00" 
+                               class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[2rem] focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 group-hover:border-emerald-200">
+                        <span class="absolute right-6 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xs uppercase">Hectares</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Farm Location</label>
+                    <div class="relative group">
+                        <input type="text" required placeholder="Sitio / Barangay / Municipality" 
+                               class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[2rem] focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 group-hover:border-emerald-200">
+                        <span class="material-icons-round absolute right-6 top-1/2 -translate-y-1/2 text-slate-300">location_on</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 md:col-span-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Production Type</label>
+                    <select required class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[2rem] focus:ring-2 focus:ring-emerald-700 outline-none transition-all duration-300 appearance-none cursor-pointer group-hover:border-emerald-200">
+                        <option value="" disabled selected>Select production category...</option>
+                        <option value="crops">Crop Production (Rice/Corn/Vegetables)</option>
+                        <option value="livestock">Livestock (Swine/Cattle/Goat)</option>
+                        <option value="poultry">Poultry (Broiler/Layers)</option>
+                        <option value="fisheries">Fisheries / Aquaculture</option>
+                        <option value="agroforestry">Agroforestry / Integrated Farming</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div class="space-y-6">
+                <label class="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] block text-center">Field Documentation & Observation</label>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 italic">Current Farm Issues (Report/Notes)</label>
+                        <label class="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-emerald-100 rounded-[2.5rem] bg-slate-50 cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:-translate-y-2 hover:border-emerald-700 hover:bg-emerald-50 group">
+                            <span class="material-icons-round text-slate-300 group-hover:text-emerald-700 mb-2 transition-colors">report_problem</span>
+                            <span class="text-[10px] font-black text-emerald-900 uppercase group-hover:text-emerald-700 transition-colors">Attach Issues Document</span>
+                            <input type="file" required class="hidden">
+                        </label>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 italic">Actual Farm Photos</label>
+                        <label class="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-emerald-100 rounded-[2.5rem] bg-slate-50 cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:-translate-y-2 hover:border-emerald-700 hover:bg-emerald-50 group">
+                            <span class="material-icons-round text-slate-300 group-hover:text-emerald-700 mb-2 transition-colors">photo_camera</span>
+                            <span class="text-[10px] font-black text-emerald-900 uppercase group-hover:text-emerald-700 transition-colors">Upload Field Photos</span>
+                            <input type="file" required multiple accept="image/*" class="hidden">
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-emerald-900 hover:bg-emerald-950 text-white font-black py-6 px-8 rounded-[2.5rem] transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-[0.2em] text-lg italic">
+                    Submit Field Visit Report
+                </button>
+                <p class="text-center text-[9px] text-slate-400 mt-6 font-bold uppercase tracking-widest">Department of Agriculture & Natural Resources Monitoring Compliance</p>
+            </div>
+
+        </form>
+    </div>
+
+</body>
+</html>

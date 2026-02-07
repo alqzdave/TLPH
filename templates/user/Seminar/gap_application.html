@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAP Training Application - DENR TLPH</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/seminar.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="seminar-container">
+        <!-- Header -->
+        <header class="seminar-header">
+            <div class="header-left">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo" class="header-logo">
+                    <span class="logo-text">DENR TLPH</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/user/seminar" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>BACK</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Application Form -->
+        <div class="application-container">
+            <div class="form-header">
+                <h1 class="form-title">GAP TRAINING</h1>
+            </div>
+
+            <form class="application-form">
+                <!-- Number of Participants -->
+                <div class="form-group">
+                    <label for="participants" class="form-label">
+                        <i class="fas fa-users"></i>
+                        NUMBER OF PARTICIPANTS
+                    </label>
+                    <input 
+                        type="number" 
+                        id="participants" 
+                        name="participants" 
+                        class="form-input"
+                        placeholder="Enter number of participants"
+                        min="1"
+                        required
+                    >
+                </div>
+
+                <!-- Date & Time -->
+                <div class="form-group">
+                    <label for="datetime" class="form-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        DATE & TIME
+                    </label>
+                    <input 
+                        type="datetime-local" 
+                        id="datetime" 
+                        name="datetime" 
+                        class="form-input"
+                        required
+                    >
+                </div>
+
+                <!-- Participation Type -->
+                <div class="form-group">
+                    <label for="participationType" class="form-label">
+                        <i class="fas fa-user-tag"></i>
+                        PARTICIPATION TYPE (DROPDOWN)
+                    </label>
+                    <select 
+                        id="participationType" 
+                        name="participationType" 
+                        class="form-select"
+                        required
+                    >
+                        <option value="" disabled selected>Select participation type</option>
+                        <option value="farmer">Farmer</option>
+                        <option value="student">Student</option>
+                        <option value="businessman">Business Man</option>
+                    </select>
+                </div>
+
+                <!-- Training Mode -->
+                <div class="form-group">
+                    <label for="trainingMode" class="form-label">
+                        <i class="fas fa-laptop"></i>
+                        TRAINING MODE (DROPDOWN)
+                    </label>
+                    <select 
+                        id="trainingMode" 
+                        name="trainingMode" 
+                        class="form-select"
+                        required
+                    >
+                        <option value="" disabled selected>Select training mode</option>
+                        <option value="online">Online</option>
+                        <option value="facetoface">Face to Face</option>
+                    </select>
+                </div>
+
+                <!-- Apply Button -->
+                <button type="submit" class="form-apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulatory Compliance Orientation - DENR TLPH</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/seminar.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="seminar-container">
+        <!-- Header -->
+        <header class="seminar-header">
+            <div class="header-left">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo" class="header-logo">
+                    <span class="logo-text">DENR TLPH</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/user/seminar" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>BACK</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Application Form -->
+        <div class="application-container">
+            <div class="form-header">
+                <h1 class="form-title">REGULATORY COMPLIANCE ORIENTATION</h1>
+            </div>
+
+            <form class="application-form">
+                <!-- Compliance Topic -->
+                <div class="form-group">
+                    <label for="complianceTopic" class="form-label">
+                        <i class="fas fa-gavel"></i>
+                        COMPLIANCE TOPIC (DROPDOWN)
+                    </label>
+                    <select 
+                        id="complianceTopic" 
+                        name="complianceTopic" 
+                        class="form-select"
+                        required
+                    >
+                        <option value="" disabled selected>Select compliance topic</option>
+                        <option value="pesticide_regulation">Pesticide Registration & Regulation</option>
+                        <option value="fertilizer_regulation">Fertilizer Regulation</option>
+                        <option value="seed_certification">Seed Certification Standards</option>
+                        <option value="organic_certification">Organic Certification Requirements</option>
+                        <option value="environmental_compliance">Environmental Compliance</option>
+                        <option value="safety_standards">Agricultural Safety Standards</option>
+                        <option value="documentation">Documentation & Record Keeping</option>
+                        <option value="licensing">Licensing Requirements</option>
+                        <option value="all_topics">All Compliance Topics</option>
+                    </select>
+                </div>
+
+                <!-- Date & Time -->
+                <div class="form-group">
+                    <label for="datetime" class="form-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        DATE & TIME
+                    </label>
+                    <input 
+                        type="datetime-local" 
+                        id="datetime" 
+                        name="datetime" 
+                        class="form-input"
+                        required
+                    >
+                </div>
+
+                <!-- Target Audience -->
+                <div class="form-group">
+                    <label for="targetAudience" class="form-label">
+                        <i class="fas fa-users-cog"></i>
+                        TARGET AUDIENCE (DROPDOWN)
+                    </label>
+                    <select 
+                        id="targetAudience" 
+                        name="targetAudience" 
+                        class="form-select"
+                        required
+                    >
+                        <option value="" disabled selected>Select target audience</option>
+                        <option value="farmers">Farmers</option>
+                        <option value="agricultural_technicians">Agricultural Technicians</option>
+                        <option value="farm_managers">Farm Managers</option>
+                        <option value="agricultural_businesses">Agricultural Businesses</option>
+                        <option value="pesticide_dealers">Pesticide Dealers</option>
+                        <option value="fertilizer_distributors">Fertilizer Distributors</option>
+                        <option value="cooperatives">Cooperatives</option>
+                        <option value="students">Students</option>
+                        <option value="government_personnel">Government Personnel</option>
+                        <option value="general_public">General Public</option>
+                    </select>
+                </div>
+
+                <!-- Number of Participants -->
+                <div class="form-group">
+                    <label for="participants" class="form-label">
+                        <i class="fas fa-users"></i>
+                        NUMBER OF PARTICIPANTS
+                    </label>
+                    <input 
+                        type="number" 
+                        id="participants" 
+                        name="participants" 
+                        class="form-input"
+                        placeholder="Enter number of participants"
+                        min="1"
+                        required
+                    >
+                </div>
+
+                <!-- Apply Button -->
+                <button type="submit" class="form-apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

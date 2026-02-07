@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursery/Propagation Seminar - DENR TLPH</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/seminar.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="seminar-container">
+        <!-- Header -->
+        <header class="seminar-header">
+            <div class="header-left">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo" class="header-logo">
+                    <span class="logo-text">DENR TLPH</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/user/seminar" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>BACK</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Application Form -->
+        <div class="application-container">
+            <div class="form-header">
+                <h1 class="form-title">NURSERY/PROPAGATION SEMINAR</h1>
+            </div>
+
+            <form class="application-form">
+                <!-- Type of Request -->
+                <div class="form-group">
+                    <label for="requestType" class="form-label">
+                        <i class="fas fa-clipboard-list"></i>
+                        TYPE OF REQUEST (DROPDOWN)
+                    </label>
+                    <select 
+                        id="requestType" 
+                        name="requestType" 
+                        class="form-select"
+                        required
+                    >
+                        <option value="" disabled selected>Select type of request</option>
+                        <option value="training">Training Only</option>
+                        <option value="consultation">Consultation</option>
+                        <option value="technical_assistance">Technical Assistance</option>
+                        <option value="seedling_production">Seedling Production Guidance</option>
+                        <option value="nursery_setup">Nursery Setup Assistance</option>
+                        <option value="assessment">Nursery Assessment</option>
+                    </select>
+                </div>
+
+                <!-- Number of Participants -->
+                <div class="form-group">
+                    <label for="participants" class="form-label">
+                        <i class="fas fa-users"></i>
+                        NUMBER OF PARTICIPANTS
+                    </label>
+                    <input 
+                        type="number" 
+                        id="participants" 
+                        name="participants" 
+                        class="form-input"
+                        placeholder="Enter number of participants"
+                        min="1"
+                        required
+                    >
+                </div>
+
+                <!-- Propagation Method -->
+                <div class="form-group">
+                    <label for="propagationMethod" class="form-label">
+                        <i class="fas fa-seedling"></i>
+                        PROPAGATION METHOD (DROPDOWN)
+                    </label>
+                    <select 
+                        id="propagationMethod" 
+                        name="propagationMethod" 
+                        class="form-select"
+                        required
+                    >
+                        <option value="" disabled selected>Select propagation method</option>
+                        <option value="seed_propagation">Seed Propagation</option>
+                        <option value="cutting">Cutting</option>
+                        <option value="grafting">Grafting</option>
+                        <option value="layering">Layering</option>
+                        <option value="budding">Budding</option>
+                        <option value="tissue_culture">Tissue Culture</option>
+                        <option value="division">Division</option>
+                        <option value="multiple">Multiple Methods</option>
+                    </select>
+                </div>
+
+                <!-- Date & Time -->
+                <div class="form-group">
+                    <label for="datetime" class="form-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        DATE & TIME
+                    </label>
+                    <input 
+                        type="datetime-local" 
+                        id="datetime" 
+                        name="datetime" 
+                        class="form-input"
+                        required
+                    >
+                </div>
+
+                <!-- Nursery Type -->
+                <div class="form-group">
+                    <label for="nurseryType" class="form-label">
+                        <i class="fas fa-warehouse"></i>
+                        NURSERY TYPE (DROPDOWN)
+                    </label>
+                    <select 
+                        id="nurseryType" 
+                        name="nurseryType" 
+                        class="form-select"
+                        required
+                    >
+                        <option value="" disabled selected>Select nursery type</option>
+                        <option value="commercial">Commercial Nursery</option>
+                        <option value="community">Community Nursery</option>
+                        <option value="institutional">Institutional Nursery</option>
+                        <option value="backyard">Backyard Nursery</option>
+                        <option value="government">Government Nursery</option>
+                        <option value="private">Private Nursery</option>
+                        <option value="none">No Existing Nursery</option>
+                    </select>
+                </div>
+
+                <!-- Apply Button -->
+                <button type="submit" class="form-apply-btn">
+                    <span>APPLY</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

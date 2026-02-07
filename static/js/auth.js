@@ -1,6 +1,7 @@
 // Import Firebase
 import { app, auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, googleProvider, signInWithPopup } from './firebase-config.js';
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { philippineLocations } from './ph-locations.js';
 
 // Initialize Firestore
@@ -490,8 +491,8 @@ if (signupForm) {
             
             console.log('Registration successful:', user);
             
-            // Redirect to farmer dashboard immediately
-            window.location.href = '/farmer/dashboard';
+            // Redirect to approval status page immediately
+            window.location.href = '/approval-status';
         } catch (error) {
             console.error('Registration error:', error);
             alert('Registration failed: ' + error.message);
@@ -502,11 +503,19 @@ if (signupForm) {
 // Login Form Handler
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
+    // Load saved email if exists
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+        document.getElementById('email').value = savedEmail;
+        document.querySelector('input[name="remember"]').checked = true;
+    }
+    
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const rememberMe = document.querySelector('input[name="remember"]').checked;
         
         // Frontend validation
         if (!email || !password) {
@@ -520,14 +529,23 @@ if (loginForm) {
         }
         
         try {
+            // Set Firebase persistence based on remember me
+            if (rememberMe) {
+                await setPersistence(auth, browserLocalPersistence);
+                localStorage.setItem('rememberedEmail', email);
+            } else {
+                await setPersistence(auth, browserSessionPersistence);
+                localStorage.removeItem('rememberedEmail');
+            }
+            
             // Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
             console.log('Login successful:', user);
             
-            // Redirect to farmer dashboard (pending approval)
-            window.location.href = '/farmer/dashboard';
+            // Redirect to user dashboard
+            window.location.href = '/user/dashboard';
         } catch (error) {
             console.error('Login error:', error);
             alert('Login failed: ' + error.message);
@@ -545,8 +563,8 @@ googleButtons.forEach(button => {
             
             console.log('Google sign in successful:', user);
             
-            // Redirect to farmer dashboard
-            window.location.href = '/farmer/dashboard';
+            // Redirect to user dashboard
+            window.location.href = '/user/dashboard';
         } catch (error) {
             console.error('Google sign in error:', error);
             alert('Google sign in failed: ' + error.message);
