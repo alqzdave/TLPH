@@ -6,15 +6,49 @@
     <title>Subsidy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <style>
+        /* CSS para sa Exit Button nang hindi binabago ang layout */
+        .header-relative {
+            position: relative;
+        }
+
+        .exit-button {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: #ef4444; /* red-500 */
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            text-decoration: none !important;
+            z-index: 50;
+            line-height: 1;
+        }
+
+        .exit-button:hover {
+            color: #b91c1c; /* red-700 */
+            transform: scale(1.1);
+        }
+
+        /* Buffer para sa text content para hindi mag-overlap sa button */
+        .header-content {
+            padding-right: 50px;
+        }
+    </style>
 </head>
 <body>
     {% include 'user/header.html' %}
 
 <section class="container mx-auto px-6 py-10">
-  <!-- Header -->
-  <div class="bg-white rounded-2xl shadow-lg border border-emerald-100 p-6 md:p-8">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+  <div class="bg-white rounded-2xl shadow-lg border border-emerald-100 p-6 md:p-8 header-relative">
+    
+    <a href="/user/service/financial/financial" class="exit-button" title="Exit">
+        <i class="fas fa-times-circle"></i>
+    </a>
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 header-content">
       <div>
         <p class="text-sm font-semibold text-emerald-700 uppercase tracking-widest">Application</p>
         <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mt-1">Subsidy Application</h2>
@@ -23,20 +57,11 @@
           <span class="text-red-600 font-semibold">*</span> are required.
         </p>
       </div>
-
-      <a href="#"
-         class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-slate-200
-                text-slate-700 hover:bg-slate-50 transition">
-        ← Back
-      </a>
     </div>
   </div>
 
-  <!-- Form Layout -->
   <form id="subsidyForm" class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Main section -->
     <div class="lg:col-span-2 space-y-6">
-      <!-- Program -->
       <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 md:p-8">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-bold text-slate-900">Program Details</h3>
@@ -46,7 +71,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <!-- Subsidy Program dropdown -->
           <div class="md:col-span-2">
             <label class="block text-sm font-semibold text-slate-700 mb-2">
               Subsidy Program <span class="text-red-600">*</span>
@@ -68,7 +92,6 @@
             </p>
           </div>
 
-          <!-- Area / Volume number -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">
               Area / Volume <span class="text-red-600">*</span>
@@ -93,7 +116,6 @@
             </p>
           </div>
 
-          <!-- Small help card -->
           <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
             <p class="font-semibold text-emerald-900">Tip</p>
             <p class="text-sm text-emerald-900/80 mt-1">
@@ -103,7 +125,6 @@
         </div>
       </div>
 
-      <!-- Uploads -->
       <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 md:p-8">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-bold text-slate-900">Document Uploads</h3>
@@ -113,13 +134,12 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <!-- Permits attach -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">
               Permits <span class="text-red-600">*</span>
             </label>
 
-            <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+            <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center transition hover:border-emerald-300">
               <div class="text-3xl">📑</div>
               <p class="mt-2 text-slate-700 font-semibold">Attach permits</p>
               <p class="text-sm text-slate-500">PDF, JPG, or PNG</p>
@@ -138,13 +158,12 @@
             </div>
           </div>
 
-          <!-- Budget estimate attach -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">
               Budget Estimate <span class="text-red-600">*</span>
             </label>
 
-            <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+            <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center transition hover:border-emerald-300">
               <div class="text-3xl">💼</div>
               <p class="mt-2 text-slate-700 font-semibold">Attach budget estimate</p>
               <p class="text-sm text-slate-500">PDF, JPG, or PNG</p>
@@ -166,7 +185,6 @@
       </div>
     </div>
 
-    <!-- Right panel (easy navigation / checklist) -->
     <aside class="lg:col-span-1 space-y-6">
       <div class="bg-slate-900 rounded-2xl shadow-md p-6 md:p-8 text-white">
         <h3 class="text-lg font-bold">Requirements</h3>
@@ -189,7 +207,6 @@
       </div>
     </aside>
 
-    <!-- Sticky action bar -->
     <div class="lg:col-span-3 sticky bottom-0 z-10">
       <div class="mt-2 bg-white/90 backdrop-blur rounded-2xl border border-slate-200 shadow-lg p-4
                   flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
@@ -219,13 +236,11 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("subsidyForm");
   const submitBtn = document.getElementById("submitBtn");
-
   const permitsInput = form.querySelector('input[name="permits"]');
-  const budgetInput  = form.querySelector('input[name="budget_estimate"]');
-  const permitsName  = document.getElementById("permitsName");
-  const budgetName   = document.getElementById("budgetName");
-
-  const requiredFields = form.querySelectorAll("input[required], select[required], textarea[required]");
+  const budgetInput = form.querySelector('input[name="budget_estimate"]');
+  const permitsName = document.getElementById("permitsName");
+  const budgetName = document.getElementById("budgetName");
+  const requiredFields = form.querySelectorAll("input[required], select[required]");
 
   function isFormValid() {
     for (const field of requiredFields) {
@@ -250,7 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Show chosen filenames
   permitsInput.addEventListener("change", () => {
     permitsName.textContent = permitsInput.files?.length ? `Selected: ${permitsInput.files[0].name}` : "";
     toggleSubmit();
@@ -263,11 +277,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("input", toggleSubmit);
   form.addEventListener("change", toggleSubmit);
-
-  // Initial state
   toggleSubmit();
 });
 </script>
-    
 </body>
 </html>
