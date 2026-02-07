@@ -64,6 +64,66 @@ def service_financial():
     """Shows financial assistance service page"""
     return render_template('user/service/financial/financial.html')
 
+@bp.route('/service/fertilizer/fertilizer')
+def service_fertilizer_page():
+    """Alias route for fertilizer page"""
+    return render_template('user/service/fertilizer/fertilizer.html')
+
+@bp.route('/service/fertilizer/input-usage')
+def service_fertilizer_input_usage():
+    """Shows input usage approval page"""
+    return render_template('user/service/fertilizer/input_usage.html')
+
+@bp.route('/service/fertilizer/chemical-registration')
+def service_fertilizer_chemical_registration():
+    """Shows chemical registration/clearance page"""
+    return render_template('user/service/fertilizer/chemical_registration.html')
+
+@bp.route('/service/fertilizer/emergency-post-control')
+def service_fertilizer_emergency_post_control():
+    """Shows emergency post control request page"""
+    return render_template('user/service/fertilizer/emergency_post_control.html')
+
+@bp.route('/service/fertilizer/fertilizer-recommendation')
+def service_fertilizer_recommendation():
+    """Shows fertilizer recommendation page"""
+    return render_template('user/service/fertilizer/fertilizer_recommendation.html')
+
+@bp.route('/service/fertilizer/pesticide-recommendation')
+def service_fertilizer_pesticide_recommendation():
+    """Shows pesticide recommendation page"""
+    return render_template('user/service/fertilizer/pesticide_recommendation.html')
+
+@bp.route('/service/financial/financial')
+def service_financial_page():
+    """Alias route for financial page"""
+    return render_template('user/service/financial/financial.html')
+
+@bp.route('/service/financial/subsidy')
+def service_financial_subsidy():
+    """Shows subsidy application page"""
+    return render_template('user/service/financial/subsidy.html')
+
+@bp.route('/service/financial/grant')
+def service_financial_grant():
+    """Shows grant assistance page"""
+    return render_template('user/service/financial/grant.html')
+
+@bp.route('/service/financial/loan')
+def service_financial_loan():
+    """Shows loan endorsement page"""
+    return render_template('user/service/financial/loan.html')
+
+@bp.route('/service/financial/crop')
+def service_financial_crop():
+    """Shows crop insurance support page"""
+    return render_template('user/service/financial/crop.html')
+
+@bp.route('/service/financial/startup')
+def service_financial_startup():
+    """Shows startup/expansion support page"""
+    return render_template('user/service/financial/startup.html')
+
 @bp.route('/license/fisheries')
 def license_fisheries():
     """Shows fisheries license page"""
