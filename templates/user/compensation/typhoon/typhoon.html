@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Typhoon Damage</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Leaflet CSS -->
@@ -14,81 +13,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
-      <header class="bg-green-700 text-white shadow-lg sticky top-0 z-50">
-  <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-    
-    <div class="flex items-center gap-3">
-      <img src="{{ url_for('static', filename='images/denr.jpg') }}" 
-           alt="DENR Logo" 
-           class="h-12 w-12 object-contain bg-white rounded-full p-0.5">
-      <h1 class="text-white text-3xl font-bold tracking-tight">DENR</h1>
-    </div>
-
-    <div class="flex items-center gap-8">
-      
-      <div class="hidden md:flex items-center gap-6 border-r border-green-600 pr-8">
-        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Home</a>
-        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Application</a>
-        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">Inventory</a>
-        <div class="dropdown">
-    <a href="#" 
-       class="text-white hover:text-green-200 font-medium transition-colors dropdown-toggle flex items-center gap-1" 
-       id="requestDropdown" 
-       data-bs-toggle="dropdown" 
-       aria-expanded="false">
-        Request
-    </a>
-    
-    <ul class="dropdown-menu shadow-lg border-0 mt-2" aria-labelledby="requestDropdown">
-        <li>
-            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
-                <span>🛠️</span> Service Request
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
-                <span>💰</span> Compensation Request
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item py-2 flex items-center gap-2" href="#">
-                <span>📜</span> Licensing/Permit Request
-            </a>
-        </li>
-    </ul>
-</div>
-        <a href="#" class="text-white hover:text-green-200 font-medium transition-colors">History</a>
-      </div>
-
-      <div class="dropdown">
-        <button class="hover:opacity-80 transition-all focus:outline-none flex items-center" 
-                type="button" 
-                id="profileDropdown" 
-                data-bs-toggle="dropdown" 
-                aria-expanded="false">
-          <img src="https://ui-avatars.com/api/?name=User&background=fff&color=15803d" 
-               alt="Profile" 
-               class="h-10 w-10 rounded-full border-2 border-white shadow-md">
-        </button>
-        
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="profileDropdown">
-          <li>
-              <a class="dropdown-item py-2 flex items-center gap-2" href="#">
-                  <span>👤</span> Profile
-              </a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li>
-              <a class="dropdown-item py-2 text-danger flex items-center gap-2" href="#">
-                  <span>🚪</span> Logout
-              </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-  </nav>
-</header>
+{% include 'user/header.html' %}
 
 <section class="container mx-auto px-6 py-10">
   <!-- Page header -->
@@ -577,5 +502,6 @@ document.addEventListener('webkitfullscreenchange', function() {
 });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>
