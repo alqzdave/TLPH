@@ -11,7 +11,8 @@
 <body class="bg-gray-100 min-h-screen relative">
     {% include 'user/header.html' %}
 
-<div class="bg-white border border-gray-300 w-full md:w-[1325px] flex items-center justify-between mt-2 ml-6 p-3 rounded-lg shadow-sm hover:shadow-md transition-all">
+<div class="w-full md:w-[1325px] mt-2 mx-auto">
+<div class="bg-white border border-gray-300 w-full flex items-center justify-between p-3 rounded-lg shadow-sm hover:shadow-md transition-all">
     
     <div class="pl-4 text-gray-800 font-semibold text-lg">
         Fixed Width Button Text
@@ -19,7 +20,7 @@
 
     <div class="flex items-center gap-4">
         <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-sm font-medium rounded-full">
-            Pinding
+            Pending
         </span>
 
         <button class="text-gray-400 hover:text-red-600 transition-colors p-1" title="Cancel">
@@ -29,10 +30,12 @@
         </button>
     </div>
 </div>
-<div class="text-center mt-2">
-    <a href="/user/application/apply" class="bg-green-700 text-white w-50 py-3 rounded-md text-3xl font-medium inline-block no-underline">
+
+<div class="mt-2">
+    <a href="/user/application/apply" class="bg-green-700 text-white w-full py-3 rounded-md text-3xl font-medium inline-block no-underline text-center block">
         Apply
     </a>
+</div>
 </div>
 </body>
 </html>
