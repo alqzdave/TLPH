@@ -3,18 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Dashboard | Final Balanced View</title>
+    <title>DENR Dashboard | Official View</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Global CSS Fixes */
         * { box-sizing: border-box; }
         
-        body { background-color: #f8fafc; }
+        body { 
+            background-color: #f8fafc;
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+        }
 
-        /* FIX: Siguraduhin na hindi mapuputol ang mahabang dropdown list */
+        /* WATERMARK LOGO FIX */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* GINAMIT ANG IYONG LOCAL PATH */
+            background-image: url('static/images/denr.jpg');
+            background-repeat: no-repeat;
+            background-position: center 35%; 
+            background-size: 650px; /* Laki ng watermark */
+            opacity: 0.04; /* I-adjust ito (0.01 to 0.10) para sa labo */
+            z-index: -1;
+            pointer-events: none;
+        }
+
         .filter-row-container {
             overflow: visible !important;
             z-index: 50;
@@ -26,7 +47,6 @@
             font-weight: 600;
         }
 
-        /* Custom Dropdown Arrow Positioning */
         .select-wrapper {
             position: relative;
             display: flex;
@@ -42,12 +62,13 @@
     </style>
 </head>
 <body>
-
+{% include 'municipal/header.html' %}
+{% include 'municipal/sidenav.html' %}   
 <div class="container-fluid px-5 py-5">
 
     <div class="row g-4 mb-10">
         <div class="col-md-4">
-            <button class="w-full bg-slate-100 p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-emerald-500 transition-all group border-0 text-left">
+            <button class="w-full bg-slate-100/60 backdrop-blur-sm p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-emerald-500 transition-all group border-0 text-left">
                 <div class="flex items-center gap-5">
                     <div class="p-5 bg-white text-slate-400 rounded-[1.5rem] group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all shadow-sm">
                         <span class="material-icons-round text-4xl">task_alt</span>
@@ -62,7 +83,7 @@
         </div>
 
         <div class="col-md-4">
-            <button class="w-full bg-slate-100 p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-rose-500 transition-all group border-0 text-left">
+            <button class="w-full bg-slate-100/60 backdrop-blur-sm p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-rose-500 transition-all group border-0 text-left">
                 <div class="flex items-center gap-5">
                     <div class="p-5 bg-white text-slate-400 rounded-[1.5rem] group-hover:bg-rose-50 group-hover:text-rose-600 transition-all shadow-sm">
                         <span class="material-icons-round text-4xl">unpublished</span>
@@ -77,7 +98,7 @@
         </div>
 
         <div class="col-md-4">
-            <button class="w-full bg-slate-100 p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-amber-500 transition-all group border-0 text-left">
+            <button class="w-full bg-slate-100/60 backdrop-blur-sm p-8 rounded-[3rem] border-2 border-slate-200 shadow-sm flex items-center justify-between hover:bg-white hover:border-amber-500 transition-all group border-0 text-left">
                 <div class="flex items-center gap-5">
                     <div class="p-5 bg-white text-slate-400 rounded-[1.5rem] group-hover:bg-amber-50 group-hover:text-amber-600 transition-all shadow-sm">
                         <span class="material-icons-round text-4xl">pending_actions</span>
@@ -92,19 +113,16 @@
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-[3rem] border-2 border-slate-100 shadow-sm mb-10 filter-row-container">
+    <div class="bg-white/80 backdrop-blur-md p-6 rounded-[3rem] border-2 border-slate-100 shadow-sm mb-10 filter-row-container">
         <div class="flex flex-nowrap items-center justify-between gap-5 px-3">
             
             <div class="flex items-center gap-4 flex-shrink-0">
-                <div class="bg-emerald-950 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-tighter text-sm shadow-lg shadow-emerald-900/20">
+                <buton class="bg-emerald-950 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-tighter text-sm shadow-lg shadow-emerald-900/20">
                     All Types
-                </div>
-                <div class="h-10 w-px bg-slate-200 mx-2"></div>
-                <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Master List Filters</span>
+                </button>
             </div>
 
             <div class="flex flex-grow items-center gap-4">
-                
                 <div class="w-[280px] flex-shrink-0 select-wrapper">
                     <select class="w-full bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] px-6 py-4 text-[13px] font-black uppercase tracking-widest text-slate-500 outline-none cursor-pointer appearance-none hover:border-emerald-700 transition-all shadow-sm">
                         <option selected disabled>Select Category</option>
@@ -132,7 +150,6 @@
                         Search
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
@@ -146,10 +163,10 @@
             <div class="w-14"></div>
         </div>
 
-        <div class="bg-white p-6 px-14 rounded-[3rem] border border-slate-100 flex items-center hover:border-emerald-600 transition-all group shadow-sm hover:shadow-md">
+        <div class="bg-white/80 backdrop-blur-sm p-6 px-14 rounded-[3rem] border border-slate-100 flex items-center hover:border-emerald-600 transition-all group shadow-sm hover:shadow-md">
             <div class="w-1/3">
-                <p class="text-base font-black text-emerald-950 m-0 italic tracking-tighter">DENR-2026-0042</p>
-                <p class="text-[13px] font-bold text-slate-400 m-0 uppercase tracking-widest">Paolo Dave Alqzd</p>
+                <p class="text-base font-black text-emerald-950 m-0 italic tracking-tighter">Paolo Dave Alqzd</p>
+                <p class="text-[13px] font-bold text-slate-400 m-0 uppercase tracking-widest">DENR-2026-0042</p>
             </div>
             <div class="w-1/4">
                 <span class="bg-emerald-50 text-emerald-800 px-5 py-2 rounded-2xl text-[11px] font-black uppercase border border-emerald-100 shadow-sm">Land Management</span>
