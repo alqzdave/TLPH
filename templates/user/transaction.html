@@ -53,9 +53,6 @@
     }
 
     .field { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 12px; color: #6b7280; font-weight: 600; }
-    
-    /* FIX: Added missing semicolon and proper property for label */
     label { 
       font-size: 11px; 
       font-weight: 700; 
@@ -108,13 +105,6 @@
     }
 
     .btn-view:hover { background: #2563eb; }
-
-    /* Summary */
-      padding: 0 24px;
-      text-transform: uppercase;
-      font-size: 12px;
-      letter-spacing: 0.05em;
-    }
 
     .btn-primary-custom:hover {
       background: #1f2937;
@@ -385,23 +375,11 @@
     <div class="card">
       <h1>Payment History</h1>
 
-  {% include 'user/header.html' %}
-
-  <main class="main-content">
-    <div class="container-custom">
-      <div class="card-custom">
-        <h1>Transaction Records</h1>
-
       <div class="toolbar">
         <div class="field">
           <label>Search</label>
           <input id="searchInput" type="text" placeholder="Name, reference, or invoice…" />
         </div>
-        <div class="toolbar">
-          <div class="field">
-            <label>Search Transaction</label>
-            <input id="searchInput" type="text" placeholder="Search by name or reference ID..." />
-          </div>
 
         <div class="field">
           <label>Payment Status</label>
@@ -412,23 +390,14 @@
             <option value="failed">Failed</option>
           </select>
         </div>
-          <div class="field">
-            <label>Filter Status</label>
-            <select id="statusFilter">
-              <option value="all">Show All Status</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-            </select>
-          </div>
 
-          <button class="btn-primary-custom" id="searchBtn">Refresh List</button>
-        </div>
+        <button class="btn-primary-custom" id="searchBtn">Search</button>
+      </div>
 
-        <div class="summary">
-          <div id="resultsText">Loading transactions...</div>
-          <div>Currency: <span class="font-bold text-slate-800">PHP (₱)</span></div>
-        </div>
+      <div class="summary">
+        <div id="resultsText"></div>
+        <div>Currency: Philippine Peso (₱)</div>
+      </div>
 
       <div class="table-wrapper">
         <table>
@@ -441,31 +410,34 @@
             <col class="col-amount">
             <col class="col-action">
           </colgroup>
-        <div class="table-wrapper">
-          <table id="transactionTable">
-            <colgroup>
-              <col style="width: 140px;">
-              <col style="width: auto;">
-              <col style="width: 200px;">
-              <col style="width: 140px;">
-              <col style="width: 180px;">
-            </colgroup>
 
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Transaction Name</th>
-                <th>Reference ID</th>
-                <th>Status</th>
-                <th class="amount">Amount Paid</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Transaction</th>
+              <th>Method</th>
+              <th>Reference</th>
+              <th>Status</th>
+              <th class="amount">Amount</th>
+              <th class="action">Action</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Payment Details</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
 
   <script>
     const transactions = [
@@ -576,7 +548,7 @@
         amount: 2200,
         paidAt: "2026-02-01 11:05:00",
         paymentDetails: { bank: "BPI", reference: "TRF-8291847" }
-      }
+      },
       { date: "2026-02-01", name: "Wildlife Farm Permit", reference: "WFP-2026-1029", status: "Paid", amount: 1250.00 },
       { date: "2026-02-03", name: "Import Clearance (SPSIC)", reference: "SPS-293847", status: "Paid", amount: 499.50 },
       { date: "2026-02-07", name: "Wildlife Transport License", reference: "WTR-384756", status: "Pending", amount: 0 },
@@ -624,25 +596,19 @@
 
       if (!data.length) {
         tableBody.innerHTML = `<tr><td class="empty-row" colspan="7">No matching transactions found</td></tr>`;
-      if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td class="empty-row" colspan="5">No transactions found matching your search.</td></tr>`;
       } else {
         data.forEach((t, idx) => {
           const statusLabel = t.status === "successful" ? "Successful" : 
                              t.status === "unpaid" ? "Unpaid" :
                              t.status === "failed" ? "Failed" : t.status;
           
-        data.forEach(t => {
-          const statusClass = t.status.toLowerCase();
           tableBody.innerHTML += `
             <tr>
               <td>${t.date}</td>
               <td>${t.name}</td>
               <td>${t.method}</td>
-              <td class="font-semibold text-slate-800">${t.name}</td>
               <td class="ref">${t.reference}</td>
               <td><span class="pill ${t.status}">${statusLabel}</span></td>
-              <td><span class="pill ${statusClass}">${t.status}</span></td>
               <td class="amount">${peso.format(t.amount)}</td>
               <td class="action"><button class="btn-view" onclick="showDetails(${idx})">View</button></td>
             </tr>
@@ -773,30 +739,19 @@
 
     function closeModal() {
       document.getElementById("detailModal").classList.remove("active");
-      resultsText.textContent = `Showing ${data.length} of ${transactions.length} entries`;
     }
 
     function applyFilters() {
       const q = searchInput.value.toLowerCase();
       const s = statusFilter.value;
 
-      render(
-        transactions.filter(t =>
-          (t.name.toLowerCase().includes(q) || 
-           t.reference.toLowerCase().includes(q) ||
-           t.invoiceId.toLowerCase().includes(q) ||
-           t.description.toLowerCase().includes(q)) &&
-          (s === "all" || t.status === s)
-        )
+      const filtered = transactions.filter(t =>
+        (t.name.toLowerCase().includes(q) || 
+         t.reference.toLowerCase().includes(q) ||
+         t.invoiceId.toLowerCase().includes(q) ||
+         t.description.toLowerCase().includes(q)) &&
+        (s === "all" || t.status === s)
       );
-      const query = searchInput.value.toLowerCase();
-      const status = statusFilter.value;
-      const filtered = transactions.filter(t => {
-        const matchesSearch = t.name.toLowerCase().includes(query) || 
-                              t.reference.toLowerCase().includes(query);
-        const matchesStatus = status === "all" || t.status.toLowerCase() === status;
-        return matchesSearch && matchesStatus;
-      });
       render(filtered);
     }
 
@@ -808,11 +763,6 @@
     // Close modal when clicking outside
     document.getElementById("detailModal").addEventListener("click", function(e) {
       if (e.target === this) closeModal();
-    });
-    document.getElementById("searchBtn").addEventListener("click", () => {
-        searchInput.value = "";
-        statusFilter.value = "all";
-        render(transactions);
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
