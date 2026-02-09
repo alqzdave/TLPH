@@ -33,5 +33,9 @@ app.register_blueprint(permits_routes.bp)
 app.register_blueprint(wildlife_routes.bp)
 app.register_blueprint(farm_routes.bp)
 
-if __name__ == '__main__':
+def main():
+    """Entry point for the application."""
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+if __name__ == '__main__':
+    main()
