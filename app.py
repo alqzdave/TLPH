@@ -1,10 +1,12 @@
 from flask import Flask, render_template
 from flask_mail import Mail
 from config import Config
+from __version__ import __version__
 # from firebase_config import initialize_firebase_admin  # Temporarily disabled
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['VERSION'] = __version__
 
 # Initialize Flask-Mail
 mail = Mail(app)

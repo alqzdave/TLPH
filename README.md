@@ -1,5 +1,7 @@
 # Inventory Management System
 
+**Version 1.0.0**
+
 A Flask-based inventory management system.
 
 ## Installation
@@ -33,3 +35,12 @@ python app.py
 - `routes/` - Application routes
 - `templates/` - HTML templates
 - `static/` - CSS, JS, and images
+- `__version__.py` - Version information
+- `setup.py` - Package setup configuration
+- `pyproject.toml` - Modern Python packaging configuration
+
+## Version Information
+
+This project follows [Semantic Versioning](https://semver.org/). See [CHANGELOG.md](CHANGELOG.md) for details about changes in each version.
+
+Current version: **1.0.0**
