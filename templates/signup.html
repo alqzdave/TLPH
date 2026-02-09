@@ -4,110 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - DENR TLPH</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+        
+        h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .step-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .required {
+            color: red;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #15803d;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: #15803d;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #166534;
+        }
+        
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+        
+        .btn-link {
+            background: none;
+            color: #15803d;
+            text-decoration: underline;
+            padding: 0;
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .otp-message {
+            padding: 10px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin-top: 3px;
+        }
+        
+        .auth-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .auth-footer a {
+            color: #15803d;
+            text-decoration: none;
+        }
+        
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        a {
+            color: #15803d;
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-left">
-            <div class="auth-content">
-                <h1>Register with DENR</h1>
-                <p>Create your account to access TLPH services</p>
-            </div>
-        </div>
-        
-        <div class="auth-right">
-            <div class="auth-box">
-                <div class="auth-header">
-                    <h2>Registration</h2>
-                    <p>Fill in your details to register</p>
-                </div>
+    <div class="container">
+                <h2>Registration</h2>
+                <p class="subtitle">Fill in your details to register</p>
                 
-                <form class="auth-form" id="signupForm">
-                    <!-- Step 1: Basic Information -->
-                    <div id="step1" class="form-step active">
-                        <h3 class="step-title">Basic Information</h3>
-                        
-                        <div class="form-group">
-                            <label for="applicationType">Application Type <span class="required">*</span></label>
-                            <select id="applicationType" name="applicationType" required>
-                                <option value="">Select Application Type</option>
-                                <option value="tenant">Tenant/Individual</option>
-                                <option value="cooperative">Cooperative</option>
-                                <option value="agribusiness">Agribusiness Company</option>
-                                <option value="research">Research Institution</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group" id="firstNameGroup">
-                                <label for="firstName" id="firstNameLabel">First Name <span class="required">*</span></label>
-                                <input type="text" id="firstName" name="firstName" placeholder="First name" required>
-                            </div>
-                            
-                            <div class="form-group" id="lastNameGroup">
-                                <label for="lastName" id="lastNameLabel">Last Name <span class="required">*</span></label>
-                                <input type="text" id="lastName" name="lastName" placeholder="Last name" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email Address <span class="required">*</span></label>
-                            <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="phone">Phone Number <span class="required">*</span></label>
-                            <input type="tel" id="phone" name="phone" placeholder="+63 XXX XXX XXXX" required>
-                        </div>
-                        
-                        <button type="button" class="btn-primary" onclick="sendOTP()">Send OTP & Continue</button>
+                <form id="signupForm">
+                    <h3 class="step-title">Registration Form</h3>
+                    
+                    <div class="form-group">
+                        <label for="applicationType">Application Type <span class="required">*</span></label>
+                        <select id="applicationType" name="applicationType" required>
+                            <option value="">Select Application Type</option>
+                            <option value="tenant">Tenant/Individual</option>
+                            <option value="cooperative">Cooperative</option>
+                            <option value="agribusiness">Agribusiness Company</option>
+                            <option value="research">Research Institution</option>
+                        </select>
                     </div>
                     
-                    <!-- Step 2: OTP Verification -->
-                    <div id="step2" class="form-step">
-                        <h3 class="step-title">Email Verification</h3>
-                        
-                        <p class="otp-message">We've sent a verification code to your email</p>
-                        
-                        <div class="form-group">
-                            <label for="otpCode">Enter OTP Code <span class="required">*</span></label>
-                            <input type="text" id="otpCode" name="otpCode" placeholder="Enter 6-digit code" maxlength="6" required>
-                        </div>
-                        
-                        <div class="otp-actions">
-                            <button type="button" class="btn-link" onclick="resendOTP()">Resend OTP</button>
-                        </div>
-                        
-                        <button type="button" class="btn-primary" onclick="verifyOTP()">Verify & Continue</button>
-                        <button type="button" class="btn-secondary" onclick="goToStep(1)">Back</button>
+                    <div class="form-group" id="firstNameGroup">
+                        <label for="firstName" id="firstNameLabel">First Name / Organization Name <span class="required">*</span></label>
+                        <input type="text" id="firstName" name="firstName" placeholder="Enter name" required>
                     </div>
                     
-                    <!-- Step 3A: Profile Information -->
-                    <div id="step3a" class="form-step">
-                        <h3 class="step-title">Complete Your Profile (1/2)</h3>
-                        
-                        <!-- Fields for Tenant/Individual -->
-                        <div id="tenantFields" style="display: none;">
-                            <div class="form-group">
+                    <div class="form-group" id="lastNameGroup">
+                        <label for="lastName" id="lastNameLabel">Last Name / Contact Person <span class="required">*</span></label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Enter name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="phone" name="phone" placeholder="+63 XXX XXX XXXX" required>
+                    </div>
+                    
+                    <!-- Fields for Tenant/Individual -->
+                    <div id="tenantFields">
+                        <div class="form-group">
                                 <label for="address">Address <span class="required">*</span></label>
                                 <input type="text" id="address" name="address" placeholder="Street, Barangay">
                             </div>
                             
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="province">Province <span class="required">*</span></label>
-                                    <select id="province" name="province">
-                                        <option value="">Select Province</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="municipality">Municipality <span class="required">*</span></label>
-                                    <select id="municipality" name="municipality" disabled>
-                                        <option value="">Select Province First</option>
-                                    </select>
-                                </div>
+                            <div class="form-group">
+                                <label for="province">Province <span class="required">*</span></label>
+                                <select id="province" name="province">
+                                    <option value="">Select Province</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="municipality">Municipality <span class="required">*</span></label>
+                                <select id="municipality" name="municipality" disabled>
+                                    <option value="">Select Province First</option>
+                                </select>
                             </div>
                             
                             <div class="form-group">
@@ -138,20 +240,18 @@
                                 <input type="text" id="officeAddress" name="officeAddress" placeholder="Complete office address">
                             </div>
                             
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="coopProvince">Province <span class="required">*</span></label>
-                                    <select id="coopProvince" name="coopProvince">
-                                        <option value="">Select Province</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="coopMunicipality">Municipality <span class="required">*</span></label>
-                                    <select id="coopMunicipality" name="coopMunicipality" disabled>
-                                        <option value="">Select Province First</option>
-                                    </select>
-                                </div>
+                            <div class="form-group">
+                                <label for="coopProvince">Province <span class="required">*</span></label>
+                                <select id="coopProvince" name="coopProvince">
+                                    <option value="">Select Province</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="coopMunicipality">Municipality <span class="required">*</span></label>
+                                <select id="coopMunicipality" name="coopMunicipality" disabled>
+                                    <option value="">Select Province First</option>
+                                </select>
                             </div>
                             
                             <div class="form-group">
@@ -187,20 +287,18 @@
                                 <input type="text" id="businessAddress" name="businessAddress" placeholder="Complete business address">
                             </div>
                             
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="businessProvince">Province <span class="required">*</span></label>
-                                    <select id="businessProvince" name="businessProvince">
-                                        <option value="">Select Province</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="businessMunicipality">Municipality <span class="required">*</span></label>
-                                    <select id="businessMunicipality" name="businessMunicipality" disabled>
-                                        <option value="">Select Province First</option>
-                                    </select>
-                                </div>
+                            <div class="form-group">
+                                <label for="businessProvince">Province <span class="required">*</span></label>
+                                <select id="businessProvince" name="businessProvince">
+                                    <option value="">Select Province</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="businessMunicipality">Municipality <span class="required">*</span></label>
+                                <select id="businessMunicipality" name="businessMunicipality" disabled>
+                                    <option value="">Select Province First</option>
+                                </select>
                             </div>
                             
                             <div class="form-group">
@@ -241,20 +339,18 @@
                                 <input type="text" id="institutionAddress" name="institutionAddress" placeholder="Complete institution address">
                             </div>
                             
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="institutionProvince">Province <span class="required">*</span></label>
-                                    <select id="institutionProvince" name="institutionProvince">
-                                        <option value="">Select Province</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="institutionMunicipality">Municipality <span class="required">*</span></label>
-                                    <select id="institutionMunicipality" name="institutionMunicipality" disabled>
-                                        <option value="">Select Province First</option>
-                                    </select>
-                                </div>
+                            <div class="form-group">
+                                <label for="institutionProvince">Province <span class="required">*</span></label>
+                                <select id="institutionProvince" name="institutionProvince">
+                                    <option value="">Select Province</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="institutionMunicipality">Municipality <span class="required">*</span></label>
+                                <select id="institutionMunicipality" name="institutionMunicipality" disabled>
+                                    <option value="">Select Province First</option>
+                                </select>
                             </div>
                             
                             <div class="form-group">
@@ -262,14 +358,6 @@
                                 <input type="text" id="researchFocus" name="researchFocus" placeholder="e.g., Agricultural Technology, Crop Science">
                             </div>
                         </div>
-                        
-                        <button type="button" class="btn-primary" onclick="validateAndGoToStep3b()">Next: Password & Terms</button>
-                        <button type="button" class="btn-secondary" onclick="goToStep(2)">Back</button>
-                    </div>
-                    
-                    <!-- Step 3B: Password & Terms -->
-                    <div id="step3b" class="form-step">
-                        <h3 class="step-title">Complete Your Profile (2/2)</h3>
                         
                         <div class="form-group">
                             <label for="password">Create Password <span class="required">*</span></label>
@@ -283,6 +371,12 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="otpCode">OTP Code <span class="required">*</span></label>
+                            <input type="text" id="otpCode" name="otpCode" placeholder="Enter 6-digit code" maxlength="6" required>
+                            <button type="button" class="btn-link" onclick="sendOTP()">Send OTP</button>
+                        </div>
+                        
+                        <div class="form-group">
                             <label class="checkbox-container">
                                 <input type="checkbox" name="terms" required>
                                 <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
@@ -290,8 +384,6 @@
                         </div>
                         
                         <button type="submit" class="btn-primary">Complete Registration</button>
-                        <button type="button" class="btn-secondary" onclick="goToStep('3a')">Back</button>
-                    </div>
                     
                     <div class="auth-footer">
                         <p>Already have an account? <a href="{{ url_for('main.login') }}">Sign In</a></p>
@@ -303,5 +395,54 @@
     
     <script type="module" src="{{ url_for('static', filename='js/ph-locations.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script>
+        // Show/hide fields based on application type
+        document.addEventListener('DOMContentLoaded', function() {
+            const appType = document.getElementById('applicationType');
+            const firstNameLabel = document.getElementById('firstNameLabel');
+            const lastNameLabel = document.getElementById('lastNameLabel');
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
+            
+            if (appType) {
+                appType.addEventListener('change', function() {
+                    const value = this.value;
+                    
+                    // Hide all
+                    document.getElementById('tenantFields').style.display = 'none';
+                    document.getElementById('cooperativeFields').style.display = 'none';
+                    document.getElementById('agribusinessFields').style.display = 'none';
+                    document.getElementById('researchFields').style.display = 'none';
+                    
+                    // Update labels and show fields
+                    if (value === 'tenant' || value === '') {
+                        firstNameLabel.innerHTML = 'First Name <span class="required">*</span>';
+                        lastNameLabel.innerHTML = 'Last Name <span class="required">*</span>';
+                        firstName.placeholder = 'First name';
+                        lastName.placeholder = 'Last name';
+                        document.getElementById('tenantFields').style.display = 'block';
+                    } else if (value === 'cooperative') {
+                        firstNameLabel.innerHTML = 'Cooperative Name <span class="required">*</span>';
+                        lastNameLabel.innerHTML = 'Contact Person Name <span class="required">*</span>';
+                        firstName.placeholder = 'Cooperative name';
+                        lastName.placeholder = 'Contact person name';
+                        document.getElementById('cooperativeFields').style.display = 'block';
+                    } else if (value === 'agribusiness') {
+                        firstNameLabel.innerHTML = 'Company Name <span class="required">*</span>';
+                        lastNameLabel.innerHTML = 'Authorized Representative Name <span class="required">*</span>';
+                        firstName.placeholder = 'Company name';
+                        lastName.placeholder = 'Representative name';
+                        document.getElementById('agribusinessFields').style.display = 'block';
+                    } else if (value === 'research') {
+                        firstNameLabel.innerHTML = 'Institution Name <span class="required">*</span>';
+                        lastNameLabel.innerHTML = 'Contact Person Name <span class="required">*</span>';
+                        firstName.placeholder = 'Institution name';
+                        lastName.placeholder = 'Contact person name';
+                        document.getElementById('researchFields').style.display = 'block';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
