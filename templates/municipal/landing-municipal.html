@@ -23,6 +23,71 @@
   
   
 
+    <!-- Navigation -->
+    <nav class="flex-grow space-y-2">
+        <a href="index.php" class="nav-item-btn">
+            <span class="material-icons-round">home</span>
+            <span>Home</span>
+        </a>
+
+        <a href="application.php" class="nav-item-btn">
+            <span class="material-icons-round">description</span>
+            <span>Application</span>
+        </a>
+
+        <a href="requests.php" class="nav-item-btn">
+            <span class="material-icons-round">room_service</span>
+            <span>Service Request</span>
+        </a>
+
+        <a href="compensation.php" class="nav-item-btn">
+            <span class="material-icons-round">account_balance_wallet</span>
+            <span>Compensation</span>
+        </a>
+
+        <!-- Inventory (LINKED) -->
+        <a href="inventory-dashboard.html" class="nav-item-btn">
+            <span class="material-icons-round">inventory_2</span>
+            <span>Inventory</span>
+        </a>
+
+        <a href="licensing.php" class="nav-item-btn">
+            <span class="material-icons-round">verified</span>
+            <span>Licensing / Permit</span>
+        </a>
+    </nav>
+
+    <!-- Footer -->
+    <div class="mt-auto pt-6 border-t border-slate-200 space-y-1">
+        <a href="profile.php" class="footer-link">
+            <span class="material-icons-round">account_circle</span>
+            <span>My Profile</span>
+        </a>
+
+        <a href="javascript:void(0)" onclick="logout()" class="footer-link logout-btn">
+            <span class="material-icons-round">logout</span>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+
+<script type="module">
+    import { auth } from '/static/js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    
+    window.logout = async function() {
+        try {
+            await signOut(auth);
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Logout failed: ' + error.message);
+        }
+    };
+</script>
+
+</body>
+</html>
 
 
 
