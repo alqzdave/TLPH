@@ -18,7 +18,7 @@
 <body class="bg-gray-50 min-h-screen">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
+    <div class="container mx-auto px-4 mt-8 text-slate-900">
 
         <div class="max-w-7xl mx-auto title-wrapper">
             <h1 class="text-4xl font-black text-center uppercase tracking-tight mb-8 text-green-800">
@@ -26,70 +26,134 @@
             </h1>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-            <form action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <form id="chemicalForm" action="#" method="POST" enctype="multipart/form-data">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
 
                     <div class="space-y-6">
-
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Product Information</h3>
+                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Product Name
+                                Product Name <span class="text-red-500">*</span>
                             </label>
-                            <input type="text"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none">
+                            <input type="text" id="productName" required placeholder="Enter Chemical / Product Name"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium transition-all">
                         </div>
 
                         <div>
                             <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Supplier Details
+                                Supplier Details <span class="text-red-500">*</span>
                             </label>
-                            <textarea rows="3"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none"></textarea>
+                            <textarea id="supplierDetails" rows="3" required placeholder="Company Name, Address, and Contact Info"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium transition-all"></textarea>
                         </div>
 
                         <div>
                             <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Intended Distribution Area
+                                Intended Distribution Area <span class="text-red-500">*</span>
                             </label>
-                            <input type="text"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none">
+                            <input type="text" id="distributionArea" required placeholder="Regions / Provinces"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium transition-all">
                         </div>
-
                     </div>
 
-                    <div>
+                    <div class="flex flex-col">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 mb-6">Documentation</h3>
+                        
                         <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                            Registration Documents
+                            Registration Documents <span class="text-red-500">*</span>
                         </label>
-
-                        <div
-                            class="h-56 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center bg-gray-50">
-                            <input type="file" class="text-sm text-gray-600" multiple>
+                        <div class="flex-1 min-h-[250px] border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 p-8 group hover:border-green-600 transition-all cursor-pointer">
+                            <i class="fa-solid fa-file-contract text-5xl text-gray-300 group-hover:text-green-600 mb-4 transition-colors"></i>
+                            <input type="file" id="regDocs" required multiple class="text-sm text-gray-600 mb-2 text-center w-full">
+                            <p id="fileNameDisplay" class="text-[9px] text-green-600 font-bold uppercase mb-2"></p>
+                            <div class="text-center">
+                                <p class="text-xs text-gray-400 uppercase font-black tracking-tighter">Click to browse or drag and drop</p>
+                                <p class="text-[10px] text-gray-300 font-medium mt-1 italic">Support PDF, JPG, PNG (Max 10MB per file)</p>
+                            </div>
                         </div>
                     </div>
 
                 </div>
 
-                <div class="flex justify-between items-center mt-10">
-
-                    <a href="/user/service/service"
-                        class="px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                        Back
-                    </a>
-
-                    <button type="submit"
-                        class="bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest">
-                        Apply
-                    </button>
-
+                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Apply is enabled when all required fields and documents are complete.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service"
+                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
+                            Back
+                        </a>
+                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
+                            Clear
+                        </button>
+                        <button type="submit" id="submitBtn" disabled
+                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
+                            Apply
+                        </button>
+                    </div>
                 </div>
             </form>
 
         </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
+            DENR Environmental Management Bureau • Chemical Management Portal 2026
+        </p>
 
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('chemicalForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Inputs
+            const productName = document.getElementById('productName');
+            const supplierDetails = document.getElementById('supplierDetails');
+            const distributionArea = document.getElementById('distributionArea');
+            const regDocs = document.getElementById('regDocs');
+            
+            // Display
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+            function checkValidation() {
+                const isProductValid = productName.value.trim() !== "";
+                const isSupplierValid = supplierDetails.value.trim() !== "";
+                const isAreaValid = distributionArea.value.trim() !== "";
+                const isDocsUploaded = regDocs.files.length > 0;
+
+                if (isProductValid && isSupplierValid && isAreaValid && isDocsUploaded) {
+                    submitBtn.disabled = false;
+                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                }
+            }
+
+            // Listeners
+            [productName, supplierDetails, distributionArea].forEach(input => {
+                input.addEventListener('input', checkValidation);
+            });
+
+            regDocs.addEventListener('change', () => {
+                fileNameDisplay.textContent = regDocs.files.length > 0 ? `Selected: ${regDocs.files.length} file(s)` : "";
+                checkValidation();
+            });
+
+            // Reset Logic
+            form.addEventListener('reset', () => {
+                setTimeout(() => {
+                    fileNameDisplay.textContent = "";
+                    checkValidation();
+                }, 0);
+            });
+        });
+    </script>
 </body>
 
 </html>

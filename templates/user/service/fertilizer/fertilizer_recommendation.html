@@ -1,86 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DENR Fertilizer Recommendation</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-50 min-h-screen text-slate-900">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 py-10">
+    <div class="container mx-auto px-4 mt-8">
 
-        <div class="max-w-6xl mx-auto title-container">
-            <h1 class="text-4xl font-black text-center uppercase tracking-wide mb-10 text-green-800">
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
                 Fertilizer Recommendation
             </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Soil Nutrient Management and Crop-Specific Advice
+            </p>
         </div>
 
-        <div class="max-w-6xl mx-auto bg-white rounded-3xl shadow-lg p-8 border border-gray-200">
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form id="fertilizerForm" action="#" method="POST" enctype="multipart/form-data">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                        Crop Type / Species
-                    </label>
-                    <input type="text"
-                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:outline-none"
-                        placeholder="Enter crop type">
+                    <div class="space-y-6">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 text-left">Farm & Crop Details</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
+                                Crop Type / Species <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="cropType" required placeholder="Enter crop type (e.g. Rice, Corn)"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
+                                Crop Stage <span class="text-red-500">*</span>
+                            </label>
+                            <select id="cropStage" required 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
+                                <option value="" selected disabled>Select crop stage</option>
+                                <option value="seedling">Seedling</option>
+                                <option value="vegetative">Vegetative</option>
+                                <option value="flowering">Flowering</option>
+                                <option value="fruiting">Fruiting</option>
+                                <option value="harvest">Harvest</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
+                                Farm Area (Hectares) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="farmArea" step="0.01" required placeholder="0.00" 
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-bold text-gray-700">
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 font-black text-gray-400 text-xs uppercase">ha</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col text-left">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 mb-6">Visual Evidence</h3>
+                        
+                        <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
+                            Field Photos <span class="text-red-500">*</span>
+                        </label>
+                        <div class="flex-1 min-h-[300px] border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 p-8 group hover:border-green-600 transition-all cursor-pointer">
+                            <i class="fa-solid fa- seedling text-5xl text-gray-300 group-hover:text-green-600 mb-4 transition-colors"></i>
+                            <input type="file" id="cropPhotos" required multiple accept="image/*" class="text-sm text-gray-600 mb-2 text-center w-full">
+                            <p id="photoCount" class="text-[9px] text-green-600 font-bold uppercase mb-2"></p>
+                            <div class="text-center">
+                                <p class="text-xs text-gray-400 uppercase font-black tracking-tighter">Click to upload crop or soil photos</p>
+                                <p class="text-[10px] text-gray-300 font-medium mt-1">Support JPG, PNG (Max 5MB per photo)</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                        Photos
-                    </label>
-                    <input type="file"
-                        class="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white">
+                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Apply is enabled when all required details and photos are provided.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service"
+                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
+                            Back
+                        </a>
+                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
+                            Clear
+                        </button>
+                        <button type="submit" id="submitBtn" disabled
+                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
+                            Apply
+                        </button>
+                    </div>
                 </div>
+            </form>
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                        Crop Stage
-                    </label>
-                    <select
-                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:outline-none">
-                        <option selected disabled>Select crop stage</option>
-                        <option>Seedling</option>
-                        <option>Vegetative</option>
-                        <option>Flowering</option>
-                        <option>Fruiting</option>
-                        <option>Harvest</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                        Farm Area (Hectares)
-                    </label>
-                    <input type="number" step="0.01"
-                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:outline-none"
-                        placeholder="e.g. 1.5">
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center mt-10">
-
-                <a href="/user/service/service"
-                    class="px-8 py-3 rounded-xl border border-gray-400 text-gray-700 font-bold uppercase tracking-wider hover:bg-gray-200 transition">
-                    Back
-                </a>
-
-                <button
-                    class="bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest">
-                    Apply
-                </button>
-            </div>
         </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
+            DENR Agricultural Extension Service • Fertilizer Management Division 2026
+        </p>
+
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('fertilizerForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Inputs
+            const cropType = document.getElementById('cropType');
+            const cropStage = document.getElementById('cropStage');
+            const farmArea = document.getElementById('farmArea');
+            const cropPhotos = document.getElementById('cropPhotos');
+            
+            // Display
+            const photoCount = document.getElementById('photoCount');
+
+            function checkValidation() {
+                const isTypeValid = cropType.value.trim() !== "";
+                const isStageValid = cropStage.value !== "";
+                const isAreaValid = farmArea.value !== "" && farmArea.value > 0;
+                const isPhotosUploaded = cropPhotos.files.length > 0;
+
+                if (isTypeValid && isStageValid && isAreaValid && isPhotosUploaded) {
+                    submitBtn.disabled = false;
+                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                }
+            }
+
+            // Event Listeners
+            [cropType, farmArea].forEach(input => input.addEventListener('input', checkValidation));
+            cropStage.addEventListener('change', checkValidation);
+
+            cropPhotos.addEventListener('change', () => {
+                photoCount.textContent = cropPhotos.files.length > 0 ? `Selected: ${cropPhotos.files.length} photo(s)` : "";
+                checkValidation();
+            });
+
+            // Reset Logic
+            form.addEventListener('reset', () => {
+                setTimeout(() => {
+                    photoCount.textContent = "";
+                    checkValidation();
+                }, 0);
+            });
+        });
+    </script>
 </body>
 </html>
