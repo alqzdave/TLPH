@@ -241,12 +241,27 @@
             <span>My Profile</span>
         </a>
 
-        <a href="logout.php" class="footer-link logout-btn">
+        <a href="javascript:void(0)" onclick="logout()" class="footer-link logout-btn">
             <span class="material-icons-round">logout</span>
             <span>Logout</span>
         </a>
     </div>
 </aside>
+
+<script type="module">
+    import { auth } from '/static/js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    
+    window.logout = async function() {
+        try {
+            await signOut(auth);
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Logout failed: ' + error.message);
+        }
+    };
+</script>
 
 </body>
 </html>
