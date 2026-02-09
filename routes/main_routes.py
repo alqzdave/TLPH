@@ -64,4 +64,7 @@ def user_profile():
 def approval_status():
     return render_template('approval_status.html')
 
+@bp.route('/user/transaction')
+def user_transaction():
+    return render_template('user/transaction.html')
 
