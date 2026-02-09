@@ -24,20 +24,16 @@ def service_request():
     """Shows service request page"""
     return render_template('user/service/service.html')
 
-@bp.route('/compensation/typhoon-pest-damage')
-def compensation_request():
-    """Shows compensation request page"""
-    return render_template('user/compensation/typhoon-pest-damage.html')
 
 @bp.route('/compensation/typhoon')
 def compensation_typhoon():
     """Shows typhoon compensation page"""
-    return render_template('user/compensation/typhoon/typhoon.html')
+    return render_template('user/service/compensation/typhoon.html')
 
 @bp.route('/compensation/pest')
 def compensation_pest():
     """Shows pest compensation page"""
-    return render_template('user/compensation/pest/pest.html')
+    return render_template('user/service/compensation/pest.html')
 
 @bp.route('/inventory')
 def inventory():
