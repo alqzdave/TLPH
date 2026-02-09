@@ -3,7 +3,7 @@
 Welcome to the TLPH wiki! This wiki aims to provide comprehensive documentation and support for the TLPH project.
 
 ## Overview
-TLPH is a project that focuses on... (Add a brief overview of the project)
+TLPH is a project that focuses on... 
 
 ## Getting Started
 - How to install TLPH
