@@ -32,18 +32,6 @@ def regional_dashboard():
 def superadmin_dashboard():
     return render_template('super-admin/landing-superadmin.html')
 
-@bp.route('/create-admin')
-def create_admin():
-    return render_template('create-admin.html')
-
-@bp.route('/create-firebase-admins')
-def create_firebase_admins():
-    return render_template('create-firebase-admins.html')
-
-@bp.route('/fix-admin-roles')
-def fix_admin_roles():
-    return render_template('fix-admin-roles.html')
-
 @bp.route('/farmer/dashboard')
 def farmer_dashboard():
     return render_template('farmer_dashboard.html')
@@ -64,6 +52,14 @@ def user_profile():
 def user_transaction():
     return render_template('user/transaction.html')
 
+@bp.route('/user/application')
+def user_application():
+    return render_template('user/application.html')
+
+@bp.route('/user/application/apply')
+def user_application_apply():
+    return render_template('user/app-form.html')
+
 @bp.route('/approval-status')
 def approval_status():
     return render_template('approval_status.html')
@@ -75,5 +71,4 @@ def payment_success():
 @bp.route('/payment-failed')
 def payment_failed():
     return render_template('payment-failed.html')
-
 

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from flask_mail import Message, Mail
+from datetime import datetime
 import random
 
 bp = Blueprint('api', __name__, url_prefix='/api')
@@ -220,3 +221,77 @@ def login_user():
     except Exception as e:
         print(f'Error logging in: {str(e)}')
         return jsonify({'success': False, 'message': str(e)}), 500
+@bp.route('/submit-application', methods=['POST'])
+def submit_application():
+    """Handle application submission with file uploads"""
+    try:
+        import os
+        from werkzeug.utils import secure_filename
+        
+        # Get form data
+        user_id = request.form.get('userId')
+        user_email = request.form.get('userEmail')
+        category = request.form.get('category')
+        investment_qty = request.form.get('investmentQty')
+        harvest_qty = request.form.get('harvestQty')
+        
+        # Validate required fields
+        if not all([user_id, user_email, category, investment_qty, harvest_qty]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required fields'
+            }), 400
+        
+        # Create upload directory
+        upload_dir = os.path.join('static', 'uploads', 'applications', user_id)
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Process file uploads
+        file_fields = ['titleFile', 'taxFile', 'blueprintFile', 'landFile', 'cropFile', 'planFile', 'brgyFile']
+        file_paths = {}
+        
+        for field in file_fields:
+            if field in request.files:
+                file = request.files[field]
+                if file and file.filename:
+                    # Secure filename
+                    filename = secure_filename(file.filename)
+                    timestamp = int(datetime.now().timestamp())
+                    unique_filename = f"{timestamp}_{field}_{filename}"
+                    
+                    # Save file
+                    file_path = os.path.join(upload_dir, unique_filename)
+                    file.save(file_path)
+                    
+                    # Store relative path for web access
+                    web_path = f"/static/uploads/applications/{user_id}/{unique_filename}"
+                    file_paths[field.replace('File', '')] = web_path
+        
+        return jsonify({
+            'success': True,
+            'message': 'Files uploaded successfully',
+            'filePaths': file_paths
+        })
+        
+    except Exception as e:
+        print(f'Error submitting application: {str(e)}')
+        return jsonify({
+            'success': False,
+            'message': f'Failed to submit application: {str(e)}'
+        }), 500
+
+@bp.route('/get-applications/<user_id>', methods=['GET'])
+def get_user_applications(user_id):
+    """Get all applications for a specific user"""
+    try:
+        # This is a placeholder - actual data is fetched from Firestore on frontend
+        return jsonify({
+            'success': True,
+            'message': 'Fetch applications from Firestore on the frontend'
+        })
+    except Exception as e:
+        print(f'Error fetching applications: {str(e)}')
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500

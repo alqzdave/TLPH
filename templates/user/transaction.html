@@ -3,60 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Transaction History - DENR</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <title>Transactions | DENR Portal</title>
 
   <style>
+    /* Reset and Base Styles */
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       margin: 0;
-      padding: 24px;
+      padding: 0;
       background: #f6f7fb;
-      padding-top: 32px;
     }
 
-    .container { max-width: 1400px; margin: 0 auto; }
+    .main-content {
+      padding: 32px 24px;
+    }
 
-    .card {
+    .container-custom { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+    }
+
+    .card-custom {
       background: #fff;
       border: 1px solid #e5e7eb;
       border-radius: 16px;
       padding: 24px;
-      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    h1 { font-size: 26px; margin: 0 0 24px; color: #111827; }
-    h2 { font-size: 18px; margin: 0 0 16px; color: #374151; }
+    h1 { 
+      font-size: 26px; 
+      font-weight: 800;
+      margin: 0 0 20px; 
+      color: #111827;
+      text-transform: uppercase;
+      letter-spacing: -0.025em;
+    }
 
-    /* Toolbar */
+    /* Toolbar Styles */
     .toolbar {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
       align-items: flex-end;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
     }
 
     .field { display: flex; flex-direction: column; gap: 6px; }
     label { font-size: 12px; color: #6b7280; font-weight: 600; }
+    
+    /* FIX: Added missing semicolon and proper property for label */
+    label { 
+      font-size: 11px; 
+      font-weight: 700; 
+      color: #6b7280; 
+      text-transform: uppercase; 
+      letter-spacing: 0.05em; 
+    }
 
     input, select, button {
-      height: 40px;
-      padding: 0 12px;
+      height: 42px;
+      padding: 0 14px;
       border-radius: 10px;
       border: 1px solid #e5e7eb;
       font-size: 14px;
       background: #fff;
+      transition: all 0.2s;
     }
 
-    input { width: 280px; }
-    select { width: 160px; }
+    /* FIX: Replaced 'ring' with standard CSS box-shadow */
+    input:focus, select:focus {
+      outline: none;
+      border-color: #166534;
+      box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.15);
+    }
 
-    .btn-primary {
+    input { width: 320px; }
+    select { width: 180px; }
+
+    .btn-primary-custom {
       background: #111827;
       color: #fff;
       border: none;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
     }
@@ -78,11 +110,23 @@
     .btn-view:hover { background: #2563eb; }
 
     /* Summary */
+      padding: 0 24px;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-primary-custom:hover {
+      background: #1f2937;
+      transform: translateY(-1px);
+    }
+
     .summary {
       display: flex;
       justify-content: space-between;
       margin-bottom: 12px;
       font-size: 13px;
+      font-weight: 500;
       color: #6b7280;
     }
 
@@ -105,11 +149,11 @@
     .stat-value { font-size: 24px; font-weight: 700; color: #111827; }
     .stat-subtext { font-size: 12px; color: #9ca3af; margin-top: 4px; }
 
-    /* Table */
     .table-wrapper {
       border: 1px solid #eef2f7;
       border-radius: 12px;
-      overflow-x: auto;
+      overflow: hidden;
+      background: #fff;
     }
 
     table {
@@ -117,6 +161,8 @@
       border-collapse: collapse;
       table-layout: fixed;
       min-width: 1100px;
+      table-layout: fixed;
+      min-width: 980px;
     }
 
     col.col-date   { width: 140px; }
@@ -130,48 +176,65 @@
     thead th {
       background: #fbfcfe;
       color: #6b7280;
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      padding: 14px;
+      padding: 16px 14px;
       border-bottom: 1px solid #eef2f7;
       text-align: left;
       font-weight: 600;
+      text-align: left;
     }
 
     thead th.amount { text-align: right; }
     thead th.action { text-align: center; }
+    thead th.amount { text-align: right; }
 
     tbody td {
-      padding: 16px 14px;
+      padding: 18px 14px;
       border-bottom: 1px solid #f1f5f9;
       font-size: 14px;
       text-align: left;
+      font-size: 14px;
+      color: #374151;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     tbody tr:hover { background: #f9fafb; }
+    tbody tr:hover { background-color: #f9fafb; }
     tbody tr:last-child td { border-bottom: none; }
 
     td.ref {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 12px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #111827;
+      font-weight: 600;
     }
 
     td.amount {
       text-align: right;
       font-weight: 600;
+      text-align: right;
+      font-weight: 700;
+      color: #111827;
       font-variant-numeric: tabular-nums;
     }
 
     td.action { text-align: center; }
 
-    /* Status pills */
     .pill {
-      padding: 6px 12px;
+      padding: 4px 12px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 700;
-      border: 1px solid transparent;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
     }
 
     .pill.successful {
@@ -203,6 +266,9 @@
       color: #991b1b;
       border-color: #fca5a5;
     }
+    .pill.paid { background: #dcfce7; color: #166534; }
+    .pill.pending { background: #ffedd5; color: #9a3412; }
+    .pill.failed { background: #fee2e2; color: #991b1b; }
 
     .empty-row {
       text-align: left;
@@ -273,10 +339,10 @@
     .detail-row:last-child { border-bottom: none; }
     .detail-label { color: #6b7280; font-weight: 600; font-size: 13px; }
     .detail-value { color: #111827; font-weight: 500; }
+    .empty-row { color: #9ca3af; font-style: italic; padding: 40px !important; text-align: center !important; }
 
     @media (max-width: 768px) {
-      body { padding: 16px; }
-      h1 { font-size: 22px; }
+      .main-content { padding: 16px; }
       input, select { width: 100%; }
       .stats { grid-template-columns: 1fr; }
       table { min-width: 100%; font-size: 13px; }
@@ -288,6 +354,7 @@
       col.col-status { width: 100px; }
       col.col-amount { width: 120px; }
       col.col-action { width: 80px; }
+      .toolbar { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
@@ -318,11 +385,23 @@
     <div class="card">
       <h1>Payment History</h1>
 
+  {% include 'user/header.html' %}
+
+  <main class="main-content">
+    <div class="container-custom">
+      <div class="card-custom">
+        <h1>Transaction Records</h1>
+
       <div class="toolbar">
         <div class="field">
           <label>Search</label>
           <input id="searchInput" type="text" placeholder="Name, reference, or invoice…" />
         </div>
+        <div class="toolbar">
+          <div class="field">
+            <label>Search Transaction</label>
+            <input id="searchInput" type="text" placeholder="Search by name or reference ID..." />
+          </div>
 
         <div class="field">
           <label>Payment Status</label>
@@ -333,14 +412,23 @@
             <option value="failed">Failed</option>
           </select>
         </div>
+          <div class="field">
+            <label>Filter Status</label>
+            <select id="statusFilter">
+              <option value="all">Show All Status</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
+          </div>
 
-        <button class="btn-primary" id="searchBtn">Search</button>
-      </div>
+          <button class="btn-primary-custom" id="searchBtn">Refresh List</button>
+        </div>
 
-      <div class="summary">
-        <div id="resultsText"></div>
-        <div>Currency: Philippine Peso (₱)</div>
-      </div>
+        <div class="summary">
+          <div id="resultsText">Loading transactions...</div>
+          <div>Currency: <span class="font-bold text-slate-800">PHP (₱)</span></div>
+        </div>
 
       <div class="table-wrapper">
         <table>
@@ -353,34 +441,31 @@
             <col class="col-amount">
             <col class="col-action">
           </colgroup>
+        <div class="table-wrapper">
+          <table id="transactionTable">
+            <colgroup>
+              <col style="width: 140px;">
+              <col style="width: auto;">
+              <col style="width: 200px;">
+              <col style="width: 140px;">
+              <col style="width: 180px;">
+            </colgroup>
 
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Transaction</th>
-              <th>Method</th>
-              <th>Reference</th>
-              <th>Status</th>
-              <th class="amount">Amount</th>
-              <th class="action">Action</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Transaction Name</th>
+                <th>Reference ID</th>
+                <th>Status</th>
+                <th class="amount">Amount Paid</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Detail Modal -->
-  <div id="detailModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Payment Details</h2>
-        <button class="close-btn" onclick="closeModal()">&times;</button>
-      </div>
-      <div id="modalBody"></div>
-    </div>
-  </div>
+  </main>
 
   <script>
     const transactions = [
@@ -492,6 +577,10 @@
         paidAt: "2026-02-01 11:05:00",
         paymentDetails: { bank: "BPI", reference: "TRF-8291847" }
       }
+      { date: "2026-02-01", name: "Wildlife Farm Permit", reference: "WFP-2026-1029", status: "Paid", amount: 1250.00 },
+      { date: "2026-02-03", name: "Import Clearance (SPSIC)", reference: "SPS-293847", status: "Paid", amount: 499.50 },
+      { date: "2026-02-07", name: "Wildlife Transport License", reference: "WTR-384756", status: "Pending", amount: 0 },
+      { date: "2026-02-08", name: "CITES Export Permit", reference: "CIT-998877", status: "Failed", amount: 0 }
     ];
 
     const tableBody = document.getElementById("tableBody");
@@ -535,19 +624,25 @@
 
       if (!data.length) {
         tableBody.innerHTML = `<tr><td class="empty-row" colspan="7">No matching transactions found</td></tr>`;
+      if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td class="empty-row" colspan="5">No transactions found matching your search.</td></tr>`;
       } else {
         data.forEach((t, idx) => {
           const statusLabel = t.status === "successful" ? "Successful" : 
                              t.status === "unpaid" ? "Unpaid" :
                              t.status === "failed" ? "Failed" : t.status;
           
+        data.forEach(t => {
+          const statusClass = t.status.toLowerCase();
           tableBody.innerHTML += `
             <tr>
               <td>${t.date}</td>
               <td>${t.name}</td>
               <td>${t.method}</td>
+              <td class="font-semibold text-slate-800">${t.name}</td>
               <td class="ref">${t.reference}</td>
               <td><span class="pill ${t.status}">${statusLabel}</span></td>
+              <td><span class="pill ${statusClass}">${t.status}</span></td>
               <td class="amount">${peso.format(t.amount)}</td>
               <td class="action"><button class="btn-view" onclick="showDetails(${idx})">View</button></td>
             </tr>
@@ -678,6 +773,7 @@
 
     function closeModal() {
       document.getElementById("detailModal").classList.remove("active");
+      resultsText.textContent = `Showing ${data.length} of ${transactions.length} entries`;
     }
 
     function applyFilters() {
@@ -693,6 +789,15 @@
           (s === "all" || t.status === s)
         )
       );
+      const query = searchInput.value.toLowerCase();
+      const status = statusFilter.value;
+      const filtered = transactions.filter(t => {
+        const matchesSearch = t.name.toLowerCase().includes(query) || 
+                              t.reference.toLowerCase().includes(query);
+        const matchesStatus = status === "all" || t.status.toLowerCase() === status;
+        return matchesSearch && matchesStatus;
+      });
+      render(filtered);
     }
 
     render(transactions);
@@ -703,6 +808,11 @@
     // Close modal when clicking outside
     document.getElementById("detailModal").addEventListener("click", function(e) {
       if (e.target === this) closeModal();
+    });
+    document.getElementById("searchBtn").addEventListener("click", () => {
+        searchInput.value = "";
+        statusFilter.value = "all";
+        render(transactions);
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

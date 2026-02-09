@@ -1,379 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wildlife Trade Permit</title>
-     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-</head>
-<body>
+    <title>Wildlife Trade Permit | DENR Portal</title>
 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen text-slate-900">
     {% include 'user/header.html' %}
 
+    <div class="container mx-auto px-4 mt-8">
 
-    <!-- Wildlife Trade Permit (Minimalist, header-based green accents, hover effects) -->
-<section class="w-full px-4 md:px-10 py-8">
-  <!-- Title -->
-  <div class="rounded-2xl bg-white border border-green-200 p-6">
-    <h2 class="text-center text-2xl md:text-3xl font-semibold text-slate-900">
-      WILDLIFE TRADE PERMIT
-    </h2>
-    <p class="mt-2 text-center text-slate-500 text-sm">
-    </p>
-  </div>
-
-  <!-- Instructions -->
-  <div class="mt-4 rounded-2xl bg-green-50 border border-green-200 p-5">
-    <h3 class="text-sm font-semibold text-green-800 mb-2">Instructions</h3>
-    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-600">
-      <li>Select wildlife category and fill in species, quantity, purpose, origin, and destination.</li>
-      <li>Upload all required documents (buyer/seller details & license, possession permit, transport plan, proof of legal acquisition).</li>
-      <li>The <strong>Apply</strong> button will activate once all required fields and uploads are complete.</li>
-    </ol>
-  </div>
-
-  <!-- Form -->
-  <form id="wildlifeForm" class="mt-6">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <!-- Left: Trade Details -->
-      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
-        <h3 class="text-slate-900 font-semibold text-lg">Trade Details</h3>
-        <p class="text-slate-500 text-sm mt-1">Fill out required fields.</p>
-
-        <div class="mt-5 space-y-4">
-          <!-- Wildlife Category (dropdown) -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Wildlife Category <span class="text-red-600">*</span>
-            </label>
-            <select
-              id="wildlifeCategory"
-              name="wildlife_category"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
-                     hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="" disabled selected>Select category</option>
-              <option value="Live Wildlife">Live Wildlife</option>
-              <option value="Wildlife Products/By-products">Wildlife Products/By-products</option>
-              <option value="Captured/Rescued Wildlife">Captured/Rescued Wildlife</option>
-              <option value="Breeding Stock">Breeding Stock</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <!-- Species Detail -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Species Detail <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              id="speciesDetail"
-              name="species_detail"
-              required
-              placeholder="e.g., Scientific name / common name"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Quantity (number) -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Quantity <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="number"
-              id="quantity"
-              name="quantity"
-              required
-              min="1"
-              step="1"
-              placeholder="Enter quantity"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-            <p class="text-xs text-slate-500 mt-2">Use whole numbers only.</p>
-          </div>
-
-          <!-- Purpose -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Purpose <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              id="purpose"
-              name="purpose"
-              required
-              placeholder="e.g., Sale, Transfer, Breeding, Exhibition"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Origin & Destination -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
-                Origin <span class="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="origin"
-                name="origin"
-                required
-                placeholder="Location / Source"
-                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                       placeholder:text-slate-400 transition hover:border-green-300
-                       focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">
-                Destination <span class="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="destination"
-                name="destination"
-                required
-                placeholder="Delivery location"
-                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                       placeholder:text-slate-400 transition hover:border-green-300
-                       focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-          </div>
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
+                Wildlife Trade Permit
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Biodiversity Management Bureau • Wildlife Resources Division
+            </p>
         </div>
-      </div>
 
-      <!-- Right: Uploads -->
-      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
-        <h3 class="text-slate-900 font-semibold text-lg">Attachments</h3>
-        <p class="text-slate-500 text-sm mt-1">Upload the required documents.</p>
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-        <div class="mt-5 space-y-5">
-          <!-- Buyer/Seller Details -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Buyer / Seller Details <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="detailsFile" type="file" name="buyer_seller_details" required
-                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="detailsName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+            <form id="wildlifeForm" action="#" method="POST" enctype="multipart/form-data">
+                
+                <div class="space-y-6">
+                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-paw"></i> Trade Specifications
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Wildlife Category <span class="text-red-500">*</span></label>
+                            <select id="wildlifeCategory" name="wildlife_category" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none bg-white font-medium text-gray-700 text-sm appearance-none">
+                                <option value="" disabled selected>Select category...</option>
+                                <option value="Live">Live Wildlife</option>
+                                <option value="By-products">Wildlife Products/By-products</option>
+                                <option value="Captured">Rescued Wildlife</option>
+                                <option value="Breeding">Breeding Stock</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Species Detail <span class="text-red-500">*</span></label>
+                            <input type="text" id="speciesDetail" name="species_detail" required placeholder="Scientific / Common Name" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Quantity <span class="text-red-500">*</span></label>
+                            <input type="number" id="quantity" name="quantity" required min="1" placeholder="Whole numbers only" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-bold text-gray-700 transition-all">
+                        </div>
+                    </div>
 
-          <!-- Buyer/Seller License -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Buyer / Seller License <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="licenseFile" type="file" name="buyer_seller_license" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="licenseName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Purpose <span class="text-red-500">*</span></label>
+                            <input type="text" id="purpose" name="purpose" required placeholder="e.g. Sale, Breeding" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Origin <span class="text-red-500">*</span></label>
+                            <input type="text" id="origin" name="origin" required placeholder="Source Location" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Destination <span class="text-red-500">*</span></label>
+                            <input type="text" id="destination" name="destination" required placeholder="Delivery Location" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
+                    </div>
+                </div>
 
-          <!-- Wildlife Possession Permit -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Wildlife Possession Permit <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="possessionFile" type="file" name="wildlife_possession_permit" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="possessionName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+                <div class="mt-12 mb-6">
+                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open"></i> Mandatory Documentation
+                    </h3>
+                </div>
 
-          <!-- Proof of Legal Acquisition -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Proof of Legal Acquisition <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="legalFile" type="file" name="proof_legal_acquisition" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="legalName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Buyer / Seller Details</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="detailsFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-users-rectangle text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Personal Info</p>
+                            <p id="detailsName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
 
-          <!-- Transport Plan -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Transport Plan <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="transportFile" type="file" name="transport_plan" required
-                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="transportName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Trade License</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="licenseFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-id-card text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload WTRL/WCEP</p>
+                            <p id="licenseName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
 
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Possession Permit</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="possessionFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-shield-halved text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload CWR/WFP</p>
+                            <p id="possessionName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Legal Acquisition</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="legalFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-file-signature text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Proof</p>
+                            <p id="legalName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Transport Plan</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="transportFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-map-location-dot text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Logistics Plan</p>
+                            <p id="transportName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Apply activates once all trade data and 5 mandatory technical files are confirmed.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-green-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    </div>
+                </div>
+            </form>
         </div>
-      </div>
-    </div>
-
-    <!-- Sticky action bar -->
-    <div class="sticky bottom-0 mt-6">
-      <div class="rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4
-                  flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <p class="text-slate-500 text-sm">
-          Apply is enabled when all required fields and documents are provided.
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
+            Biodiversity Management Bureau • Wildlife Regulatory Section 2026
         </p>
-
-        <div class="flex gap-3">
-          <button type="reset"
-            class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
-            Clear
-          </button>
-
-          <button id="submitBtn" type="submit" disabled
-            class="px-7 py-3 rounded-xl bg-slate-200 text-slate-400 font-semibold cursor-not-allowed transition">
-            Apply
-          </button>
-        </div>
-      </div>
     </div>
-  </form>
-</section>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("wildlifeForm");
-  const submitBtn = document.getElementById("submitBtn");
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('wildlifeForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const fields = ['wildlifeCategory', 'speciesDetail', 'quantity', 'purpose', 'origin', 'destination'];
+            const fileConfigs = [
+                { id: 'detailsFile', name: 'detailsName' },
+                { id: 'licenseFile', name: 'licenseName' },
+                { id: 'possessionFile', name: 'possessionName' },
+                { id: 'legalFile', name: 'legalName' },
+                { id: 'transportFile', name: 'transportName' }
+            ];
 
-  // inputs
-  const wildlifeCategory = document.getElementById("wildlifeCategory");
-  const speciesDetail = document.getElementById("speciesDetail");
-  const quantity = document.getElementById("quantity");
-  const purpose = document.getElementById("purpose");
-  const origin = document.getElementById("origin");
-  const destination = document.getElementById("destination");
+            function checkValidation() {
+                const allFieldsValid = fields.every(id => {
+                    const el = document.getElementById(id);
+                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
+                });
+                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-  // files
-  const detailsFile = document.getElementById("detailsFile");
-  const licenseFile = document.getElementById("licenseFile");
-  const possessionFile = document.getElementById("possessionFile");
-  const legalFile = document.getElementById("legalFile");
-  const transportFile = document.getElementById("transportFile");
+                if (allFieldsValid && allFilesValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                }
+            }
 
-  // labels
-  const detailsName = document.getElementById("detailsName");
-  const licenseName = document.getElementById("licenseName");
-  const possessionName = document.getElementById("possessionName");
-  const legalName = document.getElementById("legalName");
-  const transportName = document.getElementById("transportName");
+            fileConfigs.forEach(f => {
+                const input = document.getElementById(f.id);
+                const display = document.getElementById(f.name);
+                input.addEventListener('change', () => {
+                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                    checkValidation();
+                });
+            });
 
-  const setName = (labelEl, inputEl) => {
-    labelEl.textContent = (inputEl.files && inputEl.files.length)
-      ? `Selected: ${inputEl.files[0].name}`
-      : "";
-  };
+            form.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('input', checkValidation);
+                el.addEventListener('change', checkValidation);
+            });
 
-  function isValid() {
-    if (!wildlifeCategory.value) return false;
-    if (!speciesDetail.value.trim()) return false;
-    if (!quantity.value || Number(quantity.value) < 1) return false;
-    if (!purpose.value.trim()) return false;
-    if (!origin.value.trim()) return false;
-    if (!destination.value.trim()) return false;
-
-    if (detailsFile.files.length === 0) return false;
-    if (licenseFile.files.length === 0) return false;
-    if (possessionFile.files.length === 0) return false;
-    if (legalFile.files.length === 0) return false;
-    if (transportFile.files.length === 0) return false;
-
-    return true;
-  }
-
-  function toggleSubmit() {
-    if (isValid()) {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove("bg-slate-200", "text-slate-400", "cursor-not-allowed");
-      submitBtn.classList.add("bg-green-700", "text-white", "hover:bg-green-800");
-    } else {
-      submitBtn.disabled = true;
-      submitBtn.classList.add("bg-slate-200", "text-slate-400", "cursor-not-allowed");
-      submitBtn.classList.remove("bg-green-700", "text-white", "hover:bg-green-800");
-    }
-  }
-
-  // listeners
-  form.addEventListener("input", toggleSubmit);
-  form.addEventListener("change", toggleSubmit);
-
-  detailsFile.addEventListener("change", () => { setName(detailsName, detailsFile); toggleSubmit(); });
-  licenseFile.addEventListener("change", () => { setName(licenseName, licenseFile); toggleSubmit(); });
-  possessionFile.addEventListener("change", () => { setName(possessionName, possessionFile); toggleSubmit(); });
-  legalFile.addEventListener("change", () => { setName(legalName, legalFile); toggleSubmit(); });
-  transportFile.addEventListener("change", () => { setName(transportName, transportFile); toggleSubmit(); });
-
-  form.addEventListener("reset", () => {
-    setTimeout(() => {
-      detailsName.textContent = "";
-      licenseName.textContent = "";
-      possessionName.textContent = "";
-      legalName.textContent = "";
-      transportName.textContent = "";
-      toggleSubmit();
-    }, 0);
-  });
-
-  // init
-  toggleSubmit();
-});
-</script>
-
-
-    
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                setTimeout(() => {
+                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    checkValidation();
+                }, 10);
+            });
+        });
+    </script>
 </body>
 </html>
