@@ -1,75 +1,88 @@
-<header class="bg-green-700 text-white shadow-lg sticky top-0 z-50">
-  <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-    
-    <div class="flex items-center gap-3">
-      <img src="{{ url_for('static', filename='images/denr.jpg') }}" 
-           alt="DENR Logo" 
-           class="h-12 w-12 object-contain bg-white rounded-full p-0.5">
-      <h1 class="text-white text-3xl font-bold tracking-tight">DENR</h1>
-    </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <div class="flex items-center gap-8">
-      
-      <div class="hidden md:flex items-center gap-6 border-r border-green-600 pr-8">
-        <a href="/user/dashboard" class="text-white hover:text-green-200 font-medium transition-colors">Home</a>
-        <a href="/user/application" class="text-white hover:text-green-200 font-medium transition-colors">Application</a>
-        <a href="/user/inventory" class="text-white hover:text-green-200 font-medium transition-colors">Inventory</a>
-        <div class="dropdown">
-    <a href="javascript:void(0)" 
-       class="text-white hover:text-green-200 font-medium transition-colors dropdown-toggle flex items-center gap-1" 
-       id="requestDropdown" 
-       data-bs-toggle="dropdown" 
-       aria-expanded="false">
-        Request
-    </a>
-    
-    <ul class="dropdown-menu shadow-lg border-0 mt-2" aria-labelledby="requestDropdown">
-        <li>
-            <a class="dropdown-item py-2 flex items-center gap-2" href="/user/service/service">
-                <span></span> Service Request
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item py-2 flex items-center gap-2" href="/user/compensation/typhoon-pest-damage">
-                <span></span> Compensation Request
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item py-2 flex items-center gap-2" href="/user/license/license">
-                <span></span> Licensing/Permit Request
-            </a>
-        </li>
-    </ul>
-</div>
-        <a href="/user/inventory/stock-history" class="text-white hover:text-green-200 font-medium transition-colors">History</a>
-      </div>
-
-      <div class="dropdown">
-        <button class="hover:opacity-80 transition-all focus:outline-none flex items-center" 
-                type="button" 
-                id="profileDropdown" 
-                data-bs-toggle="dropdown" 
-                aria-expanded="false">
-          <img src="https://ui-avatars.com/api/?name=User&background=fff&color=15803d" 
-               alt="Profile" 
-               class="h-10 w-10 rounded-full border-2 border-white shadow-md">
-        </button> 
+<header class="bg-green-700 text-white shadow-md sticky top-0 z-50">
+    <nav class="container mx-auto px-4 py-2 flex justify-between items-center">
         
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="profileDropdown">
-          <li>
-              <a class="dropdown-item py-2 flex items-center gap-2" href="/user/profile">
-                  <span>👤</span> Profile
-              </a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li>
-              <a class="dropdown-item py-2 text-danger flex items-center gap-2" href="/">
-                  <span>🚪</span> Logout
-              </a>
-          </li>
-        </ul>
-      </div>
-    </div>
+        <div class="flex items-center gap-2 group cursor-pointer" onclick="window.location.href='/user/dashboard'">
+            <img src="{{ url_for('static', filename='images/denr.jpg') }}" 
+                 alt="DENR Logo" 
+                 class="h-9 w-9 object-contain bg-white rounded-full p-0.5 shadow-sm transition-transform group-hover:scale-105">
+            <div class="flex flex-col leading-none">
+                <h1 class="text-white text-xl font-bold tracking-tight uppercase">DENR</h1>
+                <span class="text-[8px] text-green-200 font-medium tracking-widest uppercase">Department of Environtment and Natural Resources</span>
+            </div>
+        </div>
 
-  </nav>
+        <div class="flex items-center gap-4">
+            
+            <div class="hidden lg:flex items-center gap-1 border-r border-green-600/50 pr-4">
+                <a href="/user/dashboard" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
+                    Home
+                </a>
+                <a href="/user/application" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
+                    Application
+                </a>
+                <a href="/user/inventory" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
+                    Inventory
+                </a>
+                <a href="/user/service/service" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
+                    Service
+                </a>
+                <a href="/user/license/license" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
+                    Licensing
+                </a>
+                <a href="/user/inventory/stock-history" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
+                    History
+                </a>
+            </div>
+
+            <div class="dropdown">
+                <button class="flex items-center gap-2 bg-green-800/40 hover:bg-green-800 px-2 py-1 rounded-full transition-all border border-white/20 focus:outline-none" 
+                        type="button" 
+                        id="profileDropdown" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
+                    <img src="https://ui-avatars.com/api/?name=User&background=fff&color=15803d&bold=true" 
+                         alt="Profile" 
+                         class="h-7 w-7 rounded-full border border-white/40">
+                    <i class="fa-solid fa-chevron-down text-[9px] text-green-200"></i>
+                </button> 
+                
+                <ul class="dropdown-menu dropdown-menu-end shadow-xl border-0 mt-2 rounded-lg p-1 animate-fade-in" aria-labelledby="profileDropdown" style="min-width: 160px;">
+                    <li class="px-2 py-1 mb-1">
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Account</p>
+                    </li>
+                    <li>
+                        <a class="dropdown-item rounded py-1.5 flex items-center gap-3 text-gray-700 hover:bg-green-50 transition-colors no-underline" href="/user/profile">
+                            <i class="fa-solid fa-user-gear text-green-700 text-sm w-4 text-center"></i>
+                            <span class="font-medium text-[13px]">Profile</span>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider bg-gray-100 my-1"></li>
+                    <li>
+                        <a class="dropdown-item rounded py-1.5 flex items-center gap-3 text-red-600 hover:bg-red-50 transition-colors no-underline" href="/">
+                            <i class="fa-solid fa-right-from-bracket text-red-600 text-sm w-4 text-center"></i>
+                            <span class="font-medium text-[13px]">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </nav>
 </header>
+
+<style>
+    /* Compact animation */
+    .animate-fade-in {
+        animation: fadeIn 0.15s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    /* Hover override for Bootstrap */
+    .dropdown-item:hover {
+        background-color: #f0fdf4 !important;
+    }
+</style>

@@ -3,60 +3,470 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Service</title>
+    <title>All Services & Trainings - DENR TLPH</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+            min-height: 100vh;
+        }
+
+        .page-title h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #2d5016;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            display: inline-block;
+            text-shadow: 2px 2px 4px rgba(45, 80, 22, 0.1);
+        }
+
+        .page-title h1::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(90deg, #2d5016, #4a7c59, #2d5016);
+            border-radius: 2px;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 25px 15px 55px;
+            border-radius: 50px;
+            border: 2px solid #d1dbcf;
+            background: white;
+            box-shadow: 0 4px 15px rgba(45, 80, 22, 0.05);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 2px solid #2d5016;
+            background: transparent;
+            color: #2d5016;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: #2d5016;
+            color: white;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(45, 80, 22, 0.08);
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 6px; height: 100%;
+            background: linear-gradient(180deg, #2d5016 0%, #4a7c59 100%);
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            border-color: #4a7c59;
+            box-shadow: 0 15px 40px rgba(45, 80, 22, 0.15);
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            background-color: #f0f4ef;
+            color: #2d5016;
+            border: 1px solid #d1dbcf;
+        }
+
+        .btn-custom-apply {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+            color: white !important;
+            border-radius: 50px;
+            font-weight: 700;
+            padding: 12px 30px;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-custom-apply:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(45, 80, 22, 0.3);
+        }
+
+        .meta-item i {
+            color: #4a7c59;
+            margin-right: 8px;
+        }
+
+        #noResults {
+            display: none;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            border: 2px dashed #d1dbcf;
+            text-align: center;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #4a7c59;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 50px;
+            transition: 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #2d5016;
+            transform: translateX(-5px);
+        }
+    </style>
 </head>
 <body>
-        {% include 'user/header.html' %}
+    {% include 'user/header.html' %}
 
-        <div class="min-h-screen bg-gray-50 py-12 px-4">
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-6xl mx-auto px-4 py-12 text-center">
         
-        <h1 class="text-5xl font-black text-green-800 text-center mb-10 tracking-tight uppercase">
-            Service Request
-        </h1>
+        <div class="page-title mb-12">
+            <h1>All Services & Trainings</h1>
+        </div>
 
-        <div class="flex flex-col gap-4">
+        <div class="search-container">
+            <i class="fas fa-search absolute left-[20px] top-1/2 -translate-y-1/2 text-[#4a7c59]"></i>
+            <input type="text" id="serviceSearch" class="search-input" placeholder="Search by service name (e.g. Typhoon, Loan, GAP...)">
+        </div>
+
+        <div class="filter-group">
+            <button class="filter-btn active" data-filter="all">All Services</button>
+            <button class="filter-btn" data-filter="Compensation Request">Compensation</button>
+            <button class="filter-btn" data-filter="Seminar / Training">Seminars</button>
+            <button class="filter-btn" data-filter="Farm Visit Service">Farm Visits</button>
+            <button class="filter-btn" data-filter="Fertilizer / Pesticide">Chemicals</button>
+            <button class="filter-btn" data-filter="Financial Assistance">Financial</button>
+        </div>
+
+        <div class="flex flex-col gap-6 text-left" id="serviceList">
             
-            <a href="/user/service/farm" class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group no-underline">
-                <span class="flex items-center gap-4">
-                    <span class="text-2xl">🚜</span> Farm Visit
-                </span>
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </a>
+            <div id="noResults" class="w-full">
+                <i class="fas fa-search-minus text-5xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-700">No matching services found</h3>
+                <p class="text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
+            </div>
 
-            <a href="/user/seminar" class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group no-underline">
-                <span class="flex items-center gap-4">
-                    <span class="text-2xl">🎓</span> Seminar Training
-                </span>
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </a>
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Compensation Request">
+                <div class="flex-1">
+                    <span class="type-badge">Compensation Request</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Typhoon Damage Compensation</h3>
+                    <p class="text-gray-600">Apply for agricultural relief and compensation due to typhoon or storm damage.</p>
+                </div>
+                <a href="/user/compensation/typhoon" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
 
-            <a href="/user/service/fertilizer/fertilizer" class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group no-underline">
-                <span class="flex items-center gap-4">
-                    <span class="text-2xl">🌱</span> Fertilizer / Pesticide
-                </span>
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </a>
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Compensation Request">
+                <div class="flex-1">
+                    <span class="type-badge">Compensation Request</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Pest Damage Compensation</h3>
+                    <p class="text-gray-600">Claim for financial assistance or support regarding significant crop loss from pests.</p>
+                </div>
+                <a href="/user/compensation/pest" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
 
-            <a href="/user/service/financial/financial" class="w-full bg-green-700 hover:bg-green-800 text-white text-xl font-bold py-6 px-8 rounded-2xl shadow-md transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-between group no-underline">
-                <span class="flex items-center gap-4">
-                    <span class="text-2xl\">💵</span> Financial Assistance
-                </span>
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </a>
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Seminar / Training">
+                <div class="flex-1">
+                    <span class="type-badge">Seminar / Training</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Good Agricultural Practices (GAP) Training</h3>
+                    <p class="text-gray-600 mb-4">Master sustainable farming techniques to improve yields and protect the environment.</p>
+                    <div class="flex flex-wrap gap-6 text-sm font-medium text-gray-500">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 2 Days</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 30 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/gap/apply" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Seminar / Training">
+                <div class="flex-1">
+                    <span class="type-badge">Seminar / Training</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Pest & Disease Management Seminar</h3>
+                    <p class="text-gray-600 mb-4">Integrated management strategies and disease prevention for healthy crops.</p>
+                    <div class="flex flex-wrap gap-6 text-sm font-medium text-gray-500">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 1 Day</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 40 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/pest-disease/apply" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Seminar / Training">
+                <div class="flex-1">
+                    <span class="type-badge">Seminar / Training</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Safe Pesticide Handling Training</h3>
+                    <p class="text-gray-600 mb-4">Training on proper pesticide application, storage, and emergency safety measures.</p>
+                    <div class="flex flex-wrap gap-6 text-sm font-medium text-gray-500">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 1 Day</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 35 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/pesticide/apply" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Seminar / Training">
+                <div class="flex-1">
+                    <span class="type-badge">Seminar / Training</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Nursery/Propagation Seminar</h3>
+                    <p class="text-gray-600 mb-4">Plant propagation techniques, nursery management, and seedling production.</p>
+                    <div class="flex flex-wrap gap-6 text-sm font-medium text-gray-500">
+                        <span class="meta-item"><i class="fas fa-clock"></i> 2 Days</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 25 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/nursery/apply" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Seminar / Training">
+                <div class="flex-1">
+                    <span class="type-badge">Seminar / Training</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Regulatory Compliance Orientation</h3>
+                    <p class="text-gray-600 mb-4">Understanding agricultural regulations and necessary documentation procedures.</p>
+                    <div class="flex flex-wrap gap-6 text-sm font-medium text-gray-500">
+                        <span class="meta-item"><i class="fas fa-clock"></i> Half Day</span>
+                        <span class="meta-item"><i class="fas fa-users"></i> Max 50 participants</span>
+                    </div>
+                </div>
+                <a href="/user/seminar/regulatory/apply" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Farm Visit Service">
+                <div class="flex-1">
+                    <span class="type-badge">Farm Visit Service</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Initial Farm Visit</h3>
+                    <p class="text-gray-600">Request a preliminary inspection and assessment of your agricultural site.</p>
+                </div>
+                <a href="/user/service/farm/initial-visit" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Farm Visit Service">
+                <div class="flex-1">
+                    <span class="type-badge">Farm Visit Service</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Compliance Inspection</h3>
+                    <p class="text-gray-600">Official site inspection to ensure adherence to farm standards and protocols.</p>
+                </div>
+                <a href="/user/service/farm/compliance" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Farm Visit Service">
+                <div class="flex-1">
+                    <span class="type-badge">Farm Visit Service</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Disease/Pest Investigation</h3>
+                    <p class="text-gray-600">On-site technical support to diagnose crop diseases or pest infestations.</p>
+                </div>
+                <a href="/user/service/farm/disease" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Farm Visit Service">
+                <div class="flex-1">
+                    <span class="type-badge">Farm Visit Service</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Soil/Crop Evaluation</h3>
+                    <p class="text-gray-600">Evaluation of soil quality and crop performance for better farm productivity.</p>
+                </div>
+                <a href="/user/service/farm/soil" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Farm Visit Service">
+                <div class="flex-1">
+                    <span class="type-badge">Farm Visit Service</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Follow Up Visit</h3>
+                    <p class="text-gray-600">Scheduled re-visits to check the progress of implemented farm recommendations.</p>
+                </div>
+                <a href="/user/service/farm/visit" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fertilizer / Pesticide">
+                <div class="flex-1">
+                    <span class="type-badge">Fertilizer / Pesticide</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Input Usage Approval</h3>
+                    <p class="text-gray-600">Request official approval for specialized agricultural input applications.</p>
+                </div>
+                <a href="/user/service/fertilizer/input-usage" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fertilizer / Pesticide">
+                <div class="flex-1">
+                    <span class="type-badge">Fertilizer / Pesticide</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Chemical Registration/Clearance</h3>
+                    <p class="text-gray-600">Clearance processing for agricultural chemical registrations and safety protocols.</p>
+                </div>
+                <a href="/user/service/fertilizer/chemical-registration" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fertilizer / Pesticide">
+                <div class="flex-1">
+                    <span class="type-badge">Fertilizer / Pesticide</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Emergency Pest Control Request</h3>
+                    <p class="text-gray-600">Urgent request for immediate technical intervention against pest outbreaks.</p>
+                </div>
+                <a href="/user/service/fertilizer/emergency-post-control" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fertilizer / Pesticide">
+                <div class="flex-1">
+                    <span class="type-badge">Fertilizer / Pesticide</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Fertilizer Recommendation</h3>
+                    <p class="text-gray-600">Scientific recommendations on fertilizer types and dosage for your specific crops.</p>
+                </div>
+                <a href="/user/service/fertilizer/fertilizer-recommendation" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fertilizer / Pesticide">
+                <div class="flex-1">
+                    <span class="type-badge">Fertilizer / Pesticide</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Pesticide Recommendation</h3>
+                    <p class="text-gray-600">Technical advice on choosing the safest and most effective pesticides.</p>
+                </div>
+                <a href="/user/service/fertilizer/pesticide-recommendation" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Financial Assistance">
+                <div class="flex-1">
+                    <span class="type-badge">Financial Assistance</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Subsidy Application</h3>
+                    <p class="text-gray-600">Application for government subsidies for agricultural equipment or seeds.</p>
+                </div>
+                <a href="/user/service/financial/subsidy" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Financial Assistance">
+                <div class="flex-1">
+                    <span class="type-badge">Financial Assistance</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Grant Assistance</h3>
+                    <p class="text-gray-600">Apply for farm innovation grants or project-based financial assistance.</p>
+                </div>
+                <a href="/user/service/financial/grant" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Financial Assistance">
+                <div class="flex-1">
+                    <span class="type-badge">Financial Assistance</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Loan Endorsement</h3>
+                    <p class="text-gray-600">Get an official endorsement for low-interest agricultural loans from partners.</p>
+                </div>
+                <a href="/user/service/financial/loan" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Financial Assistance">
+                <div class="flex-1">
+                    <span class="type-badge">Financial Assistance</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Crop Insurance Support</h3>
+                    <p class="text-gray-600">Assistance in filing and securing crop insurance coverage for your farm.</p>
+                </div>
+                <a href="/user/service/financial/crop" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+
+            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Financial Assistance">
+                <div class="flex-1">
+                    <span class="type-badge">Financial Assistance</span>
+                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Startup/Expansion Support</h3>
+                    <p class="text-gray-600">Guidance and financial planning for starting a new farm or expanding existing ones.</p>
+                </div>
+                <a href="/user/service/financial/startup" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
 
         </div>
 
-        <p class="text-center mt-8">
-            <a href="/user/dashboard" class="text-gray-500 hover:text-green-700 font-medium transition-colors">
-                ← Go back to Dashboard
+        <div class="mt-4">
+            <a href="/user/dashboard" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
-        </p>
+        </div>
     </div>
-</div>
 
+    <script>
+        const searchInput = document.getElementById('serviceSearch');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const items = document.querySelectorAll('.searchable-item');
+        const noResults = document.getElementById('noResults');
+
+        function filterItems() {
+            const searchText = searchInput.value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const name = item.querySelector('.service-name').innerText.toLowerCase();
+                const category = item.getAttribute('data-category');
+                
+                const matchesSearch = name.includes(searchText);
+                const matchesFilter = (activeFilter === 'all' || category === activeFilter);
+
+                if (matchesSearch && matchesFilter) {
+                    item.style.display = "flex";
+                    visibleCount++;
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            // Show or hide No Results message
+            noResults.style.display = (visibleCount === 0) ? "block" : "none";
+        }
+
+        // Search Input listener
+        searchInput.addEventListener('keyup', filterItems);
+
+        // Filter buttons listener
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterItems();
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
