@@ -1,6 +1,6 @@
 // Import Firebase
 import { app, auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, googleProvider, signInWithPopup } from './firebase-config.js';
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { philippineLocations } from './ph-locations.js';
 
@@ -476,13 +476,23 @@ if (signupForm) {
             const userCredential = await createUserWithEmailAndPassword(auth, registrationData.email, password);
             const user = userCredential.user;
             
-            // Save user profile to Firestore
+            // Determine role based on application type
+            let userRole = 'user';
+            const appType = registrationData.applicationType;
+            
+            if (appType === 'municipal') userRole = 'municipal';
+            else if (appType === 'national') userRole = 'national';
+            else if (appType === 'regional') userRole = 'regional';
+            else if (appType === 'super-admin') userRole = 'super-admin';
+            
+            // Save user profile to Firestore with role
             await setDoc(doc(db, 'users', user.uid), {
                 firstName: registrationData.firstName,
                 lastName: registrationData.lastName,
                 email: registrationData.email,
                 phone: registrationData.phone,
                 applicationType: registrationData.applicationType,
+                role: userRole,
                 ...profileData,
                 userType: 'farmer',
                 status: 'pending',
@@ -490,9 +500,20 @@ if (signupForm) {
             });
             
             console.log('Registration successful:', user);
+            alert('Registration successful!');
             
-            // Redirect to approval status page immediately
-            window.location.href = '/approval-status';
+            // Redirect based on role
+            if (userRole === 'municipal') {
+                window.location.href = '/municipal/dashboard';
+            } else if (userRole === 'national') {
+                window.location.href = '/national/dashboard';
+            } else if (userRole === 'regional') {
+                window.location.href = '/regional/dashboard';
+            } else if (userRole === 'super-admin') {
+                window.location.href = '/super-admin/dashboard';
+            } else {
+                window.location.href = '/approval-status';
+            }
         } catch (error) {
             console.error('Registration error:', error);
             alert('Registration failed: ' + error.message);
@@ -544,8 +565,32 @@ if (loginForm) {
             
             console.log('Login successful:', user);
             
-            // Redirect to user dashboard
-            window.location.href = '/user/dashboard';
+            // Get user role from Firestore
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                const userRole = userData.role || 'user';
+                
+                console.log('User role:', userRole);
+                
+                // Redirect based on role
+                if (userRole === 'municipal') {
+                    window.location.href = '/municipal/dashboard';
+                } else if (userRole === 'national') {
+                    window.location.href = '/national/dashboard';
+                } else if (userRole === 'regional') {
+                    window.location.href = '/regional/dashboard';
+                } else if (userRole === 'super-admin') {
+                    window.location.href = '/super-admin/dashboard';
+                } else {
+                    window.location.href = '/user/dashboard';
+                }
+            } else {
+                // Default to user dashboard if no role found
+                window.location.href = '/user/dashboard';
+            }
         } catch (error) {
             console.error('Login error:', error);
             alert('Login failed: ' + error.message);

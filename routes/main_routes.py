@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, session
 
 bp = Blueprint('main', __name__)
 
@@ -14,6 +14,35 @@ def login():
 @bp.route('/register')
 def register():
     return render_template('signup.html')
+
+# Landing pages for different roles
+@bp.route('/municipal/dashboard')
+def municipal_dashboard():
+    return render_template('municipal/landing-municipal.html')
+
+@bp.route('/national/dashboard')
+def national_dashboard():
+    return render_template('national/landing-national.html')
+
+@bp.route('/regional/dashboard')
+def regional_dashboard():
+    return render_template('regional/landing-regional.html')
+
+@bp.route('/super-admin/dashboard')
+def superadmin_dashboard():
+    return render_template('super-admin/landing-superadmin.html')
+
+@bp.route('/create-admin')
+def create_admin():
+    return render_template('create-admin.html')
+
+@bp.route('/create-firebase-admins')
+def create_firebase_admins():
+    return render_template('create-firebase-admins.html')
+
+@bp.route('/fix-admin-roles')
+def fix_admin_roles():
+    return render_template('fix-admin-roles.html')
 
 @bp.route('/farmer/dashboard')
 def farmer_dashboard():
