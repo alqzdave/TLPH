@@ -1,276 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Harvest</title>
+    <title>Harvest Permit | DENR Portal</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    
-    <!-- Leaflet CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Leaflet Draw -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 </head>
-<body>
+
+<body class="bg-gray-50 min-h-screen text-slate-900">
     {% include 'user/header.html' %}
 
-    <div class="min-h-screen bg-slate-50 py-12 px-4">
-    <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-blue-700 overflow-hidden">
-        
-        <div class="bg-blue-700 p-10 text-center">
-            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Collection / Harvest Permit</h1>
-            <p class="text-blue-100 text-sm mt-2 opacity-90 font-medium">Fisheries and Aquatic Resources Management Bureau</p>
+    <div class="container mx-auto px-4 mt-8">
+
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-blue-800">
+                Collection / Harvest Permit
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Fisheries and Aquatic Resources Management Bureau • Resource Extraction License
+            </p>
         </div>
 
-        <form action="#" method="POST" class="p-8 md:p-12 space-y-8">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Collection Area
-                    </label>
-                    <input type="text" required placeholder="Ex: Manila Bay, North Sector" 
-                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all">
-                </div>
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Gear / Method
-                    </label>
-                    <input type="text" required placeholder="Ex: Gill Net, Hook and Line" 
-                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all">
-                </div>
-            </div>
+            <form id="harvestForm" action="#" method="POST">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-            <div class="space-y-3">
-                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                    <span class="text-xl"></span> Collection Season / Dates
-                </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-400">START:</span>
-                        <input type="date" required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-400">END:</span>
-                        <input type="date" required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                    </div>
-                </div>
-            </div>
+                    <div class="space-y-8">
+                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-file-signature"></i> Permit Details
+                        </h3>
 
-            <hr class="border-slate-100">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Collection Area Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="areaName" required placeholder="Ex: Manila Bay, North Sector"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-medium text-gray-700 transition-all">
+                            </div>
 
-            <div class="space-y-4">
-                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center justify-between">
-                    <span class="flex items-center gap-2">
-                        <span class="text-xl">🏝️</span> Mark Your Fishing Site Boundaries
-                    </span>
-                    <span class="text-[10px] bg-blue-100 text-blue-700 px-3 py-1 rounded-full uppercase">Draw on Map</span>
-                </label>
-                
-                <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 space-y-3">
-                    <div class="flex items-start gap-3">
-                        <span class="text-2xl">💡</span>
-                        <div class="text-xs text-blue-900 space-y-1">
-                            <p class="font-bold">How to mark your fishing area:</p>
-                            <ol class="list-decimal list-inside space-y-1 text-blue-700">
-                                <li>Click the <strong>polygon tool</strong> (■) on the map</li>
-                                <li>Click multiple points on the map to draw your boundary</li>
-                                <li>Click the first point again to close the area</li>
-                                <li>Use dashed lines to show your fishing site boundaries</li>
-                            </ol>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Gear / Extraction Method <span class="text-red-500">*</span></label>
+                                <input type="text" id="gearMethod" required placeholder="Ex: Gill Net, Hook and Line"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-medium text-gray-700 transition-all">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Season Start <span class="text-red-500">*</span></label>
+                                    <input type="date" id="startDate" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-600 outline-none text-sm font-bold text-gray-700">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Season End <span class="text-red-500">*</span></label>
+                                    <input type="date" id="endDate" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-600 outline-none text-sm font-bold text-gray-700">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 text-center">
+                                <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Total Calculated Area</p>
+                                <p id="areaDisplay" class="text-3xl font-black text-blue-800">0.00 ha</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Map Container -->
-                <div class="relative">
-                    <div id="harvestMap" class="w-full h-[500px] rounded-2xl border-2 border-blue-200 relative z-10"></div>
-                    <button type="button" id="fullscreenHarvestBtn" class="absolute top-4 right-4 z-20 bg-white hover:bg-gray-100 p-2 rounded-lg shadow-md transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                    </button>
-                </div>
-                
-                <!-- Area Info Display -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-50 border-2 border-slate-200 rounded-xl p-4">
-                        <p class="text-xs font-bold text-slate-500 uppercase mb-2">Marked Area</p>
-                        <p id="areaDisplay" class="text-lg font-black text-blue-700">No area marked yet</p>
-                    </div>
-                    <div class="bg-slate-50 border-2 border-slate-200 rounded-xl p-4">
-                        <p class="text-xs font-bold text-slate-500 uppercase mb-2">Boundary Points</p>
-                        <p id="pointsDisplay" class="text-lg font-black text-blue-700">0 points</p>
+
+                    <div class="space-y-4">
+                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot"></i> Geospatial Boundary <span class="text-red-500">*</span>
+                        </h3>
+                        
+                        <div class="relative group">
+                            <div id="harvestMap" class="w-full h-[400px] rounded-2xl border-2 border-gray-200 z-10"></div>
+                            <button type="button" id="fullscreenHarvestBtn" class="absolute top-4 right-4 z-20 bg-white hover:bg-gray-100 p-2 rounded-lg shadow-md transition-all">
+                                <i class="fa-solid fa-expand text-blue-600"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-gray-400 font-medium uppercase italic text-center tracking-wide">Use the drawing tools to define the harvest perimeter on the map.</p>
                     </div>
                 </div>
-                
-                <!-- Hidden input for coordinates -->
+
                 <input type="hidden" name="site_coordinates" id="siteCoordinates" required>
                 <input type="hidden" name="site_area" id="siteArea">
-            </div>
 
-            <div class="pt-6">
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.02] hover:-translate-y-1 active:scale-95 uppercase tracking-widest text-xl">
-                    Generate Permit Request
-                </button>
-            </div>
-
-        </form>
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Generate button activates once all fields and map boundaries are confirmed.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-blue-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Generate Request</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
+            DENR FARMC Bureau • Regulatory Mapping Division 2026
+        </p>
     </div>
-</div>
 
-<script>
-// Initialize map
-const harvestMap = L.map('harvestMap').setView([12.8797, 121.7740], 6);
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const harvestForm = document.getElementById('harvestForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const areaName = document.getElementById('areaName');
+            const gearMethod = document.getElementById('gearMethod');
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            const siteCoordinates = document.getElementById('siteCoordinates');
 
-// Add OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19
-}).addTo(harvestMap);
+            // Initialize Leaflet Map
+            const map = L.map('harvestMap').setView([12.8797, 121.7740], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
 
-// Feature group for drawn items
-const drawnItems = new L.FeatureGroup();
-harvestMap.addLayer(drawnItems);
+            const drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
 
-// Drawing controls
-const drawControl = new L.Control.Draw({
-    position: 'topright',
-    draw: {
-        polygon: {
-            shapeOptions: {
-                color: '#3b82f6',
-                weight: 3,
-                opacity: 0.8,
-                dashArray: '10, 10',
-                fillColor: '#3b82f6',
-                fillOpacity: 0.2
-            },
-            allowIntersection: false,
-            drawError: {
-                color: '#ef4444',
-                message: '<strong>Error!</strong> Boundaries cannot cross each other.'
+            const drawControl = new L.Control.Draw({
+                position: 'topright',
+                draw: {
+                    polygon: { 
+                        shapeOptions: { 
+                            color: '#1e40af', 
+                            weight: 3, 
+                            fillOpacity: 0.2,
+                            dashArray: '5, 10' 
+                        } 
+                    },
+                    polyline: false, circle: false, rectangle: false, marker: false, circlemarker: false
+                },
+                edit: { featureGroup: drawnItems, remove: true }
+            });
+            map.addControl(drawControl);
+
+            function checkValidation() {
+                const isAreaNameValid = areaName.value.trim() !== "";
+                const isGearValid = gearMethod.value.trim() !== "";
+                const isDatesValid = startDate.value !== "" && endDate.value !== "";
+                const isMapValid = siteCoordinates.value !== "";
+
+                if (isAreaNameValid && isGearValid && isDatesValid && isMapValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                }
             }
-        },
-        polyline: false,
-        circle: false,
-        rectangle: false,
-        marker: false,
-        circlemarker: false
-    },
-    edit: {
-        featureGroup: drawnItems,
-        remove: true
-    }
-});
-harvestMap.addControl(drawControl);
 
-// Handle polygon creation
-harvestMap.on('draw:created', function (e) {
-    const layer = e.layer;
-    
-    // Clear previous drawings
-    drawnItems.clearLayers();
-    
-    // Add new drawing
-    drawnItems.addLayer(layer);
-    
-    // Get coordinates
-    const coords = layer.getLatLngs()[0];
-    const coordsArray = coords.map(c => [c.lat, c.lng]);
-    
-    // Calculate area (approximate)
-    const area = L.GeometryUtil.geodesicArea(coords);
-    const areaInHectares = (area / 10000).toFixed(2); // Convert to hectares
-    
-    // Update displays
-    document.getElementById('areaDisplay').textContent = `${areaInHectares} hectares`;
-    document.getElementById('pointsDisplay').textContent = `${coords.length} points`;
-    
-    // Save to hidden input
-    document.getElementById('siteCoordinates').value = JSON.stringify(coordsArray);
-    document.getElementById('siteArea').value = areaInHectares;
-});
+            map.on('draw:created', (e) => {
+                drawnItems.clearLayers();
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                
+                const coords = layer.getLatLngs()[0];
+                const area = L.GeometryUtil.geodesicArea(coords);
+                const areaInHa = (area / 10000).toFixed(2);
+                
+                document.getElementById('areaDisplay').textContent = `${areaInHa} ha`;
+                siteCoordinates.value = JSON.stringify(coords.map(c => [c.lat, c.lng]));
+                document.getElementById('siteArea').value = areaInHa;
+                checkValidation();
+            });
 
-// Handle polygon deletion
-harvestMap.on('draw:deleted', function () {
-    document.getElementById('areaDisplay').textContent = 'No area marked yet';
-    document.getElementById('pointsDisplay').textContent = '0 points';
-    document.getElementById('siteCoordinates').value = '';
-    document.getElementById('siteArea').value = '';
-});
+            map.on('draw:deleted', () => {
+                siteCoordinates.value = "";
+                document.getElementById('areaDisplay').textContent = "0.00 ha";
+                checkValidation();
+            });
 
-// Handle polygon edit
-harvestMap.on('draw:edited', function (e) {
-    const layers = e.layers;
-    layers.eachLayer(function (layer) {
-        const coords = layer.getLatLngs()[0];
-        const coordsArray = coords.map(c => [c.lat, c.lng]);
-        
-        const area = L.GeometryUtil.geodesicArea(coords);
-        const areaInHectares = (area / 10000).toFixed(2);
-        
-        document.getElementById('areaDisplay').textContent = `${areaInHectares} hectares`;
-        document.getElementById('pointsDisplay').textContent = `${coords.length} points`;
-        document.getElementById('siteCoordinates').value = JSON.stringify(coordsArray);
-        document.getElementById('siteArea').value = areaInHectares;
-    });
-});
+            [areaName, gearMethod, startDate, endDate].forEach(el => {
+                el.addEventListener('input', checkValidation);
+            });
 
-// Fullscreen toggle
-document.getElementById('fullscreenHarvestBtn').addEventListener('click', function() {
-    const mapContainer = document.getElementById('harvestMap');
-    
-    if (!document.fullscreenElement) {
-        if (mapContainer.requestFullscreen) {
-            mapContainer.requestFullscreen();
-        } else if (mapContainer.webkitRequestFullscreen) {
-            mapContainer.webkitRequestFullscreen();
-        }
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
-    }
-});
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                drawnItems.clearLayers();
+                siteCoordinates.value = "";
+                document.getElementById('areaDisplay').textContent = "0.00 ha";
+                setTimeout(checkValidation, 10);
+            });
 
-// Handle fullscreen change
-document.addEventListener('fullscreenchange', function() {
-    setTimeout(() => harvestMap.invalidateSize(), 100);
-});
+            document.getElementById('fullscreenHarvestBtn').addEventListener('click', () => {
+                const mapEl = document.getElementById('harvestMap');
+                if (!document.fullscreenElement) mapEl.requestFullscreen();
+                else document.exitFullscreen();
+            });
+        });
 
-document.addEventListener('webkitfullscreenchange', function() {
-    setTimeout(() => harvestMap.invalidateSize(), 100);
-});
-
-// Add area calculation utility
-L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
-    geodesicArea: function (latLngs) {
-        let area = 0;
-        const len = latLngs.length;
-        
-        if (len > 2) {
-            for (let i = 0; i < len; i++) {
-                const j = (i + 1) % len;
-                area += (latLngs[j].lng - latLngs[i].lng) * 
-                       (2 + Math.sin(latLngs[i].lat * Math.PI / 180) + 
-                        Math.sin(latLngs[j].lat * Math.PI / 180));
+        L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
+            geodesicArea: function (latLngs) {
+                let area = 0;
+                const len = latLngs.length;
+                if (len > 2) {
+                    for (let i = 0; i < len; i++) {
+                        const j = (i + 1) % len;
+                        area += (latLngs[j].lng - latLngs[i].lng) * (2 + Math.sin(latLngs[i].lat * Math.PI / 180) + Math.sin(latLngs[j].lat * Math.PI / 180));
+                    }
+                    area = area * 6378137 * 6378137 / 2;
+                }
+                return Math.abs(area);
             }
-            area = area * 6378137 * 6378137 / 2;
-        }
-        
-        return Math.abs(area);
-    }
-});
-</script>
-
+        });
+    </script>
 </body>
 </html>

@@ -1,448 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Fish Transport</title>
+    <title>Fish Transport Permit | DENR Portal</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    
-    <!-- Leaflet CSS and JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
-<body>
+
+<body class="bg-gray-50 min-h-screen text-slate-900">
     {% include 'user/header.html' %}
 
-    <div class="min-h-screen bg-slate-50 py-12 px-4">
-    <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-blue-700 overflow-hidden">
-        
-        <div class="bg-blue-700 p-10 text-center">
-            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Fish Transport Permit</h1>
-            <p class="text-blue-100 text-sm mt-2 opacity-90 font-medium">Fisheries Logistics and Resource Movement Office</p>
+    <div class="container mx-auto px-4 mt-8">
+
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-blue-800">
+                Fish Transport Permit
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Fisheries Logistics and Resource Movement • Transportation License
+            </p>
         </div>
 
-        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
-            
-            <!-- Map Section for Origin & Destination -->
-            <div class="space-y-4">
-                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                    <span class="text-xl">🗺️</span> Select Route (Origin & Destination)
-                </label>
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
+
+            <form id="transportForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <!-- Search boxes -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none">📍</span>
-                        <input type="text" id="searchOrigin" placeholder="Search Origin (e.g., Manila)" 
-                               class="w-full rounded-2xl border-2 border-slate-100 bg-slate-50 pl-14 pr-20 py-4 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                        <button type="button" id="searchOriginBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-blue-700 text-white text-xs rounded-lg hover:bg-blue-800 transition">
-                            Search
+                <div class="space-y-6 mb-12">
+                    <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-route"></i> Logistics & Route Mapping
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 font-bold text-lg">A</span>
+                            <input type="text" id="searchOrigin" placeholder="Search Origin (e.g., Navotas Port)" 
+                                   class="w-full rounded-xl border border-gray-300 bg-gray-50 pl-10 pr-20 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <button type="button" id="searchOriginBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-700 text-white text-[10px] font-black uppercase rounded-lg hover:bg-blue-800 transition">Set</button>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-red-500 font-bold text-lg">B</span>
+                            <input type="text" id="searchDestination" placeholder="Search Destination (e.g., Cebu Market)" 
+                                   class="w-full rounded-xl border border-gray-300 bg-gray-50 pl-10 pr-20 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <button type="button" id="searchDestinationBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-red-700 text-white text-[10px] font-black uppercase rounded-lg hover:bg-red-800 transition">Set</button>
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <div id="routeMap" class="w-full h-80 rounded-2xl border-2 border-gray-200 z-10"></div>
+                        <button type="button" id="fullscreenMapBtn" class="absolute top-4 right-4 z-20 bg-white hover:bg-gray-100 p-2 rounded-lg shadow-md transition-all">
+                            <i class="fa-solid fa-expand text-blue-600"></i>
                         </button>
                     </div>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-red-400 pointer-events-none">🎯</span>
-                        <input type="text" id="searchDestination" placeholder="Search Destination (e.g., Cebu)" 
-                               class="w-full rounded-2xl border-2 border-slate-100 bg-slate-50 pl-14 pr-20 py-4 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                        <button type="button" id="searchDestinationBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-red-700 text-white text-xs rounded-lg hover:bg-red-800 transition">
-                            Search
-                        </button>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[9px] font-black text-blue-700 uppercase tracking-widest ml-1">Point of Origin <span class="text-red-500">*</span></label>
+                            <input type="text" id="originDisplay" readonly required placeholder="Use map search to set..." 
+                                   class="w-full p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs font-bold text-blue-900">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-black text-red-700 uppercase tracking-widest ml-1">Point of Destination <span class="text-red-500">*</span></label>
+                            <input type="text" id="destinationDisplay" readonly required placeholder="Use map search to set..." 
+                                   class="w-full p-3 bg-red-50 border border-red-100 rounded-xl text-xs font-bold text-red-900">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-fish-fins"></i> Cargo Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Species <span class="text-red-500">*</span></label>
+                                <input type="text" id="species" required placeholder="Ex: Tilapia, Tuna"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-medium text-gray-700 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Quantity <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="number" id="quantity" required placeholder="0.00" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-bold text-gray-700">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-gray-400 text-[9px]">KG / MT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Transport Method <span class="text-red-500">*</span></label>
+                                <select id="method" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none bg-white font-medium text-gray-700 transition-all">
+                                    <option value="" disabled selected>Select method...</option>
+                                    <option value="open">Open Container</option>
+                                    <option value="closed">Refrigerated / Closed</option>
+                                    <option value="specialized">Specialized Tank</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Schedule <span class="text-red-500">*</span></label>
+                                <input type="datetime-local" id="schedule" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-bold text-gray-700">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-paperclip"></i> Mandatory Attachments
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center block">Cargo Invoice</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center h-32 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <i class="fa-solid fa-file-invoice-dollar text-2xl text-gray-300 mb-1"></i>
+                                    <input type="file" id="invoiceFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                                    <p id="invoiceName" class="text-[8px] text-blue-600 font-bold uppercase truncate w-full px-2"></p>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center block">Vehicle OR/CR</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center h-32 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <i class="fa-solid fa-truck-ramp-box text-2xl text-gray-300 mb-1"></i>
+                                    <input type="file" id="vehicleFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                                    <p id="vehicleName" class="text-[8px] text-blue-600 font-bold uppercase truncate w-full px-2"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Permit generation activates once all route data, cargo info, and files are confirmed.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-blue-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
                     </div>
                 </div>
                 
-                <!-- Map Container -->
-                <div class="relative">
-                    <div id="routeMap" class="w-full h-96 rounded-2xl border-2 border-blue-200 relative z-10"></div>
-                    <button type="button" id="fullscreenMapBtn" class="absolute top-4 right-4 z-20 bg-white hover:bg-gray-100 p-2 rounded-lg shadow-md transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                    </button>
-                </div>
-                
-                <!-- Selected locations display -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-blue-700 uppercase">Origin (Click blue marker on map)</label>
-                        <input type="text" name="origin" id="originDisplay" readonly required
-                               placeholder="Click map to set origin" 
-                               class="w-full p-3 bg-blue-50 border-2 border-blue-200 rounded-xl text-sm">
-                        <input type="hidden" name="origin_lat" id="originLat">
-                        <input type="hidden" name="origin_lng" id="originLng">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-red-700 uppercase">Destination (Click red marker on map)</label>
-                        <input type="text" name="destination" id="destinationDisplay" readonly required
-                               placeholder="Click map to set destination" 
-                               class="w-full p-3 bg-red-50 border-2 border-red-200 rounded-xl text-sm">
-                        <input type="hidden" name="destination_lat" id="destinationLat">
-                        <input type="hidden" name="destination_lng" id="destinationLng">
-                    </div>
-                </div>
-                
-                <p class="text-xs text-slate-500">💡 Click "Origin" button, then click map to set starting point. Click "Destination" button, then click map to set endpoint. A route line will appear.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Species
-                    </label>
-                    <input type="text" required placeholder="Ex: Bangus, Tilapia, Tuna" 
-                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                </div>
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Quantity
-                    </label>
-                    <div class="relative">
-                        <input type="number" required placeholder="0.00" 
-                               class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs uppercase">KG / Bkt</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Transport Method
-                    </label>
-                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer">
-                        <option value="" disabled selected>Select method...</option>
-                        <option value="open">Open Container</option>
-                        <option value="closed">Closed Container</option>
-                        <option value="specialized">Specialized Container</option>
-                    </select>
-                </div>
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Intended Route
-                    </label>
-                    <input type="text" required placeholder="Ex: SLEX, Coastal Road, Maharlika Hwy" 
-                           class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                </div>
-            </div>
-
-            <div class="space-y-3">
-                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                    <span class="text-xl"></span> Schedule of Transport
-                </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="date" required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                    <input type="time" required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                </div>
-            </div>
-
-            <hr class="border-slate-100">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Attach Invoice
-                    </label>
-                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-200 rounded-2xl cursor-pointer bg-slate-50 hover:bg-blue-50 transition-all group">
-                        <p class="text-xs font-bold text-blue-700">UPLOAD INVOICE / RECEIPT</p>
-                        <input type="file" required class="hidden">
-                    </label>
-                </div>
-
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl"></span> Vehicle Details
-                    </label>
-                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-200 rounded-2xl cursor-pointer bg-slate-50 hover:bg-blue-50 transition-all group">
-                        <p class="text-xs font-bold text-blue-700">UPLOAD OR/CR & PLATE PHOTO</p>
-                        <input type="file" required class="hidden">
-                    </label>
-                </div>
-            </div>
-
-            <div class="pt-6">
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
-                    Submit Permit Application
-                </button>
-            </div>
-
-        </form>
+                <input type="hidden" id="originCoords">
+                <input type="hidden" id="destCoords">
+            </form>
+        </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
+            Bureau of Fisheries and Aquatic Resources • Resource Movement Section 2026
+        </p>
     </div>
-</div>
 
-<script>
-// Initialize map centered on Philippines
-const routeMap = L.map('routeMap').setView([12.8797, 121.7740], 6);
-
-// Add OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19
-}).addTo(routeMap);
-
-// Markers and line
-let originMarker = null;
-let destinationMarker = null;
-let routeLine = null;
-let settingMode = null; // 'origin' or 'destination'
-
-// Map click handler
-routeMap.on('click', async function(e) {
-    if (!settingMode) {
-        alert('Click "Origin" or "Destination" search button first, then click on the map');
-        return;
-    }
-    
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
-    
-    if (settingMode === 'origin') {
-        // Remove old origin marker
-        if (originMarker) {
-            routeMap.removeLayer(originMarker);
-        }
-        
-        // Add blue marker for origin
-        originMarker = L.marker([lat, lng], {
-            icon: L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            })
-        }).addTo(routeMap);
-        originMarker.bindPopup('📍 Origin').openPopup();
-        
-        // Store coordinates
-        document.getElementById('originLat').value = lat;
-        document.getElementById('originLng').value = lng;
-        document.getElementById('originDisplay').value = 'Loading address...';
-        
-        // Get address
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-            const data = await response.json();
-            document.getElementById('originDisplay').value = data.display_name;
-        } catch (error) {
-            document.getElementById('originDisplay').value = `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        }
-        
-    } else if (settingMode === 'destination') {
-        // Remove old destination marker
-        if (destinationMarker) {
-            routeMap.removeLayer(destinationMarker);
-        }
-        
-        // Add red marker for destination
-        destinationMarker = L.marker([lat, lng], {
-            icon: L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            })
-        }).addTo(routeMap);
-        destinationMarker.bindPopup('🎯 Destination').openPopup();
-        
-        // Store coordinates
-        document.getElementById('destinationLat').value = lat;
-        document.getElementById('destinationLng').value = lng;
-        document.getElementById('destinationDisplay').value = 'Loading address...';
-        
-        // Get address
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-            const data = await response.json();
-            document.getElementById('destinationDisplay').value = data.display_name;
-        } catch (error) {
-            document.getElementById('destinationDisplay').value = `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        }
-    }
-    
-    // Draw route line if both points are set
-    drawRouteLine();
-    settingMode = null;
-});
-
-// Draw line between origin and destination
-function drawRouteLine() {
-    const originLat = document.getElementById('originLat').value;
-    const originLng = document.getElementById('originLng').value;
-    const destLat = document.getElementById('destinationLat').value;
-    const destLng = document.getElementById('destinationLng').value;
-    
-    if (originLat && originLng && destLat && destLng) {
-        // Remove old line
-        if (routeLine) {
-            routeMap.removeLayer(routeLine);
-        }
-        
-        // Draw new line
-        routeLine = L.polyline([
-            [parseFloat(originLat), parseFloat(originLng)],
-            [parseFloat(destLat), parseFloat(destLng)]
-        ], {
-            color: '#3b82f6',
-            weight: 4,
-            opacity: 0.7,
-            dashArray: '10, 10'
-        }).addTo(routeMap);
-        
-        // Fit map to show both points
-        routeMap.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-    }
-}
-
-// Search origin
-async function searchOrigin() {
-    const query = document.getElementById('searchOrigin').value.trim();
-    if (!query) {
-        alert('Please enter origin location');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-        const data = await response.json();
-        
-        if (data.length > 0) {
-            const result = data[0];
-            const lat = parseFloat(result.lat);
-            const lng = parseFloat(result.lon);
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const transportForm = document.getElementById('transportForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const map = L.map('routeMap').setView([12.8797, 121.7740], 6);
             
-            // Remove old marker
-            if (originMarker) {
-                routeMap.removeLayer(originMarker);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+
+            let originMarker, destMarker, routeLine;
+
+            async function geocode(query, type) {
+                if (!query) return;
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                    const data = await res.json();
+                    if (data[0]) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        setMarker(lat, lon, type, data[0].display_name);
+                    }
+                } catch (e) { console.error("Geocoding error", e); }
             }
-            
-            // Add marker
-            originMarker = L.marker([lat, lng], {
-                icon: L.icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41],
-                    popupAnchor: [1, -34],
-                    shadowSize: [41, 41]
-                })
-            }).addTo(routeMap);
-            originMarker.bindPopup('📍 Origin').openPopup();
-            
-            // Update fields
-            document.getElementById('originLat').value = lat;
-            document.getElementById('originLng').value = lng;
-            document.getElementById('originDisplay').value = result.display_name;
-            
-            routeMap.setView([lat, lng], 13);
-            drawRouteLine();
-        } else {
-            alert('Location not found');
-        }
-    } catch (error) {
-        alert('Search failed');
-    }
-}
 
-// Search destination
-async function searchDestination() {
-    const query = document.getElementById('searchDestination').value.trim();
-    if (!query) {
-        alert('Please enter destination location');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-        const data = await response.json();
-        
-        if (data.length > 0) {
-            const result = data[0];
-            const lat = parseFloat(result.lat);
-            const lng = parseFloat(result.lon);
-            
-            // Remove old marker
-            if (destinationMarker) {
-                routeMap.removeLayer(destinationMarker);
+            function setMarker(lat, lon, type, name) {
+                if (type === 'origin') {
+                    if (originMarker) map.removeLayer(originMarker);
+                    originMarker = L.marker([lat, lon], { icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', iconSize: [25, 41], iconAnchor: [12, 41] }) }).addTo(map);
+                    document.getElementById('originDisplay').value = name;
+                    document.getElementById('originCoords').value = `${lat},${lon}`;
+                } else {
+                    if (destMarker) map.removeLayer(destMarker);
+                    destMarker = L.marker([lat, lon], { icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', iconSize: [25, 41], iconAnchor: [12, 41] }) }).addTo(map);
+                    document.getElementById('destinationDisplay').value = name;
+                    document.getElementById('destCoords').value = `${lat},${lon}`;
+                }
+                
+                if (originMarker && destMarker) {
+                    if (routeLine) map.removeLayer(routeLine);
+                    routeLine = L.polyline([originMarker.getLatLng(), destMarker.getLatLng()], { color: '#3b82f6', weight: 3, dashArray: '10, 10' }).addTo(map);
+                    map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+                } else {
+                    map.setView([lat, lon], 12);
+                }
+                checkValidation();
             }
+
+            function checkValidation() {
+                const requiredInputs = ['species', 'quantity', 'method', 'schedule', 'originCoords', 'destCoords'];
+                const inputsValid = requiredInputs.every(id => document.getElementById(id).value.trim() !== "");
+                const filesValid = ['invoiceFile', 'vehicleFile'].every(id => document.getElementById(id).files.length > 0);
+
+                if (inputsValid && filesValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                }
+            }
+
+            document.getElementById('searchOriginBtn').onclick = () => geocode(document.getElementById('searchOrigin').value, 'origin');
+            document.getElementById('searchDestinationBtn').onclick = () => geocode(document.getElementById('searchDestination').value, 'dest');
             
-            // Add marker
-            destinationMarker = L.marker([lat, lng], {
-                icon: L.icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41],
-                    popupAnchor: [1, -34],
-                    shadowSize: [41, 41]
-                })
-            }).addTo(routeMap);
-            destinationMarker.bindPopup('🎯 Destination').openPopup();
-            
-            // Update fields
-            document.getElementById('destinationLat').value = lat;
-            document.getElementById('destinationLng').value = lng;
-            document.getElementById('destinationDisplay').value = result.display_name;
-            
-            routeMap.setView([lat, lng], 13);
-            drawRouteLine();
-        } else {
-            alert('Location not found');
-        }
-    } catch (error) {
-        alert('Search failed');
-    }
-}
+            ['invoiceFile', 'vehicleFile'].forEach(id => {
+                document.getElementById(id).onchange = (e) => {
+                    document.getElementById(id.replace('File', 'Name')).textContent = e.target.files[0] ? `Selected: ${e.target.files[0].name}` : "";
+                    checkValidation();
+                };
+            });
 
-// Button event listeners
-document.getElementById('searchOriginBtn').addEventListener('click', searchOrigin);
-document.getElementById('searchDestinationBtn').addEventListener('click', searchDestination);
+            ['species', 'quantity', 'method', 'schedule'].forEach(id => document.getElementById(id).oninput = checkValidation);
 
-// Enter key support
-document.getElementById('searchOrigin').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        searchOrigin();
-    }
-});
+            document.getElementById('resetBtn').onclick = () => {
+                if (originMarker) map.removeLayer(originMarker);
+                if (destMarker) map.removeLayer(destMarker);
+                if (routeLine) map.removeLayer(routeLine);
+                document.getElementById('invoiceName').textContent = "";
+                document.getElementById('vehicleName').textContent = "";
+                setTimeout(checkValidation, 10);
+            };
 
-document.getElementById('searchDestination').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        searchDestination();
-    }
-});
-
-// Fullscreen
-document.getElementById('fullscreenMapBtn').addEventListener('click', function() {
-    const mapContainer = document.getElementById('routeMap');
-    
-    if (!document.fullscreenElement) {
-        if (mapContainer.requestFullscreen) {
-            mapContainer.requestFullscreen();
-        } else if (mapContainer.webkitRequestFullscreen) {
-            mapContainer.webkitRequestFullscreen();
-        }
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
-    }
-});
-
-// Handle fullscreen change
-document.addEventListener('fullscreenchange', function() {
-    setTimeout(() => routeMap.invalidateSize(), 100);
-});
-
-document.addEventListener('webkitfullscreenchange', function() {
-    setTimeout(() => routeMap.invalidateSize(), 100);
-});
-</script>
-
+            document.getElementById('fullscreenMapBtn').onclick = () => {
+                const el = document.getElementById('routeMap');
+                if (!document.fullscreenElement) el.requestFullscreen(); else document.exitFullscreen();
+                setTimeout(() => map.invalidateSize(), 500);
+            };
+        });
+    </script>
 </body>
 </html>
