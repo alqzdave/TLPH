@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Transactions</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f6f7fb;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    h1 { font-size: 26px; margin: 0 0 16px; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 12px; color: #6b7280; }
+
+    input, select, button {
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    input { width: 280px; }
+    select { width: 160px; }
+
+    .btn-primary {
+      background: #111827;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Summary */
+    .summary {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* Table */
+    .table-wrapper {
+      border: 1px solid #eef2f7;
+      border-radius: 12px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed; /* prevents shifting */
+      min-width: 980px;
+    }
+
+    col.col-date   { width: 160px; }
+    col.col-name   { width: 340px; }
+    col.col-ref    { width: 220px; }
+    col.col-status { width: 160px; }
+    col.col-amount { width: 180px; }
+
+    thead th {
+      background: #fbfcfe;
+      color: #6b7280;
+      font-size: 12px;
+      text-transform: uppercase;
+      padding: 14px;
+      border-bottom: 1px solid #eef2f7;
+      text-align: left; /* ✅ LEFT */
+    }
+
+    thead th.amount { text-align: right; } /* ONLY amount */
+
+    tbody td {
+      padding: 16px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: left; /* ✅ LEFT */
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    td.ref {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    td.amount {
+      text-align: right; /* ✅ ONLY amount right */
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Status pills */
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      display: inline-block;
+    }
+
+    .pill.paid {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #86efac;
+    }
+
+    .pill.pending {
+      background: #ffedd5;
+      color: #9a3412;
+      border-color: #fed7aa;
+    }
+
+    .pill.failed {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+
+    .empty-row {
+      text-align: left;
+      color: #6b7280;
+      padding: 22px 14px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 16px; }
+      h1 { font-size: 22px; }
+      input, select { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Transactions</h1>
+
+      <div class="toolbar">
+        <div class="field">
+          <label>Search</label>
+          <input id="searchInput" type="text" placeholder="Name or reference…" />
+        </div>
+
+        <div class="field">
+          <label>Status</label>
+          <select id="statusFilter">
+            <option value="all">All</option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+
+        <button class="btn-primary" id="searchBtn">Search</button>
+      </div>
+
+      <div class="summary">
+        <div id="resultsText"></div>
+        <div>Currency: Philippine Peso (₱)</div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <colgroup>
+            <col class="col-date">
+            <col class="col-name">
+            <col class="col-ref">
+            <col class="col-status">
+            <col class="col-amount">
+          </colgroup>
+
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Transaction Name</th>
+              <th>Reference</th>
+              <th>Status</th>
+              <th class="amount">Amount Paid</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const transactions = [
+      { date: "2026-02-01", name: "Import Permit", reference: "IMP-102938", status: "Paid", amount: 1250 },
+      { date: "2026-02-03", name: "Customs Clearance", reference: "CUS-293847", status: "Paid", amount: 499.99 },
+      { date: "2026-02-07", name: "Export Documentation", reference: "EXP-384756", status: "Pending", amount: 0 },
+      { date: "2026-02-08", name: "Import License", reference: "IMP-998877", status: "Failed", amount: 0 }
+    ];
+
+    const tableBody = document.getElementById("tableBody");
+    const resultsText = document.getElementById("resultsText");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+
+    const peso = new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+      minimumFractionDigits: 2
+    });
+
+    function render(data) {
+      tableBody.innerHTML = "";
+
+      if (!data.length) {
+        tableBody.innerHTML = `<tr><td class="empty-row" colspan="5">No search match</td></tr>`;
+      } else {
+        data.forEach(t => {
+          tableBody.innerHTML += `
+            <tr>
+              <td>${t.date}</td>
+              <td>${t.name}</td>
+              <td class="ref">${t.reference}</td>
+              <td><span class="pill ${t.status.toLowerCase()}">${t.status}</span></td>
+              <td class="amount">${peso.format(t.amount)}</td>
+            </tr>
+          `;
+        });
+      }
+
+      resultsText.textContent = `Showing ${data.length} of ${transactions.length}`;
+    }
+
+    function applyFilters() {
+      const q = searchInput.value.toLowerCase();
+      const s = statusFilter.value;
+
+      render(
+        transactions.filter(t =>
+          (t.name.toLowerCase().includes(q) || t.reference.toLowerCase().includes(q)) &&
+          (s === "all" || t.status.toLowerCase() === s)
+        )
+      );
+    }
+
+    render(transactions);
+    searchInput.addEventListener("input", applyFilters);
+    statusFilter.addEventListener("change", applyFilters);
+    document.getElementById("searchBtn").addEventListener("click", applyFilters);
+  </script>
+</body>
+</html>

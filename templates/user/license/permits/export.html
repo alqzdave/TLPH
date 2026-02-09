@@ -1,455 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Export Permit</title>
+    <title>Export Permit | DENR Portal</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-</head>
-<body>
-        {% include 'user/header.html' %}
 
+<body class="bg-gray-50 min-h-screen text-slate-900">
+    {% include 'user/header.html' %}
 
+    <div class="container mx-auto px-4 mt-8">
 
-        <!-- Export Permit (Minimalist, header-based green accents, hover effects, conditional CITES) -->
-<section class="w-full px-4 md:px-10 py-8">
-  <!-- Title -->
-  <div class="rounded-2xl bg-white border border-green-200 p-6">
-    <h2 class="text-center text-2xl md:text-3xl font-semibold text-slate-900">
-      EXPORT PERMIT
-    </h2>
-    <p class="mt-2 text-center text-slate-500 text-sm">
-    </p>
-  </div>
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
+                Export Permit
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Strategic Resource Exportation • International Trade Clearance
+            </p>
+        </div>
 
-  <!-- Instructions -->
-  <div class="mt-4 rounded-2xl bg-green-50 border border-green-200 p-5">
-    <h3 class="text-sm font-semibold text-green-800 mb-2">Instructions</h3>
-    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-600">
-      <li>Enter destination country and port of exit.</li>
-      <li>Select packaging method and shipment schedule (date & time).</li>
-      <li>Upload the required documents (Invoice, Packing List, Proof of Legal Origin, Inspection Report, Exporter Detail).</li>
-      <li>If exporting wildlife/protected species, enable and upload <strong>CITES Documents</strong>.</li>
-      <li>The <strong>Apply</strong> button will activate once all required fields and files are complete.</li>
-    </ol>
-  </div>
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-  <!-- Form -->
-  <form id="exportForm" class="mt-6">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <!-- Left: Shipment Info -->
-      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
-        <h3 class="text-slate-900 font-semibold text-lg">Shipment Information</h3>
-        <p class="text-slate-500 text-sm mt-1">Fill out required fields.</p>
+            <form id="exportForm" action="#" method="POST" enctype="multipart/form-data">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-ship"></i> Shipment Details
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="destination" required placeholder="Destination Country" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700">
+                            <input type="text" id="portOfExit" required placeholder="Port of Exit" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select id="packaging" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none bg-white font-medium text-gray-700">
+                                <option value="" disabled selected>Select method...</option>
+                                <option value="box">Box-in-Box</option>
+                                <option value="crates">Wooden Crates</option>
+                                <option value="pallet">Palletization</option>
+                            </select>
+                            <input type="datetime-local" id="schedule" required class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-green-600 outline-none text-sm font-bold text-gray-700">
+                        </div>
+                    </div>
 
-        <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Destination Country -->
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Destination Country <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              name="destination_country"
-              id="destinationCountry"
-              required
-              placeholder="e.g., Japan"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Port of Exit -->
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Port of Exit <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              name="port_of_exit"
-              id="portOfExit"
-              required
-              placeholder="e.g., Manila Port"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Packaging Method -->
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Packaging Method <span class="text-red-600">*</span>
-            </label>
-            <select
-              name="packaging_method"
-              id="packagingMethod"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
-                     hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="" disabled selected>Select method</option>
-              <option value="Box-in-Box Method">Box-in-Box Method</option>
-              <option value="Single-Box Method">Single-Box Method</option>
-              <option value="Wooden Crates/Cases">Wooden Crates/Cases</option>
-              <option value="Barrier Packaging">Barrier Packaging</option>
-              <option value="Palletization">Palletization</option>
-            </select>
-          </div>
-
-          <!-- Shipment Schedule (date & time) -->
-          <div class="md:col-span-1">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Shipment Schedule <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="datetime-local"
-              name="shipment_schedule"
-              id="shipmentSchedule"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
-                     hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Wildlife toggle (controls CITES requirement) -->
-          <div class="md:col-span-2">
-            <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <p class="text-sm font-semibold text-slate-800">Wildlife / Protected Species</p>
-                  <p class="text-sm text-slate-500 mt-1">
-                    If this export includes wildlife/protected species, enable this to require CITES documents.
-                  </p>
+                    <div class="space-y-6">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-leaf"></i> Wildlife Compliance
+                        </h3>
+                        <div class="bg-green-50 rounded-2xl p-6 border border-green-100">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-bold text-green-900">Protected Species Mode</p>
+                                    <p class="text-xs text-green-700 mt-1">Enable if export includes CITES-listed species.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="wildlifeToggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <label class="inline-flex items-center cursor-pointer select-none">
-                  <input id="wildlifeToggle" type="checkbox" class="sr-only">
-                  <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 transition">
-                    <span class="inline-block h-5 w-5 transform rounded-full bg-white transition translate-x-1" id="toggleKnob"></span>
-                  </span>
-                </label>
-              </div>
-            </div>
+                <div class="mt-12 mb-6">
+                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2">
+                        <i class="fa-solid fa-folder-open"></i> Standard Documentation
+                    </h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="group border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative min-h-[140px] flex flex-col items-center justify-center">
+                        <input type="file" id="invoiceFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                        <i class="fa-solid fa-file-invoice-dollar text-2xl text-gray-300 mb-2 group-hover:text-green-600"></i>
+                        <p class="text-[11px] font-black text-gray-400 group-hover:text-green-800 uppercase">Invoice / Packing List</p>
+                        <p id="invoiceName" class="text-[9px] text-green-600 font-bold truncate mt-1"></p>
+                    </div>
+                    <div class="group border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative min-h-[140px] flex flex-col items-center justify-center">
+                        <input type="file" id="inspectFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                        <i class="fa-solid fa-clipboard-check text-2xl text-gray-300 mb-2 group-hover:text-green-600"></i>
+                        <p class="text-[11px] font-black text-gray-400 group-hover:text-green-800 uppercase">Inspection Report</p>
+                        <p id="inspectName" class="text-[9px] text-green-600 font-bold truncate mt-1"></p>
+                    </div>
+                </div>
 
-            <p id="citesHint" class="text-xs text-slate-500 mt-2">
-              CITES Documents are optional unless wildlife/protected species is enabled.
-            </p>
-          </div>
+                <div id="citesSection" class="hidden transition-all duration-500">
+                    <div class="mt-12 mb-6">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2">
+                            <i class="fa-solid fa-shield-cat"></i> Required CITES Documents
+                        </h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="group border-2 border-dashed border-green-200 rounded-2xl p-6 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center relative min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="citesPermit" class="absolute inset-0 opacity-0 cursor-pointer">
+                            <i class="fa-solid fa-file-shield text-2xl text-green-200 mb-2 group-hover:text-green-600"></i>
+                            <p class="text-[10px] font-black text-green-700 uppercase">CITES Export Permit</p>
+                            <p id="permitName" class="text-[9px] text-green-600 font-bold truncate mt-1"></p>
+                        </div>
+                        <div class="group border-2 border-dashed border-green-200 rounded-2xl p-6 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center relative min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="citesOrigin" class="absolute inset-0 opacity-0 cursor-pointer">
+                            <i class="fa-solid fa-earth-asia text-2xl text-green-200 mb-2 group-hover:text-green-600"></i>
+                            <p class="text-[10px] font-black text-green-700 uppercase">Certificate of Origin</p>
+                            <p id="originName" class="text-[9px] text-green-600 font-bold truncate mt-1"></p>
+                        </div>
+                        <div class="group border-2 border-dashed border-green-200 rounded-2xl p-6 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center relative min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="citesWfp" class="absolute inset-0 opacity-0 cursor-pointer">
+                            <i class="fa-solid fa-house-chimney-window text-2xl text-green-200 mb-2 group-hover:text-green-600"></i>
+                            <p class="text-[10px] font-black text-green-700 uppercase">Wildlife Farm Permit</p>
+                            <p id="wfpName" class="text-[9px] text-green-600 font-bold truncate mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Form activates once all shipment info and mandatory technical files are confirmed.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-green-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    </div>
+                </div>
+            </form>
         </div>
-      </div>
-
-      <!-- Right: Uploads -->
-      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
-        <h3 class="text-slate-900 font-semibold text-lg">Attachments</h3>
-        <p class="text-slate-500 text-sm mt-1">Upload clear and readable documents.</p>
-
-        <div class="mt-5 space-y-5">
-          <!-- Exporter Detail -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Exporter Detail <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="exporterFile" type="file" name="exporter_detail" required
-                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="exporterName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
-
-          <!-- Invoice -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Invoice <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="invoiceFile" type="file" name="invoice" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="invoiceName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
-
-          <!-- Packing List -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Packing List <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="packingFile" type="file" name="packing_list" required
-                     accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="packingName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
-
-          <!-- Proof of Legal Origin -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Proof of Legal Origin <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="legalFile" type="file" name="proof_legal_origin" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="legalName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
-
-          <!-- Inspection Report -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Inspection Report <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="inspectFile" type="file" name="inspection_report" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="inspectName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
-
-          <!-- CITES Documents (conditional) -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                CITES Documents (Wildlife/Protected Species)
-              </label>
-              <span id="citesTag"
-                class="text-[11px] px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-semibold">
-                OPTIONAL
-              </span>
-            </div>
-
-            <div id="citesBox"
-                 class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 opacity-60 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="citesFile" type="file" name="cites_documents"
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer"
-                     disabled />
-              <p id="citesName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
-
-        </div>
-      </div>
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">DENR Forest Management Bureau 2026</p>
     </div>
 
-    <!-- Sticky action bar -->
-    <div class="sticky bottom-0 mt-6">
-      <div class="rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4
-                  flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <p class="text-slate-500 text-sm">
-          Apply is enabled when all required fields and documents are provided.
-        </p>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('exportForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const wildlifeToggle = document.getElementById('wildlifeToggle');
+            const citesSection = document.getElementById('citesSection');
 
-        <div class="flex gap-3">
-          <button type="reset"
-            class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
-            Clear
-          </button>
+            const standardFields = ['destination', 'portOfExit', 'packaging', 'schedule'];
+            const standardFiles = ['invoiceFile', 'inspectFile'];
+            const citesFiles = ['citesPermit', 'citesOrigin', 'citesWfp'];
 
-          <button id="submitBtn" type="submit" disabled
-            class="px-7 py-3 rounded-xl bg-slate-200 text-slate-400 font-semibold cursor-not-allowed transition">
-            Apply
-          </button>
-        </div>
-      </div>
-    </div>
-  </form>
-</section>
+            function checkValidation() {
+                const fieldsValid = standardFields.every(id => document.getElementById(id).value.trim() !== "");
+                const stdFilesValid = standardFiles.every(id => document.getElementById(id).files.length > 0);
+                
+                let citesValid = true;
+                if (wildlifeToggle.checked) {
+                    citesValid = citesFiles.every(id => document.getElementById(id).files.length > 0);
+                }
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("exportForm");
-  const submitBtn = document.getElementById("submitBtn");
+                if (fieldsValid && stdFilesValid && citesValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-green-800', 'transform', 'hover:scale-105');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-green-800', 'transform', 'hover:scale-105');
+                }
+            }
 
-  // fields
-  const destinationCountry = document.getElementById("destinationCountry");
-  const portOfExit = document.getElementById("portOfExit");
-  const packagingMethod = document.getElementById("packagingMethod");
-  const shipmentSchedule = document.getElementById("shipmentSchedule");
+            wildlifeToggle.addEventListener('change', () => {
+                if (wildlifeToggle.checked) {
+                    citesSection.classList.remove('hidden');
+                    citesFiles.forEach(id => document.getElementById(id).required = true);
+                } else {
+                    citesSection.classList.add('hidden');
+                    citesFiles.forEach(id => {
+                        const el = document.getElementById(id);
+                        el.required = false;
+                        el.value = "";
+                        document.getElementById(id.replace('cites', '').toLowerCase() + 'Name' || id + 'Name').textContent = "";
+                    });
+                }
+                checkValidation();
+            });
 
-  // files
-  const exporterFile = document.getElementById("exporterFile");
-  const invoiceFile = document.getElementById("invoiceFile");
-  const packingFile = document.getElementById("packingFile");
-  const legalFile = document.getElementById("legalFile");
-  const inspectFile = document.getElementById("inspectFile");
+            // Handle filename displays and validation
+            [...standardFiles, ...citesFiles].forEach(id => {
+                const input = document.getElementById(id);
+                const displayId = id.includes('cites') ? id.replace('cites', '').toLowerCase() + 'Name' : id.replace('File', 'Name');
+                const display = document.getElementById(displayId);
+                
+                input.addEventListener('change', () => {
+                    if(display) display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                    checkValidation();
+                });
+            });
 
-  const citesFile = document.getElementById("citesFile");
-  const citesBox = document.getElementById("citesBox");
-  const citesTag = document.getElementById("citesTag");
-  const citesHint = document.getElementById("citesHint");
+            [...standardFields, wildlifeToggle].forEach(id => {
+                document.getElementById(id).addEventListener('input', checkValidation);
+                document.getElementById(id).addEventListener('change', checkValidation);
+            });
 
-  // filenames
-  const exporterName = document.getElementById("exporterName");
-  const invoiceName = document.getElementById("invoiceName");
-  const packingName = document.getElementById("packingName");
-  const legalName = document.getElementById("legalName");
-  const inspectName = document.getElementById("inspectName");
-  const citesName = document.getElementById("citesName");
-
-  // toggle
-  const wildlifeToggle = document.getElementById("wildlifeToggle");
-  const toggleKnob = document.getElementById("toggleKnob");
-
-  const setName = (labelEl, inputEl) => {
-    labelEl.textContent = (inputEl.files && inputEl.files.length)
-      ? `Selected: ${inputEl.files[0].name}`
-      : "";
-  };
-
-  function updateWildlifeUI() {
-    const enabled = wildlifeToggle.checked;
-
-    // switch visuals
-    if (enabled) {
-      wildlifeToggle.nextElementSibling.classList.remove("bg-slate-200");
-      wildlifeToggle.nextElementSibling.classList.add("bg-green-700");
-      toggleKnob.classList.remove("translate-x-1");
-      toggleKnob.classList.add("translate-x-5");
-    } else {
-      wildlifeToggle.nextElementSibling.classList.add("bg-slate-200");
-      wildlifeToggle.nextElementSibling.classList.remove("bg-green-700");
-      toggleKnob.classList.add("translate-x-1");
-      toggleKnob.classList.remove("translate-x-5");
-    }
-
-    // cites required state
-    if (enabled) {
-      citesFile.disabled = false;
-      citesFile.required = true;
-      citesBox.classList.remove("opacity-60");
-      citesTag.classList.remove("bg-slate-100", "text-slate-500");
-      citesTag.classList.add("bg-green-700", "text-white");
-      citesTag.textContent = "REQUIRED";
-      citesHint.textContent = "CITES Documents are required because wildlife/protected species is enabled.";
-      citesHint.className = "text-xs text-green-700 mt-2";
-    } else {
-      citesFile.disabled = true;
-      citesFile.required = false;
-      citesFile.value = "";
-      citesName.textContent = "";
-      citesBox.classList.add("opacity-60");
-      citesTag.classList.add("bg-slate-100", "text-slate-500");
-      citesTag.classList.remove("bg-green-700", "text-white");
-      citesTag.textContent = "OPTIONAL";
-      citesHint.textContent = "CITES Documents are optional unless wildlife/protected species is enabled.";
-      citesHint.className = "text-xs text-slate-500 mt-2";
-    }
-  }
-
-  function isValid() {
-    // text/select/datetime required
-    if (!destinationCountry.value.trim()) return false;
-    if (!portOfExit.value.trim()) return false;
-    if (!packagingMethod.value) return false;
-    if (!shipmentSchedule.value) return false;
-
-    // required uploads
-    if (exporterFile.files.length === 0) return false;
-    if (invoiceFile.files.length === 0) return false;
-    if (packingFile.files.length === 0) return false;
-    if (legalFile.files.length === 0) return false;
-    if (inspectFile.files.length === 0) return false;
-
-    // conditional cites
-    if (wildlifeToggle.checked && citesFile.files.length === 0) return false;
-
-    return true;
-  }
-
-  function toggleSubmit() {
-    if (isValid()) {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove("bg-slate-200", "text-slate-400", "cursor-not-allowed");
-      submitBtn.classList.add("bg-green-700", "text-white", "hover:bg-green-800");
-    } else {
-      submitBtn.disabled = true;
-      submitBtn.classList.add("bg-slate-200", "text-slate-400", "cursor-not-allowed");
-      submitBtn.classList.remove("bg-green-700", "text-white", "hover:bg-green-800");
-    }
-  }
-
-  // listeners (names + validation)
-  exporterFile.addEventListener("change", () => { setName(exporterName, exporterFile); toggleSubmit(); });
-  invoiceFile.addEventListener("change", () => { setName(invoiceName, invoiceFile); toggleSubmit(); });
-  packingFile.addEventListener("change", () => { setName(packingName, packingFile); toggleSubmit(); });
-  legalFile.addEventListener("change", () => { setName(legalName, legalFile); toggleSubmit(); });
-  inspectFile.addEventListener("change", () => { setName(inspectName, inspectFile); toggleSubmit(); });
-  citesFile.addEventListener("change", () => { setName(citesName, citesFile); toggleSubmit(); });
-
-  wildlifeToggle.addEventListener("change", () => {
-    updateWildlifeUI();
-    toggleSubmit();
-  });
-
-  form.addEventListener("input", toggleSubmit);
-  form.addEventListener("change", toggleSubmit);
-
-  form.addEventListener("reset", () => {
-    setTimeout(() => {
-      exporterName.textContent = "";
-      invoiceName.textContent = "";
-      packingName.textContent = "";
-      legalName.textContent = "";
-      inspectName.textContent = "";
-      citesName.textContent = "";
-      wildlifeToggle.checked = false;
-      updateWildlifeUI();
-      toggleSubmit();
-    }, 0);
-  });
-
-  // init
-  updateWildlifeUI();
-  toggleSubmit();
-});
-</script>
-
-
-    
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                setTimeout(() => {
+                    document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
+                    citesSection.classList.add('hidden');
+                    checkValidation();
+                }, 10);
+            });
+        });
+    </script>
 </body>
 </html>

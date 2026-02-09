@@ -1,81 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal Health Veterinary Clearance</title>
+    <title>Veterinary Clearance | Bureau of Animal Industry</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body>
+
+<body class="bg-gray-50 min-h-screen text-slate-900">
     {% include 'user/header.html' %}
-    <div class="min-h-screen bg-slate-50 py-12 px-4">
-        <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-red-900 overflow-hidden text-slate-900">
-            
-            <div class="bg-red-900 p-10 text-center">
-                <h1 class="text-3xl font-black text-white uppercase tracking-widest">Animal Health Veterinary Clearance</h1>
-                <p class="text-red-100 text-sm mt-2 opacity-90 font-medium">Bureau of Animal Industry - Veterinary Services</p>
-            </div>
 
-            <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-10">
+    <div class="container mx-auto px-4 mt-8">
+
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-red-800">
+                Animal Health Veterinary Clearance
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Bureau of Animal Industry • Veterinary Services Division
+            </p>
+        </div>
+
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
+
+            <form id="vetClearanceForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="space-y-6">
-                    <label class="text-sm font-black text-red-950 uppercase tracking-wider block">Detailed Animal Information</label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="text" required placeholder="Species / Breed" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02]">
-                        <input type="text" required placeholder="Age / Birthdate" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02]">
-                        <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02] appearance-none cursor-pointer">
-                            <option value="" disabled selected>Select sex...</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                        <input type="text" required placeholder="Color / Distinct Markings" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02]">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+                    <div class="space-y-6">
+                        <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-paw"></i> Animal Information
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Species / Breed <span class="text-red-500">*</span></label>
+                                <input type="text" id="breed" name="breed" required placeholder="Ex: Cattle / Brahman" 
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Age / Birthdate <span class="text-red-500">*</span></label>
+                                <input type="text" id="age" name="age" required placeholder="Ex: 2 Years Old" 
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Sex <span class="text-red-500">*</span></label>
+                                <select id="sex" name="sex" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none bg-white font-medium text-gray-700 text-sm appearance-none">
+                                    <option value="" disabled selected>Select sex...</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Color / Markings <span class="text-red-500">*</span></label>
+                                <input type="text" id="markings" name="markings" required placeholder="Distinctive features" 
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Purpose of Clearance <span class="text-red-500">*</span></label>
+                            <select id="purpose" name="purpose" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none bg-white font-medium text-gray-700 transition-all">
+                                <option value="" disabled selected>Select purpose...</option>
+                                <option value="meat">Meat Production</option>
+                                <option value="breeding">Breeding and Propagation</option>
+                                <option value="commercial">Commercial Trade / Dealing</option>
+                                <option value="exhibition">Exhibition / Animal Show</option>
+                                <option value="research">Scientific Research</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-file-medical"></i> Health Documentation
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2 group">
+                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Vaccination Record / Card</label>
+                                <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-red-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[160px]">
+                                    <input type="file" id="vaccineFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <div class="space-y-2 pointer-events-none">
+                                        <i class="fa-solid fa-syringe text-3xl text-gray-300 group-hover:text-red-600 transition-colors"></i>
+                                        <p class="text-[11px] font-black text-gray-400 group-hover:text-red-800 uppercase tracking-tighter">Upload Record</p>
+                                        <p id="vaccineName" class="text-[9px] text-red-600 font-bold truncate max-w-[150px]"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 group">
+                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Veterinarian Check Details</label>
+                                <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-red-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[160px]">
+                                    <input type="file" id="checkFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <div class="space-y-2 pointer-events-none">
+                                        <i class="fa-solid fa-stethoscope text-3xl text-gray-300 group-hover:text-red-600 transition-colors"></i>
+                                        <p class="text-[11px] font-black text-gray-400 group-hover:text-red-800 uppercase tracking-tighter">Upload Checkup Info</p>
+                                        <p id="checkName" class="text-[9px] text-red-600 font-bold truncate max-w-[150px]"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-gray-400 italic mt-4 text-center">
+                            Note: Animals must be inspected by an accredited veterinarian within 7 days prior to clearance request.
+                        </p>
                     </div>
                 </div>
 
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-red-950 uppercase tracking-wider">Purpose of Clearance</label>
-                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-700 outline-none transition-all duration-300 hover:scale-[1.02] appearance-none cursor-pointer">
-                        <option value="" disabled selected>Select purpose...</option>
-                        <option value="meat">Meat Production</option>
-                        <option value="breeding">Breeding and Propagation</option>
-                        <option value="commercial">Commercial Trade / Dealing</option>
-                        <option value="exhibition">Exhibition / Animal Show</option>
-                        <option value="research">Scientific Research</option>
-                    </select>
-                </div>
-
-                <hr class="border-slate-100">
-
-                <div class="space-y-6">
-                    <label class="text-sm font-black text-red-950 uppercase tracking-wider block">Required Health Documentation</label>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Vaccination Record / Card</label>
-                            <label class="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-red-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-700 transition-all duration-300 hover:scale-[1.05] hover:-translate-y-2 group">
-                                <span class="text-[10px] font-black text-red-900 uppercase group-hover:text-red-700 text-center px-4">Attach Vaccination Record</span>
-                                <input type="file" required class="hidden">
-                            </label>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Veterinarian Check Details</label>
-                            <label class="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-red-200 rounded-[2rem] cursor-pointer bg-slate-50 hover:bg-red-50 hover:border-red-700 transition-all duration-300 hover:scale-[1.05] hover:-translate-y-2 group">
-                                <span class="text-[10px] font-black text-red-900 uppercase group-hover:text-red-700 text-center px-4">Attach Check Request Details</span>
-                                <input type="file" required class="hidden">
-                            </label>
-                        </div>
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Clearance request activates once all health data and 2 mandatory documents are uploaded.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-red-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
                     </div>
                 </div>
-
-                <div class="pt-6">
-                    <button type="submit" class="w-full bg-red-900 hover:bg-red-950 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
-                        Request Veterinary Clearance
-                    </button>
-                </div>
-
             </form>
         </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
+            Bureau of Animal Industry • Department of Agriculture 2026
+        </p>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('vetClearanceForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const fields = ['breed', 'age', 'sex', 'markings', 'purpose'];
+            const fileConfigs = [
+                { id: 'vaccineFile', name: 'vaccineName' },
+                { id: 'checkFile', name: 'checkName' }
+            ];
+
+            function checkValidation() {
+                const allFieldsValid = fields.every(id => {
+                    const el = document.getElementById(id);
+                    return el.value.trim() !== "";
+                });
+                
+                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
+
+                if (allFieldsValid && allFilesValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-red-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-red-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                }
+            }
+
+            fileConfigs.forEach(f => {
+                const input = document.getElementById(f.id);
+                const display = document.getElementById(f.name);
+                input.addEventListener('change', () => {
+                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                    checkValidation();
+                });
+            });
+
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('input', checkValidation);
+                el.addEventListener('change', checkValidation);
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                setTimeout(() => {
+                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    checkValidation();
+                }, 10);
+            });
+        });
+    </script>
 </body>
+
 </html>

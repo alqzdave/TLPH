@@ -1,500 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harvest Permit</title>
+    <title>Harvest Permit | DENR Portal</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-       {% include 'user/header.html' %}
 
+<body class="bg-gray-50 min-h-screen text-slate-900">
+    {% include 'user/header.html' %}
 
+    <div class="container mx-auto px-4 mt-8">
 
-       <!-- Harvest Permit (Minimalist, header-based green accents, hover effects, conditional Protected Area Clearance) -->
-<section class="w-full px-4 md:px-10 py-8">
-  <!-- Title -->
-  <div class="rounded-2xl bg-white border border-green-200 p-6">
-    <h2 class="text-center text-2xl md:text-3xl font-semibold text-slate-900">
-      HARVEST PERMIT
-    </h2>
-    <p class="mt-2 text-center text-slate-500 text-sm">
-    </p>
-  </div>
-
-  <!-- Instructions -->
-  <div class="mt-4 rounded-2xl bg-green-50 border border-green-200 p-5">
-    <h3 class="text-sm font-semibold text-green-800 mb-2">Instructions</h3>
-    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-600">
-      <li>Enter harvest location, target species, expected volume, and intended use.</li>
-      <li>Select a harvest method.</li>
-      <li>Add one or multiple harvest dates (click <strong>Add Date</strong> after selecting each date).</li>
-      <li>Upload Proof of Right and LGU Endorsement (required).</li>
-      <li>If the location is in a protected area, enable the toggle and upload Protected Area Clearance.</li>
-      <li>The <strong>Apply</strong> button will activate once all required fields and documents are complete.</li>
-    </ol>
-  </div>
-
-  <form id="harvestForm" class="mt-6">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <!-- Left: Details -->
-      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
-        <h3 class="text-slate-900 font-semibold text-lg">Harvest Details</h3>
-        <p class="text-slate-500 text-sm mt-1">Fill out required fields.</p>
-
-        <div class="mt-5 space-y-4">
-          <!-- Harvest Location -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Harvest Location <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              id="harvestLocation"
-              name="harvest_location"
-              required
-              placeholder="Barangay, City/Municipality, Province"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Protected area toggle -->
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 transition
-                      hover:border-green-300 hover:bg-green-50/40">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <p class="text-sm font-semibold text-slate-800">Location is in a Protected Area</p>
-                <p class="text-sm text-slate-500 mt-1">
-                  Enable this only if the harvest location falls within a protected area.
-                </p>
-              </div>
-
-              <label class="inline-flex items-center cursor-pointer select-none">
-                <input id="protectedToggle" type="checkbox" class="sr-only">
-                <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 transition" id="toggleTrack">
-                  <span class="inline-block h-5 w-5 transform rounded-full bg-white transition translate-x-1" id="toggleKnob"></span>
-                </span>
-              </label>
-            </div>
-
-            <p id="protectedHint" class="text-xs text-slate-500 mt-2">
-              Protected Area Clearance is optional unless this is enabled.
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
+                Harvest Permit
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Resource Utilization • Sustainable Extraction License
             </p>
-          </div>
-
-          <!-- Harvest Method -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Harvest Method <span class="text-red-600">*</span>
-            </label>
-            <select
-              id="harvestMethod"
-              name="harvest_method"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
-                     hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="" disabled selected>Select method</option>
-              <option value="Manual Harvesting">Manual Harvesting</option>
-              <option value="Mechanical Harvesting">Mechanical Harvesting</option>
-              <option value="Selective Harvesting">Selective Harvesting</option>
-              <option value="Sustainable/Controlled Harvest">Sustainable/Controlled Harvest</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <!-- Harvest Dates (single or multiple) -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Harvest Dates <span class="text-red-600">*</span>
-            </label>
-
-            <div class="flex flex-col sm:flex-row gap-3">
-              <input
-                type="date"
-                id="datePicker"
-                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition
-                       hover:border-green-300
-                       focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
-              <button
-                type="button"
-                id="addDateBtn"
-                class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 bg-white
-                       transition hover:border-green-300 hover:bg-green-50/40 active:scale-[0.98]"
-              >
-                Add Date
-              </button>
-            </div>
-
-            <!-- hidden input to submit dates -->
-            <input type="hidden" name="harvest_dates" id="harvestDatesHidden" required />
-
-            <div id="dateChips" class="mt-3 flex flex-wrap gap-2"></div>
-            <p class="text-xs text-slate-500 mt-2">Add at least one date. You can add multiple dates.</p>
-            <p id="datesHint" class="text-xs text-slate-500 mt-1"></p>
-          </div>
-
-          <!-- Target Species -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Target Species <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              id="targetSpecies"
-              name="target_species"
-              required
-              placeholder="e.g., Bamboo, Mangrove, Tilapia"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Expected Volume -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Expected Volume <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              id="expectedVolume"
-              name="expected_volume"
-              required
-              placeholder="e.g., 2 tons, 500 kg, 30 sacks"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-
-          <!-- Intended Use -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Intended Use <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              id="intendedUse"
-              name="intended_use"
-              required
-              placeholder="e.g., Commercial sale, Personal use, Research"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900
-                     placeholder:text-slate-400 transition hover:border-green-300
-                     focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
         </div>
-      </div>
 
-      <!-- Right: Uploads -->
-      <div class="rounded-2xl bg-white border border-slate-200 p-6 transition hover:border-green-300 hover:shadow-sm">
-        <h3 class="text-slate-900 font-semibold text-lg">Attachments</h3>
-        <p class="text-slate-500 text-sm mt-1">Upload clear and readable documents.</p>
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
+            <form id="harvestForm" action="#" method="POST" enctype="multipart/form-data">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-basket-shopping"></i> Harvest Details
+                        </h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <input type="text" id="harvestLocation" required placeholder="Harvest Location" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" id="targetSpecies" required placeholder="Target Species" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium">
+                                <input type="text" id="expectedVolume" required placeholder="Expected Volume" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium">
+                            </div>
+                        </div>
 
-        <div class="mt-5 space-y-5">
-          <!-- Proof of Right -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Proof of Right <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="proofFile" type="file" name="proof_of_right" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="proofName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+                        <div class="pt-4 border-t">
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Harvest Dates <span class="text-red-500">*</span></label>
+                            <div class="flex gap-2">
+                                <input type="date" id="datePicker" class="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-green-600 outline-none">
+                                <button type="button" id="addDateBtn" class="bg-green-700 text-white px-4 py-2 rounded-xl font-bold uppercase text-[10px] hover:bg-green-800">Add Date</button>
+                            </div>
+                            <div id="dateChips" class="mt-3 flex flex-wrap gap-2"></div>
+                            <input type="hidden" name="harvest_dates" id="harvestDatesHidden" required>
+                        </div>
+                    </div>
 
-          <!-- LGU Endorsement -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                LGU Endorsement <span class="text-red-600">*</span>
-              </label>
-              <span class="text-[11px] px-3 py-1 rounded-full bg-green-700 text-white font-semibold">REQUIRED</span>
-            </div>
-            <div class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="lguFile" type="file" name="lgu_endorsement" required
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer" />
-              <p id="lguName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+                    <div class="space-y-6">
+                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved"></i> Area Compliance (NIPAS)
+                        </h3>
+                        <div class="bg-green-50 rounded-2xl p-6 border border-green-100 space-y-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-bold text-green-900">Protected Area Mode</p>
+                                    <p class="text-xs text-green-700 mt-1">Enable if within a NIPAS protected area.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="protectedToggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                </label>
+                            </div>
 
-          <!-- Protected Area Clearance (conditional) -->
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold text-slate-700">
-                Protected Area Clearance
-              </label>
-              <span id="paTag"
-                class="text-[11px] px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-semibold">
-                OPTIONAL
-              </span>
-            </div>
+                            <div id="nipasDocs" class="hidden space-y-4 pt-4 border-t border-green-200">
+                                <p class="text-[10px] font-black text-green-800 uppercase tracking-widest">NIPAS Mandatory Files:</p>
+                                <div class="grid grid-cols-1 gap-3">
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-green-200">
+                                        <div class="flex flex-col">
+                                            <span class="text-[10px] font-bold text-gray-700 uppercase">PAMC Clearance</span>
+                                            <span id="pamcName" class="text-[8px] text-green-600 truncate max-w-[120px]"></span>
+                                        </div>
+                                        <input type="file" id="pamcFile" class="hidden">
+                                        <button type="button" onclick="document.getElementById('pamcFile').click()" class="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-[10px] font-black border border-green-200">UPLOAD</button>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-green-200">
+                                        <div class="flex flex-col">
+                                            <span class="text-[10px] font-bold text-gray-700 uppercase">SAPA Agreement</span>
+                                            <span id="sapaName" class="text-[8px] text-green-600 truncate max-w-[120px]"></span>
+                                        </div>
+                                        <input type="file" id="sapaFile" class="hidden">
+                                        <button type="button" onclick="document.getElementById('sapaFile').click()" class="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-[10px] font-black border border-green-200">UPLOAD</button>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-green-200">
+                                        <div class="flex flex-col">
+                                            <span class="text-[10px] font-bold text-gray-700 uppercase">GIS Delineation</span>
+                                            <span id="gisName" class="text-[8px] text-green-600 truncate max-w-[120px]"></span>
+                                        </div>
+                                        <input type="file" id="gisFile" class="hidden">
+                                        <button type="button" onclick="document.getElementById('gisFile').click()" class="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-[10px] font-black border border-green-200">UPLOAD</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div id="paBox"
-                 class="mt-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 opacity-60 transition
-                        hover:border-green-300 hover:bg-green-50/40">
-              <input id="paFile" type="file" name="protected_area_clearance"
-                     accept=".pdf,.jpg,.jpeg,.png"
-                     class="w-full text-sm text-slate-700
-                            file:mr-4 file:rounded-xl file:border-0 file:bg-green-700
-                            file:px-4 file:py-2 file:text-white hover:file:bg-green-800 cursor-pointer"
-                     disabled />
-              <p id="paName" class="mt-3 text-xs text-slate-500"></p>
-            </div>
-          </div>
+                <div class="mt-12 mb-6">
+                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2">
+                        <i class="fa-solid fa-folder-open"></i> Standard Documentation
+                    </h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 text-center relative h-36 flex flex-col items-center justify-center">
+                        <input type="file" id="proofFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                        <i class="fa-solid fa-file-contract text-2xl text-gray-300 mb-1"></i>
+                        <p class="text-[10px] font-black text-gray-400 uppercase">Proof of Right</p>
+                        <p id="proofName" class="text-[8px] text-green-600 truncate mt-1"></p>
+                    </div>
+                    <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 text-center relative h-36 flex flex-col items-center justify-center">
+                        <input type="file" id="lguFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                        <i class="fa-solid fa-stamp text-2xl text-gray-300 mb-1"></i>
+                        <p class="text-[10px] font-black text-gray-400 uppercase">LGU Endorsement</p>
+                        <p id="lguName" class="text-[8px] text-green-600 truncate mt-1"></p>
+                    </div>
+                </div>
 
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase text-center md:text-left">Submit activates once all specifications and required files are confirmed.</p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase text-[10px]">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-green-700 text-white font-black py-3 px-12 rounded-xl uppercase text-[10px] opacity-50 cursor-not-allowed">Apply</button>
+                    </div>
+                </div>
+            </form>
         </div>
-      </div>
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">DENR Forest Management Bureau 2026</p>
     </div>
 
-    <!-- Sticky action bar -->
-    <div class="sticky bottom-0 mt-6">
-      <div class="rounded-2xl bg-white/90 backdrop-blur border border-slate-200 p-4
-                  flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <p class="text-slate-500 text-sm">
-          Apply is enabled when all required fields and documents are provided.
-        </p>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('harvestForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const protectedToggle = document.getElementById('protectedToggle');
+            const nipasDocs = document.getElementById('nipasDocs');
+            const datesSet = new Set();
 
-        <div class="flex gap-3">
-          <button type="reset"
-            class="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
-            Clear
-          </button>
+            // Toggle logic
+            protectedToggle.addEventListener('change', () => {
+                nipasDocs.classList.toggle('hidden', !protectedToggle.checked);
+                ['pamcFile', 'sapaFile', 'gisFile'].forEach(id => {
+                    document.getElementById(id).required = protectedToggle.checked;
+                });
+                checkValidation();
+            });
 
-          <button id="submitBtn" type="submit" disabled
-            class="px-7 py-3 rounded-xl bg-slate-200 text-slate-400 font-semibold cursor-not-allowed transition">
-            Apply
-          </button>
-        </div>
-      </div>
-    </div>
-  </form>
-</section>
+            // Date Selection
+            document.getElementById('addDateBtn').addEventListener('click', () => {
+                const picker = document.getElementById('datePicker');
+                if (picker.value) {
+                    datesSet.add(picker.value);
+                    picker.value = "";
+                    renderDates();
+                    checkValidation();
+                }
+            });
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("harvestForm");
-  const submitBtn = document.getElementById("submitBtn");
+            function renderDates() {
+                const container = document.getElementById('dateChips');
+                container.innerHTML = "";
+                Array.from(datesSet).sort().forEach(d => {
+                    const chip = document.createElement('span');
+                    chip.className = "inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-[10px] font-black rounded-lg border border-green-200 cursor-pointer";
+                    chip.innerHTML = `${d} <i class="fa-solid fa-xmark"></i>`;
+                    chip.onclick = () => { datesSet.delete(d); renderDates(); checkValidation(); };
+                    container.appendChild(chip);
+                });
+                document.getElementById('harvestDatesHidden').value = Array.from(datesSet).join(',');
+            }
 
-  // text/select inputs
-  const harvestLocation = document.getElementById("harvestLocation");
-  const harvestMethod = document.getElementById("harvestMethod");
-  const targetSpecies = document.getElementById("targetSpecies");
-  const expectedVolume = document.getElementById("expectedVolume");
-  const intendedUse = document.getElementById("intendedUse");
+            function checkValidation() {
+                const fields = ['harvestLocation', 'targetSpecies', 'expectedVolume'];
+                const fieldsValid = fields.every(id => document.getElementById(id).value.trim() !== "");
+                const datesValid = datesSet.size > 0;
+                const stdFiles = ['proofFile', 'lguFile'].every(id => document.getElementById(id).files.length > 0);
+                
+                let nipasValid = true;
+                if (protectedToggle.checked) {
+                    nipasValid = ['pamcFile', 'sapaFile', 'gisFile'].every(id => document.getElementById(id).files.length > 0);
+                }
 
-  // protected toggle controls protected area clearance requirement
-  const protectedToggle = document.getElementById("protectedToggle");
-  const toggleTrack = document.getElementById("toggleTrack");
-  const toggleKnob = document.getElementById("toggleKnob");
-  const protectedHint = document.getElementById("protectedHint");
+                if (fieldsValid && datesValid && stdFiles && nipasValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
 
-  const paTag = document.getElementById("paTag");
-  const paBox = document.getElementById("paBox");
-  const paFile = document.getElementById("paFile");
-  const paName = document.getElementById("paName");
+            // File listeners for filename display
+            ['proofFile', 'lguFile', 'pamcFile', 'sapaFile', 'gisFile'].forEach(id => {
+                document.getElementById(id).addEventListener('change', (e) => {
+                    const display = document.getElementById(id.replace('File', 'Name'));
+                    if (display) display.textContent = e.target.files[0] ? e.target.files[0].name : "";
+                    checkValidation();
+                });
+            });
 
-  // dates multi-select
-  const datePicker = document.getElementById("datePicker");
-  const addDateBtn = document.getElementById("addDateBtn");
-  const dateChips = document.getElementById("dateChips");
-  const harvestDatesHidden = document.getElementById("harvestDatesHidden");
-  const datesHint = document.getElementById("datesHint");
-
-  // required files
-  const proofFile = document.getElementById("proofFile");
-  const lguFile = document.getElementById("lguFile");
-  const proofName = document.getElementById("proofName");
-  const lguName = document.getElementById("lguName");
-
-  const dates = new Set(); // store YYYY-MM-DD
-
-  const setName = (labelEl, inputEl) => {
-    labelEl.textContent = (inputEl.files && inputEl.files.length)
-      ? `Selected: ${inputEl.files[0].name}`
-      : "";
-  };
-
-  function renderDates() {
-    dateChips.innerHTML = "";
-    const sorted = Array.from(dates).sort();
-
-    sorted.forEach(d => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className =
-        "inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm " +
-        "transition hover:border-green-300 hover:bg-green-50/40 active:scale-[0.98]";
-      chip.setAttribute("aria-label", `Remove ${d}`);
-      chip.innerHTML = `<span>${d}</span><span class="text-slate-400">✕</span>`;
-      chip.addEventListener("click", () => {
-        dates.delete(d);
-        syncDates();
-        toggleSubmit();
-      });
-      dateChips.appendChild(chip);
-    });
-
-    syncDates();
-  }
-
-  function syncDates() {
-    const sorted = Array.from(dates).sort();
-    harvestDatesHidden.value = sorted.join(",");
-    if (sorted.length === 0) {
-      datesHint.textContent = "Add at least one date to proceed.";
-      datesHint.className = "text-xs text-red-600 mt-1";
-    } else {
-      datesHint.textContent = `${sorted.length} date(s) selected.`;
-      datesHint.className = "text-xs text-green-700 mt-1";
-    }
-  }
-
-  addDateBtn.addEventListener("click", () => {
-    const val = datePicker.value;
-    if (!val) {
-      datesHint.textContent = "Please select a date first.";
-      datesHint.className = "text-xs text-red-600 mt-1";
-      return;
-    }
-    dates.add(val);
-    datePicker.value = "";
-    renderDates();
-    toggleSubmit();
-  });
-
-  function updateProtectedUI() {
-    const enabled = protectedToggle.checked;
-
-    // switch visuals
-    if (enabled) {
-      toggleTrack.classList.remove("bg-slate-200");
-      toggleTrack.classList.add("bg-green-700");
-      toggleKnob.classList.remove("translate-x-1");
-      toggleKnob.classList.add("translate-x-5");
-    } else {
-      toggleTrack.classList.add("bg-slate-200");
-      toggleTrack.classList.remove("bg-green-700");
-      toggleKnob.classList.add("translate-x-1");
-      toggleKnob.classList.remove("translate-x-5");
-    }
-
-    // protected area clearance required if enabled
-    if (enabled) {
-      paFile.disabled = false;
-      paFile.required = true;
-      paBox.classList.remove("opacity-60");
-      paTag.classList.remove("bg-slate-100", "text-slate-500");
-      paTag.classList.add("bg-green-700", "text-white");
-      paTag.textContent = "REQUIRED";
-      protectedHint.textContent = "Protected Area Clearance is required because the toggle is enabled.";
-      protectedHint.className = "text-xs text-green-700 mt-2";
-    } else {
-      paFile.disabled = true;
-      paFile.required = false;
-      paFile.value = "";
-      paName.textContent = "";
-      paBox.classList.add("opacity-60");
-      paTag.classList.add("bg-slate-100", "text-slate-500");
-      paTag.classList.remove("bg-green-700", "text-white");
-      paTag.textContent = "OPTIONAL";
-      protectedHint.textContent = "Protected Area Clearance is optional unless this is enabled.";
-      protectedHint.className = "text-xs text-slate-500 mt-2";
-    }
-  }
-
-  function isValid() {
-    // required text/select
-    if (!harvestLocation.value.trim()) return false;
-    if (!harvestMethod.value) return false;
-    if (!targetSpecies.value.trim()) return false;
-    if (!expectedVolume.value.trim()) return false;
-    if (!intendedUse.value.trim()) return false;
-
-    // at least 1 harvest date
-    if (dates.size === 0) return false;
-
-    // required files
-    if (proofFile.files.length === 0) return false;
-    if (lguFile.files.length === 0) return false;
-
-    // conditional protected clearance
-    if (protectedToggle.checked && paFile.files.length === 0) return false;
-
-    return true;
-  }
-
-  function toggleSubmit() {
-    if (isValid()) {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove("bg-slate-200", "text-slate-400", "cursor-not-allowed");
-      submitBtn.classList.add("bg-green-700", "text-white", "hover:bg-green-800");
-    } else {
-      submitBtn.disabled = true;
-      submitBtn.classList.add("bg-slate-200", "text-slate-400", "cursor-not-allowed");
-      submitBtn.classList.remove("bg-green-700", "text-white", "hover:bg-green-800");
-    }
-  }
-
-  // listeners
-  form.addEventListener("input", toggleSubmit);
-  form.addEventListener("change", toggleSubmit);
-
-  protectedToggle.addEventListener("change", () => {
-    updateProtectedUI();
-    toggleSubmit();
-  });
-
-  proofFile.addEventListener("change", () => { setName(proofName, proofFile); toggleSubmit(); });
-  lguFile.addEventListener("change", () => { setName(lguName, lguFile); toggleSubmit(); });
-  paFile.addEventListener("change", () => { setName(paName, paFile); toggleSubmit(); });
-
-  form.addEventListener("reset", () => {
-    setTimeout(() => {
-      // clear chips
-      dates.clear();
-      renderDates();
-
-      // clear names
-      proofName.textContent = "";
-      lguName.textContent = "";
-      paName.textContent = "";
-
-      // reset toggle
-      protectedToggle.checked = false;
-      updateProtectedUI();
-
-      toggleSubmit();
-    }, 0);
-  });
-
-  // init
-  renderDates();
-  updateProtectedUI();
-  toggleSubmit();
-});
-</script>
-
-
-    
+            form.querySelectorAll('input').forEach(el => el.addEventListener('input', checkValidation));
+        });
+    </script>
 </body>
 </html>

@@ -113,6 +113,39 @@
             display: none; /* Tinatago sa mobile para iwas siksikan */
         }
     }
+
+    :root{
+  --sidebar-width: 300px;  /* your sidebar width */
+  --header-height: 100px;  /* your header height */
+}
+
+/* SIDEBAR: go all the way to the top */
+.sidebar-container{
+  top: 0 !important;
+  height: 100vh !important;
+  z-index: 1000;
+}
+
+/* HEADER: start beside the sidebar */
+.header-main{
+  left: var(--sidebar-width) !important;
+  right: 0 !important;
+  top: 0 !important;
+  z-index: 2000; /* keep above content */
+}
+
+/* CONTENT: keep content below header and beside sidebar */
+body{
+  padding-left: var(--sidebar-width) !important;
+  padding-top: var(--header-height) !important;
+}
+
+/* Mobile behavior (keep your current logic) */
+@media (max-width: 1024px){
+  .header-main{ left: 0 !important; }
+  body{ padding-left: 0 !important; }
+}
+
 </style>
 
 <header class="header-main shadow-sm">

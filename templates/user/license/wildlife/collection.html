@@ -1,94 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Wildlife Collection</title>
+    <title>Wildlife Trade Permit | DENR Portal</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body>
+
+<body class="bg-gray-50 min-h-screen text-slate-900">
     {% include 'user/header.html' %}
 
-    <div class="min-h-screen bg-stone-50 py-12 px-4">
-    <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-stone-800 overflow-hidden">
-        
-        <div class="bg-stone-800 p-10 text-center">
-            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Wildlife Collection Permit</h1>
-            <p class="text-stone-300 text-sm mt-2 opacity-90 font-medium">Biodiversity Management Bureau - Natural Resource Utilization Section</p>
+    <div class="container mx-auto px-4 mt-8">
+
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-black">
+                Wildlife Trade Permit
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Biodiversity Management Bureau • Wildlife Resources Division
+            </p>
         </div>
 
-        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-10">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Collection Area</label>
-                    <input type="text" required placeholder="Specific Location or Protected Area" 
-                           class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all">
-                </div>
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Purpose of Collection</label>
-                    <select required class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all appearance-none cursor-pointer">
-                        <option value="" disabled selected>Select purpose...</option>
-                        <option value="commercial">Commercial / Trade</option>
-                        <option value="scientific">Scientific Research</option>
-                        <option value="education">Education / Display</option>
-                        <option value="conservation">Conservation / Breeding</option>
-                        <option value="bioprospecting">Bioprospecting</option>
-                    </select>
-                </div>
-            </div>
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Collection Method</label>
-                    <select required class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all appearance-none cursor-pointer">
-                        <option value="" disabled selected>Select method...</option>
-                        <option value="netting">Netting</option>
-                        <option value="trapping">Trapping</option>
-                        <option value="scooping">Scooping</option>
-                    </select>
-                </div>
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Collection Schedule</label>
-                    <div class="flex gap-4">
-                        <input type="date" required class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all">
-                        <input type="time" required class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all">
+            <form id="wildlifeForm" action="#" method="POST" enctype="multipart/form-data">
+                
+                <div class="space-y-6">
+                    <h3 class="text-black font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-paw"></i> Trade Specifications
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Wildlife Category <span class="text-red-500">*</span></label>
+                            <select id="wildlifeCategory" name="wildlife_category" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none bg-white font-medium text-gray-700 text-sm appearance-none">
+                                <option value="" disabled selected>Select category...</option>
+                                <option value="Live">Live Wildlife</option>
+                                <option value="By-products">Wildlife Products/By-products</option>
+                                <option value="Captured">Rescued Wildlife</option>
+                                <option value="Breeding">Breeding Stock</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Species Detail <span class="text-red-500">*</span></label>
+                            <input type="text" id="speciesDetail" name="species_detail" required placeholder="Scientific / Common Name" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Quantity <span class="text-red-500">*</span></label>
+                            <input type="number" id="quantity" name="quantity" required min="1" placeholder="Whole numbers only" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-bold text-gray-700 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Purpose <span class="text-red-500">*</span></label>
+                            <input type="text" id="purpose" name="purpose" required placeholder="e.g. Sale, Breeding" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Origin <span class="text-red-500">*</span></label>
+                            <input type="text" id="origin" name="origin" required placeholder="Source Location" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Destination <span class="text-red-500">*</span></label>
+                            <input type="text" id="destination" name="destination" required placeholder="Delivery Location" 
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="space-y-3">
-                <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Map of Collection Sites</label>
-                <input type="text" required placeholder="Input Coordinates or GIS Site Description" 
-                       class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all">
-            </div>
-
-            <hr class="border-stone-100">
-
-            <div class="space-y-4">
-                <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Required Documentation</label>
-                <div class="w-full">
-                    <label class="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-stone-300 rounded-[2.5rem] cursor-pointer bg-stone-50 hover:bg-stone-100 transition-all group">
-                        <div class="text-center p-6 space-y-2">
-                            <p class="text-xs font-black text-stone-700 uppercase tracking-widest group-hover:text-amber-800 transition-colors">Attach LGU Consent / Barangay Clearance</p>
-                            <p class="text-[10px] text-stone-400 font-bold uppercase">Drag and drop files here or click to browse from your device</p>
-                            <p class="text-[9px] text-stone-300 uppercase mt-2">Maximum file size: 10MB (PDF, JPG, PNG)</p>
-                        </div>
-                        <input type="file" required class="hidden">
-                    </label>
+                <div class="mt-12 mb-6">
+                    <h3 class="text-black font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open"></i> Mandatory Documentation
+                    </h3>
                 </div>
-            </div>
 
-            <div class="pt-6">
-                <button type="submit" class="w-full bg-stone-800 hover:bg-stone-900 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
-                    Submit Collection Permit Application
-                </button>
-            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Buyer / Seller Details</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="detailsFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-users-rectangle text-2xl text-gray-300 group-hover:text-black mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Personal Info</p>
+                            <p id="detailsName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
 
-        </form>
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Trade License</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="licenseFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-id-card text-2xl text-gray-300 group-hover:text-black mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload WTRL/WCEP</p>
+                            <p id="licenseName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Possession Permit</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="possessionFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-shield-halved text-2xl text-gray-300 group-hover:text-black mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload CWR/WFP</p>
+                            <p id="possessionName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Legal Acquisition</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="legalFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-file-signature text-2xl text-gray-300 group-hover:text-black mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Proof</p>
+                            <p id="legalName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 group">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Transport Plan</label>
+                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
+                            <input type="file" id="transportFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-map-location-dot text-2xl text-gray-300 group-hover:text-black mb-2"></i>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Logistics Plan</p>
+                            <p id="transportName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Apply activates once all trade data and 5 mandatory technical files are confirmed.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-black text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
+            Biodiversity Management Bureau • Wildlife Regulatory Section 2026
+        </p>
     </div>
-</div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('wildlifeForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const fields = ['wildlifeCategory', 'speciesDetail', 'quantity', 'purpose', 'origin', 'destination'];
+            const fileConfigs = [
+                { id: 'detailsFile', name: 'detailsName' },
+                { id: 'licenseFile', name: 'licenseName' },
+                { id: 'possessionFile', name: 'possessionName' },
+                { id: 'legalFile', name: 'legalName' },
+                { id: 'transportFile', name: 'transportName' }
+            ];
+
+            function checkValidation() {
+                const allFieldsValid = fields.every(id => {
+                    const el = document.getElementById(id);
+                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
+                });
+                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
+
+                if (allFieldsValid && allFilesValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                }
+            }
+
+            fileConfigs.forEach(f => {
+                const input = document.getElementById(f.id);
+                const display = document.getElementById(f.name);
+                input.addEventListener('change', () => {
+                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                    checkValidation();
+                });
+            });
+
+            form.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('input', checkValidation);
+                el.addEventListener('change', checkValidation);
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                setTimeout(() => {
+                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    checkValidation();
+                }, 10);
+            });
+        });
+    </script>
 </body>
 </html>

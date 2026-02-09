@@ -1,95 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Wildlife Farm</title>
+    <title>Wildlife Farm Registration | DENR Portal</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body>
+
+<body class="bg-stone-50 min-h-screen text-slate-900 font-sans">
     {% include 'user/header.html' %}
 
-    <div class="min-h-screen bg-stone-50 py-12 px-4">
-        <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-stone-800 overflow-hidden">
-            
-            <div class="bg-stone-800 p-10 text-center">
-                <h1 class="text-3xl font-black text-white uppercase tracking-widest">Wildlife Farm & Breeding Registration</h1>
-                <p class="text-stone-300 text-sm mt-2 opacity-90 font-medium">Biodiversity Management Bureau - Captive Breeding & Propagation Section</p>
-            </div>
+    <div class="container mx-auto px-4 mt-8">
 
-            <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-10">
+        <div class="max-w-7xl mx-auto title-wrapper text-center mb-10">
+            <h1 class="text-4xl font-black uppercase tracking-tight text-stone-800">
+                Wildlife Farm & Breeding
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-1">
+                Biodiversity Management Bureau • Captive Breeding & Propagation Section
+            </p>
+        </div>
+
+        <div class="max-w-7xl mx-auto bg-white border-2 border-gray-200 rounded-[2.5rem] shadow-sm p-8 md:p-12 mb-12">
+
+            <form id="farmForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="space-y-6">
-                    <div class="space-y-3">
-                        <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Facility Location</label>
-                        <input type="text" required placeholder="Complete Address of the Breeding Facility" 
-                               class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all">
+                <div class="space-y-8">
+                    <div class="flex items-center gap-3 border-b-2 border-stone-100 pb-3">
+                        <i class="fa-solid fa-house-chimney-window text-2xl text-amber-700"></i>
+                        <h3 class="text-stone-800 font-black text-lg uppercase tracking-wider mb-0 leading-none">
+                            Facility Specifications
+                        </h3>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-3">
-                            <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Species to be Bred</label>
-                            <input type="text" required placeholder="Common and Scientific Name" 
-                                   class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all">
-                        </div>
-                        <div class="space-y-3">
-                            <label class="text-sm font-black text-stone-800 uppercase tracking-wider">Target Capacity</label>
-                            <input type="number" required placeholder="Maximum Number of Individuals" 
-                                   class="w-full p-4 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:ring-2 focus:ring-amber-700 outline-none transition-all">
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="border-stone-100">
-
-                <div class="space-y-6">
-                    <label class="text-sm font-black text-stone-800 uppercase tracking-wider block">Required Technical Documentation</label>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-stone-500 uppercase ml-2">Biosecurity Measures</label>
-                            <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-300 rounded-[2rem] cursor-pointer bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all duration-300 hover:scale-105 hover:-translate-y-2 group">
-                                <span class="text-[12px] font-black text-stone-700 uppercase group-hover:text-amber-800 px-4 text-center transition-colors">Attach Biosecurity Protocol</span>
-                                <input type="file" required class="hidden">
-                            </label>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-stone-800 uppercase mb-2 tracking-widest">Facility Location <span class="text-red-500">*</span></label>
+                            <input type="text" id="location" name="location" required placeholder="Complete Address of the Breeding Facility" 
+                                class="w-full bg-stone-50 border-2 border-stone-100 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-amber-700 outline-none font-medium transition-all">
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-stone-500 uppercase ml-2">Facility Layout</label>
-                            <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-300 rounded-[2rem] cursor-pointer bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all duration-300 hover:scale-105 hover:-translate-y-2 group">
-                                <span class="text-[12px] font-black text-stone-700 uppercase group-hover:text-amber-800 px-4 text-center transition-colors">Attach Blueprint / Sketch</span>
-                                <input type="file" required class="hidden">
-                            </label>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-stone-500 uppercase ml-2">Breeding Management Plan</label>
-                            <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-300 rounded-[2rem] cursor-pointer bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all duration-300 hover:scale-105 hover:-translate-y-2 group">
-                                <span class="text-[12px] font-black text-stone-700 uppercase group-hover:text-amber-800 px-4 text-center transition-colors">Attach Management Plan</span>
-                                <input type="file" required class="hidden">
-                            </label>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-stone-500 uppercase ml-2">Photos of Facility</label>
-                            <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-300 rounded-[2rem] cursor-pointer bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all duration-300 hover:scale-105 hover:-translate-y-2 group">
-                                <span class="text-[12px] font-black text-stone-700 uppercase group-hover:text-amber-800 px-4 text-center transition-colors">Upload Facility Photos</span>
-                                <input type="file" required multiple accept="image/*" class="hidden">
-                            </label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label class="block text-[10px] font-black text-stone-800 uppercase mb-2 tracking-widest">Species to be Bred <span class="text-red-500">*</span></label>
+                                <input type="text" id="species" name="species" required placeholder="Common and Scientific Name" 
+                                    class="w-full bg-stone-50 border-2 border-stone-100 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-amber-700 outline-none font-medium transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-stone-800 uppercase mb-2 tracking-widest">Target Capacity <span class="text-red-500">*</span></label>
+                                <input type="number" id="capacity" name="capacity" required min="1" placeholder="Maximum Individuals" 
+                                    class="w-full bg-stone-50 border-2 border-stone-100 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-amber-700 outline-none font-bold transition-all">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="pt-6">
-                    <button type="submit" class="w-full bg-stone-800 hover:bg-stone-900 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
-                        Submit Registration Application
-                    </button>
+                <div class="mt-16 space-y-8">
+                    <div class="flex items-center gap-3 border-b-2 border-stone-100 pb-3">
+                        <i class="fa-solid fa-file-invoice text-2xl text-amber-700"></i>
+                        <h3 class="text-stone-800 font-black text-lg uppercase tracking-wider mb-0 leading-none">
+                            Technical Documentation
+                        </h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="group">
+                            <label class="text-[9px] font-black text-stone-500 uppercase tracking-[0.1em] mb-2 block text-center">Biosecurity Protocol</label>
+                            <div class="relative border-2 border-dashed border-stone-300 rounded-[2rem] p-4 bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all text-center h-40 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="bioFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-shield-virus text-2xl text-stone-300 group-hover:text-amber-700 mb-2 transition-colors"></i>
+                                <p class="text-[10px] font-black text-stone-400 group-hover:text-stone-800 uppercase">Attach Protocol</p>
+                                <p id="bioName" class="text-[8px] text-amber-800 font-black truncate max-w-[150px] mt-2"></p>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[9px] font-black text-stone-500 uppercase tracking-[0.1em] mb-2 block text-center">Facility Layout</label>
+                            <div class="relative border-2 border-dashed border-stone-300 rounded-[2rem] p-4 bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all text-center h-40 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="layoutFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-map-location-dot text-2xl text-stone-300 group-hover:text-amber-700 mb-2 transition-colors"></i>
+                                <p class="text-[10px] font-black text-stone-400 group-hover:text-stone-800 uppercase">Attach Blueprint</p>
+                                <p id="layoutName" class="text-[8px] text-amber-800 font-black truncate max-w-[150px] mt-2"></p>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[9px] font-black text-stone-500 uppercase tracking-[0.1em] mb-2 block text-center">Management Plan</label>
+                            <div class="relative border-2 border-dashed border-stone-300 rounded-[2rem] p-4 bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all text-center h-40 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="planFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-book-medical text-2xl text-stone-300 group-hover:text-amber-700 mb-2 transition-colors"></i>
+                                <p class="text-[10px] font-black text-stone-400 group-hover:text-stone-800 uppercase">Attach WMP</p>
+                                <p id="planName" class="text-[8px] text-amber-800 font-black truncate max-w-[150px] mt-2"></p>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[9px] font-black text-stone-500 uppercase tracking-[0.1em] mb-2 block text-center">Facility Photos</label>
+                            <div class="relative border-2 border-dashed border-stone-300 rounded-[2rem] p-4 bg-stone-50 hover:bg-stone-100 hover:border-amber-700 transition-all text-center h-40 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="photoFile" required multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-camera-retro text-2xl text-stone-300 group-hover:text-amber-700 mb-2 transition-colors"></i>
+                                <p class="text-[10px] font-black text-stone-400 group-hover:text-stone-800 uppercase">Upload Images</p>
+                                <p id="photoName" class="text-[8px] text-amber-800 font-black truncate max-w-[150px] mt-2"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t-2 border-stone-50 pt-8 gap-4">
+                    <p class="text-[10px] text-stone-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        Form activates once all facility data and 4 mandatory technical files are confirmed.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border-2 border-stone-200 text-stone-600 font-black uppercase tracking-widest hover:bg-stone-100 transition no-underline text-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border-2 border-stone-200 text-stone-600 font-black uppercase tracking-widest hover:bg-stone-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-stone-800 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-30">Apply</button>
+                    </div>
+                </div>
             </form>
         </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
+            Biodiversity Management Bureau • Department of Agriculture 2026
+        </p>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('farmForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const fields = ['location', 'species', 'capacity'];
+            const fileConfigs = [
+                { id: 'bioFile', name: 'bioName' },
+                { id: 'layoutFile', name: 'layoutName' },
+                { id: 'planFile', name: 'planName' },
+                { id: 'photoFile', name: 'photoName' }
+            ];
+
+            function checkValidation() {
+                const allFieldsValid = fields.every(id => {
+                    const el = document.getElementById(id);
+                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
+                });
+                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
+
+                if (allFieldsValid && allFilesValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-stone-900', 'active:scale-95', 'cursor-pointer');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-stone-900', 'active:scale-95', 'cursor-pointer');
+                }
+            }
+
+            fileConfigs.forEach(f => {
+                const input = document.getElementById(f.id);
+                const display = document.getElementById(f.name);
+                input.addEventListener('change', () => {
+                    if (input.files.length > 0) {
+                        display.textContent = input.files.length > 1 ? `${input.files.length} files selected` : input.files[0].name;
+                    } else {
+                        display.textContent = "";
+                    }
+                    checkValidation();
+                });
+            });
+
+            form.querySelectorAll('input').forEach(el => {
+                el.addEventListener('input', checkValidation);
+                el.addEventListener('change', checkValidation);
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                setTimeout(() => {
+                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    checkValidation();
+                }, 10);
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,105 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Fish Dealer</title>
+    <title>Fish Dealer License | DENR Portal</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body>
+
+<body class="bg-gray-50 min-h-screen text-slate-900">
     {% include 'user/header.html' %}
 
-    <div class="min-h-screen bg-slate-50 py-12 px-4">
-    <div class="max-w-5xl mx-auto bg-white rounded-[2.5rem] border-2 border-blue-700 overflow-hidden">
-        
-        <div class="bg-blue-700 p-10 text-center">
-            <h1 class="text-3xl font-black text-white uppercase tracking-widest">Fish Dealer / Trade License</h1>
-            <p class="text-blue-100 text-sm mt-2 opacity-90 font-medium">Market Regulatory and Trade Licensing Division</p>
+    <div class="container mx-auto px-4 mt-8">
+
+        <div class="max-w-7xl mx-auto title-wrapper text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-blue-800">
+                Fish Dealer / Trade License
+            </h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
+                Market Regulatory and Trade Licensing Division • Operational Permit
+            </p>
         </div>
 
-        <form action="#" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl">🏢</span> Business Type
-                    </label>
-                    <select required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer">
-                        <option value="" disabled selected>Select business type...</option>
-                        <option value="single">Single Proprietorship</option>
-                        <option value="corp">Corporation</option>
-                        <option value="partnership">Partnership</option>
-                        <option value="coop">Cooperative</option>
-                        <option value="lgu">Local Government Unit (LGU)</option>
-                    </select>
-                </div>
+        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-                <div class="space-y-3">
-                    <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                        <span class="text-xl">🧊</span> Storage Capacity
-                    </label>
-                    <div class="relative">
-                        <input type="number" required placeholder="0.00" 
-                               class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs uppercase">KG / MT</span>
+            <form id="dealerForm" action="#" method="POST" enctype="multipart/form-data">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+                    <div class="space-y-6">
+                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2">Trade Details</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Business Type <span class="text-red-500">*</span></label>
+                                <select id="businessType" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
+                                    <option value="" disabled selected>Select type...</option>
+                                    <option value="single">Single Proprietorship</option>
+                                    <option value="corp">Corporation</option>
+                                    <option value="partnership">Partnership</option>
+                                    <option value="coop">Cooperative</option>
+                                    <option value="lgu">LGU Operation</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Storage Capacity <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="number" id="storageCapacity" required placeholder="0.00" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-bold text-gray-700">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-gray-400 text-[9px]">KG / MT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Market / Business Address <span class="text-red-500">*</span></label>
+                            <input type="text" id="marketAddress" required placeholder="Ex: Agora Public Market, Stall #12, San Juan City"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-medium text-gray-700">
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2">Regulatory Documents</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center block">Business Reg. <span class="text-red-500">*</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center h-32 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <i class="fa-solid fa-file-contract text-2xl text-gray-300 mb-2"></i>
+                                    <input type="file" id="regFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                                    <p id="regName" class="text-[8px] text-blue-600 font-bold uppercase"></p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center block">Stall Proof <span class="text-red-500">*</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center h-32 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <i class="fa-solid fa-shop text-2xl text-gray-300 mb-2"></i>
+                                    <input type="file" id="stallFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                                    <p id="stallName" class="text-[8px] text-blue-600 font-bold uppercase"></p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center block">Sanitation <span class="text-red-500">*</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center h-32 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <i class="fa-solid fa-hand-holding-droplet text-2xl text-gray-300 mb-2"></i>
+                                    <input type="file" id="sanitationFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                                    <p id="sanitationName" class="text-[8px] text-blue-600 font-bold uppercase"></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="space-y-3">
-                <label class="text-sm font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                    <span class="text-xl">📍</span> Market Location / Address
-                </label>
-                <input type="text" required placeholder="Ex: Agora Public Market, Stall #12, San Juan City" 
-                       class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-            </div>
-
-            <hr class="border-slate-100">
-
-            <label class="text-sm font-black text-blue-900 uppercase tracking-wider block mb-4">
-                Required Documents (PDF or Image)
-            </label>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                <div class="space-y-2 text-center">
-                    <div class="relative border-2 border-dashed border-blue-200 rounded-2xl p-6 bg-slate-50 hover:bg-blue-50 transition-all group">
-                        <input type="file" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                        <span class="text-3xl block mb-2">📜</span>
-                        <p class="text-[10px] font-black text-blue-700 uppercase">Business Registration</p>
-                        <p class="text-[9px] text-slate-400 mt-1">DTI / SEC / CDA</p>
+                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
+                        License activates once all business data and 3 mandatory documents are uploaded.
+                    </p>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-blue-700 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
                     </div>
                 </div>
-
-                <div class="space-y-2 text-center">
-                    <div class="relative border-2 border-dashed border-blue-200 rounded-2xl p-6 bg-slate-50 hover:bg-blue-50 transition-all group">
-                        <input type="file" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                        <span class="text-3xl block mb-2">🏪</span>
-                        <p class="text-[10px] font-black text-blue-700 uppercase">Market/Stall Proof</p>
-                        <p class="text-[9px] text-slate-400 mt-1">Contract or Permit</p>
-                    </div>
-                </div>
-
-                <div class="space-y-2 text-center">
-                    <div class="relative border-2 border-dashed border-blue-200 rounded-2xl p-6 bg-slate-50 hover:bg-blue-50 transition-all group">
-                        <input type="file" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                        <span class="text-3xl block mb-2">🧼</span>
-                        <p class="text-[10px] font-black text-blue-700 uppercase">Sanitation Cert.</p>
-                        <p class="text-[9px] text-slate-400 mt-1">Health Office Clearance</p>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="pt-6">
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-black py-6 px-8 rounded-3xl transition-all transform hover:scale-[1.01] active:scale-95 uppercase tracking-widest text-xl">
-                    Submit License Application
-                </button>
-            </div>
-
-        </form>
+            </form>
+        </div>
+        
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
+            DENR Bureau of Fisheries • Trade and Licensing Division 2026
+        </p>
     </div>
-</div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('dealerForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const fields = ['businessType', 'storageCapacity', 'marketAddress'];
+            const fileConfigs = [
+                { id: 'regFile', name: 'regName' },
+                { id: 'stallFile', name: 'stallName' },
+                { id: 'sanitationFile', name: 'sanitationName' }
+            ];
+
+            function checkValidation() {
+                const allFieldsValid = fields.every(id => {
+                    const el = document.getElementById(id);
+                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
+                });
+                
+                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
+
+                if (allFieldsValid && allFilesValid) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.add('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    submitBtn.classList.remove('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                }
+            }
+
+            fileConfigs.forEach(f => {
+                const input = document.getElementById(f.id);
+                const display = document.getElementById(f.name);
+                input.addEventListener('change', () => {
+                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                    checkValidation();
+                });
+            });
+
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('input', checkValidation);
+                el.addEventListener('change', checkValidation);
+            });
+
+            form.addEventListener('reset', () => {
+                setTimeout(() => {
+                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    checkValidation();
+                }, 10);
+            });
+        });
+    </script>
 </body>
+
 </html>
