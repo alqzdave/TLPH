@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed - DENR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-red-50 to-orange-50">
+
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md">
+        <!-- Failure Card -->
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-red-100">
+            
+            <!-- Error Icon -->
+            <div class="bg-gradient-to-b from-red-50 to-red-100 p-12 flex justify-center">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-red-600 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+                    <div class="relative bg-red-600 rounded-full p-6">
+                        <span class="material-icons-round text-white text-6xl">cancel</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-8 text-center">
+                <h1 class="text-3xl font-black text-red-900 mb-2">Payment Failed</h1>
+                <p class="text-slate-600 font-bold mb-6">Unfortunately, your payment could not be processed.</p>
+
+                <!-- Error Info -->
+                <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-8 text-left">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs font-bold text-red-700 uppercase tracking-wider mb-1">Error Message</p>
+                            <p class="text-sm text-red-600 font-bold m-0" id="errorMsg">Payment was declined. Please try again with a valid payment method.</p>
+                        </div>
+                        <div class="pt-4 border-t border-red-200 mt-4">
+                            <p class="text-xs text-red-600 m-0">
+                                <strong>Reference ID:</strong> <span id="refId" class="font-mono">--</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Troubleshooting Tips -->
+                <div class="bg-slate-50 rounded-2xl p-4 mb-8 border border-slate-200 text-left">
+                    <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-3">What you can try:</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 m-0 pl-5 list-disc">
+                        <li>Check if your card details are correct</li>
+                        <li>Ensure your card is not expired and has sufficient funds</li>
+                        <li>Try a different payment method</li>
+                        <li>Contact your bank if the issue persists</li>
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button onclick="retryPayment()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-black py-4 rounded-xl uppercase tracking-wider text-sm shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 transition-all active:scale-95 inline-flex items-center justify-center gap-2">
+                        <span class="material-icons-round text-lg">refresh</span>
+                        Try Again
+                    </button>
+                    
+                    <a href="/user/dashboard" class="w-full bg-slate-100 text-slate-700 font-black py-4 rounded-xl uppercase tracking-wider text-sm hover:bg-slate-200 transition-all active:scale-95 inline-flex items-center justify-center gap-2 border-2 border-slate-200">
+                        <span class="material-icons-round text-lg">arrow_back</span>
+                        Back to Dashboard
+                    </a>
+
+                    <a href="#" onclick="contactSupport(); return false;" class="w-full bg-blue-50 text-blue-700 font-black py-4 rounded-xl uppercase tracking-wider text-sm hover:bg-blue-100 transition-all active:scale-95 inline-flex items-center justify-center gap-2 border-2 border-blue-200">
+                        <span class="material-icons-round text-lg">help</span>
+                        Contact Support
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t-2 border-slate-100 px-8 py-4 bg-slate-50 text-center">
+                <p class="text-xs text-slate-500 m-0">
+                    If you have questions, email us at <strong>support@denr.gov.ph</strong>
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+// Get query parameters
+const params = new URLSearchParams(window.location.search);
+const refId = params.get('invoice_id') || params.get('ref_id') || 'N/A';
+const errorMsg = params.get('error') || 'Payment was declined. Please try again.';
+
+// Get error message from session or localStorage if available
+const storedError = sessionStorage.getItem('paymentError');
+if (storedError) {
+    document.getElementById('errorMsg').textContent = storedError;
+    sessionStorage.removeItem('paymentError');
+}
+
+document.getElementById('refId').textContent = refId;
+
+function retryPayment() {
+    // Get the previous payment type from sessionStorage or redirect to form
+    const serviceType = sessionStorage.getItem('serviceType') || 'aquafarm';
+    window.location.href = `/api/payments/payment-form/${serviceType}`;
+}
+
+function contactSupport() {
+    window.location.href = 'mailto:support@denr.gov.ph?subject=Payment%20Failed%20Support';
+}
+</script>
+
+</body>
+</html>

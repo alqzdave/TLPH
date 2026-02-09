@@ -60,8 +60,20 @@ def user_dashboard():
 def user_profile():
     return render_template('user/profile.html')
 
+@bp.route('/user/transaction')
+def user_transaction():
+    return render_template('user/transaction.html')
+
 @bp.route('/approval-status')
 def approval_status():
     return render_template('approval_status.html')
+
+@bp.route('/payment-success')
+def payment_success():
+    return render_template('payment-success.html')
+
+@bp.route('/payment-failed')
+def payment_failed():
+    return render_template('payment-failed.html')
 
 

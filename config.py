@@ -29,3 +29,7 @@ class Config:
     
     # Path to Firebase service account key
     FIREBASE_CREDENTIALS = os.environ.get('FIREBASE_CREDENTIALS') or 'firebase-credentials.json'
+    
+    # Xendit Configuration
+    XENDIT_API_KEY = os.environ.get('XENDIT_API_KEY')
+    XENDIT_PUBLIC_KEY = os.environ.get('XENDIT_PUBLIC_KEY')

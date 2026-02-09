@@ -245,6 +245,78 @@
             </div>
         </div>
 
+        <!-- Payment Section -->
+        <div class="bg-gradient-to-r from-emerald-50 to-blue-50 p-8 rounded-[3rem] border-2 border-emerald-200 shadow-md mb-10">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="p-4 bg-emerald-600 rounded-2xl shadow-lg">
+                    <span class="material-icons-round text-white text-3xl">payment</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-emerald-900 m-0">Fisheries License Payments</h2>
+                    <p class="text-slate-600 text-sm m-0">Secure payment processed via Xendit</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Aquaculture Farm -->
+                <button onclick="initiatePayment('aquafarm')" class="bg-white p-6 rounded-2xl border-2 border-emerald-200 hover:border-emerald-600 hover:shadow-lg transition-all group cursor-pointer text-left">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="material-icons-round text-emerald-600 text-3xl">water</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-black px-3 py-1 rounded-full">₱5,000</span>
+                    </div>
+                    <h3 class="font-black text-slate-800 m-0 mb-2">Aquaculture Farm</h3>
+                    <p class="text-xs text-slate-500 m-0">Farm Registration</p>
+                </button>
+
+                <!-- Fish Transport -->
+                <button onclick="initiatePayment('fish_transport')" class="bg-white p-6 rounded-2xl border-2 border-emerald-200 hover:border-emerald-600 hover:shadow-lg transition-all group cursor-pointer text-left">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="material-icons-round text-emerald-600 text-3xl">local_shipping</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-black px-3 py-1 rounded-full">₱2,500</span>
+                    </div>
+                    <h3 class="font-black text-slate-800 m-0 mb-2">Fish Transport</h3>
+                    <p class="text-xs text-slate-500 m-0">Transport Permit</p>
+                </button>
+
+                <!-- Fish Dealer -->
+                <button onclick="initiatePayment('fish_dealer')" class="bg-white p-6 rounded-2xl border-2 border-emerald-200 hover:border-emerald-600 hover:shadow-lg transition-all group cursor-pointer text-left">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="material-icons-round text-emerald-600 text-3xl">storefront</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-black px-3 py-1 rounded-full">₱3,000</span>
+                    </div>
+                    <h3 class="font-black text-slate-800 m-0 mb-2">Fish Dealer</h3>
+                    <p class="text-xs text-slate-500 m-0">Trade License</p>
+                </button>
+
+                <!-- Processing Facility -->
+                <button onclick="initiatePayment('processing')" class="bg-white p-6 rounded-2xl border-2 border-emerald-200 hover:border-emerald-600 hover:shadow-lg transition-all group cursor-pointer text-left">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="material-icons-round text-emerald-600 text-3xl">factory</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-black px-3 py-1 rounded-full">₱4,500</span>
+                    </div>
+                    <h3 class="font-black text-slate-800 m-0 mb-2">Processing Facility</h3>
+                    <p class="text-xs text-slate-500 m-0">Facility Permit</p>
+                </button>
+
+                <!-- Collection/Harvest -->
+                <button onclick="initiatePayment('collection_harvest')" class="bg-white p-6 rounded-2xl border-2 border-emerald-200 hover:border-emerald-600 hover:shadow-lg transition-all group cursor-pointer text-left">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="material-icons-round text-emerald-600 text-3xl">nature</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-black px-3 py-1 rounded-full">₱2,000</span>
+                    </div>
+                    <h3 class="font-black text-slate-800 m-0 mb-2">Collection/Harvest</h3>
+                    <p class="text-xs text-slate-500 m-0">Harvest Permit</p>
+                </button>
+            </div>
+        </div>
+
+        <script>
+            function initiatePayment(serviceType) {
+                sessionStorage.setItem('serviceType', serviceType);
+                window.location.href = `/api/payments/payment-form/${serviceType}`;
+            }
+        </script>
+
         <div class="space-y-4">
             <div class="flex items-center px-14 text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">
                 <div class="w-1/3">Applicant Name</div>
