@@ -1,20 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Dashboard | Final Balanced View</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DENR | Inventory Dashboard (Municipality View)</title>
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+    :root {
+        --sidebar-width: 1px;
+        --header-height: 100px;
+    }
 
-    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #f8fafc;
+    }
+
+    /* FIXED & STICKY FULL-WIDTH HEADER */
+    .header-main {
+        background-color: #ffffff;
+        border-bottom: 2px solid #f1f5f9;
+        height: var(--header-height);
+        
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: var(--sidebar-width);
+        
+        z-index: 1000;
+        
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        transition: all 0.3s ease;
+    }
+
+    /* SEARCH BAR STYLING */
+    .search-group {
+        position: relative;
+        flex: 0 1 500px;
+        margin: 0 30px;
+    }
+
+    .search-input {
+        width: 100%;
+        background-color: #f8fafc;
+        border: 2px solid #f1f5f9;
+        border-radius: 1.5rem;
+        padding: 0.8rem 1.5rem 0.8rem 3.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        background-color: #ffffff;
+        border-color: #064e3b;
+        box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.1);
+        outline: none;
+    }
+
+    /* ELEMENTS */
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-shrink: 0;
+    }
+
+    .agency-logo-img {
+        width: 55px;
+        height: 55px;
+        object-fit: contain;
+        background: #f8fafc;
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .profile-img-container {
+        width: 55px;
+        height: 55px;
+        border-radius: 1.25rem;
+        border: 2px solid #f1f5f9;
+        overflow: hidden;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .profile-img-container:hover {
+        border-color: #064e3b;
+        transform: translateY(-2px);
+    }
+
+    /* CONTENT BUFFER */
+    .main-content {
+        margin-left: var(--sidebar-width);
+        padding-top: var(--header-height);
+        min-height: 100vh;
+    }
+
+    /* Responsive: Kapag nakatago ang sidebar o nasa mobile */
+    @media (max-width: 992px) {
+        .header-main {
+            left: 0;
+            padding: 0 20px;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        .search-group {
+            display: none; /* Tinatago sa mobile para iwas siksikan */
+        }
+    }
+</style>
+
+<header class="header-main shadow-sm">
+    
+    <div class="logo-container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/DENR_Logo.svg" alt="DENR" class="agency-logo-img shadow-sm">
+        <div class="d-flex flex-column">
+            <h1 class="text-xl font-black text-emerald-950 uppercase tracking-tighter italic leading-none m-0">
+                Department of Environment
+            </h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] m-0 mt-1">
+                and Natural Resources
+            </p>
+        </div>
+    </div>
+
+    <div class="search-group">
+        <span class="material-icons-round position-absolute start-0 top-50 translate-middle-y ms-4 text-slate-400 text-2xl">
+            search
+        </span>
+        <input type="text" placeholder="Search for applications, inventory, or users..." class="search-input">
+    </div>
+
+    <div class="d-flex align-items-center gap-4">
+        <button class="position-relative border-0 bg-slate-50 text-slate-400 p-3 rounded-2xl hover:bg-emerald-50 hover:text-emerald-900 transition-all">
+            <span class="material-icons-round block">notifications</span>
+            <span class="position-absolute top-3 right-3 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
+        </button>
+
+        <div class="profile-img-container shadow-sm bg-white">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Dave" alt="Profile" class="w-full h-full object-cover">
+        </div>
+    </div>
+
+</header>
+
+
+
+
+  <style>
         * { box-sizing: border-box; }
 
         body { 
@@ -91,9 +240,7 @@
             .sidebar-container { transform: translateX(-100%); }
         }
     </style>
-</head>
 
-<body>
 
 <aside class="sidebar-container p-4 shadow-xl">
     <!-- Logo -->
@@ -133,7 +280,6 @@
             <span>Compensation</span>
         </a>
 
-        <!-- Inventory (LINKED) -->
         <a href="inventory-dashboard.html" class="nav-item-btn">
             <span class="material-icons-round">inventory_2</span>
             <span>Inventory</span>
@@ -145,7 +291,6 @@
         </a>
     </nav>
 
-    <!-- Footer -->
     <div class="mt-auto pt-6 border-t border-slate-200 space-y-1">
         <a href="profile.php" class="footer-link">
             <span class="material-icons-round">account_circle</span>
@@ -159,25 +304,8 @@
     </div>
 </aside>
 
-</body>
-</html>
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DENR | Inventory Dashboard</title>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
   <style>
     * { box-sizing: border-box; }
@@ -186,7 +314,7 @@
       background-color: #f8fafc;
       margin: 0;
       padding: 0;
-      padding-left: 300px; /* leave space for your fixed sidebar */
+      padding-left: 300px; 
       font-family: 'Inter', sans-serif;
     }
 
@@ -266,9 +394,47 @@
       color: #0f172a;
     }
 
+    .notice {
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
     @media (max-width: 1024px) {
       body { padding-left: 0; }
     }
+    :root{
+        --sidebar-width: 300px;  
+        --header-height: 100px;  
+    }
+
+    .sidebar-container{
+        top: 0;
+        height: 100;
+        z-index: 1000;
+    }
+
+    .header-main{
+        left: var(--sidebar-width);
+        right: 0;
+        top: 0;
+        z-index: 2000;
+    }
+
+
+    body{
+        padding-left: var(--sidebar-width) !important;
+        padding-top: var(--header-height) !important;
+     }
+
+
+    @media (max-width: 1024px){
+    .header-main{ left: 0 !important; }
+    body{ padding-left: 0 !important; }
+    }
+
+
   </style>
 </head>
 
@@ -276,10 +442,14 @@
   <div class="page-wrap">
 
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
       <div>
-        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 m-0">Inventory Dashboard</h1>
-        <p class="text-slate-500 font-semibold mt-1 mb-0">Overview of inventory categories and items.</p>
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 m-0">
+          Inventory Dashboard
+        </h1>
+        <p class="text-slate-500 font-semibold mt-1 mb-0">
+          View-only inventory for your municipality.
+        </p>
       </div>
 
       <div class="flex gap-2">
@@ -287,10 +457,22 @@
           <span class="material-icons-round align-middle" style="font-size:18px;">restart_alt</span>
           Reset Filters
         </button>
-        <button class="btn-primary-soft" type="button" id="btnAddItem">
-          <span class="material-icons-round align-middle" style="font-size:18px;">add</span>
-          Add Item
-        </button>
+        <!-- VIEW ONLY: remove Add Item -->
+      </div>
+    </div>
+
+    <!-- Municipality Restriction Notice -->
+    <div class="notice mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div class="flex items-center gap-2 text-slate-700 fw-bold">
+        <span class="material-icons-round" style="color:#064e3b;">lock</span>
+        <span>
+          Restricted View: You can only view inventory items within
+          <span class="fw-black" id="myMunicipalityLabel"></span>.
+        </span>
+      </div>
+      <div class="pill">
+        <span class="material-icons-round" style="font-size:16px;">location_city</span>
+        <span id="myMunicipalityPill"></span>
       </div>
     </div>
 
@@ -303,9 +485,7 @@
             <div class="text-3xl font-black mt-2" id="kpiChemical">0</div>
             <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
           </div>
-          <div class="icon">
-            <span class="material-icons-round">science</span>
-          </div>
+          <div class="icon"><span class="material-icons-round">science</span></div>
         </div>
       </div>
 
@@ -316,9 +496,7 @@
             <div class="text-3xl font-black mt-2" id="kpiResources">0</div>
             <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
           </div>
-          <div class="icon">
-            <span class="material-icons-round">forest</span>
-          </div>
+          <div class="icon"><span class="material-icons-round">forest</span></div>
         </div>
       </div>
 
@@ -329,9 +507,7 @@
             <div class="text-3xl font-black mt-2" id="kpiProtected">0</div>
             <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
           </div>
-          <div class="icon">
-            <span class="material-icons-round">verified_user</span>
-          </div>
+          <div class="icon"><span class="material-icons-round">verified_user</span></div>
         </div>
       </div>
 
@@ -342,19 +518,19 @@
             <div class="text-3xl font-black mt-2" id="kpiBiodiversity">0</div>
             <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
           </div>
-          <div class="icon">
-            <span class="material-icons-round">pets</span>
-          </div>
+          <div class="icon"><span class="material-icons-round">pets</span></div>
         </div>
       </div>
     </div>
 
-    <!-- Inventory Category Overview + Filters -->
+    <!-- Inventory Category Overview + Filters (Municipality locked) -->
     <div class="panel p-4 mb-6">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div>
           <h2 class="text-xl font-black text-slate-900 m-0">Inventory Category Overview</h2>
-          <p class="text-slate-500 font-semibold mt-1 mb-0">Filter by category, region, and municipality.</p>
+          <p class="text-slate-500 font-semibold mt-1 mb-0">
+            Filter by category and region. Municipality is locked to your account.
+          </p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
@@ -383,14 +559,11 @@
           </div>
 
           <div>
-            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">Municipality</label>
-            <select class="form-select rounded-2xl py-2" id="filterMunicipality">
-              <option value="All" selected>All</option>
-              <option value="Quezon City">Quezon City</option>
-              <option value="Manila">Manila</option>
-              <option value="Caloocan">Caloocan</option>
-              <option value="Pasig">Pasig</option>
-              <option value="Makati">Makati</option>
+            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">
+              Municipality (Locked)
+            </label>
+            <select class="form-select rounded-2xl py-2" id="filterMunicipality" disabled>
+              <!-- injected by JS -->
             </select>
           </div>
         </div>
@@ -400,26 +573,22 @@
         <span class="pill"><span class="material-icons-round" style="font-size:16px;">filter_alt</span> Active Filters:</span>
         <span class="pill" id="pillCategory">Category: All</span>
         <span class="pill" id="pillRegion">Region: All</span>
-        <span class="pill" id="pillMunicipality">Municipality: All</span>
+        <span class="pill" id="pillMunicipality">Municipality: (Locked)</span>
         <span class="ms-auto text-slate-500 font-bold" id="resultsCount">Showing 0 items</span>
       </div>
     </div>
 
-    <!-- Items Table -->
+    <!-- Items Table (View-only actions) -->
     <div class="panel p-4">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
         <div>
           <h2 class="text-xl font-black text-slate-900 m-0">Inventory Items</h2>
-          <p class="text-slate-500 font-semibold mt-1 mb-0">Category, description, quantity, and actions.</p>
+          <p class="text-slate-500 font-semibold mt-1 mb-0">
+            Category, description, quantity. (View-only)
+          </p>
         </div>
 
-        <!-- Requirement: Add item + View Inventory button under this -->
         <div class="flex gap-2">
-          <button class="btn-primary-soft" type="button" id="btnAddItem2">
-            <span class="material-icons-round align-middle" style="font-size:18px;">add</span>
-            Add Item
-          </button>
-
           <button class="btn-outline-soft" type="button" id="btnViewInventory">
             <span class="material-icons-round align-middle" style="font-size:18px;">visibility</span>
             View Inventory
@@ -434,7 +603,7 @@
               <th style="min-width: 190px;">Category</th>
               <th>Description</th>
               <th style="min-width: 120px;">Quantity</th>
-              <th style="min-width: 160px;">Actions</th>
+              <th style="min-width: 180px;">Actions</th>
             </tr>
           </thead>
           <tbody id="itemsTbody">
@@ -444,277 +613,174 @@
       </div>
     </div>
 
-    <!-- Simple Modal (Bootstrap) -->
-    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 18px;">
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title font-black">Add Inventory Item</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body pt-3">
-            <div class="mb-3">
-              <label class="form-label fw-bold">Category</label>
-              <select class="form-select rounded-3" id="newCategory">
-                <option value="Chemical Inventory">Chemical Inventory</option>
-                <option value="Natural Resources">Natural Resources</option>
-                <option value="Protected Area">Protected Area</option>
-                <option value="Biodiversity Inventory">Biodiversity Inventory</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-bold">Region</label>
-              <select class="form-select rounded-3" id="newRegion">
-                <option value="NCR">NCR</option>
-                <option value="Region I">Region I</option>
-                <option value="Region II">Region II</option>
-                <option value="Region III">Region III</option>
-                <option value="Region IV-A">Region IV-A</option>
-                <option value="Region V">Region V</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-bold">Municipality</label>
-              <input class="form-control rounded-3" id="newMunicipality" placeholder="e.g., Quezon City" />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-bold">Description</label>
-              <textarea class="form-control rounded-3" id="newDescription" rows="3" placeholder="Item description..."></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-bold">Quantity</label>
-              <input type="number" class="form-control rounded-3" id="newQuantity" min="0" value="1" />
-            </div>
-          </div>
-          <div class="modal-footer border-0 pt-0">
-            <button type="button" class="btn btn-light rounded-3 fw-bold" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-success rounded-3 fw-bold" id="saveItemBtn">Save Item</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
-    // --- Demo data (replace with backend later) ---
-    let items = [
-      { id: 1, category: "Chemical Inventory", description: "Laboratory solvents (ethanol, acetone)", quantity: 24, region: "NCR", municipality: "Quezon City" },
-      { id: 2, category: "Natural Resources", description: "Seedling stock for reforestation", quantity: 450, region: "Region IV-A", municipality: "Calamba" },
-      { id: 3, category: "Protected Area", description: "Visitor permit logbook supply", quantity: 12, region: "Region V", municipality: "Legazpi" },
-      { id: 4, category: "Biodiversity Inventory", description: "Wildlife monitoring equipment tags", quantity: 80, region: "NCR", municipality: "Manila" },
-      { id: 5, category: "Chemical Inventory", description: "Water test reagent kits", quantity: 60, region: "Region III", municipality: "San Fernando" },
-    ];
+  <!-- ✅ Replace your current <script> block with this updated one (Region + Municipality are BOTH locked) -->
+<script>
+  /**
+   * ✅ MUNICIPALITY + REGION RESTRICTED VIEW
+   * In production, set these from your login/session:
+   * - PHP example:
+   *   const MY_REGION = "<?= $_SESSION['region'] ?>";
+   *   const MY_MUNICIPALITY = "<?= $_SESSION['municipality'] ?>";
+   */
+  const MY_REGION = "NCR";                 // <-- CHANGE THIS TO THE LOGGED-IN USER'S REGION
+  const MY_MUNICIPALITY = "Quezon City";   // <-- CHANGE THIS TO THE LOGGED-IN USER'S MUNICIPALITY
 
-    const els = {
-      kpiChemical: document.getElementById("kpiChemical"),
-      kpiResources: document.getElementById("kpiResources"),
-      kpiProtected: document.getElementById("kpiProtected"),
-      kpiBiodiversity: document.getElementById("kpiBiodiversity"),
+  // --- Demo data (replace with backend later) ---
+  const items = [
+    { id: 1, category: "Chemical Inventory", description: "Laboratory solvents (ethanol, acetone)", quantity: 24, region: "NCR", municipality: "Quezon City" },
+    { id: 2, category: "Natural Resources", description: "Seedling stock for reforestation", quantity: 450, region: "Region IV-A", municipality: "Calamba" },
+    { id: 3, category: "Protected Area", description: "Visitor permit logbook supply", quantity: 12, region: "Region V", municipality: "Legazpi" },
+    { id: 4, category: "Biodiversity Inventory", description: "Wildlife monitoring equipment tags", quantity: 80, region: "NCR", municipality: "Manila" },
+    { id: 5, category: "Chemical Inventory", description: "Water test reagent kits", quantity: 60, region: "Region III", municipality: "San Fernando" },
+    { id: 6, category: "Natural Resources", description: "Nursery tools set", quantity: 19, region: "NCR", municipality: "Quezon City" },
+  ];
 
-      filterCategory: document.getElementById("filterCategory"),
-      filterRegion: document.getElementById("filterRegion"),
-      filterMunicipality: document.getElementById("filterMunicipality"),
+  const els = {
+    myMunicipalityLabel: document.getElementById("myMunicipalityLabel"),
+    myMunicipalityPill: document.getElementById("myMunicipalityPill"),
 
-      pillCategory: document.getElementById("pillCategory"),
-      pillRegion: document.getElementById("pillRegion"),
-      pillMunicipality: document.getElementById("pillMunicipality"),
+    kpiChemical: document.getElementById("kpiChemical"),
+    kpiResources: document.getElementById("kpiResources"),
+    kpiProtected: document.getElementById("kpiProtected"),
+    kpiBiodiversity: document.getElementById("kpiBiodiversity"),
 
-      resultsCount: document.getElementById("resultsCount"),
-      itemsTbody: document.getElementById("itemsTbody"),
+    filterCategory: document.getElementById("filterCategory"),
+    filterRegion: document.getElementById("filterRegion"),
+    filterMunicipality: document.getElementById("filterMunicipality"),
 
-      btnReset: document.getElementById("btnReset"),
-      btnAddItem: document.getElementById("btnAddItem"),
-      btnAddItem2: document.getElementById("btnAddItem2"),
-      btnViewInventory: document.getElementById("btnViewInventory"),
+    pillCategory: document.getElementById("pillCategory"),
+    pillRegion: document.getElementById("pillRegion"),
+    pillMunicipality: document.getElementById("pillMunicipality"),
 
-      newCategory: document.getElementById("newCategory"),
-      newRegion: document.getElementById("newRegion"),
-      newMunicipality: document.getElementById("newMunicipality"),
-      newDescription: document.getElementById("newDescription"),
-      newQuantity: document.getElementById("newQuantity"),
-      saveItemBtn: document.getElementById("saveItemBtn"),
-    };
+    resultsCount: document.getElementById("resultsCount"),
+    itemsTbody: document.getElementById("itemsTbody"),
 
-    const modal = new bootstrap.Modal(document.getElementById("itemModal"));
+    btnReset: document.getElementById("btnReset"),
+    btnViewInventory: document.getElementById("btnViewInventory"),
+  };
 
-    function matchesFilters(item) {
-      const c = els.filterCategory.value;
-      const r = els.filterRegion.value;
-      const m = els.filterMunicipality.value;
+  // ✅ Hard-lock BOTH Region and Municipality filters
+  function initLocks() {
+    // Top notice (municipality)
+    els.myMunicipalityLabel.textContent = MY_MUNICIPALITY;
+    els.myMunicipalityPill.textContent = MY_MUNICIPALITY;
 
-      const categoryOk = (c === "All") || (item.category === c);
-      const regionOk   = (r === "All") || (item.region === r);
-      const muniOk     = (m === "All") || (item.municipality === m);
+    // Lock Region dropdown
+    els.filterRegion.innerHTML = `<option value="${MY_REGION}" selected>${MY_REGION}</option>`;
+    els.filterRegion.disabled = true;
 
-      return categoryOk && regionOk && muniOk;
-    }
+    // Lock Municipality dropdown
+    els.filterMunicipality.innerHTML = `<option value="${MY_MUNICIPALITY}" selected>${MY_MUNICIPALITY}</option>`;
+    els.filterMunicipality.disabled = true;
+  }
 
-    function computeKpis(currentList) {
-      const countBy = (name) => currentList.filter(i => i.category === name).length;
+  function matchesFilters(item) {
+    const c = els.filterCategory.value;
 
-      els.kpiChemical.textContent = countBy("Chemical Inventory");
-      els.kpiResources.textContent = countBy("Natural Resources");
-      els.kpiProtected.textContent = countBy("Protected Area");
-      els.kpiBiodiversity.textContent = countBy("Biodiversity Inventory");
-    }
+    const categoryOk = (c === "All") || (item.category === c);
 
-    function renderTable(currentList) {
-      els.itemsTbody.innerHTML = "";
+    // ✅ Enforce region + municipality restrictions in logic (cannot be bypassed)
+    const regionOk = item.region === MY_REGION;
+    const muniOk = item.municipality === MY_MUNICIPALITY;
 
-      if (currentList.length === 0) {
-        els.itemsTbody.innerHTML = `
-          <tr>
-            <td colspan="4" class="text-center text-slate-500 fw-bold py-4">
-              No items found for the selected filters.
-            </td>
-          </tr>
-        `;
-        els.resultsCount.textContent = "Showing 0 items";
-        return;
-      }
+    return categoryOk && regionOk && muniOk;
+  }
 
-      currentList.forEach(item => {
-        const tr = document.createElement("tr");
+  function computeKpis(currentList) {
+    const countBy = (name) => currentList.filter(i => i.category === name).length;
 
-        tr.innerHTML = `
-          <td class="fw-bold text-slate-800">${item.category}</td>
-          <td class="text-slate-600">${item.description}</td>
-          <td class="fw-black text-slate-900">${item.quantity}</td>
-          <td>
-            <div class="d-flex gap-2 flex-wrap">
-              <button class="btn btn-sm btn-outline-secondary rounded-3 fw-bold" data-action="edit" data-id="${item.id}">
-                <span class="material-icons-round align-middle" style="font-size:16px;">edit</span>
-                Edit
-              </button>
-              <button class="btn btn-sm btn-outline-danger rounded-3 fw-bold" data-action="delete" data-id="${item.id}">
-                <span class="material-icons-round align-middle" style="font-size:16px;">delete</span>
-                Delete
-              </button>
-            </div>
+    els.kpiChemical.textContent = countBy("Chemical Inventory");
+    els.kpiResources.textContent = countBy("Natural Resources");
+    els.kpiProtected.textContent = countBy("Protected Area");
+    els.kpiBiodiversity.textContent = countBy("Biodiversity Inventory");
+  }
+
+  function renderTable(currentList) {
+    els.itemsTbody.innerHTML = "";
+
+    if (currentList.length === 0) {
+      els.itemsTbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center text-slate-500 fw-bold py-4">
+            No items found in <strong>${MY_MUNICIPALITY}</strong> (${MY_REGION}) for the selected filters.
           </td>
-        `;
-
-        els.itemsTbody.appendChild(tr);
-      });
-
-      els.resultsCount.textContent = `Showing ${currentList.length} item${currentList.length === 1 ? "" : "s"}`;
+        </tr>
+      `;
+      els.resultsCount.textContent = "Showing 0 items";
+      return;
     }
 
-    function refresh() {
-      // Pills
-      els.pillCategory.textContent = `Category: ${els.filterCategory.value}`;
-      els.pillRegion.textContent = `Region: ${els.filterRegion.value}`;
-      els.pillMunicipality.textContent = `Municipality: ${els.filterMunicipality.value}`;
-
-      // Filtered list
-      const filtered = items.filter(matchesFilters);
-
-      // KPIs should reflect filtered view (common dashboard behavior)
-      computeKpis(filtered);
-      renderTable(filtered);
-    }
-
-    // Event wiring
-    [els.filterCategory, els.filterRegion, els.filterMunicipality].forEach(sel => {
-      sel.addEventListener("change", refresh);
+    currentList.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="fw-bold text-slate-800">${item.category}</td>
+        <td class="text-slate-600">${item.description}</td>
+        <td class="fw-black text-slate-900">${item.quantity}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-success rounded-3 fw-bold" data-action="view" data-id="${item.id}">
+            <span class="material-icons-round align-middle" style="font-size:16px;">visibility</span>
+            View
+          </button>
+        </td>
+      `;
+      els.itemsTbody.appendChild(tr);
     });
 
-    els.btnReset.addEventListener("click", () => {
-      els.filterCategory.value = "All";
-      els.filterRegion.value = "All";
-      els.filterMunicipality.value = "All";
-      refresh();
-    });
+    els.resultsCount.textContent = `Showing ${currentList.length} item${currentList.length === 1 ? "" : "s"}`;
+  }
 
-    function openAddModal() {
-      els.newCategory.value = "Chemical Inventory";
-      els.newRegion.value = "NCR";
-      els.newMunicipality.value = "";
-      els.newDescription.value = "";
-      els.newQuantity.value = 1;
-      modal.show();
-    }
+  function refresh() {
+    const filtered = items.filter(matchesFilters);
 
-    els.btnAddItem.addEventListener("click", openAddModal);
-    els.btnAddItem2.addEventListener("click", openAddModal);
+    els.pillCategory.textContent = `Category: ${els.filterCategory.value}`;
+    els.pillRegion.textContent = `Region: ${MY_REGION} (Locked)`;
+    els.pillMunicipality.textContent = `Municipality: ${MY_MUNICIPALITY} (Locked)`;
 
-    els.saveItemBtn.addEventListener("click", () => {
-      const category = els.newCategory.value;
-      const region = els.newRegion.value;
-      const municipality = (els.newMunicipality.value || "").trim();
-      const description = (els.newDescription.value || "").trim();
-      const quantity = Number(els.newQuantity.value);
+    computeKpis(filtered);
+    renderTable(filtered);
+  }
 
-      if (!municipality || !description || !Number.isFinite(quantity) || quantity < 0) {
-        alert("Please complete all fields and enter a valid quantity.");
-        return;
-      }
+  // Only Category filter changes now (region/municipality are locked)
+  els.filterCategory.addEventListener("change", refresh);
 
-      const nextId = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
-
-      items.push({
-        id: nextId,
-        category,
-        region,
-        municipality,
-        description,
-        quantity
-      });
-
-      modal.hide();
-      refresh();
-    });
-
-    // Table actions (Edit/Delete quick demo)
-    els.itemsTbody.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-action]");
-      if (!btn) return;
-
-      const action = btn.getAttribute("data-action");
-      const id = Number(btn.getAttribute("data-id"));
-
-      if (action === "delete") {
-        const ok = confirm("Delete this item?");
-        if (!ok) return;
-        items = items.filter(i => i.id !== id);
-        refresh();
-      }
-
-      if (action === "edit") {
-        const item = items.find(i => i.id === id);
-        if (!item) return;
-
-        const newQty = prompt("Update quantity:", item.quantity);
-        if (newQty === null) return;
-
-        const q = Number(newQty);
-        if (!Number.isFinite(q) || q < 0) {
-          alert("Invalid quantity.");
-          return;
-        }
-
-        item.quantity = q;
-        refresh();
-      }
-    });
-
-    // View Inventory button (you can redirect to another page)
-    els.btnViewInventory.addEventListener("click", () => {
-      // Change this if you have a dedicated full inventory page:
-      // window.location.href = "inventory-list.html";
-      alert("VIEW INVENTORY clicked! (Connect this to your inventory page or modal.)");
-    });
-
-    // Initial load
+  els.btnReset.addEventListener("click", () => {
+    els.filterCategory.value = "All";
     refresh();
-  </script>
-</body>
-</html>
+  });
+
+  // Row View action (still enforces locks)
+  els.itemsTbody.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action='view']");
+    if (!btn) return;
+
+    const id = Number(btn.getAttribute("data-id"));
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+
+    if (item.region !== MY_REGION || item.municipality !== MY_MUNICIPALITY) {
+      alert("Access denied: This item is outside your assigned region/municipality.");
+      return;
+    }
+
+    alert(
+      `Inventory Item (View)\n\n` +
+      `Category: ${item.category}\n` +
+      `Region: ${item.region}\n` +
+      `Municipality: ${item.municipality}\n` +
+      `Quantity: ${item.quantity}\n\n` +
+      `Description: ${item.description}`
+    );
+  });
+
+  els.btnViewInventory.addEventListener("click", () => {
+    alert(`Viewing inventory for ${MY_MUNICIPALITY} (${MY_REGION}) only.`);
+  });
+
+  // Init
+  initLocks();
+  refresh();
+</script>
