@@ -150,6 +150,96 @@
         a {
             color: #15803d;
         }
+
+                /* Make the page use more width but still centered */
+        .container {
+        max-width: 1100px;   /* wider than 600 */
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        }
+
+        /* 2-column responsive form layout */
+        #signupForm {
+        display: grid;
+        grid-template-columns: 1fr 1fr;  /* 2 columns on desktop */
+        gap: 16px 18px;
+        align-items: start;
+        }
+
+        /* Make headings span full width */
+        #signupForm .step-title,
+        #signupForm h3,
+        #signupForm .otp-message,
+        #signupForm .auth-footer {
+        grid-column: 1 / -1;
+        }
+
+        /* Make these groups span full width (single row across both columns) */
+        .full-width {
+        grid-column: 1 / -1;
+        }
+
+        /* Make the dynamic blocks (tenantFields, cooperativeFields...) act like grid items */
+        #tenantFields,
+        #cooperativeFields,
+        #agribusinessFields,
+        #researchFields {
+        grid-column: 1 / -1;            /* block spans full width */
+        display: grid;
+        grid-template-columns: 1fr 1fr;  /* inside block also 2 columns */
+        gap: 16px 18px;
+        }
+
+        /* For inputs that should take whole row inside dynamic blocks */
+        #tenantFields .full-width,
+        #cooperativeFields .full-width,
+        #agribusinessFields .full-width,
+        #researchFields .full-width {
+        grid-column: 1 / -1;
+        }
+
+        /* OTP row: input + button on same line (desktop) */
+        .otp-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        }
+        .otp-row input { flex: 1; }
+
+        /* Buttons row full width */
+        .actions {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        }
+
+        /* Terms full width */
+        .terms-row {
+        grid-column: 1 / -1;
+        }
+
+        /* Mobile: stack everything */
+        @media (max-width: 900px) {
+        #signupForm { grid-template-columns: 1fr; }
+        #tenantFields,
+        #cooperativeFields,
+        #agribusinessFields,
+        #researchFields { grid-template-columns: 1fr; }
+
+        .otp-row { flex-direction: column; align-items: stretch; }
+        .actions button { width: 100%; }
+        }
+
+        .full-width-btn {
+            width: 100%;
+            display: block;
+}
+
+
     </style>
 </head>
 <body>
@@ -383,7 +473,10 @@
                             </label>
                         </div>
                         
-                        <button type="submit" class="btn-primary">Complete Registration</button>
+                        <div class="actions">
+                        <button type="submit" class="btn-primary full-width-btn">Complete Registration</button>
+                        </div>
+
                     
                     <div class="auth-footer">
                         <p>Already have an account? <a href="{{ url_for('main.login') }}">Sign In</a></p>
