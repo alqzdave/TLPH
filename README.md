@@ -1,35 +1,26 @@
-# Inventory Management System
+# TLPH Wiki
 
-A Flask-based inventory management system.
+Welcome to the TLPH wiki! This wiki aims to provide comprehensive documentation and support for the TLPH project.
 
-## Installation
+## Overview
+TLPH is a project that focuses on... (Add a brief overview of the project)
 
-1. Create a virtual environment:
-```bash
-python -m venv venv
-```
+## Getting Started
+- How to install TLPH
+- Basic usage instructions
 
-2. Activate the virtual environment:
-- Windows: `venv\Scripts\activate`
-- Linux/Mac: `source venv/bin/activate`
+## Features
+- List of features
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Contributing
+Instructions for contributing to the project.
 
-4. Run the application:
-```bash
-python app.py
-```
+## License
+Information about the license under which the project is released.
 
-5. Open your browser and go to: `http://127.0.0.1:5000`
+## Contact
+How to reach the maintainers or for support.
 
-## Project Structure
-
-- `app.py` - Main application file
-- `config.py` - Configuration settings
-- `models/` - Database models
-- `routes/` - Application routes
-- `templates/` - HTML templates
-- `static/` - CSS, JS, and images
+## Additional Resources
+- Link to official documentation
+- Related projects or resources.
