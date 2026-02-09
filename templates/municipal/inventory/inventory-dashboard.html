@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Dashboard | Final Balanced View</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body { 
+            background-color: #f8fafc; 
+            margin: 0;
+            padding: 0;
+            padding-left: 300px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar-container {
+            width: 300px;
+            height: 100vh;
+            background-color: #eeeeee;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #e2e8f0;
+        }
+
+        .nav-item-btn {
+            display: flex !important;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: #475569 !important;
+            text-decoration: none !important;
+            border-radius: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item-btn:hover {
+            background-color: #064e3b !important;
+            color: #ffffff !important;
+            transform: translateX(10px);
+        }
+
+        .footer-link {
+            display: flex !important;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: #64748b !important;
+            text-decoration: none !important;
+            border-radius: 1.25rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            background-color: #f1f5f9 !important;
+            color: #064e3b !important;
+        }
+
+        .logout-btn:hover {
+            background-color: #ef4444 !important;
+            color: white !important;
+        }
+
+        @media (max-width: 1024px) {
+            body { padding-left: 0; }
+            .sidebar-container { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+
+<body>
+
+<aside class="sidebar-container p-4 shadow-xl">
+    <!-- Logo -->
+    <div class="mb-12 px-3 pt-4">
+        <div class="flex items-center gap-4">
+            <div class="p-3 bg-emerald-900 rounded-2xl shadow-lg shadow-emerald-900/30">
+                <span class="material-icons-round text-white">dashboard</span>
+            </div>
+            <div>
+                <h2 class="font-black text-xl tracking-tighter italic m-0 text-emerald-900">DENR</h2>
+                <span class="text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                    Portal v2.0
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-grow space-y-2">
+        <a href="index.php" class="nav-item-btn">
+            <span class="material-icons-round">home</span>
+            <span>Home</span>
+        </a>
+
+        <a href="application.php" class="nav-item-btn">
+            <span class="material-icons-round">description</span>
+            <span>Application</span>
+        </a>
+
+        <a href="requests.php" class="nav-item-btn">
+            <span class="material-icons-round">room_service</span>
+            <span>Service Request</span>
+        </a>
+
+        <a href="compensation.php" class="nav-item-btn">
+            <span class="material-icons-round">account_balance_wallet</span>
+            <span>Compensation</span>
+        </a>
+
+        <!-- Inventory (LINKED) -->
+        <a href="inventory-dashboard.html" class="nav-item-btn">
+            <span class="material-icons-round">inventory_2</span>
+            <span>Inventory</span>
+        </a>
+
+        <a href="licensing.php" class="nav-item-btn">
+            <span class="material-icons-round">verified</span>
+            <span>Licensing / Permit</span>
+        </a>
+    </nav>
+
+    <!-- Footer -->
+    <div class="mt-auto pt-6 border-t border-slate-200 space-y-1">
+        <a href="profile.php" class="footer-link">
+            <span class="material-icons-round">account_circle</span>
+            <span>My Profile</span>
+        </a>
+
+        <a href="logout.php" class="footer-link logout-btn">
+            <span class="material-icons-round">logout</span>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DENR | Inventory Dashboard</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      padding-left: 300px; /* leave space for your fixed sidebar */
+      font-family: 'Inter', sans-serif;
+    }
+
+    .page-wrap { padding: 28px; }
+
+    .card-kpi {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(2, 6, 23, 0.06);
+    }
+
+    .card-kpi .icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: #064e3b;
+      color: white;
+    }
+
+    .panel {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(2, 6, 23, 0.06);
+    }
+
+    .btn-primary-soft {
+      background: #064e3b;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    .btn-primary-soft:hover { transform: translateY(-1px); opacity: .95; }
+
+    .btn-outline-soft {
+      background: #ffffff;
+      color: #064e3b;
+      border: 1px solid #064e3b;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .btn-outline-soft:hover { transform: translateY(-1px); background: #ecfdf5; }
+
+    .table thead th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #475569;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      font-weight: 800;
+      font-size: 12px;
+      color: #0f172a;
+    }
+
+    @media (max-width: 1024px) {
+      body { padding-left: 0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrap">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 m-0">Inventory Dashboard</h1>
+        <p class="text-slate-500 font-semibold mt-1 mb-0">Overview of inventory categories and items.</p>
+      </div>
+
+      <div class="flex gap-2">
+        <button class="btn-outline-soft" type="button" id="btnReset">
+          <span class="material-icons-round align-middle" style="font-size:18px;">restart_alt</span>
+          Reset Filters
+        </button>
+        <button class="btn-primary-soft" type="button" id="btnAddItem">
+          <span class="material-icons-round align-middle" style="font-size:18px;">add</span>
+          Add Item
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+      <div class="card-kpi p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Chemical Inventory</div>
+            <div class="text-3xl font-black mt-2" id="kpiChemical">0</div>
+            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+          </div>
+          <div class="icon">
+            <span class="material-icons-round">science</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-kpi p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Natural Resources</div>
+            <div class="text-3xl font-black mt-2" id="kpiResources">0</div>
+            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+          </div>
+          <div class="icon">
+            <span class="material-icons-round">forest</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-kpi p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Protected Area</div>
+            <div class="text-3xl font-black mt-2" id="kpiProtected">0</div>
+            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+          </div>
+          <div class="icon">
+            <span class="material-icons-round">verified_user</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-kpi p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Biodiversity Inventory</div>
+            <div class="text-3xl font-black mt-2" id="kpiBiodiversity">0</div>
+            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+          </div>
+          <div class="icon">
+            <span class="material-icons-round">pets</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory Category Overview + Filters -->
+    <div class="panel p-4 mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-black text-slate-900 m-0">Inventory Category Overview</h2>
+          <p class="text-slate-500 font-semibold mt-1 mb-0">Filter by category, region, and municipality.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+          <div>
+            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">Category</label>
+            <select class="form-select rounded-2xl py-2" id="filterCategory">
+              <option value="All" selected>All</option>
+              <option value="Chemical Inventory">Chemical Inventory</option>
+              <option value="Natural Resources">Natural Resources</option>
+              <option value="Protected Area">Protected Area</option>
+              <option value="Biodiversity Inventory">Biodiversity Inventory</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">Region</label>
+            <select class="form-select rounded-2xl py-2" id="filterRegion">
+              <option value="All" selected>All</option>
+              <option value="NCR">NCR</option>
+              <option value="Region I">Region I</option>
+              <option value="Region II">Region II</option>
+              <option value="Region III">Region III</option>
+              <option value="Region IV-A">Region IV-A</option>
+              <option value="Region V">Region V</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">Municipality</label>
+            <select class="form-select rounded-2xl py-2" id="filterMunicipality">
+              <option value="All" selected>All</option>
+              <option value="Quezon City">Quezon City</option>
+              <option value="Manila">Manila</option>
+              <option value="Caloocan">Caloocan</option>
+              <option value="Pasig">Pasig</option>
+              <option value="Makati">Makati</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <span class="pill"><span class="material-icons-round" style="font-size:16px;">filter_alt</span> Active Filters:</span>
+        <span class="pill" id="pillCategory">Category: All</span>
+        <span class="pill" id="pillRegion">Region: All</span>
+        <span class="pill" id="pillMunicipality">Municipality: All</span>
+        <span class="ms-auto text-slate-500 font-bold" id="resultsCount">Showing 0 items</span>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="panel p-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+        <div>
+          <h2 class="text-xl font-black text-slate-900 m-0">Inventory Items</h2>
+          <p class="text-slate-500 font-semibold mt-1 mb-0">Category, description, quantity, and actions.</p>
+        </div>
+
+        <!-- Requirement: Add item + View Inventory button under this -->
+        <div class="flex gap-2">
+          <button class="btn-primary-soft" type="button" id="btnAddItem2">
+            <span class="material-icons-round align-middle" style="font-size:18px;">add</span>
+            Add Item
+          </button>
+
+          <button class="btn-outline-soft" type="button" id="btnViewInventory">
+            <span class="material-icons-round align-middle" style="font-size:18px;">visibility</span>
+            View Inventory
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="min-width: 190px;">Category</th>
+              <th>Description</th>
+              <th style="min-width: 120px;">Quantity</th>
+              <th style="min-width: 160px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="itemsTbody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Simple Modal (Bootstrap) -->
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 18px;">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title font-black">Add Inventory Item</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pt-3">
+            <div class="mb-3">
+              <label class="form-label fw-bold">Category</label>
+              <select class="form-select rounded-3" id="newCategory">
+                <option value="Chemical Inventory">Chemical Inventory</option>
+                <option value="Natural Resources">Natural Resources</option>
+                <option value="Protected Area">Protected Area</option>
+                <option value="Biodiversity Inventory">Biodiversity Inventory</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Region</label>
+              <select class="form-select rounded-3" id="newRegion">
+                <option value="NCR">NCR</option>
+                <option value="Region I">Region I</option>
+                <option value="Region II">Region II</option>
+                <option value="Region III">Region III</option>
+                <option value="Region IV-A">Region IV-A</option>
+                <option value="Region V">Region V</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Municipality</label>
+              <input class="form-control rounded-3" id="newMunicipality" placeholder="e.g., Quezon City" />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Description</label>
+              <textarea class="form-control rounded-3" id="newDescription" rows="3" placeholder="Item description..."></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Quantity</label>
+              <input type="number" class="form-control rounded-3" id="newQuantity" min="0" value="1" />
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light rounded-3 fw-bold" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success rounded-3 fw-bold" id="saveItemBtn">Save Item</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // --- Demo data (replace with backend later) ---
+    let items = [
+      { id: 1, category: "Chemical Inventory", description: "Laboratory solvents (ethanol, acetone)", quantity: 24, region: "NCR", municipality: "Quezon City" },
+      { id: 2, category: "Natural Resources", description: "Seedling stock for reforestation", quantity: 450, region: "Region IV-A", municipality: "Calamba" },
+      { id: 3, category: "Protected Area", description: "Visitor permit logbook supply", quantity: 12, region: "Region V", municipality: "Legazpi" },
+      { id: 4, category: "Biodiversity Inventory", description: "Wildlife monitoring equipment tags", quantity: 80, region: "NCR", municipality: "Manila" },
+      { id: 5, category: "Chemical Inventory", description: "Water test reagent kits", quantity: 60, region: "Region III", municipality: "San Fernando" },
+    ];
+
+    const els = {
+      kpiChemical: document.getElementById("kpiChemical"),
+      kpiResources: document.getElementById("kpiResources"),
+      kpiProtected: document.getElementById("kpiProtected"),
+      kpiBiodiversity: document.getElementById("kpiBiodiversity"),
+
+      filterCategory: document.getElementById("filterCategory"),
+      filterRegion: document.getElementById("filterRegion"),
+      filterMunicipality: document.getElementById("filterMunicipality"),
+
+      pillCategory: document.getElementById("pillCategory"),
+      pillRegion: document.getElementById("pillRegion"),
+      pillMunicipality: document.getElementById("pillMunicipality"),
+
+      resultsCount: document.getElementById("resultsCount"),
+      itemsTbody: document.getElementById("itemsTbody"),
+
+      btnReset: document.getElementById("btnReset"),
+      btnAddItem: document.getElementById("btnAddItem"),
+      btnAddItem2: document.getElementById("btnAddItem2"),
+      btnViewInventory: document.getElementById("btnViewInventory"),
+
+      newCategory: document.getElementById("newCategory"),
+      newRegion: document.getElementById("newRegion"),
+      newMunicipality: document.getElementById("newMunicipality"),
+      newDescription: document.getElementById("newDescription"),
+      newQuantity: document.getElementById("newQuantity"),
+      saveItemBtn: document.getElementById("saveItemBtn"),
+    };
+
+    const modal = new bootstrap.Modal(document.getElementById("itemModal"));
+
+    function matchesFilters(item) {
+      const c = els.filterCategory.value;
+      const r = els.filterRegion.value;
+      const m = els.filterMunicipality.value;
+
+      const categoryOk = (c === "All") || (item.category === c);
+      const regionOk   = (r === "All") || (item.region === r);
+      const muniOk     = (m === "All") || (item.municipality === m);
+
+      return categoryOk && regionOk && muniOk;
+    }
+
+    function computeKpis(currentList) {
+      const countBy = (name) => currentList.filter(i => i.category === name).length;
+
+      els.kpiChemical.textContent = countBy("Chemical Inventory");
+      els.kpiResources.textContent = countBy("Natural Resources");
+      els.kpiProtected.textContent = countBy("Protected Area");
+      els.kpiBiodiversity.textContent = countBy("Biodiversity Inventory");
+    }
+
+    function renderTable(currentList) {
+      els.itemsTbody.innerHTML = "";
+
+      if (currentList.length === 0) {
+        els.itemsTbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center text-slate-500 fw-bold py-4">
+              No items found for the selected filters.
+            </td>
+          </tr>
+        `;
+        els.resultsCount.textContent = "Showing 0 items";
+        return;
+      }
+
+      currentList.forEach(item => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td class="fw-bold text-slate-800">${item.category}</td>
+          <td class="text-slate-600">${item.description}</td>
+          <td class="fw-black text-slate-900">${item.quantity}</td>
+          <td>
+            <div class="d-flex gap-2 flex-wrap">
+              <button class="btn btn-sm btn-outline-secondary rounded-3 fw-bold" data-action="edit" data-id="${item.id}">
+                <span class="material-icons-round align-middle" style="font-size:16px;">edit</span>
+                Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger rounded-3 fw-bold" data-action="delete" data-id="${item.id}">
+                <span class="material-icons-round align-middle" style="font-size:16px;">delete</span>
+                Delete
+              </button>
+            </div>
+          </td>
+        `;
+
+        els.itemsTbody.appendChild(tr);
+      });
+
+      els.resultsCount.textContent = `Showing ${currentList.length} item${currentList.length === 1 ? "" : "s"}`;
+    }
+
+    function refresh() {
+      // Pills
+      els.pillCategory.textContent = `Category: ${els.filterCategory.value}`;
+      els.pillRegion.textContent = `Region: ${els.filterRegion.value}`;
+      els.pillMunicipality.textContent = `Municipality: ${els.filterMunicipality.value}`;
+
+      // Filtered list
+      const filtered = items.filter(matchesFilters);
+
+      // KPIs should reflect filtered view (common dashboard behavior)
+      computeKpis(filtered);
+      renderTable(filtered);
+    }
+
+    // Event wiring
+    [els.filterCategory, els.filterRegion, els.filterMunicipality].forEach(sel => {
+      sel.addEventListener("change", refresh);
+    });
+
+    els.btnReset.addEventListener("click", () => {
+      els.filterCategory.value = "All";
+      els.filterRegion.value = "All";
+      els.filterMunicipality.value = "All";
+      refresh();
+    });
+
+    function openAddModal() {
+      els.newCategory.value = "Chemical Inventory";
+      els.newRegion.value = "NCR";
+      els.newMunicipality.value = "";
+      els.newDescription.value = "";
+      els.newQuantity.value = 1;
+      modal.show();
+    }
+
+    els.btnAddItem.addEventListener("click", openAddModal);
+    els.btnAddItem2.addEventListener("click", openAddModal);
+
+    els.saveItemBtn.addEventListener("click", () => {
+      const category = els.newCategory.value;
+      const region = els.newRegion.value;
+      const municipality = (els.newMunicipality.value || "").trim();
+      const description = (els.newDescription.value || "").trim();
+      const quantity = Number(els.newQuantity.value);
+
+      if (!municipality || !description || !Number.isFinite(quantity) || quantity < 0) {
+        alert("Please complete all fields and enter a valid quantity.");
+        return;
+      }
+
+      const nextId = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
+
+      items.push({
+        id: nextId,
+        category,
+        region,
+        municipality,
+        description,
+        quantity
+      });
+
+      modal.hide();
+      refresh();
+    });
+
+    // Table actions (Edit/Delete quick demo)
+    els.itemsTbody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+
+      const action = btn.getAttribute("data-action");
+      const id = Number(btn.getAttribute("data-id"));
+
+      if (action === "delete") {
+        const ok = confirm("Delete this item?");
+        if (!ok) return;
+        items = items.filter(i => i.id !== id);
+        refresh();
+      }
+
+      if (action === "edit") {
+        const item = items.find(i => i.id === id);
+        if (!item) return;
+
+        const newQty = prompt("Update quantity:", item.quantity);
+        if (newQty === null) return;
+
+        const q = Number(newQty);
+        if (!Number.isFinite(q) || q < 0) {
+          alert("Invalid quantity.");
+          return;
+        }
+
+        item.quantity = q;
+        refresh();
+      }
+    });
+
+    // View Inventory button (you can redirect to another page)
+    els.btnViewInventory.addEventListener("click", () => {
+      // Change this if you have a dedicated full inventory page:
+      // window.location.href = "inventory-list.html";
+      alert("VIEW INVENTORY clicked! (Connect this to your inventory page or modal.)");
+    });
+
+    // Initial load
+    refresh();
+  </script>
+</body>
+</html>
