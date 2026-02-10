@@ -219,6 +219,9 @@
           } else if (data.status === 'under-review') {
             statusKey = 'pending';
             statusText = 'Under Review';
+          } else if (data.status === 'cancelled') {
+            statusKey = 'cancelled';
+            statusText = 'Cancelled';
           }
           
           applicants.push({
@@ -293,6 +296,14 @@
         return `
           <span class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-rose-700">
             <span class="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+            ${statusText}
+          </span>
+        `;
+      }
+      if (statusKey === "cancelled") {
+        return `
+          <span class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-gray-700">
+            <span class="h-2.5 w-2.5 rounded-full bg-gray-500"></span>
             ${statusText}
           </span>
         `;

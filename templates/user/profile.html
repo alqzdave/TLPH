@@ -3,279 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - DENR TLPH</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>My Profile | DENR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+        :root {
+            --ph-navy: #002e5d;
+            --ph-red: #c61218;
+            --denr-green: #155a32;
         }
 
         body {
-            background: #f5f5f5;
-            min-height: 100vh;
-            /* Inalis ang padding dito para dumikit ang header sa taas */
-            display: flex;
-            flex-direction: column;
+            background: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            font-size: 13px;
         }
 
-        /* Main wrapper para sa profile content */
-        .main-content {
-            padding: 2.5rem 1rem; /* Dito ang padding para sa spacing ng card */
-            flex: 1;
+        /* Government Tricolor Top Bar */
+        .gov-bar {
+            height: 3px;
+            background: linear-gradient(to right, #002e5d 33%, #c61218 33% 66%, #f9d900 66%);
         }
 
-        .profile-container {
-            max-width: 900px;
+        .profile-card {
+            max-width: 800px;
             margin: 0 auto;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            border-top: 3px solid var(--denr-green);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .profile-header {
-            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
-            padding: 3rem 2rem 2.5rem;
-            text-align: center;
+        /* Compact Banner */
+        .profile-banner {
+            padding: 1.5rem;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .img-container {
             position: relative;
+            flex-shrink: 0;
         }
 
-        .profile-pic-container {
-            margin-bottom: 1.5rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .profile-pic {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 6px solid white;
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
             object-fit: cover;
-            background: #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 3rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .camera-btn {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            width: 42px;
-            height: 42px;
-            background: white;
-            border: 3px solid #2d5016;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .camera-btn:hover {
-            background: #2d5016;
-        }
-
-        .camera-btn:hover i {
-            color: white;
-        }
-
-        .camera-btn i {
-            color: #2d5016;
-            font-size: 1rem;
-        }
-
-        .user-name {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.5px;
-        }
-
-        .user-email {
-            font-size: 1rem;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 0;
-        }
-
-        .profile-body {
-            padding: 3rem;
-        }
-
-        .two-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3.5rem;
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid #2d5016;
+        .user-info h1 {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--ph-navy);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: -0.025em;
+            margin: 0;
         }
 
-        .info-row {
-            display: flex;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f0f0f0;
+        /* Section Headings like PDS */
+        .gov-section {
+            background: #f8fafc;
+            padding: 4px 12px;
+            border-left: 4px solid var(--ph-navy);
+            font-weight: 800;
+            font-size: 10px;
+            color: var(--ph-navy);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin: 1rem 0;
         }
 
-        .info-label {
-            flex: 0 0 40%;
-            font-weight: 600;
-            color: #666;
-            font-size: 0.9rem;
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem 2rem;
+            padding: 0 1rem;
         }
 
-        .info-value {
-            flex: 1;
-            color: #1a1a1a;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid #eee;
-        }
-
-        .btn-custom {
-            flex: 1;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
+        .data-label {
+            font-size: 9px;
             font-weight: 700;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-decoration: none;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 1px;
         }
 
-        .btn-edit {
-            background: #2d5016;
+        .data-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 2px;
+        }
+
+        .btn-gov {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: 0.2s;
+        }
+
+        .btn-update {
+            background: var(--denr-green);
             color: white !important;
         }
 
-        .btn-edit:hover {
-            background: #1e360f;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(45, 80, 22, 0.3);
-        }
-
-        .btn-back {
-            background: #f8f9fa;
-            color: #333 !important;
-            border: 1px solid #ddd;
-        }
-
-        .btn-back:hover {
-            background: #e9ecef;
-        }
-
-        @media (max-width: 768px) {
-            .two-column { grid-template-columns: 1fr; gap: 2rem; }
-            .action-buttons { flex-direction: column; }
-            .profile-body { padding: 1.5rem; }
+        @media (max-width: 640px) {
+            .profile-banner { flex-direction: column; text-align: center; gap: 1rem; }
+            .data-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+            .action-bar { flex-direction: column-reverse; }
         }
     </style>
 </head>
 <body>
+    <div class="gov-bar"></div>
     {% include 'user/header.html' %}
 
-    <div class="main-content">
-        <div class="profile-container">
-            <div class="profile-header">
-                <div class="profile-pic-container">
-                    <img id="profilePic" src="{{ url_for('static', filename='images/default-avatar.png') }}" 
-                         alt="Profile" class="profile-pic"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                    <div class="profile-pic" style="display: none;">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <label for="profilePicInput" class="camera-btn">
-                        <i class="fas fa-camera"></i>
+    <main class="p-2 md:p-6">
+        <div class="profile-card">
+            <div class="profile-banner">
+                <div class="img-container">
+                    <img id="profilePic" src="{{ url_for('static', filename='images/default-avatar.png') }}" class="avatar">
+                    <label for="picInput" class="absolute -bottom-1 -right-1 bg-slate-800 text-white w-6 h-6 rounded flex items-center justify-center cursor-pointer border border-white">
+                        <i class="fas fa-camera text-[10px]"></i>
                     </label>
-                    <input type="file" id="profilePicInput" style="display: none;" accept="image/*">
+                    <input type="file" id="picInput" class="hidden" accept="image/*">
                 </div>
-                <h1 class="user-name" id="userName">User Name</h1>
-                <p class="user-email" id="headerEmail">user@email.com</p>
+                <div class="user-info">
+                    <h1 id="userName">Republic of the Philippines</h1>
+                    <p class="text-[11px] text-slate-500 font-medium mb-1" id="headerEmail">user@email.com</p>
+                    <span class="bg-blue-50 text-blue-700 text-[9px] font-black px-2 py-0.5 rounded border border-blue-100 uppercase">
+                        <i class="fas fa-shield-check me-1"></i> Verified Account
+                    </span>
+                </div>
             </div>
 
-            <div class="profile-body">
-                <div class="two-column">
+            <div class="p-3">
+                <div class="gov-section">I. Personal Information</div>
+                <div class="data-grid">
                     <div>
-                        <div class="section mb-5">
-                            <h2 class="section-title">Personal Details</h2>
-                            <div class="info-row">
-                                <span class="info-label">First Name</span>
-                                <span class="info-value" id="firstName">-</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Last Name</span>
-                                <span class="info-value" id="lastName">-</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Phone</span>
-                                <span class="info-value" id="contactNumber">-</span>
-                            </div>
-                        </div>
+                        <span class="data-label">First Name</span>
+                        <div class="data-value" id="firstName">-</div>
                     </div>
-
                     <div>
-                        <div class="section">
-                            <h2 class="section-title">Address & Farm</h2>
-                            <div class="info-row">
-                                <span class="info-label">Municipality</span>
-                                <span class="info-value" id="municipality">-</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Province</span>
-                                <span class="info-value" id="province">-</span>
-                            </div>
-                            <div id="farmDetails">
-                                <div class="info-row">
-                                    <span class="info-label">Farm Size</span>
-                                    <span class="info-value" id="farmSize">-</span>
-                                </div>
-                            </div>
-                        </div>
+                        <span class="data-label">Last Name</span>
+                        <div class="data-value" id="lastName">-</div>
+                    </div>
+                    <div>
+                        <span class="data-label">Contact No.</span>
+                        <div class="data-value" id="contactNumber">-</div>
+                    </div>
+                    <div>
+                        <span class="data-label">Nationality</span>
+                        <div class="data-value">Filipino</div>
                     </div>
                 </div>
 
-                <div class="action-buttons">
-                    <button class="btn-custom btn-edit" onclick="alert('Editing functionality coming soon!')">
-                        <i class="fas fa-user-edit"></i> EDIT PROFILE
-                    </button>
-                    <a href="/user/dashboard" class="btn-custom btn-back">
-                        <i class="fas fa-chevron-left"></i> BACK TO HOME
-                    </a>
+                <div class="gov-section">II. Location & Property Details</div>
+                <div class="data-grid">
+                    <div>
+                        <span class="data-label">Municipality</span>
+                        <div class="data-value" id="municipality">-</div>
+                    </div>
+                    <div>
+                        <span class="data-label">Province</span>
+                        <div class="data-value" id="province">-</div>
+                    </div>
+                    <div>
+                        <span class="data-label">Farm Area (Hectares)</span>
+                        <div class="data-value" id="farmSize">-</div>
+                    </div>
+                    <div>
+                        <span class="data-label">Property Class</span>
+                        <div class="data-value">Agricultural / Forestry</div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="action-bar flex justify-end gap-2 p-4 border-t border-slate-50 mt-4 bg-slate-50/50">
+                <a href="/user/dashboard" class="btn-gov bg-white border border-slate-300 text-slate-600 no-underline hover:bg-slate-50">
+                    <i class="fas fa-chevron-left me-1"></i> Back
+                </a>
+                <button class="btn-gov btn-update shadow-sm hover:opacity-90">
+                    <i class="fas fa-edit me-1"></i> Update Profile
+                </button>
             </div>
         </div>
-    </div>
+    </main>
 
     <script type="module">
         import { auth, db } from "{{ url_for('static', filename='js/firebase-config.js') }}";
@@ -289,18 +216,18 @@
                     const data = userDoc.data();
                     document.getElementById('userName').innerText = `${data.firstName} ${data.lastName}`;
                     document.getElementById('headerEmail').innerText = data.email;
-                    document.getElementById('firstName').innerText = data.firstName || '-';
-                    document.getElementById('lastName').innerText = data.lastName || '-';
-                    document.getElementById('contactNumber').innerText = data.contactNumber || '-';
-                    document.getElementById('municipality').innerText = data.municipality || '-';
-                    document.getElementById('province').innerText = data.province || '-';
-                    document.getElementById('farmSize').innerText = data.farmSize ? data.farmSize + ' ha' : 'N/A';
+                    document.getElementById('firstName').innerText = data.firstName || '---';
+                    document.getElementById('lastName').innerText = data.lastName || '---';
+                    document.getElementById('contactNumber').innerText = data.contactNumber || '---';
+                    document.getElementById('municipality').innerText = data.municipality || '---';
+                    document.getElementById('province').innerText = data.province || '---';
+                    document.getElementById('farmSize').innerText = data.farmSize || 'N/A';
                 }
             } else {
                 window.location.href = '/login';
             }
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
