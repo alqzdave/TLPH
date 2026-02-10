@@ -4,7 +4,7 @@ Welcome to the TLPH project! A comprehensive web application for managing touris
 
 ## Overview
 
-TLPH is a Flask-based web application designed to streamline the management and licensing of various land-based and environmental-related activities in the Philippines. It provides a platform for users to submit applications, track payments, manage seminars, and handle various agricultural and environmental services across different administrative levels (municipal, regional, national, and super-admin).
+TLPH is a Flask-based web application designed to help with the management and licensing of various land-based and environmental-related activities in the Philippines. It provides a platform for users to submit applications, track payments, manage seminars, and handle various agricultural and environmental services across different administrative levels (municipal, regional, national, and super-admin).
 
 ## Features
 
