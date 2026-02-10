@@ -127,6 +127,7 @@ This project was developed by:
 |------|-------|------|------|
 | Dave Alquiza | markdavemarasiganalquiza@gmail.com | Lead Developer |
 | Jhon Carlo Jimenez (kly-njz) | kly-njz@users.noreply.github.com | Developer | Masarap |
+| Hurie | https://github.com/Huriecane | Dev/PR | 
 | Aerone01 | grefaldaaeronejohn01@gmail.com | Contributor/Dev |
 | Cedric | acapulcojohncedric66@gmail.com | Contributor/Dev |
 | John Mark Pagaduan | pagaduanjohnmark29@gmail.com | Contributor/Dev |
