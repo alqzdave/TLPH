@@ -27,7 +27,7 @@ def save_transactions(transactions):
     with open(TRANSACTIONS_FILE, 'w') as f:
         json.dump(transactions, f, indent=2)
 
-def add_transaction(user_email, external_id, invoice_id, amount, item_name, description, status='PENDING'):
+def add_transaction(user_email, external_id, invoice_id, amount, item_name, description, status='Pending'):
     """Add a new transaction record"""
     transactions = load_transactions()
     
@@ -40,7 +40,7 @@ def add_transaction(user_email, external_id, invoice_id, amount, item_name, desc
         'description': description,
         'amount': amount,
         'status': status,
-        'payment_method': None,
+        'payment_method': 'Online Payment',
         'reference': external_id,
         'created_at': datetime.now().isoformat(),
         'updated_at': datetime.now().isoformat(),
