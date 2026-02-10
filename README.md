@@ -1,4 +1,4 @@
-# TLPH - Tourism and Land-based Livelihood Platform Hub
+# TLPH - Tagaytay Liquid PH - DENR PROJECT
 
 Welcome to the TLPH project! A comprehensive web application for managing tourism, agriculture, fisheries, forestry, wildlife, and environmental services in the Philippines.
 
@@ -123,13 +123,13 @@ See `requirements.txt` for complete list with versions.
 
 This project was developed by:
 
-| Name | Email | Role |
-|------|-------|------|
+| Name | Email | Role | Remarks |
+|------|-------|------|------|
 | Dave Alquiza | markdavemarasiganalquiza@gmail.com | Lead Developer |
 | Jhon Carlo Jimenez (kly-njz) | kly-njz@users.noreply.github.com | Developer | Masarap |
-| Aerone01 | grefaldaaeronejohn01@gmail.com | Contributor |
-| Cedric | acapulcojohncedric66@gmail.com | Contributor |
-| John Mark Pagaduan | pagaduanjohnmark29@gmail.com | Contributor |
+| Aerone01 | grefaldaaeronejohn01@gmail.com | Contributor/Dev |
+| Cedric | acapulcojohncedric66@gmail.com | Contributor/Dev |
+| John Mark Pagaduan | pagaduanjohnmark29@gmail.com | Contributor/Dev |
 
 ## Contributing
 
