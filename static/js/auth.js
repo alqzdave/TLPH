@@ -537,6 +537,7 @@ if (loginForm) {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const rememberMe = document.querySelector('input[name="remember"]').checked;
+        const loginBtn = document.getElementById('loginBtn');
         
         // Frontend validation
         if (!email || !password) {
@@ -547,6 +548,12 @@ if (loginForm) {
         if (!validateEmail(email)) {
             alert('Please enter a valid email address');
             return;
+        }
+        
+        // Show loading on button
+        if (loginBtn) {
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
         }
         
         try {
@@ -593,6 +600,11 @@ if (loginForm) {
             }
         } catch (error) {
             console.error('Login error:', error);
+            // Hide loading on button
+            if (loginBtn) {
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }
             alert('Login failed: ' + error.message);
         }
     });

@@ -13,6 +13,30 @@
         <i class="fas fa-arrow-left"></i>
     </a>
     
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .btn-primary .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        .btn-primary.loading .spinner {
+            display: inline-block;
+        }
+        .btn-primary.loading {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+    </style>
+    
     <div class="auth-container">
         <div class="auth-left">
             <div class="auth-content">
@@ -47,7 +71,10 @@
                         <a href="#" class="forgot-password">Forgot Password?</a>
                     </div>
                     
-                    <button type="submit" class="btn-primary">Sign In</button>
+                    <button type="submit" class="btn-primary" id="loginBtn">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Sign In</span>
+                    </button>
                     
                     <div class="divider">
                         <span>OR</span>

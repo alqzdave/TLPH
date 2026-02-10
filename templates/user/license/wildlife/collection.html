@@ -89,58 +89,49 @@
                         <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
                             <input type="file" id="detailsFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                             <i class="fa-solid fa-users-rectangle text-2xl text-gray-300 group-hover:text-black mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Personal Info</p>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Info</p>
                             <p id="detailsName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
                         </div>
                     </div>
-
                     <div class="space-y-2 group">
                         <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Trade License</label>
                         <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
                             <input type="file" id="licenseFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                             <i class="fa-solid fa-id-card text-2xl text-gray-300 group-hover:text-black mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload WTRL/WCEP</p>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload WTRL</p>
                             <p id="licenseName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
                         </div>
                     </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Possession Permit</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
-                            <input type="file" id="possessionFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-shield-halved text-2xl text-gray-300 group-hover:text-black mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload CWR/WFP</p>
-                            <p id="possessionName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Legal Acquisition</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
-                            <input type="file" id="legalFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-file-signature text-2xl text-gray-300 group-hover:text-black mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Proof</p>
-                            <p id="legalName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-
                     <div class="space-y-2 group">
                         <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Transport Plan</label>
                         <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-black transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
                             <input type="file" id="transportFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                             <i class="fa-solid fa-map-location-dot text-2xl text-gray-300 group-hover:text-black mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Logistics Plan</p>
+                            <p class="text-[10px] font-black text-gray-400 group-hover:text-black uppercase">Upload Logistics</p>
                             <p id="transportName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
                         </div>
                     </div>
-                </div>
+                    </div>
 
                 <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply activates once all trade data and 5 mandatory technical files are confirmed.
-                    </p>
+                    <div class="flex flex-col">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left mb-2">
+                            Apply activates once all trade data and mandatory technical files are confirmed.
+                        </p>
+                        
+                        <div class="bg-amber-50 px-5 py-3 rounded-xl border border-black inline-flex items-center gap-3">
+                            <span class="text-[11px] font-black text-black uppercase tracking-widest">
+                                Processing Fee:
+                            </span>
+                            <span class="text-2xl font-black text-black">
+                                ₱ <span class="xendit-amount-value">1,250.00</span>
+                            </span>
+                            <input type="hidden" id="xendit_raw_amount" value="1250">
+                        </div>
+                    </div>
+
                     <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
+                        <a href="/user/license/license" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
                         <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
                         <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-black text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
                     </div>
@@ -153,57 +144,45 @@
         </p>
     </div>
 
+    
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('wildlifeForm');
             const submitBtn = document.getElementById('submitBtn');
             
-            const fields = ['wildlifeCategory', 'speciesDetail', 'quantity', 'purpose', 'origin', 'destination'];
-            const fileConfigs = [
-                { id: 'detailsFile', name: 'detailsName' },
-                { id: 'licenseFile', name: 'licenseName' },
-                { id: 'possessionFile', name: 'possessionName' },
-                { id: 'legalFile', name: 'legalName' },
-                { id: 'transportFile', name: 'transportName' }
-            ];
-
+            // Simplified validation check (can be expanded based on specific field IDs)
             function checkValidation() {
-                const allFieldsValid = fields.every(id => {
-                    const el = document.getElementById(id);
-                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
+                const inputs = form.querySelectorAll('input[required], select[required]');
+                let allValid = true;
+                inputs.forEach(input => {
+                    if (input.type === 'file') {
+                        if (input.files.length === 0) allValid = false;
+                    } else {
+                        if (!input.value.trim()) allValid = false;
+                    }
                 });
-                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-                if (allFieldsValid && allFilesValid) {
+                if (allValid) {
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.add('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-gray-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
                 } else {
                     submitBtn.disabled = true;
                     submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.remove('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.remove('hover:bg-gray-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
                 }
             }
 
-            fileConfigs.forEach(f => {
-                const input = document.getElementById(f.id);
-                const display = document.getElementById(f.name);
-                input.addEventListener('change', () => {
-                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
-                    checkValidation();
+            form.addEventListener('change', checkValidation);
+            form.addEventListener('input', checkValidation);
+
+            // Display file names
+            form.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const nameDisplay = document.getElementById(input.id.replace('File', 'Name'));
+                    if (nameDisplay) nameDisplay.textContent = e.target.files[0] ? `Selected: ${e.target.files[0].name}` : "";
                 });
-            });
-
-            form.querySelectorAll('input, select').forEach(el => {
-                el.addEventListener('input', checkValidation);
-                el.addEventListener('change', checkValidation);
-            });
-
-            document.getElementById('resetBtn').addEventListener('click', () => {
-                setTimeout(() => {
-                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
-                    checkValidation();
-                }, 10);
             });
         });
     </script>
