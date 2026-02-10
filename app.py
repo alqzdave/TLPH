@@ -13,7 +13,7 @@ mail = Mail(app)
 # initialize_firebase_admin()
 
 # Import routes
-from routes import main_routes, api_routes, seminar_routes, service_routes, fisheries_routes, environment_routes, forest_routes, livestock_routes, permits_routes, wildlife_routes, farm_routes, payments_routes
+from routes import main_routes, api_routes, municipal_routes, seminar_routes, service_routes, fisheries_routes, environment_routes, forest_routes, livestock_routes, permits_routes, wildlife_routes, farm_routes, payments_routes
 
 # Initialize mail in api_routes
 api_routes.init_mail(mail)
@@ -21,6 +21,7 @@ api_routes.init_mail(mail)
 # Register blueprints
 app.register_blueprint(main_routes.bp)
 app.register_blueprint(api_routes.bp)
+app.register_blueprint(municipal_routes.bp)
 app.register_blueprint(seminar_routes.bp)
 app.register_blueprint(service_routes.bp)
 app.register_blueprint(fisheries_routes.bp)
