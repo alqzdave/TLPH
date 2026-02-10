@@ -1,0 +1,31 @@
+from flask import Blueprint, render_template
+
+bp = Blueprint('municipal', __name__, url_prefix='/municipal')
+
+@bp.route('/dashboard')
+def dashboard():
+    return render_template('municipal/home-municipal/home-municipal.html')
+
+@bp.route('/applications')
+def applications():
+    return render_template('municipal/application-municipal/application-municipal-dashboard.html')
+
+@bp.route('/applications/view/<application_id>')
+def view_application(application_id):
+    return render_template('municipal/application-municipal/application-municipal-view-profile.html')
+
+@bp.route('/services')
+def services():
+    return render_template('municipal/service-municipal/service-municipal-dashboard.html')
+
+@bp.route('/services/view/<service_id>')
+def view_service(service_id):
+    return render_template('municipal/service-municipal/service-municipal-view-profile.html')
+
+@bp.route('/inventory')
+def inventory():
+    return render_template('municipal/inventory/inventory-dashboard.html')
+
+@bp.route('/transactions')
+def transactions():
+    return render_template('municipal/transaction-municipal/transaction-municipal.html')

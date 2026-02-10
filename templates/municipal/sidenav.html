@@ -108,23 +108,23 @@
 
     <!-- Navigation -->
     <nav class="flex-grow space-y-2">
-        <a href="home-municipal/home-municipal.html" class="nav-item-btn">
+        <a href="/municipal/dashboard" class="nav-item-btn">
             <span class="material-icons-round">home</span>
             <span>Home</span>
         </a>
 
-        <a href="application-municipal/application-municipal-dashboard.html" class="nav-item-btn">
+        <a href="/municipal/applications" class="nav-item-btn">
             <span class="material-icons-round">description</span>
             <span>Application</span>
         </a>
 
-        <a href="service-municipal/service-municipal-dashboard.html" class="nav-item-btn">
+        <a href="/municipal/services" class="nav-item-btn">
             <span class="material-icons-round">room_service</span>
             <span>Service Request</span>
         </a>
 
         <!-- Inventory (LINKED) -->
-        <a href="inventory/inventory-dashboard.html" class="nav-item-btn">
+        <a href="/municipal/inventory" class="nav-item-btn">
             <span class="material-icons-round">inventory_2</span>
             <span>Inventory</span>
         </a>
@@ -134,7 +134,7 @@
             <span>Licensing / Permit</span>
         </a>
 
-        <a href="transaction-municipal/transaction-municipal.html" class="nav-item-btn">
+        <a href="/municipal/transactions" class="nav-item-btn">
             <span class="material-icons-round">receipt_long</span>
             <span>Transactions</span>
         </a>
@@ -148,14 +148,24 @@
             <span>My Profile</span>
         </a>
 
-        <a href="logout.php" class="footer-link logout-btn">
+        <a href="javascript:void(0)" onclick="logout()" class="footer-link logout-btn">
             <span class="material-icons-round">logout</span>
             <span>Logout</span>
         </a>
     </div>
 </aside>
 
-</body>
-</html>
-
-
+<script type="module">
+    import { auth } from '/static/js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    
+    window.logout = async function() {
+        try {
+            await signOut(auth);
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Logout failed: ' + error.message);
+        }
+    };
+</script>
