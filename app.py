@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from flask_mail import Mail
 from config import Config
-# from firebase_config import initialize_firebase_admin  # Temporarily disabled
+from firebase_config import initialize_firebase_admin
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -9,8 +9,8 @@ app.config.from_object(Config)
 # Initialize Flask-Mail
 mail = Mail(app)
 
-# Initialize Firebase (disabled for now)
-# initialize_firebase_admin()
+# Initialize Firebase
+initialize_firebase_admin()
 
 # Import routes
 from routes import main_routes, api_routes, municipal_routes, seminar_routes, service_routes, fisheries_routes, environment_routes, forest_routes, livestock_routes, permits_routes, wildlife_routes, farm_routes, payments_routes

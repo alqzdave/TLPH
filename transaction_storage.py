@@ -1,89 +1,196 @@
-import json
-import os
 from datetime import datetime
-from pathlib import Path
+from firebase_admin import firestore
 
-TRANSACTIONS_FILE = Path(__file__).parent / 'data' / 'transactions.json'
+def get_db():
+    """Get Firestore database reference"""
+    return firestore.client()
 
-def ensure_data_directory():
-    """Ensure data directory exists"""
-    TRANSACTIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    if not TRANSACTIONS_FILE.exists():
-        with open(TRANSACTIONS_FILE, 'w') as f:
-            json.dump([], f)
-
-def load_transactions():
-    """Load all transactions from JSON file"""
-    ensure_data_directory()
-    try:
-        with open(TRANSACTIONS_FILE, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def save_transactions(transactions):
-    """Save transactions to JSON file"""
-    ensure_data_directory()
-    with open(TRANSACTIONS_FILE, 'w') as f:
-        json.dump(transactions, f, indent=2)
+def get_transactions_collection():
+    """Get transactions collection reference"""
+    return get_db().collection('transactions')
 
 def add_transaction(user_email, external_id, invoice_id, amount, item_name, description, status='Pending'):
-    """Add a new transaction record"""
-    transactions = load_transactions()
-    
-    transaction = {
-        'id': len(transactions) + 1,
-        'user_email': user_email or 'guest@denr.gov.ph',
-        'external_id': external_id,
-        'invoice_id': invoice_id,
-        'transaction_name': item_name,
-        'description': description,
-        'amount': amount,
-        'status': status,
-        'payment_method': 'Online Payment',
-        'reference': external_id,
-        'created_at': datetime.now().isoformat(),
-        'updated_at': datetime.now().isoformat(),
-        'paid_at': None
-    }
-    
-    transactions.append(transaction)
-    save_transactions(transactions)
-    return transaction
+    """Add a new transaction record to Firestore"""
+    try:
+        transactions_ref = get_transactions_collection()
+        normalized_email = (user_email or 'guest@denr.gov.ph').strip().lower()
+        
+        transaction = {
+            'user_email': normalized_email,
+            'external_id': external_id,
+            'invoice_id': invoice_id,
+            'transaction_name': item_name,
+            'description': description,
+            'amount': amount,
+            'status': status,
+            'payment_method': 'Online Payment',
+            'reference': external_id,
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'updated_at': firestore.SERVER_TIMESTAMP,
+            'paid_at': None
+        }
+        
+        # Add document to Firestore
+        doc_ref = transactions_ref.add(transaction)
+        doc_id = doc_ref[1].id
+        
+        # Get the created document with server timestamp
+        created_doc = transactions_ref.document(doc_id).get()
+        result = created_doc.to_dict()
+        result['id'] = doc_id
+        
+        return result
+    except Exception as e:
+        print(f"Error adding transaction: {e}")
+        return None
 
 def update_transaction_status(invoice_id, status, payment_method=None, paid_at=None):
     """Update transaction status when webhook is received"""
-    transactions = load_transactions()
-    
-    for transaction in transactions:
-        if transaction.get('invoice_id') == invoice_id:
-            transaction['status'] = status
-            transaction['updated_at'] = datetime.now().isoformat()
-            if payment_method:
-                transaction['payment_method'] = payment_method
-            if paid_at:
-                transaction['paid_at'] = paid_at
-            elif status == 'PAID':
-                transaction['paid_at'] = datetime.now().isoformat()
+    try:
+        transactions_ref = get_transactions_collection()
+        
+        # Query for the transaction with this invoice_id
+        query = transactions_ref.where('invoice_id', '==', invoice_id).limit(1)
+        docs = query.stream()
+        
+        for doc in docs:
+            update_data = {
+                'status': status,
+                'updated_at': firestore.SERVER_TIMESTAMP
+            }
             
-            save_transactions(transactions)
-            return transaction
-    
-    return None
+            if payment_method:
+                update_data['payment_method'] = payment_method
+            if paid_at:
+                update_data['paid_at'] = paid_at
+            elif status == 'PAID':
+                update_data['paid_at'] = firestore.SERVER_TIMESTAMP
+            
+            # Update the document
+            transactions_ref.document(doc.id).update(update_data)
+            
+            # Return updated document
+            updated_doc = transactions_ref.document(doc.id).get()
+            result = updated_doc.to_dict()
+            result['id'] = doc.id
+            return result
+        
+        return None
+    except Exception as e:
+        print(f"Error updating transaction: {e}")
+        return None
 
 def get_user_transactions(user_email):
-    """Get all transactions for a specific user"""
-    transactions = load_transactions()
-    return [t for t in transactions if t.get('user_email') == user_email]
+    """Get all transactions for a specific user from Firestore"""
+    try:
+        transactions_ref = get_transactions_collection()
+        normalized_email = (user_email or '').strip().lower()
+
+        transactions_by_id = {}
+        queries = []
+
+        if normalized_email:
+            queries.append(transactions_ref.where(filter=firestore.FieldFilter('user_email', '==', normalized_email)))
+        if user_email and user_email != normalized_email:
+            queries.append(transactions_ref.where(filter=firestore.FieldFilter('user_email', '==', user_email)))
+
+        for query in queries:
+            for doc in query.stream():
+                transaction = doc.to_dict()
+                transaction['id'] = doc.id
+                # Convert Firestore timestamps to ISO format strings
+                if 'created_at' in transaction and transaction['created_at']:
+                    transaction['created_at'] = transaction['created_at'].isoformat() if hasattr(transaction['created_at'], 'isoformat') else str(transaction['created_at'])
+                if 'updated_at' in transaction and transaction['updated_at']:
+                    transaction['updated_at'] = transaction['updated_at'].isoformat() if hasattr(transaction['updated_at'], 'isoformat') else str(transaction['updated_at'])
+                if 'paid_at' in transaction and transaction['paid_at']:
+                    transaction['paid_at'] = transaction['paid_at'].isoformat() if hasattr(transaction['paid_at'], 'isoformat') else str(transaction['paid_at'])
+                transactions_by_id[doc.id] = transaction
+
+        transactions = list(transactions_by_id.values())
+        transactions.sort(key=lambda t: t.get('created_at') or '', reverse=True)
+        return transactions
+    except Exception as e:
+        print(f"Error getting user transactions: {e}")
+        return []
 
 def get_all_transactions():
-    """Get all transactions"""
-    return load_transactions()
+    """Get all transactions from Firestore"""
+    try:
+        transactions_ref = get_transactions_collection()
+        query = transactions_ref.order_by('created_at', direction=firestore.Query.DESCENDING)
+        
+        transactions = []
+        for doc in query.stream():
+            transaction = doc.to_dict()
+            transaction['id'] = doc.id
+            # Convert timestamps
+            if 'created_at' in transaction and transaction['created_at']:
+                transaction['created_at'] = transaction['created_at'].isoformat() if hasattr(transaction['created_at'], 'isoformat') else str(transaction['created_at'])
+            if 'updated_at' in transaction and transaction['updated_at']:
+                transaction['updated_at'] = transaction['updated_at'].isoformat() if hasattr(transaction['updated_at'], 'isoformat') else str(transaction['updated_at'])
+            transactions.append(transaction)
+        
+        return transactions
+    except Exception as e:
+        print(f"Error getting all transactions: {e}")
+        return []
 
 def find_transaction_by_external_id(external_id):
-    """Find a transaction by external_id"""
-    transactions = load_transactions()
-    for transaction in transactions:
-        if transaction.get('external_id') == external_id:
+    """Find a transaction by external_id from Firestore"""
+    try:
+        transactions_ref = get_transactions_collection()
+        query = transactions_ref.where('external_id', '==', external_id).limit(1)
+        
+        for doc in query.stream():
+            transaction = doc.to_dict()
+            transaction['id'] = doc.id
             return transaction
-    return None
+        
+        return None
+    except Exception as e:
+        print(f"Error finding transaction: {e}")
+        return None
+
+def cancel_transaction_by_reference(reference, user_email):
+    """Cancel a transaction by reference number (only if pending)"""
+    try:
+        transactions_ref = get_transactions_collection()
+        
+        # Query for transaction by reference or external_id
+        query = transactions_ref.where('reference', '==', reference).limit(1)
+        docs = list(query.stream())
+        
+        if not docs:
+            query = transactions_ref.where('external_id', '==', reference).limit(1)
+            docs = list(query.stream())
+        
+        if not docs:
+            return {'success': False, 'message': 'Transaction not found'}
+        
+        doc = docs[0]
+        transaction = doc.to_dict()
+        
+        # Verify it's the user's transaction
+        if transaction.get('user_email') != user_email:
+            return {'success': False, 'message': 'Unauthorized to cancel this transaction'}
+        
+        # Only allow canceling pending transactions
+        if transaction.get('status') != 'Pending':
+            return {'success': False, 'message': f'Cannot cancel {transaction.get("status")} transaction'}
+        
+        # Cancel the transaction
+        transactions_ref.document(doc.id).update({
+            'status': 'Cancelled',
+            'updated_at': firestore.SERVER_TIMESTAMP
+        })
+        
+        # Get updated document
+        updated_doc = transactions_ref.document(doc.id).get()
+        result = updated_doc.to_dict()
+        result['id'] = doc.id
+        
+        return {'success': True, 'transaction': result}
+    except Exception as e:
+        print(f"Error canceling transaction: {e}")
+        return {'success': False, 'message': str(e)}

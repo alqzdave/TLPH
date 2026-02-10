@@ -269,6 +269,8 @@ def get_transactions():
                 transaction['display_status'] = 'approved'
             elif status == 'Rejected' or status == 'EXPIRED' or status == 'FAILED':
                 transaction['display_status'] = 'rejected'
+            elif status == 'Cancelled':
+                transaction['display_status'] = 'cancelled'
             else:
                 transaction['display_status'] = 'pending'
         
@@ -276,6 +278,47 @@ def get_transactions():
             'status': 'success',
             'transactions': transactions
         }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@bp.route('/cancel-transaction', methods=['POST'])
+def cancel_transaction():
+    """Cancel a pending transaction"""
+    try:
+        data = request.get_json(silent=True) or {}
+        reference = data.get('reference')
+        user_email = data.get('user_email')
+        
+        if not reference:
+            return jsonify({
+                'status': 'error',
+                'message': 'Reference number is required'
+            }), 400
+        
+        if not user_email:
+            return jsonify({
+                'status': 'error',
+                'message': 'User email is required'
+            }), 400
+        
+        result = transaction_storage.cancel_transaction_by_reference(reference, user_email)
+        
+        if result['success']:
+            return jsonify({
+                'status': 'success',
+                'message': 'Transaction cancelled successfully',
+                'transaction': result['transaction']
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': result['message']
+            }), 400
         
     except Exception as e:
         return jsonify({
