@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Applicant Profile | Official View</title>
+
+  <!-- Pure Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <style>
+    /* subtle official watermark */
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      background-image: url('static/images/denr.jpg');
+      background-repeat: no-repeat;
+      background-position: center 28%;
+      background-size: 520px;
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: -1;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  {% include 'municipal/header.html' %}
+  {% include 'municipal/sidenav.html' %}
+
+  <main class="px-6 py-8 md:px-10">
+    <!-- Top bar -->
+    <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-emerald-950">
+          Applicant Profile
+        </p>
+        <p class="mt-1 text-sm font-semibold text-slate-500">
+          Official record • Review and action
+        </p>
+      </div>
+
+      <a href="#"
+         class="inline-flex items-center gap-2 self-start rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+        <span class="material-icons-round text-[18px]">arrow_back</span>
+        Back to list
+      </a>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-12">
+      <!-- LEFT: identity + personal details -->
+      <aside class="lg:col-span-4 space-y-4">
+        <!-- Identity card -->
+        <section class="rounded-xl border border-slate-200 bg-white p-4">
+          <div class="flex items-start gap-4">
+            <div class="h-20 w-20 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop"
+                alt="Applicant Photo"
+                class="h-full w-full object-cover"
+              />
+            </div>
+
+            <div class="min-w-0">
+              <h2 class="text-base font-black tracking-tight text-slate-900">
+                Paolo Dave Alqzd
+              </h2>
+              <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
+                Ref Code: <span class="text-slate-700">DENR-2026-0042</span>
+              </p>
+
+              <div class="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-700">
+                <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                Pending Review
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Personal details -->
+        <section class="rounded-xl border border-slate-200 bg-white p-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-950">
+              Personal Details
+            </h3>
+            <span class="material-icons-round text-slate-400">contact_page</span>
+          </div>
+
+          <dl class="mt-4 divide-y divide-slate-100">
+            <div class="py-3">
+              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Email Address</dt>
+              <dd class="mt-1 text-sm font-semibold text-slate-900">paolodave.alqzd@gmail.com</dd>
+            </div>
+
+            <div class="py-3">
+              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Contact Number</dt>
+              <dd class="mt-1 text-sm font-semibold text-slate-900">+63 912 345 6789</dd>
+            </div>
+
+            <div class="py-3">
+              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Farm/Land Address</dt>
+              <dd class="mt-1 text-sm font-semibold leading-relaxed text-slate-900">
+                Brgy. Mabuhay, Carmona, Cavite
+              </dd>
+            </div>
+
+            <div class="py-3">
+              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Total Declared Area</dt>
+              <dd class="mt-1 text-lg font-black tracking-tight text-emerald-950">15.50 hectares</dd>
+            </div>
+          </dl>
+        </section>
+      </aside>
+
+      <!-- RIGHT: metrics + documents + actions -->
+      <section class="lg:col-span-8 space-y-4">
+        <!-- Metrics -->
+        <div class="grid gap-3 md:grid-cols-2">
+          <div class="rounded-xl border border-slate-200 bg-white p-4">
+            <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
+              Total Crop Species
+            </p>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-3xl font-black tracking-tight text-slate-900">12</span>
+              <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">variety</span>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-4">
+            <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
+              Max Harvest Quantity
+            </p>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-3xl font-black tracking-tight text-slate-900">4.5</span>
+              <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">tons / year</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documentary Requirements -->
+        <section class="rounded-xl border border-slate-200 bg-white p-4">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-950">
+              Documentary Requirements
+            </h3>
+            <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-700">
+              5 Files Ready
+            </span>
+          </div>
+
+          <div class="mt-4 grid gap-2 md:grid-cols-2">
+            <!-- Doc item -->
+            <a href="#"
+               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+              <div class="flex items-center gap-3">
+                <span class="material-icons-round text-slate-500">architecture</span>
+                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
+                  Blueprint Approved Plan
+                </span>
+              </div>
+              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+            </a>
+
+            <a href="#"
+               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+              <div class="flex items-center gap-3">
+                <span class="material-icons-round text-slate-500">assignment</span>
+                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
+                  Farm Business Plan
+                </span>
+              </div>
+              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+            </a>
+
+            <a href="#"
+               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+              <div class="flex items-center gap-3">
+                <span class="material-icons-round text-slate-500">terrain</span>
+                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
+                  Picture of Land
+                </span>
+              </div>
+              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+            </a>
+
+            <a href="#"
+               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+              <div class="flex items-center gap-3">
+                <span class="material-icons-round text-slate-500">grass</span>
+                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
+                  Crop Image
+                </span>
+              </div>
+              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+            </a>
+
+            <a href="#"
+               class="group md:col-span-2 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+              <div class="flex items-center gap-3">
+                <span class="material-icons-round text-slate-500">storefront</span>
+                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
+                  Farm Barangay Registration
+                </span>
+              </div>
+              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- Actions -->
+        <section class="rounded-xl border border-slate-200 bg-white p-4">
+          <h3 class="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-950">
+            Actions
+          </h3>
+          <p class="mt-2 text-sm font-semibold text-slate-500">
+            Use official disposition options. Actions should be recorded with remarks.
+          </p>
+
+          <div class="mt-4 grid gap-2 md:grid-cols-3">
+            <button
+              class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.16em] text-rose-800 hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100"
+              type="button">
+              Reject
+            </button>
+
+            <button
+              class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.16em] text-sky-800 hover:bg-sky-100 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              type="button">
+              Move to Review
+            </button>
+
+            <button
+              class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-900 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+              type="button">
+              Approve
+            </button>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
