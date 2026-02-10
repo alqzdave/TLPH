@@ -10,6 +10,21 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <style>
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url('/static/images/denr.jpg');
+      background-repeat: no-repeat;
+      background-position: center 30%;
+      background-size: 520px;
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: -1;
+    }
+  </style>
+
   <!-- Tailwind theme tokens (gov look) -->
   <script>
     tailwind.config = {

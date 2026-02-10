@@ -29,3 +29,7 @@ def inventory():
 @bp.route('/transactions')
 def transactions():
     return render_template('municipal/transaction-municipal/transaction-municipal.html')
+
+@bp.route('/users')
+def users():
+    return render_template('municipal/user-management-municipal/user-management-municipal.html')
