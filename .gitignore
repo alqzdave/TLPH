@@ -12,6 +12,8 @@ ENV/
 *.sqlite3
 .vscode/
 .idea/
+firebase-credentials.json
+*-firebase-adminsdk-*.json
 
 # Firebase
 firebase-credentials.json
