@@ -12,145 +12,113 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-red-800">
-                Animal Transport Permit
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Bureau of Animal Industry • National Veterinary Regulatory Division
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-red-800">Animal Transport Permit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Bureau of Animal Industry • National Veterinary Regulatory Division</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="transportForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
-                    <div class="space-y-6">
-                        <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-red-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-truck-ramp-box"></i> Cargo Specifications
                         </h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Animal Type <span class="text-red-500">*</span></label>
-                                <input type="text" id="animalType" name="animalType" required placeholder="Ex: Swine, Cattle, Poultry" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Animal Type <span class="text-red-500">*</span></label>
+                                <input type="text" id="animalType" name="animalType" required placeholder="Ex: Swine" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none text-xs font-medium">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Head Count <span class="text-red-500">*</span></label>
-                                <input type="number" id="headCount" name="headCount" required placeholder="0" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-bold text-gray-700">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Head Count <span class="text-red-500">*</span></label>
+                                <input type="number" id="headCount" name="headCount" required placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none font-bold text-xs">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Origin (Source) <span class="text-red-500">*</span></label>
-                                <input type="text" id="origin" name="origin" required placeholder="City/Province" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Origin <span class="text-red-500">*</span></label>
+                                <input type="text" id="origin" name="origin" required placeholder="Source City" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none text-xs font-medium">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Destination <span class="text-red-500">*</span></label>
-                                <input type="text" id="destination" name="destination" required placeholder="City/Province" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Destination <span class="text-red-500">*</span></label>
+                                <input type="text" id="destination" name="destination" required placeholder="Target City" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none text-xs font-medium">
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-6">
-                        <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                    <div class="space-y-4">
+                        <h3 class="text-red-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-calendar-days"></i> Logistics & Schedule
                         </h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Transport Method <span class="text-red-500">*</span></label>
-                                <select id="method" name="method" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none bg-white font-medium text-gray-700 text-sm appearance-none">
-                                    <option value="" disabled selected>Select method...</option>
-                                    <option value="cages">Cages / Crates</option>
-                                    <option value="trailer">Trailer Truck</option>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Method <span class="text-red-500">*</span></label>
+                                <select id="method" name="method" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none bg-white text-xs font-medium">
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="cages">Cages</option>
+                                    <option value="trailer">Trailer</option>
                                     <option value="aerated">Aerated Tank</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Plate Number <span class="text-red-500">*</span></label>
-                                <input type="text" id="plateNo" name="plateNo" required placeholder="ABC-1234" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-bold text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Plate Number <span class="text-red-500">*</span></label>
+                                <input type="text" id="plateNo" name="plateNo" required placeholder="ABC-123" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none font-bold text-xs">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Transport Date <span class="text-red-500">*</span></label>
-                                <input type="date" id="date" name="date" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-red-600 outline-none text-sm font-bold text-gray-700">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Date <span class="text-red-500">*</span></label>
+                                <input type="date" id="date" name="date" required class="w-full border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-red-600 outline-none text-xs font-bold">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Estimated Time <span class="text-red-500">*</span></label>
-                                <input type="time" id="time" name="time" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-red-600 outline-none text-sm font-bold text-gray-700">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Time <span class="text-red-500">*</span></label>
+                                <input type="time" id="time" name="time" required class="w-full border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-red-600 outline-none text-xs font-bold">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-12 mb-6">
-                    <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b-2 border-red-100 pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-open"></i> Mandatory Documentation
-                    </h3>
-                </div>
-
-                <div class="max-w-3xl mx-auto">
-                    <div class="space-y-2 group text-center">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Veterinary Health Certificate (VHC)</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-[2.5rem] p-8 bg-gray-50 hover:bg-white hover:border-red-600 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[180px]">
-                            <input type="file" id="vhcFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <div class="space-y-3 pointer-events-none">
-                                <i class="fa-solid fa-file-shield text-4xl text-gray-300 group-hover:text-red-600 transition-colors"></i>
-                                <div>
-                                    <p class="text-[12px] font-black text-gray-400 group-hover:text-red-800 uppercase tracking-widest">Upload Valid VHC</p>
-                                    <p class="text-[9px] text-gray-400 mt-1 uppercase font-bold">PDF, JPG, or PNG (Max 5MB)</p>
-                                </div>
-                                <p id="vhcName" class="text-[10px] text-red-600 font-black truncate max-w-[250px] mt-2"></p>
-                            </div>
+                <div class="mt-6">
+                    <label class="block text-[10px] font-black text-red-800 uppercase mb-2 tracking-widest"><i class="fa-solid fa-folder-open"></i> Veterinary Health Certificate (VHC)</label>
+                    <div class="group border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-red-600 hover:shadow-md transition-all relative text-center cursor-pointer">
+                        <input type="file" id="vhcFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                        <div class="flex flex-col items-center justify-center py-2">
+                            <i class="fa-solid fa-file-shield text-gray-300 group-hover:text-red-600 text-2xl mb-1 transition-colors"></i>
+                            <p class="text-[11px] font-black text-gray-400 group-hover:text-gray-700 uppercase transition-colors">Click to Upload Valid VHC</p>
+                            <p id="vhcName" class="text-[9px] text-red-600 font-bold truncate mt-1"></p>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="flex flex-col">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left mb-2">
-                            Permit generation activates once all cargo specs, logistics, and VHC are uploaded.
-                        </p>
-                        
-                        <div class="bg-amber-50 px-5 py-3 rounded-xl border border-red-700 inline-flex items-center gap-3">
-                            <span class="text-[11px] font-black text-red-700 uppercase tracking-widest">
-                                Permit Fee:
-                            </span>
-                            <span class="text-2xl font-black text-red-700">
-                                ₱ <span class="xendit-amount-value">450.00</span>
-                            </span>
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Quarantine service permit fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-red-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-red-700 uppercase tracking-widest">Permit Fee:</span>
+                            <span class="text-xl font-black text-red-700">₱ <span class="xendit-amount-value">450.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="450">
                         </div>
                     </div>
-
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-red-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
-            Bureau of Animal Industry • Veterinary Quarantine Service 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">Bureau of Animal Industry • Veterinary Quarantine Service 2026</p>
     </div>
 
     
@@ -159,37 +127,35 @@
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('transportForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            const fields = ['animalType', 'headCount', 'origin', 'destination', 'method', 'plateNo', 'date', 'time'];
             const fileInput = document.getElementById('vhcFile');
             const vhcName = document.getElementById('vhcName');
+            
+            const fields = ['animalType', 'headCount', 'origin', 'destination', 'method', 'plateNo', 'date', 'time'];
 
             function checkValidation() {
-                const allFieldsValid = fields.every(id => {
-                    const el = document.getElementById(id);
-                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
-                });
-                
+                const allFieldsValid = fields.every(id => document.getElementById(id).value.trim() !== "");
                 const fileValid = fileInput.files.length > 0;
 
                 if (allFieldsValid && fileValid) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.add('hover:bg-red-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-gray-200', 'bg-red-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-red-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.remove('hover:bg-red-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-red-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
-            fileInput.addEventListener('change', () => {
-                vhcName.textContent = fileInput.files.length > 0 ? `Selected: ${fileInput.files[0].name}` : "";
+            fileInput.addEventListener('change', (e) => {
+                vhcName.textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
                 checkValidation();
             });
 
-            fields.forEach(id => {
-                const el = document.getElementById(id);
+            form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
                 el.addEventListener('change', checkValidation);
             });
@@ -203,5 +169,4 @@
         });
     </script>
 </body>
-
 </html>

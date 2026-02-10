@@ -12,134 +12,110 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Local Transport Permit
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Domestic Resource Movement • Inter-Regional Clearance
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Local Transport Permit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Domestic Resource Movement • Inter-Regional Clearance</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="transportForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="space-y-6">
-                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-route"></i> Trip Specifications
-                    </h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Origin <span class="text-red-500">*</span></label>
-                            <input type="text" id="origin" name="origin" required placeholder="City/Province" 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Destination <span class="text-red-500">*</span></label>
-                            <input type="text" id="destination" name="destination" required placeholder="City/Province" 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Mode <span class="text-red-500">*</span></label>
-                            <select id="mode" name="mode" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none bg-white font-medium text-gray-700 text-sm appearance-none">
-                                <option value="" disabled selected>Select mode...</option>
-                                <option value="Land">Land (Truck/Van)</option>
-                                <option value="Sea">Sea (Vessel)</option>
-                                <option value="Air">Air (Cargo)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Schedule <span class="text-red-500">*</span></label>
-                            <input type="datetime-local" id="dateTime" name="date_time" required 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-green-600 outline-none text-sm font-bold text-gray-700">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-12 mb-6">
-                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-open"></i> Mandatory Documentation
-                    </h3>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Route Plan</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[150px]">
-                            <input type="file" id="routeFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-map-location-dot text-3xl text-gray-300 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Route</p>
-                            <p id="routeName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Vehicle Info</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[150px]">
-                            <input type="file" id="vehicleFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-truck text-3xl text-gray-300 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload V.I.</p>
-                            <p id="vehicleName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Supplier Reg.</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[150px]">
-                            <input type="file" id="supplierFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-id-card text-3xl text-gray-300 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload ID/Reg</p>
-                            <p id="supplierName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Health Cert</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[150px]">
-                            <input type="file" id="healthFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-file-medical text-3xl text-gray-300 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Health Cert</p>
-                            <p id="healthName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
-                    <div class="flex flex-col">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left mb-2">
-                            Permit activates once all trip data and 4 mandatory files are confirmed.
-                        </p>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-route"></i> Trip Specifications
+                        </h3>
                         
-                        <div class="bg-amber-50 px-5 py-3 rounded-xl border border-green-700 inline-flex items-center gap-3">
-                            <span class="text-[11px] font-black text-green-700 uppercase tracking-widest">
-                                Permit Fee:
-                            </span>
-                            <span class="text-2xl font-black text-green-700">
-                                ₱ <span class="xendit-amount-value">750.00</span>
-                            </span>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Origin <span class="text-red-500">*</span></label>
+                                <input type="text" id="origin" name="origin" required placeholder="City/Province" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Destination <span class="text-red-500">*</span></label>
+                                <input type="text" id="destination" name="destination" required placeholder="City/Province" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Mode of Transport <span class="text-red-500">*</span></label>
+                                <select id="mode" name="mode" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                    <option value="" disabled selected>Select mode...</option>
+                                    <option value="Land">Land (Truck/Van)</option>
+                                    <option value="Sea">Sea (Vessel)</option>
+                                    <option value="Air">Air (Cargo)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Schedule <span class="text-red-500">*</span></label>
+                                <input type="datetime-local" id="dateTime" name="date_time" required class="w-full border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-green-600 outline-none text-xs font-bold">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open"></i> Mandatory Documentation
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="routeFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-map-location-dot text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
+                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Route Plan</p>
+                                <p id="routeName" class="text-[7px] text-green-600 font-bold truncate w-full px-2"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="vehicleFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-truck text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
+                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Vehicle Info</p>
+                                <p id="vehicleName" class="text-[7px] text-green-600 font-bold truncate w-full px-2"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="supplierFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-id-card text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
+                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Supplier Reg.</p>
+                                <p id="supplierName" class="text-[7px] text-green-600 font-bold truncate w-full px-2"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="healthFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-medical text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
+                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Health Cert</p>
+                                <p id="healthName" class="text-[7px] text-green-600 font-bold truncate w-full px-2"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Inter-regional movement fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Permit Fee:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">750.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="750">
                         </div>
                     </div>
-
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-green-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
-            DENR Resource Movement Control 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR Resource Movement Control 2026</p>
     </div>
 
     
@@ -148,8 +124,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('transportForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            const fields = ['origin', 'destination', 'mode', 'dateTime'];
             const fileConfigs = [
                 { id: 'routeFile', name: 'routeName' },
                 { id: 'vehicleFile', name: 'vehicleName' },
@@ -158,25 +132,30 @@
             ];
 
             function checkValidation() {
-                const allFieldsValid = fields.every(id => document.getElementById(id).value.trim() !== "");
-                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
+                const origin = document.getElementById('origin').value.trim();
+                const dest = document.getElementById('destination').value.trim();
+                const mode = document.getElementById('mode').value;
+                const dt = document.getElementById('dateTime').value;
+                const filesDone = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-                if (allFieldsValid && allFilesValid) {
+                if (origin && dest && mode && dt && filesDone) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.add('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.remove('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
-                const display = document.getElementById(f.name);
-                input.addEventListener('change', () => {
-                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                input.addEventListener('change', (e) => {
+                    document.getElementById(f.name).textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
                     checkValidation();
                 });
             });
@@ -188,12 +167,11 @@
 
             document.getElementById('resetBtn').addEventListener('click', () => {
                 setTimeout(() => {
-                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
                     checkValidation();
                 }, 10);
             });
         });
     </script>
 </body>
-
 </html>

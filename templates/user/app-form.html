@@ -4,172 +4,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>General Application Portal | DENR</title>
+    <title>Application Portal | DENR</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Firebase SDK -->
     <script type="module" src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Application Portal
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Official Document Submission for Environmental and Agricultural Compliance
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Application Portal</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Environmental & Agricultural Compliance Submission</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="generalAppForm" action="/user/application/submit" method="POST" enctype="multipart/form-data">
                 
-                <div class="mb-10">
-                    <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                        Select Category <span class="text-red-500">*</span>
-                    </label>
-                    <select id="category" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
-                        <option value="" disabled selected>Select from options...</option>
-                        <option value="farming">Crop & Plant</option>
-                        <option value="livestock">Fisheries & Agriculture</option>
-                        <option value="agribusiness">Agribusiness & Agro-Processing</option>
-                        <option value="trade">Agricultural Trade (Import & Export)</option>
-                        <option value="infrastructure">Land Use & Farm Development Infrastructure</option>
-                        <option value="research">Research, Technology, & Innovation</option>
-                        <option value="support">Farmer Support, Subsidies, & Insurance</option>
-                        <option value="safety">Food Safety & Quality</option>
-                        <option value="extension">Extension Services & Capacity Building</option>
-                        <option value="climate">Climate Change, Disaster & Risk Management</option>
-                        <option value="data">Data, Monitoring & Digital Agriculture</option>
-                        <option value="compliance">Compliance, Inspection, & Enforcement</option>
-                        <option value="institutional">Institutional & Cooperative Development</option>
-                    </select>
-                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Select Category <span class="text-red-500">*</span></label>
+                            <select id="category" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                <option value="" disabled selected>Choose type...</option>
+                                <option value="farming">Crop & Plant</option>
+                                <option value="livestock">Fisheries & Agriculture</option>
+                                <option value="agribusiness">Agribusiness & Agro-Processing</option>
+                                <option value="trade">Agricultural Trade</option>
+                                <option value="infrastructure">Infrastructure</option>
+                            </select>
+                        </div>
 
-                <hr class="mb-10 border-gray-100">
-
-                <h3 class="text-green-800 font-black text-xs uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-file-shield"></i> Technical & Land Documents
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Title / Tax Dec <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center h-32 flex flex-col items-center justify-center">
-                            <input type="file" id="titleFile" required class="text-[10px] w-full">
-                            <p id="titleName" class="text-[9px] text-green-600 font-bold mt-1 uppercase"></p>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Tax Receipt <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center h-32 flex flex-col items-center justify-center">
-                            <input type="file" id="taxFile" required class="text-[10px] w-full">
-                            <p id="taxName" class="text-[9px] text-green-600 font-bold mt-1 uppercase"></p>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Approved Plan <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center h-32 flex flex-col items-center justify-center">
-                            <input type="file" id="blueprintFile" required class="text-[10px] w-full">
-                            <p id="blueprintName" class="text-[9px] text-green-600 font-bold mt-1 uppercase"></p>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Picture of Land <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center h-32 flex flex-col items-center justify-center">
-                            <input type="file" id="landFile" required class="text-[10px] w-full">
-                            <p id="landName" class="text-[9px] text-green-600 font-bold mt-1 uppercase"></p>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Crop Image <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center h-32 flex flex-col items-center justify-center">
-                            <input type="file" id="cropFile" required class="text-[10px] w-full">
-                            <p id="cropName" class="text-[9px] text-green-600 font-bold mt-1 uppercase"></p>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Business Plan <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center h-32 flex flex-col items-center justify-center">
-                            <input type="file" id="planFile" required class="text-[10px] w-full">
-                            <p id="planName" class="text-[9px] text-green-600 font-bold mt-1 uppercase"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="mb-10 border-gray-100">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Total Initial Investment <span class="text-red-500">*</span></label>
-                        <input type="number" id="investmentQty" required placeholder="0" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-bold text-gray-700">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Max Harvest Quantity <span class="text-red-500">*</span></label>
-                        <input type="number" id="harvestQty" required placeholder="0" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-bold text-gray-700">
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <h3 class="text-green-800 font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-map-location-dot"></i> LGU Verification Requirement
-                    </h3>
-                    <div class="w-full">
-                        <label class="block text-sm font-bold text-gray-700 uppercase mb-3">Farm Barangay Registration Document <span class="text-red-500">*</span></label>
-                        <div class="w-full border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 p-10 hover:border-green-600 hover:bg-white transition-all group cursor-pointer text-center relative">
-                            <div class="flex flex-col items-center justify-center space-y-3">
-                                <div class="bg-green-100 text-green-700 w-16 h-16 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-building-circle-check text-3xl"></i>
-                                </div>
-                                <div class="space-y-1">
-                                    <p class="text-sm font-black text-gray-700 uppercase tracking-tight">Upload Valid Barangay Certification</p>
-                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-tighter">Support PDF, JPG, PNG (Max 15MB)</p>
-                                </div>
-                                <input type="file" id="brgyFile" required class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
-                                <p id="brgyName" class="text-[10px] text-green-700 font-black uppercase mt-4"></p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Initial Investment <span class="text-red-500">*</span></label>
+                                <input type="number" id="investmentQty" required placeholder="₱ 0.00" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none font-bold text-xs text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Max Harvest Qty <span class="text-red-500">*</span></label>
+                                <input type="number" id="harvestQty" required placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none font-bold text-xs text-gray-700">
                             </div>
                         </div>
-                        <p class="text-[10px] text-gray-400 font-bold mt-3 uppercase tracking-wide italic">
-                            * This document must be issued within the last 6 months by the local barangay where the farm is located.
-                        </p>
+
+                        <div class="pt-2">
+                            <label class="block text-[10px] font-black text-green-800 uppercase mb-2 tracking-widest"><i class="fa-solid fa-map-location-dot"></i> LGU Barangay Registration</label>
+                            <div class="group border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white hover:shadow-md transition-all relative text-center cursor-pointer">
+                                <i class="fa-solid fa-building-circle-check text-xl text-gray-300 group-hover:text-green-700 mb-1 transition-colors"></i>
+                                <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase transition-colors">Upload Barangay Cert</p>
+                                <input type="file" id="brgyFile" required class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+                                <p id="brgyName" class="text-[9px] text-green-600 font-bold truncate mt-1"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-green-800 uppercase mb-3 tracking-widest"><i class="fa-solid fa-file-shield"></i> Technical & Standard Documents</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            
+                            <div class="flex flex-col space-y-1 group">
+                                <span class="text-[9px] font-black text-gray-500 uppercase text-center group-hover:text-green-800">Title / Tax Dec</span>
+                                <div class="border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 h-20 flex flex-col items-center justify-center relative hover:border-green-600 hover:bg-white transition-all cursor-pointer">
+                                    <i class="fa-solid fa-file-contract text-gray-300 group-hover:text-green-600 text-sm mb-1 transition-colors"></i>
+                                    <input type="file" id="titleFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                    <p id="titleName" class="text-[7px] text-green-600 font-bold truncate w-full text-center"></p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col space-y-1 group">
+                                <span class="text-[9px] font-black text-gray-500 uppercase text-center group-hover:text-green-800">Tax Receipt</span>
+                                <div class="border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 h-20 flex flex-col items-center justify-center relative hover:border-green-600 hover:bg-white transition-all cursor-pointer">
+                                    <i class="fa-solid fa-receipt text-gray-300 group-hover:text-green-600 text-sm mb-1 transition-colors"></i>
+                                    <input type="file" id="taxFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                    <p id="taxName" class="text-[7px] text-green-600 font-bold truncate w-full text-center"></p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col space-y-1 group">
+                                <span class="text-[9px] font-black text-gray-500 uppercase text-center group-hover:text-green-800">Blueprint</span>
+                                <div class="border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 h-20 flex flex-col items-center justify-center relative hover:border-green-600 hover:bg-white transition-all cursor-pointer">
+                                    <i class="fa-solid fa-map text-gray-300 group-hover:text-green-600 text-sm mb-1 transition-colors"></i>
+                                    <input type="file" id="blueprintFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                    <p id="blueprintName" class="text-[7px] text-green-600 font-bold truncate w-full text-center"></p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col space-y-1 group">
+                                <span class="text-[9px] font-black text-gray-500 uppercase text-center group-hover:text-green-800">Land Photo</span>
+                                <div class="border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 h-20 flex flex-col items-center justify-center relative hover:border-green-600 hover:bg-white transition-all cursor-pointer">
+                                    <i class="fa-solid fa-image text-gray-300 group-hover:text-green-600 text-sm mb-1 transition-colors"></i>
+                                    <input type="file" id="landFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                    <p id="landName" class="text-[7px] text-green-600 font-bold truncate w-full text-center"></p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col space-y-1 group">
+                                <span class="text-[9px] font-black text-gray-500 uppercase text-center group-hover:text-green-800">Crop Photo</span>
+                                <div class="border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 h-20 flex flex-col items-center justify-center relative hover:border-green-600 hover:bg-white transition-all cursor-pointer">
+                                    <i class="fa-solid fa-seedling text-gray-300 group-hover:text-green-600 text-sm mb-1 transition-colors"></i>
+                                    <input type="file" id="cropFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                    <p id="cropName" class="text-[7px] text-green-600 font-bold truncate w-full text-center"></p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col space-y-1 group">
+                                <span class="text-[9px] font-black text-gray-500 uppercase text-center group-hover:text-green-800">Business Plan</span>
+                                <div class="border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 h-20 flex flex-col items-center justify-center relative hover:border-green-600 hover:bg-white transition-all cursor-pointer">
+                                    <i class="fa-solid fa-briefcase text-gray-300 group-hover:text-green-600 text-sm mb-1 transition-colors"></i>
+                                    <input type="file" id="planFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                    <p id="planName" class="text-[7px] text-green-600 font-bold truncate w-full text-center"></p>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Form activates once all 7 documents and details are confirmed.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">Apply</button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-2 italic">Total application activation fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Processing Fee:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">2,450.00</span></span>
+                            <input type="hidden" id="xendit_raw_amount" value="2450">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase tracking-widest hover:bg-gray-50 no-underline text-center text-[10px]">Back</a>
+                        <button type="reset" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase tracking-widest hover:bg-gray-50 text-[10px]">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase tracking-widest text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
-            DENR Agricultural Protection • Certification Division 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR Agricultural Certification Division 2026</p>
     </div>
+
+    
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('generalAppForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            const category = document.getElementById('category');
-            const investmentQty = document.getElementById('investmentQty');
-            const harvestQty = document.getElementById('harvestQty');
-            
             const fileConfigs = [
                 { id: 'titleFile', name: 'titleName' },
                 { id: 'taxFile', name: 'taxName' },
@@ -181,30 +162,40 @@
             ];
 
             function checkValidation() {
-                const isCatValid = category.value !== "";
-                const isInvValid = investmentQty.value !== "" && investmentQty.value >= 0;
-                const isHarValid = harvestQty.value !== "" && harvestQty.value >= 0;
-                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
+                const category = document.getElementById('category').value;
+                const inv = document.getElementById('investmentQty').value;
+                const har = document.getElementById('harvestQty').value;
+                const filesDone = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-                if (isCatValid && isInvValid && isHarValid && allFilesValid) {
+                if (category && inv && har && filesDone) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95', 'shadow-md');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
+                    submitBtn.classList.remove('shadow-md');
                 }
             }
 
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
-                const display = document.getElementById(f.name);
-                input.addEventListener('change', () => {
-                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                input.addEventListener('change', (e) => {
+                    const display = document.getElementById(f.name);
+                    if (e.target.files.length > 0) {
+                        display.textContent = "✔ " + e.target.files[0].name;
+                    } else {
+                        display.textContent = "";
+                    }
                     checkValidation();
                 });
             });
 
-            [category, investmentQty, harvestQty].forEach(el => {
+            form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
                 el.addEventListener('change', checkValidation);
             });
@@ -215,115 +206,6 @@
                     checkValidation();
                 }, 10);
             });
-        });
-    </script>
-
-    <script type="module">
-        import { auth, db } from '/static/js/firebase-config.js';
-        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
-        let currentUser = null;
-
-        // Check authentication
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-            } else {
-                // Redirect to login if not authenticated
-                window.location.href = '/login';
-            }
-        });
-
-        // Handle form submission
-        const form = document.getElementById('generalAppForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (!currentUser) {
-                alert('You must be logged in to submit an application');
-                window.location.href = '/login';
-                return;
-            }
-
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
-
-            try {
-                console.log('Starting application submission...');
-                
-                // Get form data
-                const category = document.getElementById('category').value;
-                const investmentQty = document.getElementById('investmentQty').value;
-                const harvestQty = document.getElementById('harvestQty').value;
-
-                console.log('Form data:', { category, investmentQty, harvestQty });
-
-                // Prepare FormData for file upload to Flask server
-                const formData = new FormData();
-                formData.append('userId', currentUser.uid);
-                formData.append('userEmail', currentUser.email);
-                formData.append('category', category);
-                formData.append('investmentQty', investmentQty);
-                formData.append('harvestQty', harvestQty);
-
-                // Add files
-                const fileInputs = ['titleFile', 'taxFile', 'blueprintFile', 'landFile', 'cropFile', 'planFile', 'brgyFile'];
-                for (const fileId of fileInputs) {
-                    const fileInput = document.getElementById(fileId);
-                    if (fileInput.files[0]) {
-                        formData.append(fileId, fileInput.files[0]);
-                    }
-                }
-
-                console.log('Uploading to server...');
-                submitBtn.textContent = 'Uploading files...';
-
-                // Upload files to Flask server
-                const response = await fetch('/api/submit-application', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (!result.success) {
-                    throw new Error(result.message || 'Failed to upload files');
-                }
-
-                console.log('Files uploaded, saving to Firestore...');
-                submitBtn.textContent = 'Saving application...';
-
-                // Save application to Firestore with file paths
-                const applicationData = {
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    category: category,
-                    investmentQty: parseFloat(investmentQty),
-                    harvestQty: parseFloat(harvestQty),
-                    files: result.filePaths, // File paths from server
-                    status: 'pending',
-                    submittedAt: serverTimestamp(),
-                    updatedAt: serverTimestamp()
-                };
-
-                console.log('Saving application data:', applicationData);
-                const docRef = await addDoc(collection(db, 'applications'), applicationData);
-                console.log('Application saved with ID:', docRef.id);
-                
-                // Show success message
-                alert('Application submitted successfully!');
-                
-                // Redirect to application status page
-                window.location.href = '/user/application';
-
-            } catch (error) {
-                console.error('Error submitting application:', error);
-                alert('Failed to submit application: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Apply';
-            }
         });
     </script>
 </body>

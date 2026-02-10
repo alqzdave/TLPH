@@ -12,148 +12,122 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Import Permit
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Bureau of Plant / Animal Industry • National Quarantine Service
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Import Permit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Bureau of Plant / Animal Industry • National Quarantine Service</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="importForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-globe"></i> Consignment Profile
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-5">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-globe"></i> Consignment & Compliance
                         </h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Origin Country <span class="text-red-500">*</span></label>
-                                <input type="text" id="origin" name="origin" required placeholder="e.g., Thailand" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Origin Country <span class="text-red-500">*</span></label>
+                                <input type="text" id="origin" name="origin" required placeholder="e.g. Thailand" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Port of Entry <span class="text-red-500">*</span></label>
-                                <input type="text" id="portOfEntry" name="port_of_entry" required placeholder="e.g., Cebu Port" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Port of Entry <span class="text-red-500">*</span></label>
+                                <input type="text" id="portOfEntry" name="port_of_entry" required placeholder="e.g. Cebu Port" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Intended Use <span class="text-red-500">*</span></label>
-                            <input type="text" id="intendedUse" name="intended_use" required placeholder="e.g., Commercial Sale, Breeding, Research" 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
+                            <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Intended Use <span class="text-red-500">*</span></label>
+                            <input type="text" id="intendedUse" name="intended_use" required placeholder="e.g. Breeding, Research" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
                         </div>
-                    </div>
 
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-shield-virus"></i> Biosecurity Compliance
-                        </h3>
-                        <div class="bg-green-50 rounded-2xl p-6 border border-green-100">
-                            <label class="block text-sm font-bold text-green-900 mb-4 uppercase tracking-tighter">Quarantine Requirement</label>
-                            <div class="flex gap-4">
-                                <label class="flex-1 flex items-center justify-center gap-3 px-4 py-4 rounded-xl border-2 border-white bg-white cursor-pointer hover:border-green-600 transition-all group">
-                                    <input type="radio" name="quarantine" value="No" required class="w-4 h-4 accent-green-700 quarantine-radio">
-                                    <span class="text-sm font-black text-gray-600 group-hover:text-green-800 uppercase">Not Required</span>
+                        <div class="bg-green-50 rounded-xl p-4 border border-green-100">
+                            <p class="text-[10px] font-black text-green-900 uppercase mb-3 tracking-tighter">Quarantine Requirement</p>
+                            <div class="flex gap-3">
+                                <label class="flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-lg border-2 border-white bg-white cursor-pointer hover:border-green-600 transition-all group">
+                                    <input type="radio" name="quarantine" value="No" required class="w-3 h-3 accent-green-700 quarantine-radio">
+                                    <span class="text-[10px] font-black text-gray-600 group-hover:text-green-800 uppercase">Not Required</span>
                                 </label>
-                                <label class="flex-1 flex items-center justify-center gap-3 px-4 py-4 rounded-xl border-2 border-white bg-white cursor-pointer hover:border-green-600 transition-all group">
-                                    <input type="radio" name="quarantine" value="Yes" class="w-4 h-4 accent-green-700 quarantine-radio">
-                                    <span class="text-sm font-black text-gray-600 group-hover:text-green-800 uppercase">Required</span>
+                                <label class="flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-lg border-2 border-white bg-white cursor-pointer hover:border-green-600 transition-all group">
+                                    <input type="radio" name="quarantine" value="Yes" class="w-3 h-3 accent-green-700 quarantine-radio">
+                                    <span class="text-[10px] font-black text-gray-600 group-hover:text-green-800 uppercase">Required</span>
                                 </label>
                             </div>
-                            <p class="text-[10px] text-green-700/60 mt-4 italic">Note: Mandatory for live animals, plants, and meat products.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-12 mb-6">
-                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-open"></i> Technical Documentation
-                    </h3>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="attachmentGrid">
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Supplier Detail</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
-                            <input type="file" id="supplierFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-address-card text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Exporter Info</p>
-                            <p id="supplierName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
                         </div>
                     </div>
 
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Proforma Invoice</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
-                            <input type="file" id="proformaFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-file-invoice-dollar text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Invoice</p>
-                            <p id="proformaName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-
-                    <div id="spsicBox" class="hidden space-y-2 group">
-                        <label class="text-[10px] font-black text-green-700 uppercase tracking-widest text-center block">Mandatory: SPSIC Clearance</label>
-                        <div class="relative border-2 border-dashed border-green-200 rounded-2xl p-6 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
-                            <input type="file" id="spsicFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-stamp text-2xl text-green-200 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-green-800 uppercase">Upload SPSIC Doc</p>
-                            <p id="spsicName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">Health Cert / Phytosanitary</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center min-h-[140px] flex flex-col items-center justify-center">
-                            <input type="file" id="healthFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-file-medical text-2xl text-gray-300 group-hover:text-green-600 mb-2"></i>
-                            <p class="text-[10px] font-black text-gray-400 group-hover:text-green-800 uppercase">Upload Certificate</p>
-                            <p id="healthName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px] mt-1"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
-                    <div class="flex flex-col">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left mb-2">
-                            Form activates once all consignment data and mandatory files are confirmed.
-                        </p>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open"></i> Technical Documentation
+                        </h3>
                         
-                        <div class="bg-amber-50 px-5 py-3 rounded-xl border border-green-700 inline-flex items-center gap-3">
-                            <span class="text-[11px] font-black text-green-700 uppercase tracking-widest">
-                                Import Fee:
-                            </span>
-                            <span class="text-2xl font-black text-green-700">
-                                ₱ <span class="xendit-amount-value">4,250.00</span>
-                            </span>
+                        <div class="flex flex-col gap-3">
+                            
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="supplierFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-address-card text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
+                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Upload Exporter Information</p>
+                                </div>
+                                <p id="supplierName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-1"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="proformaFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-file-invoice-dollar text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
+                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Upload Proforma Invoice</p>
+                                </div>
+                                <p id="proformaName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-1"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="healthFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-file-medical text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
+                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Upload Health/Phyto Certificate</p>
+                                </div>
+                                <p id="healthName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-1"></p>
+                            </div>
+
+                            <div id="spsicBox" class="hidden group border-2 border-dashed border-green-200 rounded-xl p-3 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="spsicFile" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-stamp text-green-200 group-hover:text-green-600 text-lg transition-colors"></i>
+                                    <p class="text-[10px] font-black text-green-700 uppercase">Upload Mandatory SPSIC Clearance</p>
+                                </div>
+                                <p id="spsicName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-1"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Total consignment import fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Import Fee:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">4,250.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="4250">
                         </div>
                     </div>
-
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-green-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Import</button>
                     </div>
                 </div>
             </form>
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
-            Strategic Import Management • Environmental Regulatory Portal 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">Strategic Import Management • Environmental Regulatory Portal 2026</p>
     </div>
 
     
@@ -166,7 +140,6 @@
             const spsicFile = document.getElementById('spsicFile');
             const quarantineRadios = document.querySelectorAll('.quarantine-radio');
             
-            const fields = ['origin', 'portOfEntry', 'intendedUse'];
             const fileConfigs = [
                 { id: 'supplierFile', name: 'supplierName' },
                 { id: 'proformaFile', name: 'proformaName' },
@@ -175,37 +148,33 @@
             ];
 
             function checkValidation() {
-                const allFieldsValid = fields.every(id => document.getElementById(id).value.trim() !== "");
-                const quarantineValue = form.querySelector('input[name="quarantine"]:checked')?.value;
+                const origin = document.getElementById('origin').value.trim();
+                const port = document.getElementById('portOfEntry').value.trim();
+                const use = document.getElementById('intendedUse').value.trim();
+                const qValue = form.querySelector('input[name="quarantine"]:checked')?.value;
                 
-                const supplierUploaded = document.getElementById('supplierFile').files.length > 0;
-                const proformaUploaded = document.getElementById('proformaFile').files.length > 0;
-                const healthUploaded = document.getElementById('healthFile').files.length > 0;
+                const filesDone = ['supplierFile', 'proformaFile', 'healthFile'].every(id => document.getElementById(id).files.length > 0);
+                let spsicValid = (qValue === 'Yes') ? spsicFile.files.length > 0 : true;
 
-                let isSpsicValid = true;
-                if (quarantineValue === 'Yes') {
-                    isSpsicValid = spsicFile.files.length > 0;
-                }
-
-                if (allFieldsValid && quarantineValue && supplierUploaded && proformaUploaded && healthUploaded && isSpsicValid) {
+                if (origin && port && use && qValue && filesDone && spsicValid) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.add('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95');
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.remove('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95');
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
+                    submitBtn.classList.remove('active:scale-95');
                 }
             }
 
             quarantineRadios.forEach(radio => {
                 radio.addEventListener('change', (e) => {
-                    if (e.target.value === 'Yes') {
-                        spsicBox.classList.remove('hidden');
-                        spsicFile.required = true;
-                    } else {
-                        spsicBox.classList.add('hidden');
-                        spsicFile.required = false;
+                    spsicBox.classList.toggle('hidden', e.target.value !== 'Yes');
+                    if (e.target.value !== 'Yes') {
                         spsicFile.value = "";
                         document.getElementById('spsicName').textContent = "";
                     }
@@ -215,13 +184,10 @@
 
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
-                const display = document.getElementById(f.name);
-                if(input) {
-                    input.addEventListener('change', () => {
-                        display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
-                        checkValidation();
-                    });
-                }
+                input.addEventListener('change', (e) => {
+                    document.getElementById(f.name).textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
+                    checkValidation();
+                });
             });
 
             form.querySelectorAll('input').forEach(el => {
@@ -239,5 +205,4 @@
         });
     </script>
 </body>
-
 </html>

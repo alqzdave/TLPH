@@ -12,151 +12,108 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-red-800">
-                Slaughterhouse Accreditation Permit
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                National Meat Inspection Service • Accreditation & Registration Division
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-red-800">Slaughterhouse Accreditation</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">National Meat Inspection Service • Accreditation & Registration</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="slaughterhouseForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
-                    <div class="space-y-6">
-                        <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-red-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-building-shield"></i> Establishment Profile
                         </h3>
                         
-                        <div class="grid grid-cols-1 gap-4">
+                        <div class="space-y-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Owner / Business Entity <span class="text-red-500">*</span></label>
-                                <input type="text" id="owner" name="owner" required placeholder="Full Name or Corporation" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Owner / Entity <span class="text-red-500">*</span></label>
+                                <input type="text" id="owner" name="owner" required placeholder="Full Name or Corporation" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none text-xs font-medium">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Slaughterhouse Name <span class="text-red-500">*</span></label>
-                                <input type="text" id="facilityName" name="facilityName" required placeholder="Ex: Central Meat Establishment" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Facility Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="facilityName" name="facilityName" required placeholder="Ex: Central Meat Establishment" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none text-xs font-medium">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Full Site Address <span class="text-red-500">*</span></label>
-                                <input type="text" id="location" name="location" required placeholder="Complete Street, Barangay, City/Province" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-medium text-gray-700 transition-all">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Full Site Address <span class="text-red-500">*</span></label>
+                                <input type="text" id="location" name="location" required placeholder="Street, Brgy, City/Province" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none text-xs font-medium">
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-6">
-                        <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-gears"></i> Operations & Capacity
+                    <div class="space-y-4">
+                        <h3 class="text-red-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-gears"></i> Operations & Technicals
                         </h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Daily Capacity <span class="text-red-500">*</span></label>
-                                <div class="relative">
-                                    <input type="number" id="capacity" name="capacity" required placeholder="0" 
-                                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none font-bold text-gray-700">
-                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-gray-400 text-[9px]">HEADS/DAY</span>
-                                </div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Daily Cap (Heads) <span class="text-red-500">*</span></label>
+                                <input type="number" id="capacity" name="capacity" required placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none font-bold text-xs">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Waste Handling <span class="text-red-500">*</span></label>
-                                <select id="wasteMethod" name="wasteMethod" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-600 outline-none bg-white font-medium text-gray-700 text-sm appearance-none">
-                                    <option value="" disabled selected>Select method...</option>
-                                    <option value="rendering">Rendering Plant</option>
-                                    <option value="anaerobic">Anaerobic Digester</option>
-                                    <option value="wastewater">Wastewater Treatment</option>
-                                    <option value="composting">Controlled Composting</option>
-                                    <option value="incineration">Incineration</option>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Waste Handling <span class="text-red-500">*</span></label>
+                                <select id="wasteMethod" name="wasteMethod" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-600 outline-none bg-white text-xs font-medium">
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="rendering">Rendering</option>
+                                    <option value="anaerobic">Anaerobic</option>
+                                    <option value="wastewater">Wastewater</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Inspection Schedule <span class="text-red-500">*</span></label>
-                            <div class="flex gap-2">
-                                <input type="date" id="inspectDate" name="inspectDate" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-red-600 outline-none text-sm font-bold text-gray-700">
-                                <input type="time" id="inspectTime" name="inspectTime" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-red-600 outline-none text-sm font-bold text-gray-700">
+                        <div class="grid grid-cols-3 gap-2 pt-1">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-red-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="layoutFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-drafting-compass text-gray-300 group-hover:text-red-600 mb-1 text-lg transition-colors"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Layout</p>
+                                <p id="layoutName" class="text-[6px] text-red-600 font-bold truncate w-full px-1"></p>
+                            </div>
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-red-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="sanitationFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-pump-soap text-gray-300 group-hover:text-red-600 mb-1 text-lg transition-colors"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Sanitation</p>
+                                <p id="sanitationName" class="text-[6px] text-red-600 font-bold truncate w-full px-1"></p>
+                            </div>
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-red-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="wasteFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-recycle text-gray-300 group-hover:text-red-600 mb-1 text-lg transition-colors"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Waste Plan</p>
+                                <p id="wasteName" class="text-[6px] text-red-600 font-bold truncate w-full px-1"></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-12 mb-6">
-                    <h3 class="text-red-800 font-black text-sm uppercase tracking-widest border-b-2 border-red-100 pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-open"></i> Technical Documentation
-                    </h3>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Facility Layout / Blueprint</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-red-600 transition-all text-center h-36 flex flex-col items-center justify-center cursor-pointer">
-                            <input type="file" id="layoutFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-drafting-compass text-2xl text-gray-300 mb-1 group-hover:text-red-600"></i>
-                            <p id="layoutName" class="text-[8px] text-red-600 font-bold uppercase truncate px-2"></p>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <label class="text-[10px] font-black text-gray-500 uppercase">Audit Schedule:</label>
+                            <input type="date" id="inspectDate" required class="border border-gray-300 rounded px-2 py-1 text-[10px] font-bold outline-none focus:ring-1 focus:ring-red-600">
+                            <input type="time" id="inspectTime" required class="border border-gray-300 rounded px-2 py-1 text-[10px] font-bold outline-none focus:ring-1 focus:ring-red-600">
                         </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Sanitation / Health Permit</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-red-600 transition-all text-center h-36 flex flex-col items-center justify-center cursor-pointer">
-                            <input type="file" id="sanitationFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-pump-soap text-2xl text-gray-300 mb-1 group-hover:text-red-600"></i>
-                            <p id="sanitationName" class="text-[8px] text-red-600 font-bold uppercase truncate px-2"></p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Waste Management Plan</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-red-600 transition-all text-center h-36 flex flex-col items-center justify-center cursor-pointer">
-                            <input type="file" id="wasteFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-recycle text-2xl text-gray-300 mb-1 group-hover:text-red-600"></i>
-                            <p id="wasteName" class="text-[8px] text-red-600 font-bold uppercase truncate px-2"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
-                    <div class="flex flex-col">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left mb-2">
-                            Accreditation request activates once all facility data and 3 mandatory files are confirmed.
-                        </p>
-                        
-                        <div class="bg-amber-50 px-5 py-3 rounded-xl border border-red-700 inline-flex items-center gap-3">
-                            <span class="text-[11px] font-black text-red-700 uppercase tracking-widest">
-                                Accreditation Fee:
-                            </span>
-                            <span class="text-2xl font-black text-red-700">
-                                ₱ <span class="xendit-amount-value">5,500.00</span>
-                            </span>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-red-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-red-700 uppercase tracking-widest">Accreditation Fee:</span>
+                            <span class="text-xl font-black text-red-700">₱ <span class="xendit-amount-value">5,500.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="5500">
                         </div>
                     </div>
-
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-red-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
-            National Meat Inspection Service • Department of Agriculture 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">National Meat Inspection Service • Department of Agriculture 2026</p>
     </div>
 
     
@@ -165,8 +122,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('slaughterhouseForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            const fields = ['owner', 'facilityName', 'location', 'capacity', 'wasteMethod', 'inspectDate', 'inspectTime'];
             const fileConfigs = [
                 { id: 'layoutFile', name: 'layoutName' },
                 { id: 'sanitationFile', name: 'sanitationName' },
@@ -174,47 +129,50 @@
             ];
 
             function checkValidation() {
-                const allFieldsValid = fields.every(id => {
-                    const el = document.getElementById(id);
-                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
+                const inputs = form.querySelectorAll('input[required], select[required]');
+                let allValid = true;
+                inputs.forEach(input => {
+                    if (input.type === 'file') {
+                        if (input.files.length === 0) allValid = false;
+                    } else {
+                        if (!input.value.trim()) allValid = false;
+                    }
                 });
-                
-                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-                if (allFieldsValid && allFilesValid) {
+                if (allValid) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.add('hover:bg-red-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-gray-200', 'bg-red-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-red-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.remove('hover:bg-red-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-red-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
-                const display = document.getElementById(f.name);
-                input.addEventListener('change', () => {
-                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                input.addEventListener('change', (e) => {
+                    document.getElementById(f.name).textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
                     checkValidation();
                 });
             });
 
-            fields.forEach(id => {
-                const el = document.getElementById(id);
+            form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
                 el.addEventListener('change', checkValidation);
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => {
                 setTimeout(() => {
-                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
                     checkValidation();
                 }, 10);
             });
         });
     </script>
 </body>
-
 </html>
