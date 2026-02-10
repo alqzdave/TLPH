@@ -13,7 +13,7 @@
       content:"";
       position: fixed;
       inset: 0;
-      background-image: url('static/images/denr.jpg');
+      background-image: url('/static/images/denr.jpg');
       background-repeat: no-repeat;
       background-position: center 30%;
       background-size: 520px;
@@ -157,28 +157,113 @@
     </section>
   </main>
 
-  <script>
-    // ---- Sample data (add / replace from backend later) ----
-    const applicants = [
-      {
-        name: "Paolo Dave Alqzd",
-        reference: "DENR-2026-0042",
-        categoryLabel: "Institutional & Cooperative Development",
-        categoryValue: "Institutional & Cooperative Development",
-        filedDate: "Feb 07, 2026",
-        status: "Pending Review",
-        statusKey: "pending"
-      },
-      {
-        name: "Andrea Mae Santos",
-        reference: "DENR-2026-0061",
-        categoryLabel: "Livestock & Poultry",
-        categoryValue: "Livestock & Poultry",
-        filedDate: "Feb 09, 2026",
-        status: "Accepted",
-        statusKey: "accepted"
+  <script type="module">
+    console.log('Script started');
+    
+    import { db } from '/static/js/firebase-config.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    
+    console.log('Firebase modules loaded', db);
+
+    // ---- Fetch applications from Firestore ----
+    let applicants = [];
+
+    async function loadApplications() {
+      try {
+        console.log('Loading applications...');
+        const applicationsRef = collection(db, 'applications');
+        const querySnapshot = await getDocs(applicationsRef);
+        
+        console.log('Total applications found:', querySnapshot.size);
+        
+        applicants = [];
+        
+        // Get all users first
+        const usersRef = collection(db, 'users');
+        const usersSnapshot = await getDocs(usersRef);
+        const usersMap = {};
+        
+        usersSnapshot.forEach(userDoc => {
+          const userData = userDoc.data();
+          usersMap[userDoc.id] = {
+            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || 'Unknown User'
+          };
+        });
+        
+        console.log('Users loaded:', Object.keys(usersMap).length);
+        
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          console.log('Application data:', doc.id, data);
+          
+          // Get user name
+          const userName = usersMap[data.userId]?.name || 'Unknown User';
+          
+          // Format date
+          let filedDate = 'N/A';
+          let dateObj = new Date();
+          if (data.createdAt) {
+            dateObj = data.createdAt.toDate();
+            filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+          }
+          
+          // Map status
+          let statusKey = 'pending';
+          let statusText = 'Pending Review';
+          if (data.status === 'approved') {
+            statusKey = 'accepted';
+            statusText = 'Accepted';
+          } else if (data.status === 'rejected') {
+            statusKey = 'rejected';
+            statusText = 'Rejected';
+          } else if (data.status === 'under-review') {
+            statusKey = 'pending';
+            statusText = 'Under Review';
+          }
+          
+          applicants.push({
+            id: doc.id,
+            name: userName,
+            reference: `DENR-${dateObj.getFullYear()}-${doc.id.substring(0, 4).toUpperCase()}`,
+            categoryLabel: data.category || 'N/A',
+            categoryValue: data.category || '',
+            filedDate: filedDate,
+            status: statusText,
+            statusKey: statusKey,
+            timestamp: data.createdAt ? data.createdAt.toDate() : new Date()
+          });
+        });
+        
+        // Sort by date descending
+        applicants.sort((a, b) => b.timestamp - a.timestamp);
+        
+        console.log('Final applicants array:', applicants);
+        
+        render(applicants);
+        updateStats();
+      } catch (error) {
+        console.error('Error loading applications:', error);
+        alert('Failed to load applications: ' + error.message);
       }
-    ];
+    }
+
+    function updateStats() {
+      const today = new Date().toDateString();
+      
+      const acceptedToday = applicants.filter(a => {
+        return a.statusKey === 'accepted' && new Date(a.filedDate).toDateString() === today;
+      }).length;
+      
+      const rejectedToday = applicants.filter(a => {
+        return a.statusKey === 'rejected' && new Date(a.filedDate).toDateString() === today;
+      }).length;
+      
+      const pending = applicants.filter(a => a.statusKey === 'pending').length;
+      
+      document.getElementById('statAccepted').textContent = acceptedToday;
+      document.getElementById('statRejected').textContent = rejectedToday;
+      document.getElementById('statPending').textContent = pending;
+    }
 
     // ---- Elements ----
     const rowsEl = document.getElementById("rows");
@@ -275,6 +360,8 @@
     }
 
     function render(list) {
+      console.log('Rendering', list.length, 'applications');
+      console.log('rowsEl:', rowsEl);
       rowsEl.innerHTML = list.map(rowTemplate).join("");
       resultCountEl.textContent = String(list.length);
 
@@ -297,7 +384,8 @@
       btnAll.addEventListener("click", resetFilters);
       btnClear.addEventListener("click", resetFilters);
 
-      render(applicants);
+      // Load applications on page load
+      loadApplications();
 
   </script>
 </body>
