@@ -21,7 +21,7 @@ def get_xendit_auth_header():
 def create_invoice():
     """Create a Xendit invoice for license/permit payments"""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         auth_header = get_xendit_auth_header()
         
         if not auth_header:
@@ -30,14 +30,32 @@ def create_invoice():
                 'message': 'Xendit API key not configured'
             }), 400
         
+        # Basic payload validation before calling Xendit
+        raw_amount = data.get('amount')
+        try:
+            amount = int(raw_amount)
+        except (TypeError, ValueError):
+            amount = 0
+
+        if amount <= 0:
+            return jsonify({
+                'status': 'error',
+                'message': 'Amount must be greater than 0'
+            }), 400
+
+        email = (data.get('email') or '').strip()
+        if email and '@' not in email:
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid payer email'
+            }), 400
+
         # Invoice parameters for Xendit API
         external_id = f"{data.get('external_id', 'invoice')}-{int(datetime.now().timestamp())}"
-        amount = int(data.get('amount', 0))
         
         invoice_payload = {
             'external_id': external_id,
             'amount': amount,
-            'payer_email': data.get('email', ''),
             'description': data.get('description', 'DENR License/Permit Payment'),
             'success_redirect_url': data.get('success_url', 'http://localhost:5000/payment-success'),
             'failure_redirect_url': data.get('failure_url', 'http://localhost:5000/payment-failed'),
@@ -49,15 +67,24 @@ def create_invoice():
                 }
             ]
         }
+
+        if email:
+            invoice_payload['payer_email'] = email
         
         # Add customer info if provided
-        if data.get('first_name') or data.get('last_name'):
-            invoice_payload['customer'] = {
-                'given_names': data.get('first_name', ''),
-                'surname': data.get('last_name', ''),
-                'email': data.get('email', ''),
-                'mobile_number': data.get('phone', '')
-            }
+        # Only include customer if we have at least one field
+        customer = {}
+        if data.get('first_name'):
+            customer['given_names'] = data.get('first_name')
+        if data.get('last_name'):
+            customer['surname'] = data.get('last_name')
+        if email:
+            customer['email'] = email
+        if data.get('phone'):
+            customer['mobile_number'] = data.get('phone')
+        
+        if customer:
+            invoice_payload['customer'] = customer
         
         # Create invoice via Xendit API
         headers = {
@@ -82,10 +109,14 @@ def create_invoice():
                 'external_id': invoice.get('external_id')
             }), 201
         else:
+            try:
+                error_body = response.json()
+            except ValueError:
+                error_body = {'raw': response.text}
             return jsonify({
                 'status': 'error',
-                'message': f'Xendit API error: {response.status_code}',
-                'details': response.json() if response.text else None
+                'message': f"Xendit API error: {response.status_code}",
+                'details': error_body
             }), response.status_code
         
     except requests.exceptions.RequestException as e:
