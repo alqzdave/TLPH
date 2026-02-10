@@ -12,115 +12,99 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Compliance Inspection
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Submit environmental compliance reports and supporting documentation
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Compliance Inspection</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Environmental Management Bureau</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="complianceForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Application Details</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice"></i> Application Details
+                        </h3>
                         
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Compliance Type <span class="text-red-500">*</span>
-                            </label>
-                            <select id="complianceType" required 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
-                                <option value="" disabled selected>Select compliance type...</option>
-                                <option value="ecc">Environmental Compliance Certificate (ECC)</option>
-                                <option value="pto">Permit to Operate (PTO)</option>
-                                <option value="wdp">Wastewater Discharge Permit (WDP)</option>
-                                <option value="hwg">Hazardous Waste Generator (HWG)</option>
-                                <option value="pco">Pollution Control Officer Accreditation</option>
-                                <option value="cnc">Certificate of Non-Coverage (CNC)</option>
-                            </select>
-                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Compliance Type <span class="text-red-500">*</span></label>
+                                <select id="complianceType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                    <option value="" disabled selected>Select type...</option>
+                                    <option value="ecc">ECC (Environmental Certificate)</option>
+                                    <option value="pto">PTO (Permit to Operate)</option>
+                                    <option value="wdp">WDP (Discharge Permit)</option>
+                                    <option value="hwg">HWG (Hazardous Waste)</option>
+                                    <option value="cnc">CNC (Non-Coverage)</option>
+                                </select>
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Application Type <span class="text-red-500">*</span>
-                            </label>
-                            <select id="appType" required 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
-                                <option value="" disabled selected>Select application type...</option>
-                                <option value="new">New Application</option>
-                                <option value="renewal">Renewal Application</option>
-                                <option value="modification">Modification / Amendment</option>
-                            </select>
-                        </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Application Type <span class="text-red-500">*</span></label>
+                                <select id="appType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                    <option value="" disabled selected>Select type...</option>
+                                    <option value="new">New Application</option>
+                                    <option value="renewal">Renewal</option>
+                                    <option value="modification">Modification</option>
+                                </select>
+                            </div>
 
-                        <div id="previousPermitSection" class="hidden transition-all duration-300">
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Previous Permit / Certificate <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-red-200 rounded-xl p-6 bg-red-50/30 hover:border-red-400 transition-all group flex flex-col items-center justify-center text-center">
-                                <i class="fa-solid fa-file-contract text-2xl text-red-300 group-hover:text-red-500 mb-2 transition-colors"></i>
-                                <input type="file" id="prevPermitInput" class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="prevPermitName" class="text-[9px] text-red-600 font-bold uppercase"></p>
-                                <p class="text-[10px] text-red-500 font-black mt-2 uppercase tracking-widest">Required for Renewal or Modification</p>
+                            <div id="previousPermitSection" class="hidden animate-pulse">
+                                <label class="block text-[10px] font-black text-red-600 uppercase mb-1 italic">Previous Permit Required <span class="text-red-500">*</span></label>
+                                <div class="group border-2 border-dashed border-red-200 rounded-xl p-3 bg-red-50/30 hover:bg-white hover:border-red-500 transition-all text-center relative flex flex-col items-center justify-center cursor-pointer">
+                                    <input type="file" id="prevPermitInput" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                    <i class="fa-solid fa-file-contract text-red-300 group-hover:text-red-600 mb-1 text-lg"></i>
+                                    <p class="text-[9px] font-black text-red-400 group-hover:text-red-600 uppercase">Attach Old Permit</p>
+                                    <p id="prevPermitName" class="text-[8px] text-green-600 font-bold truncate px-2"></p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex flex-col">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 mb-6">Documentation</h3>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Documentation
+                        </h3>
                         
-                        <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                            Compliance Proof / Conditions <span class="text-red-500">*</span>
-                        </label>
-                        <div class="flex-1 min-h-[250px] border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 p-8 group hover:border-green-600 transition-all cursor-pointer">
-                            <i class="fa-solid fa-cloud-arrow-up text-5xl text-gray-300 group-hover:text-green-600 mb-4 transition-colors"></i>
-                            <input type="file" id="mainProof" class="text-sm text-gray-600 mb-3 text-center" required multiple>
-                            <div class="text-center">
-                                <p id="mainProofName" class="text-[9px] text-green-600 font-bold uppercase mb-2"></p>
-                                <p class="text-xs text-gray-400 uppercase font-black tracking-tighter">Click to browse or drag and drop</p>
-                                <p class="text-[10px] text-gray-300 font-medium mt-1">Support PDF, JPG, PNG (Max 10MB)</p>
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-black text-gray-700 uppercase mb-2 tracking-widest">Compliance Proof / Conditions <span class="text-red-500">*</span></label>
+                            <div class="group border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50 p-8 hover:border-green-600 hover:bg-white hover:shadow-md transition-all relative text-center min-h-[180px] flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="mainProof" required multiple class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-shield text-4xl text-gray-300 group-hover:text-green-600 mb-3 transition-colors"></i>
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black text-gray-700 uppercase tracking-tight">Upload Supporting Documents</p>
+                                    <p class="text-[9px] text-gray-400 font-bold uppercase">PDF, JPG, PNG (Max 10MB)</p>
+                                </div>
+                                <p id="mainProofName" class="text-[10px] text-green-700 font-black uppercase mt-3"></p>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply is enabled when all required fields are complete.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Environmental compliance processing fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Clearance Fee:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">550.00</span></span>
+                            <input type="hidden" id="xendit_raw_amount" value="550">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
-
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-12">
-            Official Document Submission • DENR-EMB Portal 2026
-        </p>
-
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR EMB • Compliance Division 2026</p>
     </div>
 
     <script>
@@ -148,14 +132,59 @@
 
                 if (isComplianceSelected && isAppTypeSelected && isMainProofUploaded && isPrevRequiredAndUploaded) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
-            // Toggle Previous Permit Section
+            // Xendit Logic Integration
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('xendit_raw_amount').value;
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                    
+                    const paymentPayload = {
+                        external_id: `elc-${Date.now()}`,
+                        amount: parseInt(amount),
+                        description: `Environmental Compliance - ${complianceType.value}`,
+                        item_name: 'Compliance Inspection Fee',
+                        success_url: window.location.href,
+                        failure_url: window.location.href
+                    };
+                    
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(paymentPayload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.invoice_url) {
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert(`Payment error: ${result.message}`);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply Now';
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Failed to process payment. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply Now';
+                }
+            });
+
             appType.addEventListener('change', () => {
                 if (appType.value === 'renewal' || appType.value === 'modification') {
                     prevSection.classList.remove('hidden');
@@ -163,36 +192,34 @@
                 } else {
                     prevSection.classList.add('hidden');
                     prevPermitInput.required = false;
-                    prevPermitInput.value = ""; // clear if hidden
+                    prevPermitInput.value = "";
                     prevPermitName.textContent = "";
                 }
                 checkValidation();
             });
 
-            // File Name Displays
-            mainProof.addEventListener('change', () => {
-                mainProofName.textContent = mainProof.files.length > 0 ? `Selected: ${mainProof.files[0].name}` : "";
+            mainProof.addEventListener('change', (e) => {
+                const count = e.target.files.length;
+                mainProofName.textContent = count > 0 ? "✔ " + count + " file(s) selected" : "";
                 checkValidation();
             });
 
-            prevPermitInput.addEventListener('change', () => {
-                prevPermitName.textContent = prevPermitInput.files.length > 0 ? `Selected: ${prevPermitInput.files[0].name}` : "";
+            prevPermitInput.addEventListener('change', (e) => {
+                prevPermitName.textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
                 checkValidation();
             });
 
-            // Other Input Listeners
             complianceType.addEventListener('change', checkValidation);
             
-            form.addEventListener('reset', () => {
+            document.getElementById('resetBtn').addEventListener('click', () => {
                 setTimeout(() => {
                     prevSection.classList.add('hidden');
                     mainProofName.textContent = "";
                     prevPermitName.textContent = "";
                     checkValidation();
-                }, 0);
+                }, 10);
             });
         });
     </script>
 </body>
-
 </html>

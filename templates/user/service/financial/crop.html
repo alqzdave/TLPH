@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Crop Insurance Support</title>
+    <title>Crop Insurance Support | DENR Portal</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,117 +12,93 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Crop Insurance Support
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Provide crop details, coverage period, and required documentation
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Crop Insurance Support</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Agricultural Protection Bureau</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
-            <form id="insuranceForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Farm Details</h3>
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
+            <form id="insuranceForm" action="/submit-crop-insurance" method="POST" enctype="multipart/form-data">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-wheat-awn"></i> Farm Details
+                        </h3>
                         
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Crop / Species <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="cropSpecies" required placeholder="e.g., Rice, Corn, Tilapia"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Farm Location <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="farmLocation" required placeholder="Barangay, City/Municipality, Province"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Time Coverage <span class="text-red-500">*</span>
-                            </label>
-                            <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Start Date</p>
-                                    <input type="date" id="coverageStart" required
-                                        class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-green-600 focus:outline-none text-sm text-gray-700">
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Crop / Species <span class="text-red-500">*</span></label>
+                                    <input type="text" name="cropSpecies" id="cropSpecies" required placeholder="e.g. Rice, Corn" 
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
                                 </div>
                                 <div>
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">End Date</p>
-                                    <input type="date" id="coverageEnd" required
-                                        class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-green-600 focus:outline-none text-sm text-gray-700">
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Farm Location <span class="text-red-500">*</span></label>
+                                    <input type="text" name="farmLocation" id="farmLocation" required placeholder="Municipality, Province" 
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
                                 </div>
                             </div>
-                            <p id="dateHint" class="text-[10px] font-bold text-gray-400 mt-2 uppercase">End date must be on or after start date.</p>
+
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Coverage Period <span class="text-red-500">*</span></label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <input type="date" name="coverageStart" id="coverageStart" required 
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs">
+                                    </div>
+                                    <div>
+                                        <input type="date" name="coverageEnd" id="coverageEnd" required 
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs">
+                                    </div>
+                                </div>
+                                <p id="dateHint" class="text-[9px] font-bold text-gray-400 mt-1 uppercase">Select coverage start and end date.</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="space-y-6 text-left">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Required Documents</h3>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Risk History <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center">
-                                <i class="fa-solid fa-file-shield text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="riskFile" required class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="riskName" class="text-[9px] text-green-600 font-bold uppercase"></p>
-                                <p class="text-[9px] text-gray-400 uppercase font-bold">Upload History (PDF, JPG, XLSX)</p>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Required Documents
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" name="riskFile" id="riskFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-shield text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Risk History</p>
+                                <p id="riskName" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
                             </div>
-                        </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Permits <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center">
-                                <i class="fa-solid fa-certificate text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="permitsFile" required class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="permitsName" class="text-[9px] text-green-600 font-bold uppercase"></p>
-                                <p class="text-[9px] text-gray-400 uppercase font-bold">Upload Valid Permits (PDF, JPG)</p>
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" name="permitsFile" id="permitsFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-certificate text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Farm Permits</p>
+                                <p id="permitsName" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply is enabled when all required fields are complete.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-[9px] text-gray-400 font-medium italic">
+                        * All applications are subject to evaluation by the Agricultural Protection Bureau for insurance eligibility.
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
         </div>
-
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
-            DENR Agricultural Protection • Insurance Support Division 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR APB • Insurance Support 2026</p>
     </div>
 
     <script>
@@ -139,59 +115,72 @@
             const riskName = document.getElementById("riskName");
             const permitsName = document.getElementById("permitsName");
 
-            const setName = (labelEl, inputEl) => {
-                labelEl.textContent = (inputEl.files && inputEl.files.length) ? `Selected: ${inputEl.files[0].name}` : "";
-            };
-
             function datesValid() {
                 if (!coverageStart.value || !coverageEnd.value) return false;
                 return new Date(coverageEnd.value) >= new Date(coverageStart.value);
             }
 
+            function checkValidation() {
+                const isAllFilled = cropSpecies.value.trim() !== "" && 
+                                   farmLocation.value.trim() !== "" && 
+                                   datesValid() && 
+                                   riskFile.files.length > 0 && 
+                                   permitsFile.files.length > 0;
+
+                if (isAllFilled) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
+                }
+            }
+
             function updateDateHint() {
                 if (!coverageStart.value || !coverageEnd.value) {
                     dateHint.textContent = "Select both start and end date.";
-                    dateHint.className = "text-[10px] font-bold text-gray-400 mt-2 uppercase";
-                    return;
-                }
-                if (datesValid()) {
+                    dateHint.className = "text-[9px] font-bold text-gray-400 mt-1 uppercase";
+                } else if (datesValid()) {
                     dateHint.textContent = "Coverage dates look good.";
-                    dateHint.className = "text-[10px] font-bold text-green-600 mt-2 uppercase";
+                    dateHint.className = "text-[9px] font-bold text-green-600 mt-1 uppercase";
                 } else {
                     dateHint.textContent = "End date must be on or after start date.";
-                    dateHint.className = "text-[10px] font-bold text-red-600 mt-2 uppercase";
+                    dateHint.className = "text-[9px] font-bold text-red-600 mt-1 uppercase";
                 }
+                checkValidation();
             }
 
-            function isValid() {
-                return cropSpecies.value.trim().length > 0 && 
-                       farmLocation.value.trim().length > 0 && 
-                       datesValid() && 
-                       riskFile.files.length > 0 && 
-                       permitsFile.files.length > 0;
-            }
+            // Normal form submission
+            form.addEventListener('submit', () => {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            });
 
-            function toggleSubmit() {
-                if (isValid()) {
-                    submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
-                } else {
-                    submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
-                }
-            }
+            [cropSpecies, farmLocation, coverageStart, coverageEnd].forEach(el => {
+                el.addEventListener("input", updateDateHint);
+            });
 
-            form.addEventListener("input", () => { updateDateHint(); toggleSubmit(); });
-            form.addEventListener("change", () => { updateDateHint(); toggleSubmit(); });
-            riskFile.addEventListener("change", () => { setName(riskName, riskFile); toggleSubmit(); });
-            permitsFile.addEventListener("change", () => { setName(permitsName, permitsFile); toggleSubmit(); });
+            riskFile.addEventListener("change", (e) => {
+                riskName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
+                checkValidation();
+            });
+
+            permitsFile.addEventListener("change", (e) => {
+                permitsName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
+                checkValidation();
+            });
+
             form.addEventListener("reset", () => {
                 setTimeout(() => {
                     riskName.textContent = "";
                     permitsName.textContent = "";
                     updateDateHint();
-                    toggleSubmit();
-                }, 0);
+                }, 10);
             });
         });
     </script>

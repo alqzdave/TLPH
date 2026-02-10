@@ -12,121 +12,95 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Start Up / Expansion Support
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Agricultural Entrepreneurship and Business Development Funding
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Start Up / Expansion</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Agribusiness & Micro-Enterprise Support</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
-            <form id="startupForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Application Details</h3>
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
+            <form id="startupForm" action="/submit-startup-support" method="POST" enctype="multipart/form-data">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-rocket"></i> Application Details
+                        </h3>
                         
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Application Type <span class="text-red-500">*</span>
-                            </label>
-                            <div class="flex gap-4">
-                                <label class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:border-green-600 transition-all">
-                                    <input type="radio" name="app_type" value="Start Up" class="app-radio w-4 h-4 text-green-600 focus:ring-green-500" required>
-                                    <span class="text-sm font-bold text-gray-600 uppercase">Start Up</span>
-                                </label>
-                                <label class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:border-green-600 transition-all">
-                                    <input type="radio" name="app_type" value="Expansion" class="app-radio w-4 h-4 text-green-600 focus:ring-green-500" required>
-                                    <span class="text-sm font-bold text-gray-600 uppercase">Expansion</span>
-                                </label>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Application Type <span class="text-red-500">*</span></label>
+                                <div class="flex gap-2">
+                                    <label class="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-200 bg-gray-50 cursor-pointer hover:border-green-600 transition-all">
+                                        <input type="radio" name="app_type" value="Start Up" class="app-radio w-3 h-3 text-green-600 focus:ring-green-500" required>
+                                        <span class="text-[10px] font-bold text-gray-600 uppercase">Start Up</span>
+                                    </label>
+                                    <label class="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-200 bg-gray-50 cursor-pointer hover:border-green-600 transition-all">
+                                        <input type="radio" name="app_type" value="Expansion" class="app-radio w-3 h-3 text-green-600 focus:ring-green-500" required>
+                                        <span class="text-[10px] font-bold text-gray-600 uppercase">Expansion</span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
 
-                        <div id="opSizeWrap" class="hidden transition-all duration-300">
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Current Operation Size <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="opSize" placeholder="e.g., 2 hectares, 500 heads"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Capital Requirements (₱) <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">₱</span>
-                                <input type="number" id="capitalReq" required min="5000" max="200000" placeholder="5,000 - 200,000"
-                                    class="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-bold text-gray-700">
+                            <div id="opSizeWrap" class="hidden">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Current Operation Size <span class="text-red-500">*</span></label>
+                                <input type="text" id="opSize" name="opSize" placeholder="e.g. 2 hectares, 500 heads"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
                             </div>
-                            <p id="capHint" class="text-[10px] font-bold text-gray-400 mt-2 uppercase">Limit: ₱5,000 — ₱200,000</p>
-                        </div>
-                    </div>
 
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Business Documentation</h3>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Business Plan <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center h-40">
-                                <i class="fa-solid fa-briefcase text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="businessPlanFile" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="planName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                                <p class="text-[10px] text-gray-400 uppercase font-black">Upload Business Proposal</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Quotes / Budget <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center h-40">
-                                <i class="fa-solid fa-receipt text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="quotesFile" required accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="quotesName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                                <p class="text-[10px] text-gray-400 uppercase font-black">Upload Canvas / Quotations</p>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Capital Requirements (₱) <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-xs">₱</span>
+                                    <input type="number" id="capitalReq" name="capitalReq" required min="5000" max="200000" placeholder="5,000 - 200,000"
+                                        class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-green-600 outline-none font-bold text-xs">
+                                </div>
+                                <p id="capHint" class="text-[9px] font-bold text-gray-400 mt-1 uppercase">Range: ₱5,000 — ₱200,000</p>
                             </div>
                         </div>
                     </div>
 
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice"></i> Documentation
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 p-3 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer h-28">
+                                <input type="file" name="businessPlanFile" id="businessPlanFile" required accept=".pdf,.doc,.docx" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-briefcase text-xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Business Proposal</p>
+                                <p id="planName" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 p-3 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer h-28">
+                                <input type="file" name="quotesFile" id="quotesFile" required accept=".pdf,.xlsx,.xls" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-receipt text-xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Quotes / Budget</p>
+                                <p id="quotesName" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply is enabled when all required details and uploads are complete.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-[9px] text-gray-400 font-medium italic">
+                        * Applications are subject to Agribusiness Bureau field verification and committee approval.
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
-
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
-            DENR Agribusiness Bureau • Micro-Enterprise Support Unit 2026
-        </p>
-
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR Agribusiness Bureau • 2026</p>
     </div>
 
     <script>
@@ -158,15 +132,20 @@
 
                 // Capital Hint Color Toggle
                 if (capitalReq.value !== "") {
-                    capHint.className = isCapValid ? "text-[10px] font-bold text-green-600 mt-2 uppercase" : "text-[10px] font-bold text-red-500 mt-2 uppercase";
+                    capHint.className = isCapValid ? "text-[9px] font-bold text-green-600 mt-1 uppercase" : "text-[9px] font-bold text-red-500 mt-1 uppercase";
                 }
 
                 if (isTypeValid && isOpSizeValid && isCapValid && isPlanUploaded && isQuotesUploaded) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
@@ -190,13 +169,18 @@
             opSize.addEventListener('input', checkValidation);
 
             businessPlanFile.addEventListener('change', () => {
-                planName.textContent = businessPlanFile.files.length > 0 ? `Selected: ${businessPlanFile.files[0].name}` : "";
+                planName.textContent = businessPlanFile.files.length > 0 ? `✔ ${businessPlanFile.files[0].name}` : "";
                 checkValidation();
             });
 
             quotesFile.addEventListener('change', () => {
-                quotesName.textContent = quotesFile.files.length > 0 ? `Selected: ${quotesFile.files[0].name}` : "";
+                quotesName.textContent = quotesFile.files.length > 0 ? `✔ ${quotesFile.files[0].name}` : "";
                 checkValidation();
+            });
+
+            form.addEventListener('submit', () => {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
             });
 
             form.addEventListener('reset', () => {
@@ -204,7 +188,7 @@
                     opSizeWrap.classList.add('hidden');
                     planName.textContent = "";
                     quotesName.textContent = "";
-                    capHint.className = "text-[10px] font-bold text-gray-400 mt-2 uppercase";
+                    capHint.className = "text-[9px] font-bold text-gray-400 mt-1 uppercase";
                     checkValidation();
                 }, 10);
             });

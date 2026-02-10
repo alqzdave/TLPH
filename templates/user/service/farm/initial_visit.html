@@ -12,133 +12,109 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Initial Farm Visit
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Agricultural Assessment & Field Monitoring
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Initial Farm Visit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Agricultural Assessment & Monitoring</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="farmVisitForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Farm Information</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot"></i> Farm Information
+                        </h3>
                         
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Farm Size (Hectares) <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <input type="number" id="farmSize" step="0.01" required placeholder="0.00" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-bold text-gray-700 transition-all">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 font-black text-gray-400 text-xs uppercase">ha</span>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Farm Size (ha) <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <input type="number" id="farmSize" step="0.01" required placeholder="0.00" 
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-bold">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-gray-300 text-[9px] uppercase">ha</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Production Type <span class="text-red-500">*</span></label>
+                                    <select id="productionType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                        <option value="" disabled selected>Select category...</option>
+                                        <option value="crops">Crops</option>
+                                        <option value="livestock">Livestock</option>
+                                        <option value="poultry">Poultry</option>
+                                        <option value="fisheries">Fisheries</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Farm Location <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="farmLocation" required placeholder="Sitio / Barangay / Municipality" 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700 transition-all">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Production Type <span class="text-red-500">*</span>
-                            </label>
-                            <select id="productionType" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
-                                <option value="" disabled selected>Select production category...</option>
-                                <option value="crops">Crop Production (Rice/Corn/Vegetables)</option>
-                                <option value="livestock">Livestock (Swine/Cattle/Goat)</option>
-                                <option value="poultry">Poultry (Broiler/Layers)</option>
-                                <option value="fisheries">Fisheries / Aquaculture</option>
-                                <option value="agroforestry">Agroforestry / Integrated Farming</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Field Documentation</h3>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Farm Issues (Report/Notes) <span class="text-red-500">*</span>
-                            </label>
-                            <div class="h-32 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 p-4 group hover:border-green-600 transition-all cursor-pointer text-center">
-                                <i class="fa-solid fa-file-circle-exclamation text-2xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="issueFile" required class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="issueFileName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                                <p class="text-[9px] text-gray-400 uppercase font-black">Attach Issues Document</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Actual Farm Photos <span class="text-red-500">*</span>
-                            </label>
-                            <div class="h-32 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 p-4 group hover:border-green-600 transition-all cursor-pointer text-center">
-                                <i class="fa-solid fa-camera text-2xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="photoFile" required multiple accept="image/*" class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="photoFileName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                                <p class="text-[9px] text-gray-400 uppercase font-black">Upload Field Photos</p>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Farm Location <span class="text-red-500">*</span></label>
+                                <input type="text" id="farmLocation" required placeholder="Sitio, Barangay, Municipality" 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
                             </div>
                         </div>
                     </div>
 
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-camera-retro"></i> Field Documentation
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" id="issueFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-circle-exclamation text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Issues Report</p>
+                                <p id="issueFileName" class="text-[8px] text-green-700 font-bold truncate mt-1"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" id="photoFile" required multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-camera text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Field Photos</p>
+                                <p id="photoFileName" class="text-[8px] text-green-700 font-bold truncate mt-1"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply is enabled when all required fields are complete.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Logistics & Field Assessment Fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Amount Due:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">300.00</span></span>
+                            <input type="hidden" id="xendit_raw_amount" value="300">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
-
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
-            Department of Agriculture & Natural Resources Monitoring Compliance 2026
-        </p>
-
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR • Monitoring Compliance 2026</p>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('farmVisitForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            // Inputs
             const farmSize = document.getElementById('farmSize');
             const farmLocation = document.getElementById('farmLocation');
             const productionType = document.getElementById('productionType');
             const issueFile = document.getElementById('issueFile');
             const photoFile = document.getElementById('photoFile');
             
-            // Display names
             const issueFileName = document.getElementById('issueFileName');
             const photoFileName = document.getElementById('photoFileName');
 
@@ -151,39 +127,82 @@
 
                 if (isSizeValid && isLocationValid && isTypeValid && isIssueUploaded && isPhotoUploaded) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
-            // File Name Listeners
-            issueFile.addEventListener('change', () => {
-                issueFileName.textContent = issueFile.files.length > 0 ? `Selected: ${issueFile.files[0].name}` : "";
+            issueFile.addEventListener('change', (e) => {
+                issueFileName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
                 checkValidation();
             });
 
-            photoFile.addEventListener('change', () => {
-                photoFileName.textContent = photoFile.files.length > 0 ? `Selected: ${photoFile.files.length} photo(s)` : "";
+            photoFile.addEventListener('change', (e) => {
+                photoFileName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files.length} Photo(s)` : "";
                 checkValidation();
             });
 
-            // General Input Listeners
-            farmSize.addEventListener('input', checkValidation);
-            farmLocation.addEventListener('input', checkValidation);
-            productionType.addEventListener('change', checkValidation);
+            [farmSize, farmLocation, productionType].forEach(el => {
+                el.addEventListener('input', checkValidation);
+                el.addEventListener('change', checkValidation);
+            });
 
-            // Reset Logic
+            // Xendit Payment API
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('xendit_raw_amount').value;
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                    
+                    const paymentPayload = {
+                        external_id: `farm-visit-${Date.now()}`,
+                        amount: parseInt(amount),
+                        description: `Farm Visit Fee - ${farmLocation.value}`,
+                        item_name: 'Initial Farm Visit Assessment',
+                        success_url: window.location.origin + '/user/service/farm-visit',
+                        failure_url: window.location.origin + '/user/service/farm-visit'
+                    };
+                    
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(paymentPayload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.invoice_url) {
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert(`Payment error: ${result.message}`);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply Now';
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Failed to process payment. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply Now';
+                }
+            });
+
             form.addEventListener('reset', () => {
                 setTimeout(() => {
                     issueFileName.textContent = "";
                     photoFileName.textContent = "";
                     checkValidation();
-                }, 0);
+                }, 10);
             });
         });
     </script>
 </body>
-
 </html>

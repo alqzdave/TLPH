@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Input Usage Approval</title>
+    <title>Input Usage Approval | DENR</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,117 +12,104 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Input Usage Approval
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Regulatory Clearance for Agricultural Fertilizers and Pesticides
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Input Usage Approval</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Environmental Regulatory Board</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="usageForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 text-left">Clearance Details</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-check"></i> Clearance Details
+                        </h3>
                         
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Input Type <span class="text-red-500">*</span>
-                            </label>
-                            <select id="inputType" required 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
-                                <option value="" selected disabled>Select Input Type</option>
-                                <option value="Fertilizer">Fertilizer</option>
-                                <option value="Pesticide">Pesticide</option>
-                            </select>
-                        </div>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Input Type <span class="text-red-500">*</span></label>
+                                    <select id="inputType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                        <option value="" selected disabled>Select Type</option>
+                                        <option value="Fertilizer">Fertilizer</option>
+                                        <option value="Pesticide">Pesticide</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Product Name <span class="text-red-500">*</span></label>
+                                    <input type="text" id="productName" required placeholder="Brand / Generic" 
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                                </div>
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Product Name <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="productName" required placeholder="Enter Brand or Generic Name"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700 transition-all">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Intended Application Rate <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="appRate" required placeholder="e.g. 2 bags per hectare / 500ml per drum"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700 transition-all">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Intended Application Rate <span class="text-red-500">*</span></label>
+                                <input type="text" id="appRate" required placeholder="e.g. 2 bags per ha / 500ml per drum" 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                            </div>
+                            
+                            <p class="text-[9px] text-gray-400 italic leading-tight mt-2">
+                                * Usage approval is required for all synthetic and organic inputs to ensure compliance with environmental standards.
+                            </p>
                         </div>
                     </div>
 
-                    <div class="flex flex-col text-left">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 mb-6">Documentation</h3>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Documentation
+                        </h3>
                         
-                        <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                            Product Photo / Label <span class="text-red-500">*</span>
-                        </label>
-                        <div class="flex-1 min-h-[300px] border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 p-8 group hover:border-green-600 transition-all cursor-pointer">
-                            <i class="fa-solid fa-bottle-droplet text-5xl text-gray-300 group-hover:text-green-600 mb-4 transition-colors"></i>
-                            <input type="file" id="productPhoto" required accept="image/*" class="text-sm text-gray-600 mb-2 text-center w-full">
-                            <p id="fileName" class="text-[9px] text-green-600 font-bold uppercase mb-2"></p>
-                            <div class="text-center">
-                                <p class="text-xs text-gray-400 uppercase font-black tracking-tighter">Click to upload product label or photo</p>
-                                <p class="text-[10px] text-gray-300 font-medium mt-1">Clear photo showing active ingredients (Max 5MB)</p>
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-black text-gray-700 uppercase mb-2 tracking-widest">Product Photo / Label <span class="text-red-500">*</span></label>
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-8 hover:border-green-600 hover:bg-white hover:shadow-md transition-all relative text-center min-h-[160px] flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="productPhoto" required accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-bottle-droplet text-4xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
+                                <div class="space-y-1">
+                                    <p class="text-[10px] font-black text-gray-700 uppercase">Upload Clear Label Photo</p>
+                                    <p class="text-[8px] text-gray-400 font-bold uppercase">(Visible Active Ingredients - Max 5MB)</p>
+                                </div>
+                                <p id="fileName" class="text-[9px] text-green-700 font-black uppercase mt-2"></p>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        The Apply button will be enabled once all required inputs are verified.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Regulatory processing & standards fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Clearance Fee:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">600.00</span></span>
+                            <input type="hidden" id="xendit_raw_amount" value="600">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
-
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
-            DENR Environmental Regulatory Board • Input Standards Division 2026
-        </p>
-
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR ERB • Input Standards 2026</p>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('usageForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            // Inputs
             const inputType = document.getElementById('inputType');
             const productName = document.getElementById('productName');
             const appRate = document.getElementById('appRate');
             const productPhoto = document.getElementById('productPhoto');
-            
-            // Display
-            const fileName = document.getElementById('fileName');
+            const fileNameDisplay = document.getElementById('fileName');
 
             function checkValidation() {
                 const isTypeValid = inputType.value !== "";
@@ -131,29 +119,76 @@
 
                 if (isTypeValid && isProductValid && isRateValid && isPhotoUploaded) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
-            // Listeners
-            inputType.addEventListener('change', checkValidation);
-            productName.addEventListener('input', checkValidation);
-            appRate.addEventListener('input', checkValidation);
+            // Xendit Payment Integration
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('xendit_raw_amount').value;
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                    
+                    const paymentPayload = {
+                        external_id: `usage-${Date.now()}`,
+                        amount: parseInt(amount),
+                        description: `Input Usage Approval - ${productName.value}`,
+                        item_name: 'Regulatory Clearance Fee',
+                        success_url: window.location.origin + '/user/service/usage-approval',
+                        failure_url: window.location.origin + '/user/service/usage-approval'
+                    };
+                    
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(paymentPayload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.invoice_url) {
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert(`Payment error: ${result.message}`);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply Now';
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Failed to process payment. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply Now';
+                }
+            });
 
-            productPhoto.addEventListener('change', () => {
-                fileName.textContent = productPhoto.files.length > 0 ? `Selected: ${productPhoto.files[0].name}` : "";
+            // Listeners
+            [productName, appRate].forEach(input => {
+                input.addEventListener('input', checkValidation);
+            });
+
+            inputType.addEventListener('change', checkValidation);
+
+            productPhoto.addEventListener('change', (e) => {
+                fileNameDisplay.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name} selected` : "";
                 checkValidation();
             });
 
-            // Reset Logic
             form.addEventListener('reset', () => {
                 setTimeout(() => {
-                    fileName.textContent = "";
+                    fileNameDisplay.textContent = "";
                     checkValidation();
-                }, 0);
+                }, 10);
             });
         });
     </script>

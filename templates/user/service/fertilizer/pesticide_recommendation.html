@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Pesticide Recommendation</title>
+    <title>Pesticide Recommendation | DENR Portal</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,131 +12,110 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Pesticide Recommendation
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Pest Management Analysis and Treatment Protocols
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Pesticide Recommendation</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Pest Management & Treatment Protocols</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="pesticideForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 text-left">Target & Crop Info</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-bug"></i> Target & Crop Info
+                        </h3>
                         
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Target Pest / Disease <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="targetPest" required placeholder="e.g. Stem Borer, Blast, Aphids"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700 transition-all">
-                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Target Pest / Disease <span class="text-red-500">*</span></label>
+                                <input type="text" id="targetPest" required placeholder="e.g. Stem Borer, Aphids" 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Crop Species <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="cropSpecies" required placeholder="e.g. Rice, Corn, Tomato"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-medium text-gray-700 transition-all">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Crop Stage <span class="text-red-500">*</span>
-                            </label>
-                            <select id="cropStage" required 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
-                                <option value="" selected disabled>Select crop stage</option>
-                                <option value="seedling">Seedling</option>
-                                <option value="vegetative">Vegetative</option>
-                                <option value="flowering">Flowering</option>
-                                <option value="fruiting">Fruiting</option>
-                                <option value="harvest">Harvest</option>
-                            </select>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Crop Species <span class="text-red-500">*</span></label>
+                                    <input type="text" id="cropSpecies" required placeholder="e.g. Rice, Tomato" 
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Crop Stage <span class="text-red-500">*</span></label>
+                                    <select id="cropStage" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                        <option value="" selected disabled>Select stage...</option>
+                                        <option value="seedling">Seedling</option>
+                                        <option value="vegetative">Vegetative</option>
+                                        <option value="flowering">Flowering</option>
+                                        <option value="harvest">Harvest</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <p class="text-[9px] text-gray-400 italic leading-tight mt-2">
+                                * Treatment protocols are based on integrated pest management (IPM) standards to minimize environmental impact.
+                            </p>
                         </div>
                     </div>
 
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 text-left">Required Attachments</h3>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Previous Spray Record Attachment <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center">
-                                <i class="fa-solid fa-file-medical text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="sprayRecordFile" required class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="recordFileName" class="text-[9px] text-green-600 font-bold uppercase"></p>
-                                <p class="text-[10px] text-gray-400 uppercase font-black">Upload Logbook or Chemical List (PDF, JPG)</p>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Required Attachments
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" id="sprayRecordFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-medical text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Spray Record</p>
+                                <p id="recordFileName" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
                             </div>
-                        </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2 text-left">
-                                Evidence Photos <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center">
-                                <i class="fa-solid fa-bug text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="pestPhotos" required multiple accept="image/*" class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="photoCount" class="text-[9px] text-green-600 font-bold uppercase"></p>
-                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Upload photos of pest damage</p>
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" id="pestPhotos" required multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-camera text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Damage Photos</p>
+                                <p id="photoCount" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply is enabled when all target details, spray records, and photos are provided.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Diagnostic & recommendation fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Amount Due:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">300.00</span></span>
+                            <input type="hidden" id="xendit_raw_amount" value="300">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
-
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
-            DENR Plant Health Division • Integrated Pest Management Section 2026
-        </p>
-
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR PHD • Pest Management Section 2026</p>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('pesticideForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            // Inputs
             const targetPest = document.getElementById('targetPest');
             const cropSpecies = document.getElementById('cropSpecies');
             const cropStage = document.getElementById('cropStage');
             const sprayRecordFile = document.getElementById('sprayRecordFile');
             const pestPhotos = document.getElementById('pestPhotos');
             
-            // Display
             const recordFileName = document.getElementById('recordFileName');
             const photoCount = document.getElementById('photoCount');
 
@@ -149,37 +128,80 @@
 
                 if (isPestValid && isCropValid && isStageValid && isRecordUploaded && isPhotosUploaded) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
-            // Event Listeners
+            // Xendit Payment API
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('xendit_raw_amount').value;
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                    
+                    const paymentPayload = {
+                        external_id: `pest-rec-${Date.now()}`,
+                        amount: parseInt(amount),
+                        description: `Pesticide Recommendation - ${targetPest.value}`,
+                        item_name: 'Pest Management Protocol',
+                        success_url: window.location.origin + '/user/service/pesticide',
+                        failure_url: window.location.origin + '/user/service/pesticide'
+                    };
+                    
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(paymentPayload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.invoice_url) {
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert(`Payment error: ${result.message}`);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply Now';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to process payment. Try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply Now';
+                }
+            });
+
             [targetPest, cropSpecies].forEach(input => input.addEventListener('input', checkValidation));
             cropStage.addEventListener('change', checkValidation);
 
-            sprayRecordFile.addEventListener('change', () => {
-                recordFileName.textContent = sprayRecordFile.files.length > 0 ? `Selected: ${sprayRecordFile.files[0].name}` : "";
+            sprayRecordFile.addEventListener('change', (e) => {
+                recordFileName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
                 checkValidation();
             });
 
-            pestPhotos.addEventListener('change', () => {
-                photoCount.textContent = pestPhotos.files.length > 0 ? `Selected: ${pestPhotos.files.length} photo(s)` : "";
+            pestPhotos.addEventListener('change', (e) => {
+                photoCount.textContent = e.target.files.length > 0 ? `✔ ${e.target.files.length} Photo(s) Attached` : "";
                 checkValidation();
             });
 
-            // Reset Logic
             form.addEventListener('reset', () => {
                 setTimeout(() => {
                     recordFileName.textContent = "";
                     photoCount.textContent = "";
                     checkValidation();
-                }, 0);
+                }, 10);
             });
         });
     </script>
 </body>
-
 </html>

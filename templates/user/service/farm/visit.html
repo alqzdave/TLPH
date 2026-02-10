@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Follow Up/Visit Service</title>
+    <title>Follow-up / Visit | DENR Portal</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,102 +12,93 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Follow-up / Visit
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Please provide updates for your previous inspection
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Follow-up / Visit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Compliance Monitoring System</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="followUpForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="mb-10">
-                    <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                        Reference Number (Previous Visit) <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input type="text" id="refNum" required placeholder="Ex: REF-2026-001" 
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-bold text-gray-700 transition-all">
-                        <i class="fa-solid fa-hashtag absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
-                    </div>
-                </div>
-
-                <hr class="mb-10 border-gray-100">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-                    <div class="text-left">
-                        <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                            Attachment Changes <span class="text-red-500">*</span>
-                        </label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer">
-                            <i class="fa-solid fa-file-pen text-4xl text-gray-300 group-hover:text-green-600 mb-4 transition-colors"></i>
-                            <input type="file" id="attachDocs" required class="text-xs text-gray-600 w-full text-center mb-2">
-                            <p id="docFileName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Upload revised documents</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Reference Details
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Reference Number <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="text" id="refNum" required placeholder="Ex: REF-2026-001" 
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-bold uppercase">
+                                    <i class="fa-solid fa-hashtag absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 text-[10px]"></i>
+                                </div>
+                            </div>
+                            
+                            <p class="text-[9px] text-gray-400 italic leading-tight mt-2">
+                                * Please ensure the reference number matches your previous inspection record to avoid delays in processing.
+                            </p>
                         </div>
                     </div>
 
-                    <div class="text-left">
-                        <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                            Latest Photo Upload <span class="text-red-500">*</span>
-                        </label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center">
-                            <i class="fa-solid fa-camera-retro text-4xl text-gray-300 group-hover:text-green-600 mb-4 transition-colors"></i>
-                            <input type="file" id="sitePhoto" required accept="image/*" class="text-xs text-gray-600 w-full text-center mb-2">
-                            <p id="photoFileName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Upload current site photo</p>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Latest Updates
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" id="attachDocs" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-pen text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Revised Docs</p>
+                                <p id="docFileName" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-4 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                                <input type="file" id="sitePhoto" required accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-camera-retro text-2xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Latest Photo</p>
+                                <p id="photoFileName" class="text-[8px] text-green-700 font-bold truncate mt-1 px-2 w-full"></p>
+                            </div>
                         </div>
                     </div>
-
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply is enabled when all required fields are complete.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Follow-up processing fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Amount Due:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">200.00</span></span>
+                            <input type="hidden" id="xendit_raw_amount" value="200">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
-
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
-            DENR Compliance Monitoring System • 2026 Official Portal
-        </p>
-
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR • Compliance Monitoring System 2026</p>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('followUpForm');
             const submitBtn = document.getElementById('submitBtn');
-            
             const refNum = document.getElementById('refNum');
             const attachDocs = document.getElementById('attachDocs');
             const sitePhoto = document.getElementById('sitePhoto');
-
+            
             const docFileName = document.getElementById('docFileName');
             const photoFileName = document.getElementById('photoFileName');
 
@@ -118,23 +109,69 @@
 
                 if (isRefValid && isDocUploaded && isPhotoUploaded) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
             refNum.addEventListener('input', checkValidation);
             
-            attachDocs.addEventListener('change', () => {
-                docFileName.textContent = attachDocs.files.length > 0 ? `Selected: ${attachDocs.files[0].name}` : "";
+            attachDocs.addEventListener('change', (e) => {
+                docFileName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
                 checkValidation();
             });
 
-            sitePhoto.addEventListener('change', () => {
-                photoFileName.textContent = sitePhoto.files.length > 0 ? `Selected: ${sitePhoto.files[0].name}` : "";
+            sitePhoto.addEventListener('change', (e) => {
+                photoFileName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
                 checkValidation();
+            });
+
+            // Xendit Payment API Integration
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('xendit_raw_amount').value;
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                    
+                    const paymentPayload = {
+                        external_id: `followup-${Date.now()}`,
+                        amount: parseInt(amount),
+                        description: `Follow-up Service Fee - Ref: ${refNum.value}`,
+                        item_name: 'Compliance Follow-up Visit',
+                        success_url: window.location.origin + '/user/service/follow-up',
+                        failure_url: window.location.origin + '/user/service/follow-up'
+                    };
+                    
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(paymentPayload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.invoice_url) {
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert(`Payment error: ${result.message}`);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply Now';
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Failed to process payment. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply Now';
+                }
             });
 
             form.addEventListener('reset', () => {
@@ -142,10 +179,9 @@
                     docFileName.textContent = "";
                     photoFileName.textContent = "";
                     checkValidation();
-                }, 0);
+                }, 10);
             });
         });
     </script>
 </body>
-
 </html>

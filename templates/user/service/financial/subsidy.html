@@ -12,124 +12,98 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Subsidy Application
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Government Resource Support and Environmental Program Funding
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Subsidy Application</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">DENR • Government Resource Support & Funding</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
-            <form id="subsidyForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Program Details</h3>
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
+            <form id="subsidyForm" action="/submit-subsidy" method="POST" enctype="multipart/form-data">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-hand-holding-hand"></i> Program Details
+                        </h3>
                         
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Subsidy Program <span class="text-red-500">*</span>
-                            </label>
-                            <select id="subsidyProgram" required 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none bg-white font-medium text-gray-700 transition-all">
-                                <option value="" disabled selected>Select a program</option>
-                                <option value="Land Management">Land Management & Titling</option>
-                                <option value="Forestry">Forestry and Livelihood</option>
-                                <option value="Biodiversity">Biodiversity & Environmental Support</option>
-                                <option value="Water">Water and Sanitation</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Area / Volume Requested <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <input type="number" id="areaVolume" step="0.01" required placeholder="0.00" 
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 focus:outline-none font-bold text-gray-700">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 font-black text-gray-400 text-xs uppercase">units</span>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Subsidy Program <span class="text-red-500">*</span></label>
+                                <select id="subsidyProgram" name="subsidyProgram" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                    <option value="" disabled selected>Select a program</option>
+                                    <option value="Land">Land Management & Titling</option>
+                                    <option value="Forestry">Forestry and Livelihood</option>
+                                    <option value="Biodiversity">Biodiversity Support</option>
+                                    <option value="Water">Water and Sanitation</option>
+                                </select>
                             </div>
-                        </div>
 
-                        <div class="rounded-xl border border-green-100 bg-green-50 p-4">
-                            <p class="text-[10px] font-black text-green-800 uppercase mb-1">Evaluation Tip</p>
-                            <p class="text-[11px] text-green-700 leading-relaxed font-medium uppercase tracking-tighter">
-                                Enter the numeric value of your request. Units will be verified by the evaluator during the initial review phase.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-6">
-                        <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2">Required Uploads</h3>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Supporting Permits <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center h-36">
-                                <i class="fa-solid fa-file-contract text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="permitsFile" required accept=".pdf,.jpg,.jpeg,.png" class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="permitsName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Attach Legal Permits</p>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Area / Volume Requested <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="number" id="areaVolume" name="areaVolume" step="0.01" required placeholder="0.00" 
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-bold">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-gray-300 text-[9px] uppercase tracking-tighter">Units</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 uppercase mb-2">
-                                Budget Estimate <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 transition-all group flex flex-col items-center justify-center cursor-pointer text-center h-36">
-                                <i class="fa-solid fa-file-invoice text-3xl text-gray-300 group-hover:text-green-600 mb-2 transition-colors"></i>
-                                <input type="file" id="budgetFile" required accept=".pdf,.jpg,.jpeg,.png" class="text-[10px] text-gray-600 w-full mb-1">
-                                <p id="budgetName" class="text-[9px] text-green-600 font-bold uppercase mb-1"></p>
-                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Attach Financial Breakdown</p>
+                            <div class="rounded-xl border border-green-100 bg-green-50/50 p-3">
+                                <p class="text-[9px] font-black text-green-800 uppercase mb-0.5">Evaluation Note:</p>
+                                <p class="text-[10px] text-green-700 leading-tight font-medium uppercase tracking-tighter">
+                                    Numeric values will be verified by the bureau during the technical review phase.
+                                </p>
                             </div>
                         </div>
                     </div>
 
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Required Uploads
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 p-3 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer h-28">
+                                <input type="file" name="permitsFile" id="permitsFile" required accept=".pdf,.jpg,.png" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-contract text-xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Supporting Permits</p>
+                                <p id="permitsName" class="text-[8px] text-green-700 font-bold truncate px-2 w-full"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 p-3 hover:border-green-600 hover:bg-white transition-all relative text-center flex flex-col items-center justify-center cursor-pointer h-28">
+                                <input type="file" name="budgetFile" id="budgetFile" required accept=".pdf,.jpg,.png" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-invoice text-xl text-gray-300 group-hover:text-green-600 mb-1"></i>
+                                <p class="text-[10px] font-black text-gray-700 uppercase">Budget Estimate</p>
+                                <p id="budgetName" class="text-[8px] text-green-700 font-bold truncate px-2 w-full"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-12 border-t pt-8 gap-4">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left">
-                        Apply button activates once program details and all files are complete.
-                    </p>
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/service/service"
-                            class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">
-                            Back
-                        </a>
-                        <button type="reset" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">
-                            Clear
-                        </button>
-                        <button type="submit" id="submitBtn" disabled
-                            class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed">
-                            Apply
-                        </button>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-[9px] text-gray-400 font-medium italic">
+                        * All subsidies are subject to availability of government funds and technical evaluation.
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
             </form>
-
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-12">
-            DENR Resource Allocation Bureau • Subsidy Management Portal 2026
-        </p>
-
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR RAB • Subsidy Division 2026</p>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('subsidyForm');
             const submitBtn = document.getElementById('submitBtn');
-            
             const program = document.getElementById('subsidyProgram');
             const area = document.getElementById('areaVolume');
             const permitsFile = document.getElementById('permitsFile');
@@ -146,29 +120,36 @@
 
                 if (isProgramValid && isAreaValid && isPermitsUploaded && isBudgetUploaded) {
                     submitBtn.disabled = false;
-                    submitBtn.className = "flex-1 md:flex-none bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded-xl shadow-md transition-all transform hover:scale-105 active:scale-95 uppercase tracking-widest cursor-pointer";
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.className = "flex-1 md:flex-none bg-gray-200 text-gray-400 font-bold py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed";
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
-            // File selection feedback
-            permitsFile.addEventListener('change', () => {
-                permitsName.textContent = permitsFile.files.length > 0 ? `Selected: ${permitsFile.files[0].name}` : "";
+            permitsFile.addEventListener('change', (e) => {
+                permitsName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
                 checkValidation();
             });
 
-            budgetFile.addEventListener('change', () => {
-                budgetName.textContent = budgetFile.files.length > 0 ? `Selected: ${budgetFile.files[0].name}` : "";
+            budgetFile.addEventListener('change', (e) => {
+                budgetName.textContent = e.target.files.length > 0 ? `✔ ${e.target.files[0].name}` : "";
                 checkValidation();
             });
 
-            // Input listeners
             program.addEventListener('change', checkValidation);
             area.addEventListener('input', checkValidation);
 
-            // Reset handling
+            form.addEventListener('submit', () => {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            });
+
             form.addEventListener('reset', () => {
                 setTimeout(() => {
                     permitsName.textContent = "";
@@ -179,5 +160,4 @@
         });
     </script>
 </body>
-
 </html>
