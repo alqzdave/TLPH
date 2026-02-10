@@ -39,8 +39,12 @@ function slugify(value) {
 }
 
 function getItemName(form) {
+    const pageHeading = Array.from(document.querySelectorAll("h1")).find(
+        (heading) => !heading.closest("header")
+    );
+
     return form.dataset.itemName
-        || (document.querySelector("h1") && document.querySelector("h1").textContent.trim())
+        || (pageHeading && pageHeading.textContent.trim())
         || document.title
         || "License Application";
 }
