@@ -7,500 +7,447 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
-            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f4f7f4;
+            color: #1a2e05;
+            overflow-x: hidden;
         }
 
+        .text-denr-dark { color: #1b330d; }
+        .bg-denr-dark { background-color: #2d5016; }
+
         .page-title h1 {
-            font-size: 2.5rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: #2d5016;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            position: relative;
+            letter-spacing: 1px;
+            border-bottom: 3px solid #2d5016;
             display: inline-block;
-            text-shadow: 2px 2px 4px rgba(45, 80, 22, 0.1);
+            margin-bottom: 0.5rem;
         }
-
-        .page-title h1::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 4px;
-            background: linear-gradient(90deg, #2d5016, #4a7c59, #2d5016);
-            border-radius: 2px;
-        }
-
-        .search-container {
-            max-width: 600px;
-            margin: 0 auto 20px;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 15px 25px 15px 55px;
-            border-radius: 50px;
-            border: 2px solid #d1dbcf;
-            background: white;
-            box-shadow: 0 4px 15px rgba(45, 80, 22, 0.05);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #2d5016;
-            box-shadow: 0 4px 20px rgba(45, 80, 22, 0.15);
-        }
-
-        .filter-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 40px;
-        }
-
-        .filter-btn {
-            padding: 8px 20px;
-            border-radius: 50px;
-            border: 2px solid #2d5016;
-            background: transparent;
-            color: #2d5016;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            background: #2d5016;
-            color: white;
-        }
+        @media (min-width: 768px) { .page-title h1 { font-size: 1.8rem; } }
 
         .service-card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(45, 80, 22, 0.08);
-            transition: all 0.4s ease;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
+            border-radius: 4px;
+            border: 1px solid #d1dbcf;
+            transition: all 0.2s ease;
+            padding: 0.8rem !important;
         }
-
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 6px; height: 100%;
-            background: linear-gradient(180deg, #2d5016 0%, #4a7c59 100%);
-        }
+        @media (min-width: 768px) { .service-card { padding: 0.6rem 1.2rem !important; } }
 
         .service-card:hover {
-            transform: translateY(-5px);
-            border-color: #4a7c59;
-            box-shadow: 0 15px 40px rgba(45, 80, 22, 0.15);
+            border-color: #2d5016;
+            background-color: #f0f4ef;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.1);
         }
 
         .type-badge {
             display: inline-block;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 0.75rem;
+            padding: 1px 8px;
+            border-radius: 3px;
+            font-size: 0.55rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            background-color: #f0f4ef;
+            background-color: #e8f5e9;
             color: #2d5016;
-            border: 1px solid #d1dbcf;
+            border: 1px solid #c8e6c9;
+            margin-bottom: 4px;
         }
 
-        .btn-custom-apply {
-            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
-            color: white !important;
-            border-radius: 50px;
+        .service-name {
+            font-size: 0.85rem;
             font-weight: 700;
-            padding: 12px 30px;
-            text-decoration: none !important;
-            transition: all 0.3s ease;
+            color: #1b330d;
+            line-height: 1.2;
+        }
+        @media (min-width: 768px) { .service-name { font-size: 0.95rem; } }
+
+        .service-desc { font-size: 0.75rem; color: #555; margin-bottom: 0; }
+
+        .mobile-filter-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .mobile-filter-container::-webkit-scrollbar { display: none; }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: 1px solid #2d5016;
+            background: white;
+            color: #2d5016;
+            font-weight: 600;
+            font-size: 0.75rem;
             white-space: nowrap;
         }
+        .filter-btn.active, .filter-btn:hover { background: #2d5016; color: white; }
 
-        .btn-custom-apply:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(45, 80, 22, 0.3);
-        }
-
-        #noResults {
-            display: none;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 20px;
-            border: 2px dashed #d1dbcf;
+        .btn-apply {
+            background-color: #2d5016;
+            color: white !important;
+            border-radius: 4px;
+            font-weight: 700;
+            padding: 8px 15px;
+            font-size: 0.7rem;
             text-align: center;
         }
+        @media (min-width: 768px) { .btn-apply { width: auto; padding: 5px 15px; } }
 
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #4a7c59;
-            text-decoration: none;
-            font-weight: 600;
-            margin-top: 50px;
-            transition: 0.3s ease;
-        }
-        
-        .back-link:hover {
-            color: #2d5016;
-            transform: translateX(-5px);
+        .search-input {
+            border: 1px solid #2d5016;
+            border-radius: 4px;
+            padding: 10px 15px 10px 40px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
     {% include 'user/header.html' %}
 
-    <div class="max-w-6xl mx-auto px-4 py-12 text-center">
-        
-        <div class="page-title mb-12">
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+        <div class="page-title mb-6 text-center md:text-left">
             <h1>Licensing Service List</h1>
         </div>
 
-        <div class="search-container">
-            <i class="fas fa-search absolute left-[20px] top-1/2 -translate-y-1/2 text-[#4a7c59]"></i>
-            <input type="text" id="serviceSearch" class="search-input" placeholder="Search for permits (e.g. Tree, Fish, ECC, Meat, Export...)">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-1">
+                <div class="lg:sticky lg:top-4 space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-gray-500 mb-1 block">Search Service</label>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-denr-dark"></i>
+                            <input type="text" id="serviceSearch" class="w-full search-input" placeholder="Keyword...">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-gray-500 mb-1 block">Category</label>
+                        <div class="mobile-filter-container lg:flex-col lg:overflow-visible">
+                            <button class="filter-btn active lg:text-left" data-filter="all">All Permits</button>
+                            <button class="filter-btn lg:text-left" data-filter="Wildlife">Wildlife</button>
+                            <button class="filter-btn lg:text-left" data-filter="Forest">Forest</button>
+                            <button class="filter-btn lg:text-left" data-filter="Environment">Environment</button>
+                            <button class="filter-btn lg:text-left" data-filter="Fisheries">Fisheries</button>
+                            <button class="filter-btn lg:text-left" data-filter="Livestock">Livestock</button>
+                            <button class="filter-btn lg:text-left" data-filter="Other">Others</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3">
+                <div class="flex flex-col gap-2" id="serviceList">
+                    <div id="noResults" class="hidden py-10 bg-white border rounded text-center"><p class="text-gray-400 font-bold">No permits found.</p></div>
+
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Other">
+                        <div class="flex-1">
+                            <span class="type-badge">Trade & Logistics</span>
+                            <h3 class="service-name uppercase">Export Permit</h3>
+                            <p class="service-desc">Legal permit for exporting regulated products or species.</p>
+                        </div>
+                        <a href="/user/license/permits/export" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Other">
+                        <div class="flex-1">
+                            <span class="type-badge">Operations</span>
+                            <h3 class="service-name uppercase">Operation Permit</h3>
+                            <p class="service-desc">Authorized permit for regulated business activities.</p>
+                        </div>
+                        <a href="/user/license/permits/operation" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Other">
+                        <div class="flex-1">
+                            <span class="type-badge">Trade & Logistics</span>
+                            <h3 class="service-name uppercase">Import Permit</h3>
+                            <p class="service-desc">Clearance for the importation of regulated materials.</p>
+                        </div>
+                        <a href="/user/license/permits/import" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Other">
+                        <div class="flex-1">
+                            <span class="type-badge">Trade & Logistics</span>
+                            <h3 class="service-name uppercase">Wildlife Trade Permit</h3>
+                            <p class="service-desc">Certification for authorized wildlife species commerce.</p>
+                        </div>
+                        <a href="/user/license/permits/wildlife" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Other">
+                        <div class="flex-1">
+                            <span class="type-badge">Logistics</span>
+                            <h3 class="service-name uppercase">Transport Local Permit</h3>
+                            <p class="service-desc">Local movement permit for regulated products.</p>
+                        </div>
+                        <a href="/user/license/permits/local-transport" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Other">
+                        <div class="flex-1">
+                            <span class="type-badge">Utilization</span>
+                            <h3 class="service-name uppercase">Harvest Permit</h3>
+                            <p class="service-desc">Permit for legal harvesting of natural resources.</p>
+                        </div>
+                        <a href="/user/license/permits/harvest" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Livestock">
+                        <div class="flex-1">
+                            <span class="type-badge">Veterinary</span>
+                            <h3 class="service-name uppercase">Animal Transport Permit</h3>
+                            <p class="service-desc">Clearance for domestic movement of live animals.</p>
+                        </div>
+                        <a href="/user/license/livestock/animal-transport" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Livestock">
+                        <div class="flex-1">
+                            <span class="type-badge">Meat Inspection</span>
+                            <h3 class="service-name uppercase">Meat Transport / Shipping Permit</h3>
+                            <p class="service-desc">Requirement for transporting meat products.</p>
+                        </div>
+                        <a href="/user/license/livestock/meat-transport" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Livestock">
+                        <div class="flex-1">
+                            <span class="type-badge">Facility</span>
+                            <h3 class="service-name uppercase">Slaughterhouse Accreditation Permit</h3>
+                            <p class="service-desc">Certification for safety and hygiene standards.</p>
+                        </div>
+                        <a href="/user/license/livestock/slaughterhouse" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Livestock">
+                        <div class="flex-1">
+                            <span class="type-badge">Registration</span>
+                            <h3 class="service-name uppercase">Poultry Farm Registration</h3>
+                            <p class="service-desc">Registration for commercial poultry farms.</p>
+                        </div>
+                        <a href="/user/license/livestock/poultry-farm" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Livestock">
+                        <div class="flex-1">
+                            <span class="type-badge">Clearance</span>
+                            <h3 class="service-name uppercase">Animal Health Veterinary Clearance</h3>
+                            <p class="service-desc">Health certification for livestock operations.</p>
+                        </div>
+                        <a href="/user/license/livestock/animal-health" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Wildlife">
+                        <div class="flex-1">
+                            <span class="type-badge">Wildlife</span>
+                            <h3 class="service-name uppercase">Wildlife Possession & Ownership Permit</h3>
+                            <p class="service-desc">Ownership permit for protected species.</p>
+                        </div>
+                        <a href="/user/license/wildlife/ownership" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Wildlife">
+                        <div class="flex-1">
+                            <span class="type-badge">Wildlife</span>
+                            <h3 class="service-name uppercase">Wildlife Transport Licensing Permit</h3>
+                            <p class="service-desc">Logistics permit for wildlife movement.</p>
+                        </div>
+                        <a href="/user/license/wildlife/transport" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Wildlife">
+                        <div class="flex-1">
+                            <span class="type-badge">Wildlife</span>
+                            <h3 class="service-name uppercase">Wildlife Collection Licensing Permit</h3>
+                            <p class="service-desc">Permit for scientific wildlife collection.</p>
+                        </div>
+                        <a href="/user/license/wildlife/collection" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Wildlife">
+                        <div class="flex-1">
+                            <span class="type-badge">Wildlife</span>
+                            <h3 class="service-name uppercase">Wildlife Farm & Breeding Registration</h3>
+                            <p class="service-desc">Registration for breeding facilities.</p>
+                        </div>
+                        <a href="/user/license/wildlife/wildfarm" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Forest">
+                        <div class="flex-1">
+                            <span class="type-badge">Forest</span>
+                            <h3 class="service-name uppercase">Tree Cutting Permit</h3>
+                            <p class="service-desc">Permit for legal tree cutting.</p>
+                        </div>
+                        <a href="/user/license/forest/tree-cutting" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Forest">
+                        <div class="flex-1">
+                            <span class="type-badge">Forest</span>
+                            <h3 class="service-name uppercase">Timber Wood / Transfer Permit</h3>
+                            <p class="service-desc">Permit for timber product transport.</p>
+                        </div>
+                        <a href="/user/license/forest/timber" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Forest">
+                        <div class="flex-1">
+                            <span class="type-badge">Forest</span>
+                            <h3 class="service-name uppercase">Reforestation Agreement</h3>
+                            <p class="service-desc">Contracts for forest rehabilitation.</p>
+                        </div>
+                        <a href="/user/license/forest/reforestation" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Forest">
+                        <div class="flex-1">
+                            <span class="type-badge">Forest</span>
+                            <h3 class="service-name uppercase">Nursery Accreditation</h3>
+                            <p class="service-desc">Accreditation for forest nurseries.</p>
+                        </div>
+                        <a href="/user/license/forest/nursery" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Forest">
+                        <div class="flex-1">
+                            <span class="type-badge">Forest</span>
+                            <h3 class="service-name uppercase">Non-Timber Collection Permit</h3>
+                            <p class="service-desc">Permit for rattan, honey, and vines collection.</p>
+                        </div>
+                        <a href="/user/license/forest/non-timber" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Forest">
+                        <div class="flex-1">
+                            <span class="type-badge">Forest</span>
+                            <h3 class="service-name uppercase">Tree Plantation Ownership (CTPO)</h3>
+                            <p class="service-desc">Plantation registration to support harvesting.</p>
+                        </div>
+                        <a href="/user/license/forest/tree-planting" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Compliance Certificate (ECC)</h3>
+                            <p class="service-desc">Certification for environmental impact compliance.</p>
+                        </div>
+                        <a href="/user/license/environment/ecc" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Waste Management Permit</h3>
+                            <p class="service-desc">Permit for waste disposal operations.</p>
+                        </div>
+                        <a href="/user/license/environment/waste" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Water Discharge Clearance</h3>
+                            <p class="service-desc">Clearance for water extraction and discharge.</p>
+                        </div>
+                        <a href="/user/license/environment/water" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Hazardous Material Handling</h3>
+                            <p class="service-desc">Clearance for toxic and hazardous materials.</p>
+                        </div>
+                        <a href="/user/license/environment/hazardous" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Wastewater Permit (WWDP)</h3>
+                            <p class="service-desc">Permit to discharge regulated effluents.</p>
+                        </div>
+                        <a href="/user/license/environment/water-dispose" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Permit to Operate (PTO) Air</h3>
+                            <p class="service-desc">Permit to operate air pollution sources.</p>
+                        </div>
+                        <a href="/user/license/environment/permit-to-operate-air" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Hazardous Waste (HWG) ID</h3>
+                            <p class="service-desc">Registration of hazardous waste generators.</p>
+                        </div>
+                        <a href="/user/license/environment/hazardous-waste" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">PICCS Validation</h3>
+                            <p class="service-desc">Registration of chemicals in PICCS inventory.</p>
+                        </div>
+                        <a href="/user/license/environment/piccs" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">PCL Compliance</h3>
+                            <p class="service-desc">Compliance for chemicals in Priority List.</p>
+                        </div>
+                        <a href="/user/license/environment/pcl" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Environment">
+                        <div class="flex-1">
+                            <span class="type-badge">Environment</span>
+                            <h3 class="service-name uppercase">Chemical Control Orders (CCO)</h3>
+                            <p class="service-desc">Specific orders regulating priority chemicals.</p>
+                        </div>
+                        <a href="/user/license/environment/cco" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fisheries">
+                        <div class="flex-1">
+                            <span class="type-badge">Fisheries</span>
+                            <h3 class="service-name uppercase">Aquaculture Registration</h3>
+                            <p class="service-desc">Registration for aquaculture operations.</p>
+                        </div>
+                        <a href="/user/license/fisheries/aquafarm" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fisheries">
+                        <div class="flex-1">
+                            <span class="type-badge">Fisheries</span>
+                            <h3 class="service-name uppercase">Fish Transport Permit</h3>
+                            <p class="service-desc">Permit for transporting fish products.</p>
+                        </div>
+                        <a href="/user/license/fisheries/transport" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fisheries">
+                        <div class="flex-1">
+                            <span class="type-badge">Fisheries</span>
+                            <h3 class="service-name uppercase">Fish Dealer / Trade License</h3>
+                            <p class="service-desc">License for commercial fish dealing.</p>
+                        </div>
+                        <a href="/user/license/fisheries/dealer" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fisheries">
+                        <div class="flex-1">
+                            <span class="type-badge">Fisheries</span>
+                            <h3 class="service-name uppercase">Fish Processing Permit</h3>
+                            <p class="service-desc">Permit for fish processing units.</p>
+                        </div>
+                        <a href="/user/license/fisheries/processing" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                    <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fisheries">
+                        <div class="flex-1">
+                            <span class="type-badge">Fisheries</span>
+                            <h3 class="service-name uppercase">Aquatic Collection Permit</h3>
+                            <p class="service-desc">Permit for aquatic species collection.</p>
+                        </div>
+                        <a href="/user/license/fisheries/harvest" class="btn-apply block md:inline-block">APPLY</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="filter-group">
-            <button class="filter-btn active" data-filter="all">All Permits</button>
-            <button class="filter-btn" data-filter="Wildlife">Wildlife</button>
-            <button class="filter-btn" data-filter="Forest">Forest</button>
-            <button class="filter-btn" data-filter="Environment">Environment</button>
-            <button class="filter-btn" data-filter="Fisheries">Fisheries</button>
-            <button class="filter-btn" data-filter="Livestock">Livestock</button>
-            <button class="filter-btn" data-filter="Other">Other Permits</button>
-        </div>
-
-        <div class="flex flex-col gap-6 text-left" id="serviceList">
-            
-            <div id="noResults" class="w-full">
-                <i class="fas fa-search-minus text-5xl text-gray-300 mb-4 block mx-auto text-center"></i>
-                <h3 class="text-xl font-bold text-gray-700 text-center">No matching permits found</h3>
-                <p class="text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
-            </div>
-
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Other">
-                <div class="flex-1">
-                    <span class="type-badge">Trade & Logistics</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Export Permit</h3>
-                    <p class="text-gray-600">Legal permit for exporting regulated products or species.</p>
-                </div>
-                <a href="/user/license/permits/export" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Other">
-                <div class="flex-1">
-                    <span class="type-badge">Operations</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Operation Permit</h3>
-                    <p class="text-gray-600">Authorized permit for regulated business activities.</p>
-                </div>
-                <a href="/user/license/permits/operation" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Other">
-                <div class="flex-1">
-                    <span class="type-badge">Trade & Logistics</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Import Permit</h3>
-                    <p class="text-gray-600">Clearance for the importation of regulated materials.</p>
-                </div>
-                <a href="/user/license/permits/import" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Other">
-                <div class="flex-1">
-                    <span class="type-badge">Trade & Logistics</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Wildlife Trade Permit</h3>
-                    <p class="text-gray-600">Certification for authorized wildlife species commerce.</p>
-                </div>
-                <a href="/user/license/permits/wildlife" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Other">
-                <div class="flex-1">
-                    <span class="type-badge">Logistics</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Transport Local Permit</h3>
-                    <p class="text-gray-600">Local movement permit for regulated products.</p>
-                </div>
-                <a href="/user/license/permits/local-transport" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Other">
-                <div class="flex-1">
-                    <span class="type-badge">Utilization</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Harvest Permit</h3>
-                    <p class="text-gray-600">Permit for legal harvesting of natural resources.</p>
-                </div>
-                <a href="/user/license/permits/harvest" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Livestock">
-                <div class="flex-1">
-                    <span class="type-badge">Veterinary</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Animal Transport Permit</h3>
-                    <p class="text-gray-600">Clearance for domestic movement of live animals.</p>
-                </div>
-                <a href="/user/license/livestock/animal-transport" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Livestock">
-                <div class="flex-1">
-                    <span class="type-badge">Meat Inspection</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Meat Transport / Shipping Permit</h3>
-                    <p class="text-gray-600">Requirement for transporting meat products.</p>
-                </div>
-                <a href="/user/license/livestock/meat-transport" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Livestock">
-                <div class="flex-1">
-                    <span class="type-badge">Facility</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Slaughterhouse Accreditation Permit</h3>
-                    <p class="text-gray-600">Certification for safety and hygiene standards.</p>
-                </div>
-                <a href="/user/license/livestock/slaughterhouse" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Livestock">
-                <div class="flex-1">
-                    <span class="type-badge">Registration</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Poultry Farm Registration</h3>
-                    <p class="text-gray-600">Registration for commercial poultry farms.</p>
-                </div>
-                <a href="/user/license/livestock/poultry-farm" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Livestock">
-                <div class="flex-1">
-                    <span class="type-badge">Clearance</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Animal Health Veterinary Clearance</h3>
-                    <p class="text-gray-600">Health certification for livestock operations.</p>
-                </div>
-                <a href="/user/license/livestock/animal-health" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Wildlife">
-                <div class="flex-1">
-                    <span class="type-badge">Wildlife</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Wildlife Possession & Ownership Permit</h3>
-                    <p class="text-gray-600">Ownership permit for protected species.</p>
-                </div>
-                <a href="/user/license/wildlife/ownership" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Wildlife">
-                <div class="flex-1">
-                    <span class="type-badge">Wildlife</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Wildlife Transport Licensing Permit</h3>
-                    <p class="text-gray-600">Logistics permit for wildlife movement.</p>
-                </div>
-                <a href="/user/license/wildlife/transport" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Wildlife">
-                <div class="flex-1">
-                    <span class="type-badge">Wildlife</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Wildlife Collection Licensing Permit</h3>
-                    <p class="text-gray-600">Permit for scientific wildlife collection.</p>
-                </div>
-                <a href="/user/license/wildlife/collection" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Wildlife">
-                <div class="flex-1">
-                    <span class="type-badge">Wildlife</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Wildlife Farm & Breeding Registration</h3>
-                    <p class="text-gray-600">Registration for breeding facilities.</p>
-                </div>
-                <a href="/user/license/wildlife/wildfarm" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Forest">
-                <div class="flex-1">
-                    <span class="type-badge">Forest</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Tree Cutting Permit</h3>
-                    <p class="text-gray-600">Permit for legal tree cutting.</p>
-                </div>
-                <a href="/user/license/forest/tree-cutting" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Forest">
-                <div class="flex-1">
-                    <span class="type-badge">Forest</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Timber Wood / Transfer Permit</h3>
-                    <p class="text-gray-600">Permit for timber product transport.</p>
-                </div>
-                <a href="/user/license/forest/timber" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Forest">
-                <div class="flex-1">
-                    <span class="type-badge">Forest</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Reforestation Agreement</h3>
-                    <p class="text-gray-600">Contracts for forest rehabilitation.</p>
-                </div>
-                <a href="/user/license/forest/reforestation" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Forest">
-                <div class="flex-1">
-                    <span class="type-badge">Forest</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Nursery Accreditation</h3>
-                    <p class="text-gray-600">Accreditation for forest nurseries.</p>
-                </div>
-                <a href="/user/license/forest/nursery" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Forest">
-                <div class="flex-1">
-                    <span class="type-badge">Forest</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Non-Timber Collection Permit</h3>
-                    <p class="text-gray-600">Permit for rattan, honey, and vines collection.</p>
-                </div>
-                <a href="/user/license/forest/non-timber" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Environment Compliance Certificate (ECC)</h3>
-                    <p class="text-gray-600">Certification for environmental impact compliance.</p>
-                </div>
-                <a href="/user/license/environment/ecc" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Waste Management Permit</h3>
-                    <p class="text-gray-600">Permit for waste disposal operations.</p>
-                </div>
-                <a href="/user/license/environment/waste" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Water Use / Discharge Clearance</h3>
-                    <p class="text-gray-600">Clearance for water extraction and discharge.</p>
-                </div>
-                <a href="/user/license/environment/water" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Hazardous Material Handling Clearance</h3>
-                    <p class="text-gray-600">Clearance for toxic and hazardous materials.</p>
-                </div>
-                <a href="/user/license/environment/hazardous" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fisheries">
-                <div class="flex-1">
-                    <span class="type-badge">Fisheries</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Aquaculture Farm Registration</h3>
-                    <p class="text-gray-600">Registration for aquaculture operations.</p>
-                </div>
-                <a href="/user/license/fisheries/aquafarm" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fisheries">
-                <div class="flex-1">
-                    <span class="type-badge">Fisheries</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Fish Transport Permit</h3>
-                    <p class="text-gray-600">Permit for transporting fish products.</p>
-                </div>
-                <a href="/user/license/fisheries/transport" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fisheries">
-                <div class="flex-1">
-                    <span class="type-badge">Fisheries</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Fish Dealer / Trade License</h3>
-                    <p class="text-gray-600">License for commercial fish dealing.</p>
-                </div>
-                <a href="/user/license/fisheries/dealer" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fisheries">
-                <div class="flex-1">
-                    <span class="type-badge">Fisheries</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Processing Facility Permit</h3>
-                    <p class="text-gray-600">Permit for fish processing units.</p>
-                </div>
-                <a href="/user/license/fisheries/processing" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Fisheries">
-                <div class="flex-1">
-                    <span class="type-badge">Fisheries</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Collection / Harvest Permit</h3>
-                    <p class="text-gray-600">Permit for aquatic species collection.</p>
-                </div>
-                <a href="/user/license/fisheries/harvest" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Wastewater Discharge Permit (WWDP)</h3>
-                    <p class="text-gray-600">Permit to discharge regulated effluents.</p>
-                </div>
-                <a href="/user/license/environment/water-dispose" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Permit to Operate (PTO) Air Pollution Source Installation/Equipment</h3>
-                    <p class="text-gray-600">Permit to operate covered air pollution source installations/equipment</p>
-                </div>
-                <a href="/user/license/environment/permit-to-operate-air" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Hazardous Waste Generator (HWG) Registration / HWG ID</h3>
-                    <p class="text-gray-600">Registration of hazardous waste generators through the Hazardous Waste Management System (HWMS)</p>
-                </div>
-                <a href="/user/license/environment/hazardous-waste" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">PICCS (Philippine Inventory of Chemicals and Chemical Substances) validation / PICCS Tool certificate</h3>
-                    <p class="text-gray-600">Permits to register chemicals in PICCS</p>
-                </div>
-                <a href="/user/license/environment/piccs" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">PCL Compliance Certificate</h3>
-                    <p class="text-gray-600">Compliance for chemicals designated as PCL.</p>
-                </div>
-                <a href="/user/license/environment/pcl" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-                        <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="environment">
-                <div class="flex-1">
-                    <span class="type-badge">Environment</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Chemical Control Orders (CCOs)</h3>
-                    <p class="text-gray-600">Specific orders regulating/prohibiting/limiting certain priority chemicals.</p>
-                </div>
-                <a href="/user/license/environment/cco" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            <div class="service-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 searchable-item" data-category="Forest">
-                <div class="flex-1">
-                    <span class="type-badge">Forest</span>
-                    <h3 class="service-name text-2xl font-bold text-[#2d5016] mb-3 uppercase">Certificate of Tree Plantation Ownership (CTPO)</h3>
-                    <p class="text-gray-600">Plantation registration/certification to support harvesting/transport and related clearances.</p>
-                </div>
-                <a href="/user/license/permits/local-transport" class="btn btn-custom-apply uppercase text-sm d-flex align-items-center">Apply <i class="fas fa-arrow-right ml-2"></i></a>
-            </div>
-            
-
-
-
-        </div>
-
-        <div class="mt-4">
-            <a href="/user/dashboard" class="back-link">
-                <i class="fas fa-chevron-left"></i> Back to Dashboard
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center sm:text-left">
+            <a href="/user/dashboard" class="text-denr-dark font-bold no-underline hover:underline inline-flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Return to Dashboard
             </a>
         </div>
     </div>
@@ -518,18 +465,13 @@
 
             items.forEach(item => {
                 const name = item.querySelector('.service-name').innerText.toLowerCase();
+                const desc = item.querySelector('.service-desc').innerText.toLowerCase();
                 const category = item.getAttribute('data-category');
-                const matchesSearch = name.includes(searchText);
+                const matchesSearch = name.includes(searchText) || desc.includes(searchText);
                 const matchesFilter = (activeFilter === 'all' || category === activeFilter);
-
-                if (matchesSearch && matchesFilter) {
-                    item.style.display = "flex";
-                    count++;
-                } else {
-                    item.style.display = "none";
-                }
+                if (matchesSearch && matchesFilter) { item.style.display = "flex"; count++; } else { item.style.display = "none"; }
             });
-            noResults.style.display = (count === 0) ? "block" : "none";
+            noResults.classList.toggle('hidden', count > 0);
         }
 
         searchInput.addEventListener('keyup', filterList);
@@ -538,9 +480,9 @@
                 filterBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 filterList();
+                if(window.innerWidth < 1024) window.scrollTo({ top: searchInput.offsetTop - 20, behavior: 'smooth' });
             });
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -12,147 +12,117 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-green-800">
-                Reforestation Agreement
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Forest Management Bureau • National Greening Program (NGP) Compliance
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Reforestation Agreement</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Forest Management Bureau • NGP Compliance Section</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="reforestationForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="space-y-6">
-                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-seedling"></i> Project Specifications
-                    </h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="lg:col-span-2">
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Planting Area Location <span class="text-red-500">*</span></label>
-                            <input type="text" id="location" name="location" required placeholder="Sitio, Watershed Area, or Province" 
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Target Species <span class="text-red-500">*</span></label>
-                            <select id="species" name="species" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none bg-white font-medium text-gray-700 text-sm appearance-none">
-                                <option value="" disabled selected>Select species...</option>
-                                <option value="native">Indigenous / Native</option>
-                                <option value="mangrove">Mangrove Species</option>
-                                <option value="dipterocarp">Dipterocarp</option>
-                                <option value="bamboo">Bamboo</option>
-                                <option value="fruit">Agro-Forestry (Fruit Trees)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Total Seedlings <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <input type="number" id="seedlings" name="seedlings" required placeholder="0" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-bold text-gray-700">
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-gray-400 text-[9px]">HEADS</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="max-w-md">
-                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Project Timeline <span class="text-red-500">*</span></label>
-                        <input type="text" id="timeline" name="timeline" required placeholder="Ex: 3 Years (2026 - 2029)" 
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-600 outline-none font-medium text-gray-700 transition-all">
-                    </div>
-                </div>
-
-                <div class="mt-12 mb-6">
-                    <h3 class="text-green-800 font-black text-sm uppercase tracking-widest border-b-2 border-green-100 pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-open"></i> Technical Documentation
-                    </h3>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Sitemap / GIS Delineation</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[160px]">
-                            <input type="file" id="mapFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <div class="space-y-2 pointer-events-none">
-                                <i class="fa-solid fa-map-location-dot text-3xl text-gray-300 group-hover:text-green-600 transition-colors"></i>
-                                <p class="text-[11px] font-black text-gray-400 group-hover:text-green-800 uppercase tracking-tighter">Upload Sitemap</p>
-                                <p id="mapName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px]"></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Planting Plan / Schedule</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[160px]">
-                            <input type="file" id="planFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <div class="space-y-2 pointer-events-none">
-                                <i class="fa-solid fa-calendar-check text-3xl text-gray-300 group-hover:text-green-600 transition-colors"></i>
-                                <p class="text-[11px] font-black text-gray-400 group-hover:text-green-800 uppercase tracking-tighter">Upload Planting Plan</p>
-                                <p id="planName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px]"></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 group">
-                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 text-center block">Maintenance & Protection</label>
-                        <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-white hover:border-green-600 hover:shadow-md transition-all duration-300 text-center flex flex-col items-center justify-center min-h-[160px]">
-                            <input type="file" id="maintenanceFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <div class="space-y-2 pointer-events-none">
-                                <i class="fa-solid fa-shield-halved text-3xl text-gray-300 group-hover:text-green-600 transition-colors"></i>
-                                <p class="text-[11px] font-black text-gray-400 group-hover:text-green-800 uppercase tracking-tighter">Upload M&P Plan</p>
-                                <p id="maintenanceName" class="text-[9px] text-green-600 font-bold truncate max-w-[150px]"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
-                    <div class="flex flex-col">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left mb-2">
-                            Agreement processing activates once all specifications and 3 technical files are uploaded.
-                        </p>
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-seedling"></i> Project Specifications
+                        </h3>
                         
-                        <div class="bg-amber-50 px-5 py-3 rounded-xl border border-green-700 inline-flex items-center gap-3">
-                            <span class="text-[11px] font-black text-green-700 uppercase tracking-widest">
-                                Agreement Fee:
-                            </span>
-                            <span class="text-2xl font-black text-green-700">
-                                ₱ <span class="xendit-amount-value">4,500.00</span>
-                            </span>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Planting Location <span class="text-red-500">*</span></label>
+                                <input type="text" id="location" name="location" required placeholder="Sitio, Watershed, or Province" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Target Species <span class="text-red-500">*</span></label>
+                                    <select id="species" name="species" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                        <option value="" disabled selected>Select...</option>
+                                        <option value="native">Indigenous</option>
+                                        <option value="mangrove">Mangrove</option>
+                                        <option value="fruit">Agro-Forestry</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Total Seedlings <span class="text-red-500">*</span></label>
+                                    <input type="number" id="seedlings" name="seedlings" required placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none font-bold text-xs">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Project Timeline <span class="text-red-500">*</span></label>
+                                <input type="text" id="timeline" name="timeline" required placeholder="Ex: 3 Years (2026 - 2029)" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open"></i> Technical Documentation
+                        </h3>
+                        
+                        <div class="flex flex-col gap-3">
+                            
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="mapFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-map-location-dot text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
+                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Sitemap / GIS Delineation</p>
+                                </div>
+                                <p id="mapName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-0.5"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="planFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-calendar-check text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
+                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Planting Plan & Schedule</p>
+                                </div>
+                                <p id="planName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-0.5"></p>
+                            </div>
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="maintenanceFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-shield-halved text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
+                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Maintenance & Protection Plan</p>
+                                </div>
+                                <p id="maintenanceName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-0.5"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Reforestation project agreement fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Agreement Fee:</span>
+                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">4,500.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="4500">
                         </div>
                     </div>
-
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-green-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Agreement</button>
                     </div>
                 </div>
             </form>
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
-            Forest Management Bureau • National Greening Program 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">Forest Management Bureau • National Greening Program 2026</p>
     </div>
-
-    
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('reforestationForm');
             const submitBtn = document.getElementById('submitBtn');
-            
-            const fields = ['location', 'species', 'seedlings', 'timeline'];
             const fileConfigs = [
                 { id: 'mapFile', name: 'mapName' },
                 { id: 'planFile', name: 'planName' },
@@ -160,47 +130,46 @@
             ];
 
             function checkValidation() {
-                const allFieldsValid = fields.every(id => {
-                    const el = document.getElementById(id);
-                    return el.value.trim() !== "" && (el.type !== 'number' || el.value > 0);
-                });
-                
-                const allFilesValid = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
+                const loc = document.getElementById('location').value.trim();
+                const spc = document.getElementById('species').value;
+                const sdl = document.getElementById('seedlings').value;
+                const tml = document.getElementById('timeline').value.trim();
+                const filesDone = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-                if (allFieldsValid && allFilesValid) {
+                if (loc && spc && sdl > 0 && tml && filesDone) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.add('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.remove('hover:bg-green-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
-                const display = document.getElementById(f.name);
-                input.addEventListener('change', () => {
-                    display.textContent = input.files.length > 0 ? `Selected: ${input.files[0].name}` : "";
+                input.addEventListener('change', (e) => {
+                    document.getElementById(f.name).textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
                     checkValidation();
                 });
             });
 
-            fields.forEach(id => {
-                const el = document.getElementById(id);
+            form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
                 el.addEventListener('change', checkValidation);
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => {
                 setTimeout(() => {
-                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
+                    document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
                     checkValidation();
                 }, 10);
             });
         });
     </script>
 </body>
-
 </html>

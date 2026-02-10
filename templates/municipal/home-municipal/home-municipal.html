@@ -4,186 +4,243 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DENR | Landing Page Analytics</title>
+
+  <!-- Tailwind ONLY -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
+  <!-- Tailwind theme tokens (gov look) -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { gov: ['Verdana', 'Arial', 'Tahoma', 'sans-serif'] },
+          colors: {
+            gov: {
+              text: '#111827',
+              muted: '#4b5563',
+              border: '#d1d5db',
+              bg: '#f3f4f6',
+              panel: '#ffffff',
+              primary: '#0f172a',
+              focus: 'rgba(5, 150, 105, 0.18)',
+            }
+          },
+          letterSpacing: {
+            gov: '0.10em',
+            gov2: '0.12em',
+            gov3: '0.18em',
+          }
+        }
+      }
+    }
+  </script>
 
-   
+  <style>
+    @media print{
+      .print\:hidden{ display:none !important; }
+      body{ background:#fff !important; }
+      .print\:border{ border:1px solid #999 !important; }
+    }
+  </style>
 </head>
 
-
-<body>
+<body class="min-h-screen bg-gov-bg font-gov text-gov-text">
   {% include 'municipal/sidenav.html' %}
   {% include 'municipal/header.html' %}
 
-
-<script type="module">
+  <script type="module">
     import { auth } from '/static/js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    
+
     window.logout = async function() {
-        try {
-            await signOut(auth);
-            window.location.href = '/';
-        } catch (error) {
-            console.error('Logout error:', error);
-            alert('Logout failed: ' + error.message);
-        }
+      try {
+        await signOut(auth);
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed: ' + error.message);
+      }
     };
-</script>
+  </script>
 
-</body>
-</html>
-
-
-
-
-  <div class="page-wrap">
-
+  <div class="p-4">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 m-0 pl-6">DENR Portal Analytics</h1>
-        <p class="text-slate-500 font-semibold mt-1 mb-0 pl-6">
+    <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div class="pl-2 md:pl-6">
+        <h1 class="m-0 text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">DENR Portal Analytics</h1>
+        <p class="mt-1 text-[13px] text-gov-muted">
           Graphs and data analytics for Service Requests, Licenses, Permits, and Application Status.
         </p>
       </div>
 
-      <div class="flex gap-2">
-        <button class="btn-outline-soft" type="button" id="btnRandomize">
-          <span class="material-icons-round align-middle" style="font-size:18px;">shuffle</span>
+      <div class="flex flex-wrap gap-2">
+        <button
+          class="print:hidden inline-flex items-center gap-2 rounded-[6px] border border-gov-border bg-white px-3.5 py-2.5 text-[12px] font-bold uppercase tracking-gov text-slate-800 hover:bg-slate-50 focus:outline-none focus:ring-4"
+          style="--tw-ring-color: rgba(5,150,105,0.18);"
+          type="button"
+          id="btnAddUser"
+          aria-label="Add User"
+        >
+          <span class="material-icons-round text-[18px]">person_add</span>
+          Add User
+        </button>
+
+        <button
+          class="print:hidden inline-flex items-center gap-2 rounded-[6px] border border-gov-border bg-white px-3.5 py-2.5 text-[12px] font-bold uppercase tracking-gov text-slate-800 hover:bg-slate-50 focus:outline-none focus:ring-4"
+          style="--tw-ring-color: rgba(5,150,105,0.18);"
+          type="button"
+          id="btnRandomize"
+          aria-label="Demo Refresh"
+        >
+          <span class="material-icons-round text-[18px]">shuffle</span>
           Demo Refresh
         </button>
-        <button class="btn-primary-soft" type="button" id="btnExport">
-          <span class="material-icons-round align-middle" style="font-size:18px;">file_download</span>
+
+        <button
+          class="print:hidden inline-flex items-center gap-2 rounded-[6px] border border-gov-primary bg-gov-primary px-3.5 py-2.5 text-[12px] font-bold uppercase tracking-gov text-white hover:brightness-105 focus:outline-none focus:ring-4"
+          style="--tw-ring-color: rgba(5,150,105,0.18);"
+          type="button"
+          id="btnExport"
+          aria-label="Export Demo"
+        >
+          <span class="material-icons-round text-[18px]">file_download</span>
           Export (Demo)
         </button>
       </div>
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-      <div class="kpi-card p-4">
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Total Service Requests</div>
-            <div class="text-3xl font-black mt-2" id="kpiService">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">Total</div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="kpi-card p-4">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Total Licenses/Permit</div>
-            <div class="text-3xl font-black mt-2" id="kpiLicense">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">Total</div>
+            <div class="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-700">Total Service Requests</div>
+            <div class="mt-2 text-3xl font-semibold" id="kpiService">0</div>
+            <div class="mt-1 text-sm text-slate-600">Total</div>
           </div>
         </div>
       </div>
 
-      <div class="kpi-card p-4">
+      <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Total Transactions</div>
-            <div class="text-3xl font-black mt-2" id="kpiPermit">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">Total</div>
+            <div class="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-700">Total Licenses/Permit</div>
+            <div class="mt-2 text-3xl font-semibold" id="kpiLicense">0</div>
+            <div class="mt-1 text-sm text-slate-600">Total</div>
           </div>
         </div>
       </div>
 
-      <div class="kpi-card p-4">
+      <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Total Applications</div>
-            <div class="text-3xl font-black mt-2" id="kpiApps">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">All statuses</div>
+            <div class="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-700">Total Transactions</div>
+            <div class="mt-2 text-3xl font-semibold" id="kpiPermit">0</div>
+            <div class="mt-1 text-sm text-slate-600">Total</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-700">Total Applications</div>
+            <div class="mt-2 text-3xl font-semibold" id="kpiApps">0</div>
+            <div class="mt-1 text-sm text-slate-600">All statuses</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Charts Row -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+    <div class="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
       <!-- Chart: Requests/Licenses/Permits -->
-      <div class="panel p-4">
-        <div class="flex items-center justify-between mb-3">
+      <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
+        <div class="mb-3 flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-black text-slate-900 m-0">Volume by Type</h2>
-            <p class="text-slate-500 font-semibold mt-1 mb-0">Service Requests, Licenses/Permits, Transactions </p>
+            <h2 class="m-0 text-xl font-bold text-slate-900">Volume by Type</h2>
+            <p class="mt-1 text-[13px] text-gov-muted">Service Requests, Licenses/Permits, Transactions</p>
           </div>
-          <span class="pill">
-            <span class="material-icons-round" style="font-size:16px;">insights</span>
+
+          <span class="inline-flex items-center gap-2 rounded-full border border-gov-border bg-slate-50 px-2.5 py-1.5 text-[13px] font-semibold text-slate-700">
+            <span class="material-icons-round text-[16px]">insights</span>
             Summary
           </span>
         </div>
-        <div style="height: 320px;">
+
+        <div class="h-[320px]">
           <canvas id="typeChart"></canvas>
         </div>
       </div>
 
       <!-- Chart: Application Status -->
-      <div class="panel p-4">
-        <div class="flex items-center justify-between mb-3">
+      <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
+        <div class="mb-3 flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-black text-slate-900 m-0">Application Status</h2>
-            <p class="text-slate-500 font-semibold mt-1 mb-0">Pending, Reject, To Review, Approved</p>
+            <h2 class="m-0 text-xl font-bold text-slate-900">Application Status</h2>
+            <p class="mt-1 text-[13px] text-gov-muted">Pending, Rejected, To Review, Approved</p>
           </div>
-          <span class="pill">
-            <span class="material-icons-round" style="font-size:16px;">donut_large</span>
+
+          <span class="inline-flex items-center gap-2 rounded-full border border-gov-border bg-slate-50 px-2.5 py-1.5 text-[13px] font-semibold text-slate-700">
+            <span class="material-icons-round text-[16px]">donut_large</span>
             Status Split
           </span>
         </div>
-        <div style="height: 320px;">
+
+        <div class="h-[320px]">
           <canvas id="statusChart"></canvas>
         </div>
       </div>
     </div>
 
     <!-- Analytics Table -->
-    <div class="panel p-4">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+    <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
+      <div class="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 class="text-xl font-black text-slate-900 m-0">Analytics Breakdown</h2>
-          <p class="text-slate-500 font-semibold mt-1 mb-0">
-            Quick view of totals by type and application statuses.
-          </p>
+          <h2 class="m-0 text-xl font-bold text-slate-900">Analytics Breakdown</h2>
+          <p class="mt-1 text-[13px] text-gov-muted">Quick view of totals by type and application statuses.</p>
         </div>
-        <div class="flex gap-2">
-          <button class="btn-outline-soft" type="button" id="btnPrint">
-            <span class="material-icons-round align-middle" style="font-size:18px;">print</span>
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            class="print:hidden inline-flex items-center gap-2 rounded-[6px] border border-gov-border bg-white px-3.5 py-2.5 text-[12px] font-bold uppercase tracking-gov text-slate-800 hover:bg-slate-50 focus:outline-none focus:ring-4"
+            style="--tw-ring-color: rgba(5,150,105,0.18);"
+            type="button"
+            id="btnPrint"
+            aria-label="Print"
+          >
+            <span class="material-icons-round text-[18px]">print</span>
             Print
           </button>
-          <button class="btn-primary-soft" type="button" id="btnViewDetails">
-            <span class="material-icons-round align-middle" style="font-size:18px;">visibility</span>
+
+          <button
+            class="print:hidden inline-flex items-center gap-2 rounded-[6px] border border-gov-primary bg-gov-primary px-3.5 py-2.5 text-[12px] font-bold uppercase tracking-gov text-white hover:brightness-105 focus:outline-none focus:ring-4"
+            style="--tw-ring-color: rgba(5,150,105,0.18);"
+            type="button"
+            id="btnViewDetails"
+            aria-label="View Details"
+          >
+            <span class="material-icons-round text-[18px]">visibility</span>
             View Details
           </button>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="table align-middle mb-0">
+      <div class="overflow-x-auto rounded-[6px] border border-gov-border print:border">
+        <table class="min-w-[760px] w-full border-collapse text-[16px]">
           <thead>
-            <tr>
-              <th style="min-width:200px;">Metric</th>
-              <th>Description</th>
-              <th style="min-width:140px;">Total</th>
+            <tr class="bg-slate-50">
+              <th class="border-b border-gov-border px-4 py-3 text-left text-[12px] font-bold uppercase tracking-gov2 text-slate-900" style="min-width:200px;">Metric</th>
+              <th class="border-b border-gov-border px-4 py-3 text-left text-[12px] font-bold uppercase tracking-gov2 text-slate-900">Description</th>
+              <th class="border-b border-gov-border px-4 py-3 text-left text-[12px] font-bold uppercase tracking-gov2 text-slate-900" style="min-width:140px;">Total</th>
             </tr>
           </thead>
-          <tbody id="analyticsTbody">
-            <!-- injected by JS -->
-          </tbody>
+          <tbody id="analyticsTbody"></tbody>
         </table>
       </div>
     </div>
-
   </div>
 
   <script>
@@ -206,6 +263,7 @@
       kpiPermit: document.getElementById("kpiPermit"),
       kpiApps: document.getElementById("kpiApps"),
       analyticsTbody: document.getElementById("analyticsTbody"),
+      btnAddUser: document.getElementById("btnAddUser"),
       btnRandomize: document.getElementById("btnRandomize"),
       btnExport: document.getElementById("btnExport"),
       btnPrint: document.getElementById("btnPrint"),
@@ -238,9 +296,9 @@
 
       els.analyticsTbody.innerHTML = rows.map(r => `
         <tr>
-          <td class="fw-bold text-slate-800">${r.metric}</td>
-          <td class="text-slate-600">${r.desc}</td>
-          <td class="fw-black text-slate-900">${r.total}</td>
+          <td class="border-b border-gov-border px-4 py-3 font-bold text-slate-900">${r.metric}</td>
+          <td class="border-b border-gov-border px-4 py-3 text-slate-800">${r.desc}</td>
+          <td class="border-b border-gov-border px-4 py-3 font-bold text-slate-900">${r.total}</td>
         </tr>
       `).join("");
     }
@@ -262,7 +320,7 @@
           datasets: [{
             label: "Total Count",
             data: [data.serviceRequests, data.licenses, data.permits],
-            borderWidth: 2
+            borderWidth: 1
           }]
         },
         options: {
@@ -272,9 +330,7 @@
             legend: { display: false },
             tooltip: { enabled: true }
           },
-          scales: {
-            y: { beginAtZero: true }
-          }
+          scales: { y: { beginAtZero: true } }
         }
       });
 
@@ -286,15 +342,13 @@
           labels: ["Pending", "Rejected", "To Review", "Approved"],
           datasets: [{
             data: [s.pending, s.rejected, s.toReview, s.approved],
-            borderWidth: 2
+            borderWidth: 1
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "bottom" }
-          }
+          plugins: { legend: { position: "bottom" } }
         }
       });
     }
@@ -305,7 +359,7 @@
       buildCharts();
     }
 
-    // Demo randomizer (so you can see it update)
+    // Demo randomizer
     function rand(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -323,6 +377,15 @@
       refreshAll();
     });
 
+    // ✅ Add User button (wire this to your real route/modal later)
+    els.btnAddUser.addEventListener("click", () => {
+      // Option A: route to a page
+      // window.location.href = "/municipal/users/create";
+
+      // Option B: open a modal (demo)
+      alert("Add User: connect this button to your user creation form/page (e.g., /users/add).");
+    });
+
     els.btnExport.addEventListener("click", () => {
       alert("Export (Demo): Connect this button to your backend export (CSV/PDF).");
     });
@@ -333,7 +396,6 @@
       alert("View Details: Link this to your detailed reports page (e.g., reports.html).");
     });
 
-    // Initial load
     refreshAll();
   </script>
 </body>

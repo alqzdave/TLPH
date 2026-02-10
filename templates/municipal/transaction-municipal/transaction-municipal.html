@@ -5,385 +5,202 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DENR Transactions Analytics</title>
 
+  <!-- Tailwind + Material Icons + Chart.js -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
+    /* PH Gov Web Template-style typography (Verdana/Arial/Tahoma) + subtle watermark */
     :root{
-      --bg:#ffffff;
-      --page:#f7f9fc;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --card:#ffffff;
+      --gov-font: Verdana, Arial, Tahoma, sans-serif;
     }
-
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--page);
-      color:var(--text);
+    html, body{
+      font-family: var(--gov-font);
+      font-size: 16px; /* ~12pt */
     }
-
-    .wrap{ max-width:1400px; margin:0 auto; padding:18px 18px 28px; }
-
-    .topbar{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px; margin-bottom:14px;
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      background-image: url('/static/images/denr.jpg');
+      background-repeat: no-repeat;
+      background-position: center 30%;
+      background-size: 520px;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: -1;
     }
-
-    .title h1{
-      margin:0;
-      font-size:26px;
-      font-weight:800;
-      letter-spacing:-.02em;
-    }
-    .title p{
-      margin:4px 0 0;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    .actions{
-      display:flex; gap:10px;
-      flex-wrap:wrap; align-items:center;
-      justify-content:flex-end;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:var(--bg);
-      color:var(--muted);
-      font-size:13px;
-      white-space:nowrap;
-    }
-
-    .btn{
-      border:1px solid var(--line);
-      background:var(--bg);
-      padding:8px 12px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:800;
-      font-size:13px;
-      color:var(--text);
-      white-space:nowrap;
-    }
-    .btn:hover{ background:#f8fafc; }
-
-    .toolbar{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      margin: 6px 0 14px;
-    }
-    .toolbar-left{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-    }
-    .input, .select{
-      height:40px;
-      padding:0 12px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background:var(--bg);
-      font-size:14px;
-      color:var(--text);
-      min-width: 240px;
-    }
-    .select{ min-width: 170px; }
-
-    .kpis{
-      display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
-      gap:14px;
-      margin:10px 0 18px;
-    }
-
-    .kpi{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px 16px;
-      min-height:88px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-
-    .kpi .label{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      color:var(--muted);
-      text-transform:uppercase;
-      font-size:11px;
-      letter-spacing:.08em;
-      font-weight:800;
-    }
-
-    .kpi .value{
-      font-size:28px;
-      font-weight:900;
-      margin-top:6px;
-      letter-spacing:-.02em;
-    }
-    .kpi .sub{
-      color:var(--muted);
-      font-size:12px;
-      margin-top:2px;
-    }
-
-    .grid2{
-      display:grid;
-      grid-template-columns:1.6fr 1fr;
-      gap:14px;
-      margin-bottom:18px;
-    }
-
-    .panel{
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px 14px;
-      min-height: 260px;
-      display:flex;
-      flex-direction:column;
-    }
-
-    .panel-header{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:10px;
-    }
-
-    .panel-title{
-      margin:0;
-      font-size:16px;
-      font-weight:900;
-    }
-    .panel-sub{
-      margin:2px 0 0;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .canvas-wrap{
-      flex:1;
-      min-height: 180px;
-      position:relative;
-    }
-
-    .table-panel{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px 16px 10px;
-    }
-    .table-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:10px;
-    }
-    .table-header h3{
-      margin:0;
-      font-size:18px;
-      font-weight:900;
-    }
-    .table-header p{
-      margin:2px 0 0;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      table-layout:fixed;
-    }
-
-    th,td{
-      padding:12px 10px;
-      border-top:1px solid var(--line);
-      font-size:13px;
-      text-align:left;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    th{
-      color:var(--muted);
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      font-size:11px;
-    }
-
-    td.right, th.right{ text-align:right; }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      padding:4px 8px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      font-size:12px;
-      font-weight:800;
-      color:var(--text);
-      background:#fff;
-    }
-
-    @media (max-width:1024px){
-      .kpis{ grid-template-columns:repeat(2,minmax(0,1fr)); }
-      .grid2{ grid-template-columns:1fr; }
-      .panel{ min-height:320px; }
-    }
-    @media (max-width:520px){
-      .kpis{ grid-template-columns:1fr; }
-      .actions{ justify-content:flex-start; }
-      .input{ min-width: 100%; }
-      .select{ min-width: 100%; }
-      .toolbar{ gap:12px; }
-      .toolbar-left{ width:100%; }
-      .btn{ width:100%; }
-    }
-
-    .badge-paid { color: green; }
-    .badge-pending { color: orange; }
-    .badge-failed { color: red; }
-
   </style>
 </head>
 
-<body>
+<body class="min-h-screen bg-gray-100 text-slate-900">
+  {% include 'municipal/header.html' %}
+  {% include 'municipal/sidenav.html' %}
 
-    {% include 'municipal/header.html' %}
-    {% include 'municipal/sidenav.html' %}
-    
-  <div class="wrap">
-    <div class="topbar">
-      <div class="title">
-        <h1>DENR Transactions Analytics</h1>
-        <p>Graphs and analytics for payments and transaction status (Municipality-scoped view).</p>
+  <div class="mx-auto w-full max-w-[1400px] px-4 py-5">
+    <!-- Topbar -->
+    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-4">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+          DENR Transactions Analytics
+        </h1>
+        <p class="mt-1 text-sm text-slate-600">
+          Graphs and analytics for payments and transaction status (Municipality-scoped view).
+        </p>
       </div>
 
-      <div class="actions">
-        <div class="chip" id="scopeChip">Municipality: —</div>
-        <button class="btn" id="demoRefreshBtn">Demo Refresh</button>
-        <button class="btn" id="exportBtn">Export (Demo)</button>
+      <div class="flex flex-wrap items-center gap-2 md:justify-end">
+        <div id="scopeChip"
+             class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-700">
+          Municipality: —
+        </div>
+
+        <button id="demoRefreshBtn"
+                class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-800 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                type="button">
+          <span class="material-icons-round text-[18px]">shuffle</span>
+          Demo Refresh
+        </button>
+
+        <button id="exportBtn"
+                class="inline-flex items-center gap-2 rounded-md border border-slate-900 bg-slate-900 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                type="button">
+          <span class="material-icons-round text-[18px]">file_download</span>
+          Export (Demo)
+        </button>
       </div>
     </div>
 
-    <section class="kpis">
-      <div class="kpi">
-        <div class="label"><span>Total Transactions</span><span></span></div>
-        <div class="value" id="kpiTotalTx">0</div>
-        <div class="sub">In your municipality</div>
+    <!-- KPI -->
+    <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-4">
+      <div class="rounded-md border border-gray-300 bg-white p-4">
+        <div class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Total Transactions</div>
+        <div class="mt-2 text-3xl font-bold text-slate-900" id="kpiTotalTx">0</div>
+        <div class="mt-1 text-sm text-slate-600">In your municipality</div>
       </div>
 
-      <div class="kpi">
-        <div class="label"><span>Total Paid</span><span></span></div>
-        <div class="value" id="kpiPaid">0</div>
-        <div class="sub">Paid transactions</div>
+      <div class="rounded-md border border-gray-300 bg-white p-4">
+        <div class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Total Paid</div>
+        <div class="mt-2 text-3xl font-bold text-slate-900" id="kpiPaid">0</div>
+        <div class="mt-1 text-sm text-slate-600">Paid transactions</div>
       </div>
 
-      <div class="kpi">
-        <div class="label"><span>Total Pending</span><span></span></div>
-        <div class="value" id="kpiPending">0</div>
-        <div class="sub">Awaiting payment</div>
+      <div class="rounded-md border border-gray-300 bg-white p-4">
+        <div class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Total Pending</div>
+        <div class="mt-2 text-3xl font-bold text-slate-900" id="kpiPending">0</div>
+        <div class="mt-1 text-sm text-slate-600">Awaiting payment</div>
       </div>
 
-      <div class="kpi">
-        <div class="label"><span>Total Amount Paid</span><span></span></div>
-        <div class="value" id="kpiAmount">₱0.00</div>
-        <div class="sub">Sum of paid amounts</div>
-      </div>
-    </section>
-
-    <section class="grid2">
-      <div class="panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">Volume by Type</div>
-            <div class="panel-sub">Import Permit, Licensing Fees, Service Fees, Others</div>
-          </div>
-          <div class="chip">Summary</div>
-        </div>
-        <div class="canvas-wrap"><canvas id="typeBar"></canvas></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">Transaction Status</div>
-            <div class="panel-sub">Paid, Pending, Failed</div>
-          </div>
-          <div class="chip">Status Split</div>
-        </div>
-        <div class="canvas-wrap"><canvas id="statusDonut"></canvas></div>
+      <div class="rounded-md border border-gray-300 bg-white p-4">
+        <div class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Total Amount Paid</div>
+        <div class="mt-2 text-3xl font-bold text-slate-900" id="kpiAmount">₱0.00</div>
+        <div class="mt-1 text-sm text-slate-600">Sum of paid amounts</div>
       </div>
     </section>
 
-    <section class="table-panel">
-      <div class="table-header">
+    <!-- Charts -->
+    <section class="grid grid-cols-1 gap-3 xl:grid-cols-2 mb-4">
+      <div class="rounded-md border border-gray-300 bg-white p-4">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Volume by Type</h2>
+            <p class="mt-1 text-sm text-slate-600">Import Permit, Licensing Fees, Service Fees, Others</p>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-700">
+            <span class="material-icons-round text-[18px]">insights</span>
+            Summary
+          </span>
+        </div>
+        <div class="relative h-[320px]">
+          <canvas id="typeBar"></canvas>
+        </div>
+      </div>
+
+      <div class="rounded-md border border-gray-300 bg-white p-4">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Transaction Status</h2>
+            <p class="mt-1 text-sm text-slate-600">Paid, Pending, Failed</p>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-700">
+            <span class="material-icons-round text-[18px]">donut_large</span>
+            Status Split
+          </span>
+        </div>
+        <div class="relative h-[320px]">
+          <canvas id="statusDonut"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="rounded-md border border-gray-300 bg-white p-4">
+      <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between mb-3">
         <div>
-          <h3>Transactions</h3>
-          <p>Per-transaction view (ID, Payer, Type, Date, Status, Amount) in your municipality.</p>
-        </div>
-        <div class="chip">Currency: Philippine Peso (₱)</div>
-      </div>
-
-      <!-- Search + Status Filter -->
-      <div class="toolbar" style="margin: 6px 0 12px;">
-        <div class="toolbar-left">
-          <input
-            id="searchInput"
-            class="input"
-            type="text"
-            placeholder="Search by ID, Payer, or Type…"
-          />
-
-          <select id="statusSelect" class="select">
-            <option value="all">All Status</option>
-            <option value="Paid">Paid</option>
-            <option value="Pending">Pending</option>
-            <option value="Failed">Failed</option>
-          </select>
-
-          <button class="btn" id="searchBtn">Search</button>
+          <h3 class="text-lg font-bold text-slate-900">Transactions</h3>
+          <p class="mt-1 text-sm text-slate-600">
+            Per-transaction view (ID, Payer, Type, Date, Status, Amount) in your municipality.
+          </p>
         </div>
 
-        <div class="chip" id="resultsChip">Showing 0 of 0</div>
+        <div class="inline-flex items-center rounded-full border border-gray-300 bg-gray-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-700">
+          Currency: Philippine Peso (₱)
+        </div>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th style="width:14%;">ID</th>
-            <th style="width:20%;">Payer</th>
-            <th style="width:18%;">Type</th>
-            <th style="width:16%;">Date</th>
-            <th style="width:14%;">Status</th>
-            <th class="right" style="width:18%;">Amount</th>
-          </tr>
-        </thead>
-        <tbody id="txBody"></tbody>
-      </table>
+      <!-- Search + Filter -->
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:flex-wrap">
+          <div class="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 focus-within:ring-4 focus-within:ring-emerald-100 focus-within:border-emerald-400">
+            <span class="material-icons-round text-slate-500">search</span>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Search by ID, Payer, or Type…"
+              class="w-[260px] max-w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
+            />
+          </div>
+
+          <div class="relative">
+            <select id="statusSelect"
+                    class="h-[42px] rounded-md border border-gray-300 bg-gray-50 px-3 pr-10 text-xs font-bold uppercase tracking-[0.12em] text-slate-800 outline-none hover:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100">
+              <option value="all">All Status</option>
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Failed">Failed</option>
+            </select>
+            <span class="material-icons-round pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">expand_more</span>
+          </div>
+
+          <button id="searchBtn"
+                  class="inline-flex items-center justify-center rounded-md border border-slate-900 bg-slate-900 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                  type="button">
+            Search
+          </button>
+        </div>
+
+        <div id="resultsChip"
+             class="inline-flex items-center rounded-full border border-gray-300 bg-gray-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-700">
+          Showing 0 of 0
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-fixed border-collapse">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="border-y border-gray-300 px-3 py-3 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-600 w-[14%]">ID</th>
+              <th class="border-y border-gray-300 px-3 py-3 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-600 w-[20%]">Payer</th>
+              <th class="border-y border-gray-300 px-3 py-3 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-600 w-[18%]">Type</th>
+              <th class="border-y border-gray-300 px-3 py-3 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-600 w-[16%]">Date</th>
+              <th class="border-y border-gray-300 px-3 py-3 text-left text-xs font-bold uppercase tracking-[0.12em] text-slate-600 w-[14%]">Status</th>
+              <th class="border-y border-gray-300 px-3 py-3 text-right text-xs font-bold uppercase tracking-[0.12em] text-slate-600 w-[18%]">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
     </section>
   </div>
 
@@ -394,7 +211,6 @@
      ******************************************************************/
     const CURRENT_MUNICIPALITY = "San Juan";
 
-    // Demo data now includes payer + date
     const ALL_TRANSACTIONS = [
       { id:"TX-1001", municipality:"San Juan", payer:"Juan Dela Cruz", type:"Import Permit",  date:"2026-02-01", status:"Paid",    amount:1250.00 },
       { id:"TX-1002", municipality:"San Juan", payer:"Maria Santos",   type:"Licensing Fee", date:"2026-02-03", status:"Pending", amount:0.00 },
@@ -454,7 +270,6 @@
           (t.type || "").toLowerCase().includes(q);
 
         const matchStatus = status === "all" || t.status === status;
-
         return matchQuery && matchStatus;
       });
 
@@ -491,7 +306,6 @@
       const typeLabels = Object.keys(stats.byType);
       const typeValues = Object.values(stats.byType);
 
-      // Bar
       if (barChart) barChart.destroy();
       barChart = new Chart(document.getElementById("typeBar"), {
         type: "bar",
@@ -504,7 +318,6 @@
         }
       });
 
-      // Donut
       if (donutChart) donutChart.destroy();
       donutChart = new Chart(document.getElementById("statusDonut"), {
         type: "doughnut",
@@ -516,33 +329,37 @@
       });
     }
 
-   function statusBadge(status) {
-  return `<span class="badge badge-${status.toLowerCase()}">${status}</span>`;
-}
-
+    function statusBadge(status) {
+      const base = "inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]";
+      if (status === "Paid") return `<span class="${base} text-emerald-800">Paid</span>`;
+      if (status === "Pending") return `<span class="${base} text-amber-800">Pending</span>`;
+      return `<span class="${base} text-rose-800">Failed</span>`;
+    }
 
     function renderTransactionsTable(data){
-      // Optional: sort newest first
       const sorted = [...data].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
-
       txBody.innerHTML = "";
 
       for (const t of sorted){
         txBody.innerHTML += `
-          <tr>
-            <td title="${t.id}">${t.id}</td>
-            <td title="${t.payer || ""}">${t.payer ? t.payer : "—"}</td>
-            <td title="${t.type}">${t.type}</td>
-            <td title="${t.date}">${formatDate(t.date)}</td>
-            <td>${statusBadge(t.status)}</td>
-            <td class="right">${peso.format(Number(t.amount) || 0)}</td>
+          <tr class="border-b border-gray-200">
+            <td class="px-3 py-3 text-sm text-slate-900" title="${t.id}">${t.id}</td>
+            <td class="px-3 py-3 text-sm text-slate-900" title="${t.payer || ""}">${t.payer ? t.payer : "—"}</td>
+            <td class="px-3 py-3 text-sm text-slate-900" title="${t.type}">${t.type}</td>
+            <td class="px-3 py-3 text-sm text-slate-900" title="${t.date}">${formatDate(t.date)}</td>
+            <td class="px-3 py-3 text-sm">${statusBadge(t.status)}</td>
+            <td class="px-3 py-3 text-sm text-right text-slate-900">${peso.format(Number(t.amount) || 0)}</td>
           </tr>
         `;
       }
 
       if (txBody.innerHTML.trim() === "") {
         txBody.innerHTML = `
-          <tr><td colspan="6" style="color:#64748b;">No transactions found for the selected search/filter.</td></tr>
+          <tr>
+            <td colspan="6" class="px-3 py-4 text-sm text-slate-600">
+              No transactions found for the selected search/filter.
+            </td>
+          </tr>
         `;
       }
     }
@@ -550,16 +367,15 @@
     function renderAll(){
       scopeChip.textContent = `Municipality: ${CURRENT_MUNICIPALITY}`;
 
-      const base = scopedBaseData();               // municipality-only
-      const filtered = applySearchAndStatus(base); // search + status filter
+      const base = scopedBaseData();
+      const filtered = applySearchAndStatus(base);
 
-      const stats = computeStats(filtered);        // KPIs/charts reflect filtered view
+      const stats = computeStats(filtered);
       renderKpis(stats);
       renderCharts(stats);
       renderTransactionsTable(filtered);
     }
 
-    // Demo buttons
     document.getElementById("demoRefreshBtn").addEventListener("click", () => {
       ALL_TRANSACTIONS.sort(() => Math.random() - 0.5);
       renderAll();
@@ -569,7 +385,6 @@
       alert("Demo export. In production, export only municipality-scoped & filtered data.");
     });
 
-    // Auto-run filters
     let debounce;
     searchInput.addEventListener("input", () => {
       clearTimeout(debounce);
@@ -579,12 +394,10 @@
     statusSelect.addEventListener("change", renderAll);
     searchBtn.addEventListener("click", renderAll);
 
-    // Enter triggers search
     searchInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") renderAll();
     });
 
-    // Initial render
     renderAll();
   </script>
 </body>

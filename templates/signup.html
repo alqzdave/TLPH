@@ -244,8 +244,13 @@
 </head>
 <body>
     <div class="container">
-                <h2>Registration</h2>
-                <p class="subtitle">Fill in your details to register</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="margin-bottom: 5px;">Registration</h2>
+                        <p class="subtitle" style="margin-bottom: 0;">Fill in your details to register</p>
+                    </div>
+                    <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo" style="width: 80px; height: 80px; object-fit: contain;">
+                </div>
                 
                 <form id="signupForm">
                     <h3 class="step-title">Registration Form</h3>

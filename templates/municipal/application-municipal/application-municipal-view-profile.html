@@ -5,28 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Applicant Profile | Official View</title>
 
-  <!-- Pure Tailwind -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
+  <!-- Optional: make the “gov” look easy to reuse via Tailwind theme tokens -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            gov: ['Verdana', 'Arial', 'Tahoma', 'sans-serif'],
+          },
+          colors: {
+            gov: {
+              text: '#111827',
+              muted: '#4b5563',
+              border: '#d1d5db',
+              bg: '#f3f4f6',
+              panel: '#ffffff',
+              primary: '#0f172a',
+              focus: 'rgba(5, 150, 105, 0.18)',
+            }
+          },
+          letterSpacing: {
+            gov: '0.12em',
+            gov2: '0.16em',
+            gov3: '0.18em',
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    /* subtle official watermark */
-    body::before{
-      content:"";
-      position: fixed;
-      inset: 0;
-      background-image: url('static/images/denr.jpg');
-      background-repeat: no-repeat;
-      background-position: center 28%;
-      background-size: 520px;
-      opacity: 0.03;
-      pointer-events: none;
-      z-index: -1;
+    /* keep print behavior in plain CSS (Tailwind can’t target print-only “hide this one link” as neatly without plugins) */
+    @media print{
+      .print\\:hidden { display: none !important; }
+      body{ background:#fff !important; }
+      .print\\:border { border: 1px solid #999 !important; }
     }
   </style>
 </head>
 
-<body class="min-h-screen bg-slate-50 text-slate-900">
+<body class="min-h-screen bg-gov-bg font-gov text-gov-text">
+  <!-- Watermark (Tailwind-only approach instead of body::before) -->
+  <div
+    class="pointer-events-none fixed inset-0 -z-10 bg-no-repeat opacity-[0.035]"
+    style="background-image:url('/static/images/denr.jpg'); background-position:center 28%; background-size:520px;"
+    aria-hidden="true"
+  ></div>
+
   {% include 'municipal/header.html' %}
   {% include 'municipal/sidenav.html' %}
 
@@ -34,28 +63,28 @@
     <!-- Top bar -->
     <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-emerald-950">
-          Applicant Profile
-        </p>
-        <p class="mt-1 text-sm font-semibold text-slate-500">
-          Official record • Review and action
-        </p>
+        <p class="text-[12px] font-bold uppercase tracking-gov3 text-gov-primary">Applicant Profile</p>
+        <p class="mt-1 text-[13px] font-normal text-gov-muted">Official record • Review and action</p>
       </div>
 
-      <a href="#"
-         class="inline-flex items-center gap-2 self-start rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+      <a
+        href="#"
+        class="print:hidden inline-flex items-center gap-2 rounded-[6px] border border-gov-border bg-white px-3 py-2 text-[12px] font-bold uppercase tracking-gov text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4"
+        style="--tw-ring-color: rgba(5,150,105,0.18);"
+        aria-label="Back to list"
+      >
         <span class="material-icons-round text-[18px]">arrow_back</span>
         Back to list
       </a>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-12">
-      <!-- LEFT: identity + personal details -->
+      <!-- LEFT -->
       <aside class="lg:col-span-4 space-y-4">
-        <!-- Identity card -->
-        <section class="rounded-xl border border-slate-200 bg-white p-4">
+        <!-- Identity -->
+        <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
           <div class="flex items-start gap-4">
-            <div class="h-20 w-20 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <div class="h-20 w-20 overflow-hidden rounded-md border border-gray-300 bg-gray-50">
               <img
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop"
                 alt="Applicant Photo"
@@ -64,15 +93,15 @@
             </div>
 
             <div class="min-w-0">
-              <h2 class="text-base font-black tracking-tight text-slate-900">
-                Paolo Dave Alqzd
-              </h2>
-              <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
-                Ref Code: <span class="text-slate-700">DENR-2026-0042</span>
+              <h2 class="text-base font-bold text-slate-900">Paolo Dave Alqzd</h2>
+
+              <p class="mt-1 text-[12px] font-bold uppercase tracking-gov text-slate-600">
+                Ref Code: <span class="text-slate-900">DENR-2026-0042</span>
               </p>
 
-              <div class="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-amber-700">
-                <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+              <!-- Status pill -->
+              <div class="mt-3 inline-flex items-center gap-2 rounded-full border border-gov-border bg-slate-50 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-gov text-amber-700">
+                <span class="h-[10px] w-[10px] rounded-full bg-amber-500"></span>
                 Pending Review
               </div>
             </div>
@@ -80,160 +109,169 @@
         </section>
 
         <!-- Personal details -->
-        <section class="rounded-xl border border-slate-200 bg-white p-4">
+        <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
           <div class="flex items-center justify-between">
-            <h3 class="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-950">
-              Personal Details
-            </h3>
-            <span class="material-icons-round text-slate-400">contact_page</span>
+            <h3 class="text-[12px] font-bold uppercase tracking-gov2 text-gov-primary">Personal Details</h3>
+            <span class="material-icons-round text-slate-500">contact_page</span>
           </div>
 
-          <dl class="mt-4 divide-y divide-slate-100">
+          <dl class="mt-4 divide-y divide-gray-200">
             <div class="py-3">
-              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Email Address</dt>
-              <dd class="mt-1 text-sm font-semibold text-slate-900">paolodave.alqzd@gmail.com</dd>
+              <dt class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Email Address</dt>
+              <dd class="mt-1 text-sm text-slate-900">paolodave.alqzd@gmail.com</dd>
             </div>
 
             <div class="py-3">
-              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Contact Number</dt>
-              <dd class="mt-1 text-sm font-semibold text-slate-900">+63 912 345 6789</dd>
+              <dt class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Contact Number</dt>
+              <dd class="mt-1 text-sm text-slate-900">+63 912 345 6789</dd>
             </div>
 
             <div class="py-3">
-              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Farm/Land Address</dt>
-              <dd class="mt-1 text-sm font-semibold leading-relaxed text-slate-900">
+              <dt class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Farm/Land Address</dt>
+              <dd class="mt-1 text-sm leading-relaxed text-slate-900">
                 Brgy. Mabuhay, Carmona, Cavite
               </dd>
             </div>
 
             <div class="py-3">
-              <dt class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">Total Declared Area</dt>
-              <dd class="mt-1 text-lg font-black tracking-tight text-emerald-950">15.50 hectares</dd>
+              <dt class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Total Declared Area</dt>
+              <dd class="mt-1 text-lg font-bold text-slate-900">15.50 hectares</dd>
             </div>
           </dl>
         </section>
       </aside>
 
-      <!-- RIGHT: metrics + documents + actions -->
+      <!-- RIGHT -->
       <section class="lg:col-span-8 space-y-4">
         <!-- Metrics -->
         <div class="grid gap-3 md:grid-cols-2">
-          <div class="rounded-xl border border-slate-200 bg-white p-4">
-            <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
-              Total Crop Species
-            </p>
+          <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
+            <p class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Total Crop Species</p>
             <div class="mt-2 flex items-baseline gap-2">
-              <span class="text-3xl font-black tracking-tight text-slate-900">12</span>
-              <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">variety</span>
+              <span class="text-3xl font-bold text-slate-900">12</span>
+              <span class="text-[12px] font-bold uppercase tracking-gov text-slate-600">variety</span>
             </div>
           </div>
 
-          <div class="rounded-xl border border-slate-200 bg-white p-4">
-            <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
-              Max Harvest Quantity
-            </p>
+          <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
+            <p class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Max Harvest Quantity</p>
             <div class="mt-2 flex items-baseline gap-2">
-              <span class="text-3xl font-black tracking-tight text-slate-900">4.5</span>
-              <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">tons / year</span>
+              <span class="text-3xl font-bold text-slate-900">4.5</span>
+              <span class="text-[12px] font-bold uppercase tracking-gov text-slate-600">tons / year</span>
             </div>
           </div>
         </div>
 
         <!-- Documentary Requirements -->
-        <section class="rounded-xl border border-slate-200 bg-white p-4">
+        <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h3 class="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-950">
-              Documentary Requirements
-            </h3>
-            <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-700">
+            <h3 class="text-[12px] font-bold uppercase tracking-gov2 text-gov-primary">Documentary Requirements</h3>
+
+            <span class="inline-flex items-center rounded-full border border-gray-300 bg-gray-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-gov text-slate-700">
               5 Files Ready
             </span>
           </div>
 
           <div class="mt-4 grid gap-2 md:grid-cols-2">
-            <!-- Doc item -->
-            <a href="#"
-               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+            <!-- Doc item (reusable pattern) -->
+            <a
+              href="#"
+              class="group flex items-center justify-between rounded-[6px] border border-gov-border bg-white px-3.5 py-3 text-decoration-none hover:bg-slate-50 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              aria-label="Open Blueprint Approved Plan"
+            >
               <div class="flex items-center gap-3">
-                <span class="material-icons-round text-slate-500">architecture</span>
-                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
+                <span class="material-icons-round text-slate-600">architecture</span>
+                <span class="text-[12px] font-bold uppercase tracking-gov text-slate-800">
                   Blueprint Approved Plan
                 </span>
               </div>
-              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+              <span class="material-icons-round text-slate-400 group-hover:text-slate-700">open_in_new</span>
             </a>
 
-            <a href="#"
-               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+            <a
+              href="#"
+              class="group flex items-center justify-between rounded-[6px] border border-gov-border bg-white px-3.5 py-3 hover:bg-slate-50 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              aria-label="Open Farm Business Plan"
+            >
               <div class="flex items-center gap-3">
-                <span class="material-icons-round text-slate-500">assignment</span>
-                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
-                  Farm Business Plan
-                </span>
+                <span class="material-icons-round text-slate-600">assignment</span>
+                <span class="text-[12px] font-bold uppercase tracking-gov text-slate-800">Farm Business Plan</span>
               </div>
-              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+              <span class="material-icons-round text-slate-400 group-hover:text-slate-700">open_in_new</span>
             </a>
 
-            <a href="#"
-               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+            <a
+              href="#"
+              class="group flex items-center justify-between rounded-[6px] border border-gov-border bg-white px-3.5 py-3 hover:bg-slate-50 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              aria-label="Open Picture of Land"
+            >
               <div class="flex items-center gap-3">
-                <span class="material-icons-round text-slate-500">terrain</span>
-                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
-                  Picture of Land
-                </span>
+                <span class="material-icons-round text-slate-600">terrain</span>
+                <span class="text-[12px] font-bold uppercase tracking-gov text-slate-800">Picture of Land</span>
               </div>
-              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+              <span class="material-icons-round text-slate-400 group-hover:text-slate-700">open_in_new</span>
             </a>
 
-            <a href="#"
-               class="group flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+            <a
+              href="#"
+              class="group flex items-center justify-between rounded-[6px] border border-gov-border bg-white px-3.5 py-3 hover:bg-slate-50 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              aria-label="Open Crop Image"
+            >
               <div class="flex items-center gap-3">
-                <span class="material-icons-round text-slate-500">grass</span>
-                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
-                  Crop Image
-                </span>
+                <span class="material-icons-round text-slate-600">grass</span>
+                <span class="text-[12px] font-bold uppercase tracking-gov text-slate-800">Crop Image</span>
               </div>
-              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+              <span class="material-icons-round text-slate-400 group-hover:text-slate-700">open_in_new</span>
             </a>
 
-            <a href="#"
-               class="group md:col-span-2 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 no-underline hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+            <a
+              href="#"
+              class="group md:col-span-2 flex items-center justify-between rounded-[6px] border border-gov-border bg-white px-3.5 py-3 hover:bg-slate-50 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              aria-label="Open Farm Barangay Registration"
+            >
               <div class="flex items-center gap-3">
-                <span class="material-icons-round text-slate-500">storefront</span>
-                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-800">
-                  Farm Barangay Registration
-                </span>
+                <span class="material-icons-round text-slate-600">storefront</span>
+                <span class="text-[12px] font-bold uppercase tracking-gov text-slate-800">Farm Barangay Registration</span>
               </div>
-              <span class="material-icons-round text-slate-300 group-hover:text-slate-500">open_in_new</span>
+              <span class="material-icons-round text-slate-400 group-hover:text-slate-700">open_in_new</span>
             </a>
           </div>
         </section>
 
         <!-- Actions -->
-        <section class="rounded-xl border border-slate-200 bg-white p-4">
-          <h3 class="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-950">
-            Actions
-          </h3>
-          <p class="mt-2 text-sm font-semibold text-slate-500">
+        <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
+          <h3 class="text-[12px] font-bold uppercase tracking-gov2 text-gov-primary">Actions</h3>
+          <p class="mt-2 text-sm text-slate-600">
             Use official disposition options. Actions should be recorded with remarks.
           </p>
 
           <div class="mt-4 grid gap-2 md:grid-cols-3">
             <button
-              class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.16em] text-rose-800 hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100"
-              type="button">
+              class="rounded-[6px] border border-rose-200 bg-rose-50 px-3.5 py-3 text-[12px] font-bold uppercase tracking-gov text-rose-800 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              type="button"
+            >
               Reject
             </button>
 
             <button
-              class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.16em] text-sky-800 hover:bg-sky-100 focus:outline-none focus:ring-4 focus:ring-sky-100"
-              type="button">
+              class="rounded-[6px] border border-sky-200 bg-sky-50 px-3.5 py-3 text-[12px] font-bold uppercase tracking-gov text-sky-800 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              type="button"
+            >
               Move to Review
             </button>
 
             <button
-              class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-900 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100"
-              type="button">
+              class="rounded-[6px] border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-[12px] font-bold uppercase tracking-gov text-emerald-900 focus:outline-none focus:ring-4"
+              style="--tw-ring-color: rgba(5,150,105,0.18);"
+              type="button"
+            >
               Approve
             </button>
           </div>
