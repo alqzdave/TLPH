@@ -28,7 +28,7 @@
 
         <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
 
-            <form id="exportForm" action="#" method="POST" enctype="multipart/form-data">
+            <form id="exportForm" action="javascript:void(0)" method="POST" enctype="multipart/form-data">
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <div class="space-y-6">
@@ -219,6 +219,51 @@
                     citesSection.classList.add('hidden');
                     checkValidation();
                 }, 10);
+            });
+
+            // Handle form submission with Xendit payment
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const amount = document.getElementById('xendit_raw_amount').value;
+
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+
+                    const paymentPayload = {
+                        external_id: `export-${Date.now()}`,
+                        amount: parseInt(amount),
+                        email: '', // Will be filled from user profile
+                        description: `Export Permit - ${document.getElementById('destination').value}`,
+                        item_name: 'Export Permit',
+                        success_url: `${window.location.origin}/user/license/permits/export`,
+                        failure_url: `${window.location.origin}/user/license/permits/export`
+                    };
+
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(paymentPayload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'success' && result.invoice_url) {
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert(`Payment error: ${result.message || 'Unknown error'}`);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply';
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Failed to process payment. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply';
+                }
             });
         });
     </script>
