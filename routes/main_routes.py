@@ -18,7 +18,7 @@ def register():
 # Landing pages for different roles
 @bp.route('/municipal/dashboard')
 def municipal_dashboard():
-    return render_template('municipal/landing-municipal.html')
+    return render_template('municipal/home-municipal/home-municipal.html')
 
 @bp.route('/national/dashboard')
 def national_dashboard():
