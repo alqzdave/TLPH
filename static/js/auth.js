@@ -524,11 +524,19 @@ if (signupForm) {
 // Login Form Handler
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
+    // Load saved email if exists
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+        document.getElementById('email').value = savedEmail;
+        document.querySelector('input[name="remember"]').checked = true;
+    }
+    
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const rememberMe = document.querySelector('input[name="remember"]').checked;
         
         // Frontend validation
         if (!email || !password) {
@@ -542,8 +550,14 @@ if (loginForm) {
         }
         
         try {
-            // Set Firebase persistence to session only
-            await setPersistence(auth, browserSessionPersistence);
+            // Set Firebase persistence based on remember me
+            if (rememberMe) {
+                await setPersistence(auth, browserLocalPersistence);
+                localStorage.setItem('rememberedEmail', email);
+            } else {
+                await setPersistence(auth, browserSessionPersistence);
+                localStorage.removeItem('rememberedEmail');
+            }
             
             // Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
