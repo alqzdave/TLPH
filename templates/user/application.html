@@ -89,7 +89,8 @@
                 'pending': '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-yellow-100 text-yellow-800"><i class="fa-solid fa-clock mr-1"></i> Pending</span>',
                 'approved': '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-100 text-green-800"><i class="fa-solid fa-check-circle mr-1"></i> Approved</span>',
                 'rejected': '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-800"><i class="fa-solid fa-times-circle mr-1"></i> Rejected</span>',
-                'under-review': '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-800"><i class="fa-solid fa-eye mr-1"></i> Under Review</span>'
+                'under-review': '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-800"><i class="fa-solid fa-eye mr-1"></i> Under Review</span>',
+                'cancelled': '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-800"><i class="fa-solid fa-ban mr-1"></i> Cancelled</span>'
             };
             return badges[status] || badges['pending'];
         }
@@ -173,6 +174,12 @@
                                         class="px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-green-700 hover:bg-green-50 rounded transition">
                                     <i class="fa-solid fa-eye mr-1"></i> View Details
                                 </button>
+                                ${app.status === 'pending' || app.status === 'under-review' ? `
+                                <button onclick="cancelApplication('${id}')" 
+                                        class="px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 rounded transition">
+                                    <i class="fa-solid fa-times mr-1"></i> Cancel
+                                </button>
+                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -189,6 +196,33 @@
                 `;
             }
         }
+
+        // Cancel application
+        window.cancelApplication = async function(applicationId) {
+            if (!confirm('Are you sure you want to cancel this application?')) {
+                return;
+            }
+            
+            try {
+                const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+                
+                const applicationRef = doc(db, 'applications', applicationId);
+                await updateDoc(applicationRef, {
+                    status: 'cancelled',
+                    cancelledAt: new Date()
+                });
+                
+                alert('Application cancelled successfully');
+                // Reload applications
+                const user = auth.currentUser;
+                if (user) {
+                    loadApplications(user.uid);
+                }
+            } catch (error) {
+                console.error('Error cancelling application:', error);
+                alert('Failed to cancel application: ' + error.message);
+            }
+        };
 
         // View application details (placeholder)
         window.viewDetails = function(applicationId) {
