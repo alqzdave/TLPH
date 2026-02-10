@@ -25,3 +25,7 @@ def nursery():
 @bp.route('/non-timber')
 def non_timber():
     return render_template('user/license/forest/non-timber.html')
+
+@bp.route('/tree-planting')
+def tree_planting():
+    return render_template('user/license/forest/tree-plantation.html')

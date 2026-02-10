@@ -15,170 +15,135 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-8">
-
-        <div class="max-w-7xl mx-auto title-wrapper text-center">
-            <h1 class="text-4xl font-black uppercase tracking-tight mb-2 text-blue-800">
-                Fish Transport Permit
-            </h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs mb-8">
-                Fisheries Logistics and Resource Movement • Transportation License
-            </p>
+    <div class="container mx-auto px-4 mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-6">
+            <h1 class="text-3xl font-black uppercase tracking-tight text-blue-800">Fish Transport Permit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Logistics and Resource Movement • Transportation License</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
             <form id="transportForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="space-y-6 mb-12">
-                    <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-route"></i> Logistics & Route Mapping
-                    </h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 font-bold text-lg">A</span>
-                            <input type="text" id="searchOrigin" placeholder="Search Origin (e.g., Navotas Port)" 
-                                   class="w-full rounded-xl border border-gray-300 bg-gray-50 pl-10 pr-20 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                            <button type="button" id="searchOriginBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-700 text-white text-[10px] font-black uppercase rounded-lg hover:bg-blue-800 transition">Set</button>
-                        </div>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-red-500 font-bold text-lg">B</span>
-                            <input type="text" id="searchDestination" placeholder="Search Destination (e.g., Cebu Market)" 
-                                   class="w-full rounded-xl border border-gray-300 bg-gray-50 pl-10 pr-20 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                            <button type="button" id="searchDestinationBtn" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-red-700 text-white text-[10px] font-black uppercase rounded-lg hover:bg-red-800 transition">Set</button>
-                        </div>
-                    </div>
-
-                    <div class="relative group">
-                        <div id="routeMap" class="w-full h-80 rounded-2xl border-2 border-gray-200 z-10"></div>
-                        <button type="button" id="fullscreenMapBtn" class="absolute top-4 right-4 z-20 bg-white hover:bg-gray-100 p-2 rounded-lg shadow-md transition-all">
-                            <i class="fa-solid fa-expand text-blue-600"></i>
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-[9px] font-black text-blue-700 uppercase tracking-widest ml-1">Point of Origin <span class="text-red-500">*</span></label>
-                            <input type="text" id="originDisplay" readonly required placeholder="Use map search to set..." 
-                                   class="w-full p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs font-bold text-blue-900">
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-black text-red-700 uppercase tracking-widest ml-1">Point of Destination <span class="text-red-500">*</span></label>
-                            <input type="text" id="destinationDisplay" readonly required placeholder="Use map search to set..." 
-                                   class="w-full p-3 bg-red-50 border border-red-100 rounded-xl text-xs font-bold text-red-900">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div class="space-y-6">
-                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-fish-fins"></i> Cargo Information
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-blue-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-route"></i> Logistics & Route
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Species <span class="text-red-500">*</span></label>
-                                <input type="text" id="species" required placeholder="Ex: Tilapia, Tuna"
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-medium text-gray-700 transition-all">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div class="relative">
+                                <input type="text" id="searchOrigin" placeholder="Search Origin" class="w-full rounded-lg border border-gray-300 bg-gray-50 pl-7 pr-12 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-blue-500 font-bold text-xs">A</span>
+                                <button type="button" id="searchOriginBtn" class="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 bg-blue-700 text-white text-[8px] font-black uppercase rounded hover:bg-blue-800 transition">Set</button>
                             </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Quantity <span class="text-red-500">*</span></label>
-                                <div class="relative">
-                                    <input type="number" id="quantity" required placeholder="0.00" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-bold text-gray-700">
-                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 font-black text-gray-400 text-[9px]">KG / MT</span>
-                                </div>
+                            <div class="relative">
+                                <input type="text" id="searchDestination" placeholder="Search Destination" class="w-full rounded-lg border border-gray-300 bg-gray-50 pl-7 pr-12 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-red-500 font-bold text-xs">B</span>
+                                <button type="button" id="searchDestinationBtn" class="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 bg-red-700 text-white text-[8px] font-black uppercase rounded hover:bg-red-800 transition">Set</button>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative group">
+                            <div id="routeMap" class="w-full h-56 rounded-xl border-2 border-gray-200 z-10 shadow-inner"></div>
+                            <button type="button" id="fullscreenMapBtn" class="absolute top-2 right-2 z-20 bg-white hover:bg-gray-100 p-1.5 rounded-md shadow transition-all">
+                                <i class="fa-solid fa-expand text-blue-600 text-xs"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Transport Method <span class="text-red-500">*</span></label>
-                                <select id="method" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none bg-white font-medium text-gray-700 transition-all">
-                                    <option value="" disabled selected>Select method...</option>
+                                <label class="text-[9px] font-black text-blue-700 uppercase tracking-widest leading-none block mb-1">Point of Origin</label>
+                                <input type="text" id="originDisplay" readonly class="w-full px-2 py-1.5 bg-blue-50 border border-blue-100 rounded-lg text-[10px] font-bold text-blue-900 truncate">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-black text-red-700 uppercase tracking-widest leading-none block mb-1">Point of Destination</label>
+                                <input type="text" id="destinationDisplay" readonly class="w-full px-2 py-1.5 bg-red-50 border border-red-100 rounded-lg text-[10px] font-bold text-red-900 truncate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-blue-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-fish-fins"></i> Cargo & Attachments
+                        </h3>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Species <span class="text-red-500">*</span></label>
+                                <input type="text" id="species" required placeholder="Ex: Tilapia" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none text-xs font-medium bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Qty (KG/MT) <span class="text-red-500">*</span></label>
+                                <input type="number" id="quantity" required placeholder="0.00" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none font-bold text-xs bg-gray-50">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Transport Method <span class="text-red-500">*</span></label>
+                                <select id="method" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none bg-white text-xs font-medium">
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="closed">Refrigerated</option>
                                     <option value="open">Open Container</option>
-                                    <option value="closed">Refrigerated / Closed</option>
-                                    <option value="specialized">Specialized Tank</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 uppercase mb-2">Schedule <span class="text-red-500">*</span></label>
-                                <input type="datetime-local" id="schedule" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none font-bold text-gray-700">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Schedule <span class="text-red-500">*</span></label>
+                                <input type="datetime-local" id="schedule" required class="w-full border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-600 outline-none text-[10px] font-bold bg-gray-50">
                             </div>
                         </div>
-                    </div>
 
-                    <div class="space-y-6">
-                        <h3 class="text-blue-800 font-black text-sm uppercase tracking-widest border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-paperclip"></i> Mandatory Attachments
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center block">Cargo Invoice</label>
-                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center h-32 flex flex-col items-center justify-center cursor-pointer relative">
-                                    <i class="fa-solid fa-file-invoice-dollar text-2xl text-gray-300 mb-1"></i>
-                                    <input type="file" id="invoiceFile" required class="absolute inset-0 opacity-0 cursor-pointer">
-                                    <p id="invoiceName" class="text-[8px] text-blue-600 font-bold uppercase truncate w-full px-2"></p>
-                                </div>
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="invoiceFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-file-invoice-dollar text-gray-300 group-hover:text-blue-600 mb-1 transition-colors text-lg"></i>
+                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Cargo Invoice</p>
+                                <p id="invoiceName" class="text-[7px] text-blue-600 font-bold truncate w-full px-1 mt-1"></p>
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center block">Vehicle OR/CR</label>
-                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center h-32 flex flex-col items-center justify-center cursor-pointer relative">
-                                    <i class="fa-solid fa-truck-ramp-box text-2xl text-gray-300 mb-1"></i>
-                                    <input type="file" id="vehicleFile" required class="absolute inset-0 opacity-0 cursor-pointer">
-                                    <p id="vehicleName" class="text-[8px] text-blue-600 font-bold uppercase truncate w-full px-2"></p>
-                                </div>
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-blue-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                                <input type="file" id="vehicleFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-truck-ramp-box text-gray-300 group-hover:text-blue-600 mb-1 transition-colors text-lg"></i>
+                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Vehicle OR/CR</p>
+                                <p id="vehicleName" class="text-[7px] text-blue-600 font-bold truncate w-full px-1 mt-1"></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mt-16 border-t pt-8 gap-4">
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="flex flex-col">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center md:text-left mb-2">
-                            Permit generation activates once all route data, cargo info, and files are confirmed.
-                        </p>
-                        
-                        <div class="bg-amber-50 px-5 py-3 rounded-xl border border-blue-800 inline-flex items-center gap-3">
-                            <span class="text-[11px] font-black text-blue-800 uppercase tracking-widest">
-                                Transport Fee:
-                            </span>
-                            <span class="text-2xl font-black text-blue-800">
-                                ₱ <span class="xendit-amount-value">450.00</span>
-                            </span>
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Resource movement permit fee</p>
+                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-blue-700 inline-flex items-center gap-3">
+                            <span class="text-[10px] font-black text-blue-800 uppercase tracking-widest">Transport Fee:</span>
+                            <span class="text-xl font-black text-blue-800">₱ <span class="xendit-amount-value">450.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="450">
                         </div>
                     </div>
-
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition no-underline text-center">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold uppercase tracking-widest hover:bg-gray-100 transition">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-blue-700 text-white font-black py-3 px-12 rounded-xl shadow-md transition-all uppercase tracking-widest cursor-not-allowed opacity-50">Apply</button>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
                     </div>
                 </div>
-                
-                <input type="hidden" id="originCoords">
-                <input type="hidden" id="destCoords">
+                <input type="hidden" id="originCoords"><input type="hidden" id="destCoords">
             </form>
         </div>
-        
-        <p class="text-center text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-12">
-            Bureau of Fisheries and Aquatic Resources • Resource Movement Section 2026
-        </p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">Bureau of Fisheries • Resource Movement Section 2026</p>
     </div>
 
     
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const transportForm = document.getElementById('transportForm');
+            const form = document.getElementById('transportForm');
             const submitBtn = document.getElementById('submitBtn');
             const map = L.map('routeMap').setView([12.8797, 121.7740], 6);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
             let originMarker, destMarker, routeLine;
 
@@ -187,12 +152,8 @@
                 try {
                     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
                     const data = await res.json();
-                    if (data[0]) {
-                        const lat = parseFloat(data[0].lat);
-                        const lon = parseFloat(data[0].lon);
-                        setMarker(lat, lon, type, data[0].display_name);
-                    }
-                } catch (e) { console.error("Geocoding error", e); }
+                    if (data[0]) setMarker(parseFloat(data[0].lat), parseFloat(data[0].lon), type, data[0].display_name);
+                } catch (e) { console.error(e); }
             }
 
             function setMarker(lat, lon, type, name) {
@@ -207,30 +168,30 @@
                     document.getElementById('destinationDisplay').value = name;
                     document.getElementById('destCoords').value = `${lat},${lon}`;
                 }
-                
                 if (originMarker && destMarker) {
                     if (routeLine) map.removeLayer(routeLine);
                     routeLine = L.polyline([originMarker.getLatLng(), destMarker.getLatLng()], { color: '#3b82f6', weight: 3, dashArray: '10, 10' }).addTo(map);
-                    map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-                } else {
-                    map.setView([lat, lon], 12);
-                }
+                    map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+                } else map.setView([lat, lon], 12);
                 checkValidation();
             }
 
             function checkValidation() {
-                const requiredInputs = ['species', 'quantity', 'method', 'schedule', 'originCoords', 'destCoords'];
-                const inputsValid = requiredInputs.every(id => document.getElementById(id).value.trim() !== "");
-                const filesValid = ['invoiceFile', 'vehicleFile'].every(id => document.getElementById(id).files.length > 0);
+                const req = ['species', 'quantity', 'method', 'schedule', 'originCoords', 'destCoords'];
+                const inputsDone = req.every(id => document.getElementById(id).value.trim() !== "");
+                const filesDone = ['invoiceFile', 'vehicleFile'].every(id => document.getElementById(id).files.length > 0);
 
-                if (inputsValid && filesValid) {
+                if (inputsDone && filesDone) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.add('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-gray-200', 'bg-blue-700');
+                    submitBtn.classList.replace('text-gray-400', 'text-white');
+                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
+                    submitBtn.classList.add('hover:bg-blue-800', 'active:scale-95');
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitBtn.classList.remove('hover:bg-blue-800', 'transform', 'hover:scale-105', 'active:scale-95', 'cursor-pointer');
+                    submitBtn.classList.replace('bg-blue-700', 'bg-gray-200');
+                    submitBtn.classList.replace('text-white', 'text-gray-400');
+                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
                 }
             }
 
@@ -239,20 +200,21 @@
             
             ['invoiceFile', 'vehicleFile'].forEach(id => {
                 document.getElementById(id).onchange = (e) => {
-                    document.getElementById(id.replace('File', 'Name')).textContent = e.target.files[0] ? `Selected: ${e.target.files[0].name}` : "";
+                    document.getElementById(id.replace('File', 'Name')).textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
                     checkValidation();
                 };
             });
 
-            ['species', 'quantity', 'method', 'schedule'].forEach(id => document.getElementById(id).oninput = checkValidation);
+            form.querySelectorAll('input, select').forEach(el => el.oninput = checkValidation);
 
             document.getElementById('resetBtn').onclick = () => {
-                if (originMarker) map.removeLayer(originMarker);
-                if (destMarker) map.removeLayer(destMarker);
-                if (routeLine) map.removeLayer(routeLine);
-                document.getElementById('invoiceName').textContent = "";
-                document.getElementById('vehicleName').textContent = "";
-                setTimeout(checkValidation, 10);
+                setTimeout(() => {
+                    if (originMarker) map.removeLayer(originMarker);
+                    if (destMarker) map.removeLayer(destMarker);
+                    if (routeLine) map.removeLayer(routeLine);
+                    document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
+                    checkValidation();
+                }, 10);
             };
 
             document.getElementById('fullscreenMapBtn').onclick = () => {
