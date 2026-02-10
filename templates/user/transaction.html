@@ -5,23 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <title>Transactions | DENR Portal</title>
 
   <style>
-    /* Reset and Base Styles */
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: 'Poppins', system-ui, -apple-system, sans-serif;
       margin: 0;
       padding: 0;
       background: #f6f7fb;
-      padding-top: 80px;
+    }
+
+    /* Siguraduhin na may space sa ilalim ng fixed header */
+    .main-wrapper {
+      padding-top: 20px; /* Adjust base sa height ng iyong header */
+      padding-bottom: 50px;
     }
 
     .container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 32px 24px;
+      padding: 0 24px;
     }
 
     .card-custom {
@@ -33,736 +37,300 @@
     }
 
     h1 { 
-      font-size: 26px; 
+      font-size: 22px; 
       font-weight: 800;
       margin: 0 0 20px; 
       color: #111827;
       text-transform: uppercase;
-      letter-spacing: -0.025em;
     }
 
-    /* Toolbar Styles */
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: flex-end;
-      margin-bottom: 20px;
+    /* Pagination Styling */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 20px;
     }
 
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    label { 
-      font-size: 11px; 
-      font-weight: 700; 
-      color: #6b7280; 
-      text-transform: uppercase; 
-      letter-spacing: 0.05em; 
+    .page-info { font-size: 13px; color: #6b7280; font-weight: 500; }
+    
+    .page-btn {
+        padding: 6px 16px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
     }
 
-    input, select, button {
-      height: 42px;
-      padding: 0 14px;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-      font-size: 14px;
-      background: #fff;
-      transition: all 0.2s;
+    .page-btn:hover:not(:disabled) {
+        background: #f9fafb;
+        border-color: #d1d5db;
     }
 
-    /* FIX: Replaced 'ring' with standard CSS box-shadow */
-    input:focus, select:focus {
-      outline: none;
-      border-color: #166534;
-      box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.15);
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
-    input { width: 320px; }
-    select { width: 180px; }
-
-    .btn-primary-custom {
-      background: #111827;
-      color: #fff;
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-primary:hover { background: #1f2937; }
-
-    .btn-view {
-      background: #3b82f6;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-view:hover { background: #2563eb; }
-
-    .btn-primary-custom:hover {
-      background: #1f2937;
-      transform: translateY(-1px);
-    }
-
-    .summary {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #6b7280;
-    }
-
-    /* Stats */
+    /* Stats Styling */
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
 
     .stat-box {
-      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-      border: 1px solid #d1d5db;
+      background: white;
+      border: 1px solid #e5e7eb;
       border-radius: 12px;
-      padding: 16px;
+      padding: 20px;
     }
 
-    .stat-label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
-    .stat-value { font-size: 24px; font-weight: 700; color: #111827; }
-    .stat-subtext { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .stat-label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #111827; margin-top: 4px; }
 
+    /* Table Styles */
     .table-wrapper {
       border: 1px solid #eef2f7;
       border-radius: 12px;
-      overflow: hidden;
-      background: #fff;
+      overflow-x: auto;
+      background: white;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      min-width: 1100px;
-      table-layout: fixed;
-      min-width: 980px;
-    }
-
-    col.col-date   { width: 140px; }
-    col.col-name   { width: 260px; }
-    col.col-method { width: 140px; }
-    col.col-ref    { width: 200px; }
-    col.col-status { width: 140px; }
-    col.col-amount { width: 160px; }
-    col.col-action { width: 100px; }
-
+    table { width: 100%; min-width: 1000px; border-collapse: collapse; }
     thead th {
       background: #fbfcfe;
-      color: #6b7280;
+      padding: 16px;
       font-size: 11px;
       font-weight: 700;
+      color: #6b7280;
       text-transform: uppercase;
-      padding: 16px 14px;
       border-bottom: 1px solid #eef2f7;
-      text-align: left;
-      font-weight: 600;
-      text-align: left;
     }
 
-    thead th.amount { text-align: right; }
-    thead th.action { text-align: center; }
-    thead th.amount { text-align: right; }
-
-    tbody td {
-      padding: 18px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 14px;
-      text-align: left;
-      font-size: 14px;
-      color: #374151;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    tbody tr:hover { background: #f9fafb; }
-    tbody tr:hover { background-color: #f9fafb; }
-    tbody tr:last-child td { border-bottom: none; }
-
-    td.ref {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 12px;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 13px;
-      color: #111827;
-      font-weight: 600;
-    }
-
-    td.amount {
-      text-align: right;
-      font-weight: 600;
-      text-align: right;
-      font-weight: 700;
-      color: #111827;
-      font-variant-numeric: tabular-nums;
-    }
-
-    td.action { text-align: center; }
-
+    tbody td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    
     .pill {
       padding: 4px 12px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       text-transform: uppercase;
     }
+    .pill.approved { background: #dcfce7; color: #15803d; }
+    .pill.pending { background: #fef9c3; color: #854d0e; }
+    .pill.rejected { background: #fee2e2; color: #991b1b; }
 
-    .pill.successful {
-      background: #dcfce7;
-      color: #15803d;
-      border-color: #86efac;
-    }
-
-    .pill.paid {
-      background: #dcfce7;
-      color: #15803d;
-      border-color: #86efac;
-    }
-
-    .pill.unpaid {
-      background: #fef08a;
-      color: #92400e;
-      border-color: #fde047;
-    }
-
-    .pill.pending {
-      background: #ffedd5;
-      color: #9a3412;
-      border-color: #fed7aa;
-    }
-
-    .pill.failed {
-      background: #fee2e2;
-      color: #991b1b;
-      border-color: #fca5a5;
-    }
-    .pill.paid { background: #dcfce7; color: #166534; }
-    .pill.pending { background: #ffedd5; color: #9a3412; }
-    .pill.failed { background: #fee2e2; color: #991b1b; }
-
-    .empty-row {
-      text-align: left;
-      color: #6b7280;
-      padding: 22px 14px;
-      font-size: 14px;
-    }
-
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal.active { display: flex; align-items: center; justify-content: center; }
-
-    .modal-content {
-      background-color: #fff;
-      border-radius: 16px;
-      padding: 28px;
-      width: 90%;
-      max-width: 600px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .modal-header h2 { margin: 0; }
-
-    .close-btn {
-      background: none;
+    .btn-view {
+      background: #3b82f6;
+      color: white;
       border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #6b7280;
-      padding: 0;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
     }
 
-    .close-btn:hover { color: #111827; }
-
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #f3f4f6;
+    /* Modal Styles */
+    .modal-backdrop-custom {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1050;
     }
-
-    .detail-row:last-child { border-bottom: none; }
-    .detail-label { color: #6b7280; font-weight: 600; font-size: 13px; }
-    .detail-value { color: #111827; font-weight: 500; }
-    .empty-row { color: #9ca3af; font-style: italic; padding: 40px !important; text-align: center !important; }
-
-    @media (max-width: 768px) {
-      .main-content { padding: 16px; }
-      input, select { width: 100%; }
-      .stats { grid-template-columns: 1fr; }
-      table { min-width: 100%; font-size: 13px; }
-      td { padding: 12px 8px; }
-      col.col-date   { width: 100px; }
-      col.col-name   { width: 150px; }
-      col.col-method { width: 100px; }
-      col.col-ref    { width: 120px; }
-      col.col-status { width: 100px; }
-      col.col-amount { width: 120px; }
-      col.col-action { width: 80px; }
-      .toolbar { flex-direction: column; align-items: stretch; }
-    }
+    .modal-backdrop-custom.active { display: flex; }
   </style>
 </head>
 
 <body>
   {% include 'user/header.html' %}
-  <div class="container">
-    <!-- Payment Statistics -->
-    <div class="stats">
-      <div class="stat-box">
-        <div class="stat-label">Total Paid</div>
-        <div class="stat-value" id="totalPaid">₱0.00</div>
-        <div class="stat-subtext" id="paidCount">0 transactions</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Pending Payments</div>
-        <div class="stat-value" id="totalUnpaid">₱0.00</div>
-        <div class="stat-subtext" id="unpaidCount">0 transactions</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Failed Payments</div>
-        <div class="stat-value" id="totalFailed">₱0.00</div>
-        <div class="stat-subtext" id="failedCount">0 transactions</div>
-      </div>
-    </div>
 
-    <!-- Transactions Table -->
-    <div class="card">
-      <h1>Payment History</h1>
-
-      <div class="toolbar">
-        <div class="field">
-          <label>Search</label>
-          <input id="searchInput" type="text" placeholder="Name, reference, or invoice…" />
-        </div>
-
-        <div class="field">
-          <label>Payment Status</label>
-          <select id="statusFilter">
-            <option value="all">All Statuses</option>
-            <option value="successful">Successful</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-
-        <button class="btn-primary-custom" id="searchBtn">Search</button>
-      </div>
-
-      <div class="summary">
-        <div id="resultsText"></div>
-        <div>Currency: Philippine Peso (₱)</div>
-      </div>
-
-      <div class="table-wrapper">
-        <table>
-          <colgroup>
-            <col class="col-date">
-            <col class="col-name">
-            <col class="col-method">
-            <col class="col-ref">
-            <col class="col-status">
-            <col class="col-amount">
-            <col class="col-action">
-          </colgroup>
-
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Transaction</th>
-              <th>Method</th>
-              <th>Reference</th>
-              <th>Status</th>
-              <th class="amount">Amount</th>
-              <th class="action">Action</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Detail Modal -->
-  <div id="detailModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Payment Details</h2>
-        <button class="close-btn" onclick="closeModal()">&times;</button>
-      </div>
-      <div id="modalBody"></div>
-    </div>
-  </div>
-
-  <script>
-    const transactions = [
-      {
-        date: "2026-02-09",
-        name: "Forest License Renewal",
-        description: "Annual forest resource permit",
-        reference: "FOR-20260209-001",
-        invoiceId: "INV-2026-0945",
-        method: "Credit Card",
-        status: "successful",
-        amount: 2500,
-        paidAt: "2026-02-09 14:32:00",
-        paymentDetails: { last4: "****4242", bank: "Visa" }
-      },
-      {
-        date: "2026-02-08",
-        name: "Fisheries Permit Application",
-        description: "Coastal fisheries extraction permit",
-        reference: "FISH-20260208-002",
-        invoiceId: "INV-2026-0944",
-        method: "Bank Transfer",
-        status: "successful",
-        amount: 1500,
-        paidAt: "2026-02-08 10:15:00",
-        paymentDetails: { bank: "BDO", reference: "TRF-8847291" }
-      },
-      {
-        date: "2026-02-07",
-        name: "Environmental Clearance Certificate",
-        description: "ECC for mining operations",
-        reference: "ENV-20260207-003",
-        invoiceId: "INV-2026-0943",
-        method: "Pending",
-        status: "unpaid",
-        amount: 3000,
-        dueDate: "2026-02-14",
-        paymentDetails: null
-      },
-      {
-        date: "2026-02-06",
-        name: "Wildlife Permit",
-        description: "Animal species research permit",
-        reference: "WILD-20260206-004",
-        invoiceId: "INV-2026-0942",
-        method: "Credit Card",
-        status: "failed",
-        amount: 800,
-        failureReason: "Card declined - insufficient funds",
-        paymentDetails: { last4: "****3456", bank: "Mastercard" }
-      },
-      {
-        date: "2026-02-05",
-        name: "Livestock Production Permit",
-        description: "Commercial poultry farming license",
-        reference: "LIVE-20260205-005",
-        invoiceId: "INV-2026-0941",
-        method: "Retail Store",
-        status: "successful",
-        amount: 950,
-        paidAt: "2026-02-05 09:47:00",
-        paymentDetails: { store: "SM Malls", reference: "RET-8291847" }
-      },
-      {
-        date: "2026-02-04",
-        name: "Agricultural Seminar Registration",
-        description: "Farm management training program",
-        reference: "SEM-20260204-006",
-        invoiceId: "INV-2026-0940",
-        method: "Bank Transfer",
-        status: "unpaid",
-        amount: 500,
-        dueDate: "2026-02-11",
-        paymentDetails: null
-      },
-      {
-        date: "2026-02-03",
-        name: "Mine Operating Permit",
-        description: "Metallic minerals extraction license",
-        reference: "MINE-20260203-007",
-        invoiceId: "INV-2026-0939",
-        method: "Credit Card",
-        status: "failed",
-        amount: 5000,
-        failureReason: "3D Secure verification failed",
-        paymentDetails: { last4: "****2891", bank: "Visa" }
-      },
-      {
-        date: "2026-02-02",
-        name: "Customs Import Permit",
-        description: "International goods import license",
-        reference: "CUST-20260202-008",
-        invoiceId: "INV-2026-0938",
-        method: "Credit Card",
-        status: "successful",
-        amount: 1200,
-        paidAt: "2026-02-02 16:20:00",
-        paymentDetails: { last4: "****5678", bank: "Mastercard" }
-      },
-      {
-        date: "2026-02-01",
-        name: "Forest Land Development Permit",
-        description: "Reforestation project license",
-        reference: "FLD-20260201-009",
-        invoiceId: "INV-2026-0937",
-        method: "Bank Transfer",
-        status: "successful",
-        amount: 2200,
-        paidAt: "2026-02-01 11:05:00",
-        paymentDetails: { bank: "BPI", reference: "TRF-8291847" }
-      },
-      { date: "2026-02-01", name: "Wildlife Farm Permit", reference: "WFP-2026-1029", status: "Paid", amount: 1250.00 },
-      { date: "2026-02-03", name: "Import Clearance (SPSIC)", reference: "SPS-293847", status: "Paid", amount: 499.50 },
-      { date: "2026-02-07", name: "Wildlife Transport License", reference: "WTR-384756", status: "Pending", amount: 0 },
-      { date: "2026-02-08", name: "CITES Export Permit", reference: "CIT-998877", status: "Failed", amount: 0 }
-    ];
-
-    const tableBody = document.getElementById("tableBody");
-    const resultsText = document.getElementById("resultsText");
-    const searchInput = document.getElementById("searchInput");
-    const statusFilter = document.getElementById("statusFilter");
-
-    const peso = new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-      minimumFractionDigits: 2
-    });
-
-    function updateStatistics(data) {
-      let totalPaid = 0, totalUnpaid = 0, totalFailed = 0;
-      let paidCount = 0, unpaidCount = 0, failedCount = 0;
-
-      data.forEach(t => {
-        if (t.status === "successful") {
-          totalPaid += t.amount;
-          paidCount++;
-        } else if (t.status === "unpaid") {
-          totalUnpaid += t.amount;
-          unpaidCount++;
-        } else if (t.status === "failed") {
-          totalFailed += t.amount;
-          failedCount++;
-        }
-      });
-
-      document.getElementById("totalPaid").textContent = peso.format(totalPaid);
-      document.getElementById("paidCount").textContent = `${paidCount} transaction${paidCount !== 1 ? 's' : ''}`;
-      document.getElementById("totalUnpaid").textContent = peso.format(totalUnpaid);
-      document.getElementById("unpaidCount").textContent = `${unpaidCount} transaction${unpaidCount !== 1 ? 's' : ''}`;
-      document.getElementById("totalFailed").textContent = peso.format(totalFailed);
-      document.getElementById("failedCount").textContent = `${failedCount} transaction${failedCount !== 1 ? 's' : ''}`;
-    }
-
-    function render(data) {
-      tableBody.innerHTML = "";
-
-      if (!data.length) {
-        tableBody.innerHTML = `<tr><td class="empty-row" colspan="7">No matching transactions found</td></tr>`;
-      } else {
-        data.forEach((t, idx) => {
-          const statusLabel = t.status === "successful" ? "Successful" : 
-                             t.status === "unpaid" ? "Unpaid" :
-                             t.status === "failed" ? "Failed" : t.status;
-          
-          tableBody.innerHTML += `
-            <tr>
-              <td>${t.date}</td>
-              <td>${t.name}</td>
-              <td>${t.method}</td>
-              <td class="ref">${t.reference}</td>
-              <td><span class="pill ${t.status}">${statusLabel}</span></td>
-              <td class="amount">${peso.format(t.amount)}</td>
-              <td class="action"><button class="btn-view" onclick="showDetails(${idx})">View</button></td>
-            </tr>
-          `;
-        });
-      }
-
-      resultsText.textContent = `Showing ${data.length} of ${transactions.length}`;
-      updateStatistics(transactions);
-    }
-
-    function showDetails(idx) {
-      const t = transactions[idx];
-      const modal = document.getElementById("detailModal");
-      const modalBody = document.getElementById("modalBody");
+  <main class="main-wrapper">
+    <div class="container">
       
-      const statusLabel = t.status === "successful" ? "Successful" : 
-                         t.status === "unpaid" ? "Unpaid" :
-                         t.status === "failed" ? "Failed" : t.status;
-      
-      let detailsHTML = `
-        <div class="detail-row">
-          <span class="detail-label">Transaction Name</span>
-          <span class="detail-value">${t.name}</span>
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">Approved Applications</div>
+          <div class="stat-value" id="totalPaidDisplay">₱0.00</div>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Description</span>
-          <span class="detail-value">${t.description}</span>
+        <div class="stat-box">
+          <div class="stat-label">Pending Review</div>
+          <div class="stat-value" id="totalUnpaidDisplay">₱0.00</div>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Amount</span>
-          <span class="detail-value" style="font-weight: 700; color: #15803d;">${peso.format(t.amount)}</span>
+        <div class="stat-box">
+          <div class="stat-label">Rejected Applications</div>
+          <div class="stat-value" id="totalFailedDisplay">₱0.00</div>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Status</span>
-          <span class="detail-value"><span class="pill ${t.status}">${statusLabel}</span></span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Reference Number</span>
-          <span class="detail-value" style="font-family: ui-monospace;">${t.reference}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Invoice ID</span>
-          <span class="detail-value" style="font-family: ui-monospace;">${t.invoiceId}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Payment Method</span>
-          <span class="detail-value">${t.method}</span>
-        </div>
-      `;
+      </div>
 
-      if (t.status === "successful") {
-        detailsHTML += `
-          <div class="detail-row">
-            <span class="detail-label">Paid At</span>
-            <span class="detail-value">${t.paidAt}</span>
+      <div class="pagination-container">
+          <div class="page-info" id="pageInfo">Showing 1-5 of 13 transactions</div>
+          <div class="flex gap-2">
+              <button class="page-btn" id="prevBtn" disabled onclick="changePage(-1)">
+                  <i class="fa-solid fa-chevron-left mr-1"></i> Previous
+              </button>
+              <button class="page-btn" id="nextBtn" onclick="changePage(1)">
+                  Next <i class="fa-solid fa-chevron-right ml-1"></i>
+              </button>
           </div>
-        `;
-        if (t.paymentDetails) {
-          if (t.paymentDetails.last4) {
-            detailsHTML += `
-              <div class="detail-row">
-                <span class="detail-label">Card</span>
-                <span class="detail-value">${t.paymentDetails.bank} ${t.paymentDetails.last4}</span>
-              </div>
-            `;
-          } else if (t.paymentDetails.bank && t.paymentDetails.reference) {
-            detailsHTML += `
-              <div class="detail-row">
-                <span class="detail-label">Bank</span>
-                <span class="detail-value">${t.paymentDetails.bank}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Transfer Ref</span>
-                <span class="detail-value" style="font-family: ui-monospace;">${t.paymentDetails.reference}</span>
-              </div>
-            `;
-          } else if (t.paymentDetails.store) {
-            detailsHTML += `
-              <div class="detail-row">
-                <span class="detail-label">Store / Outlet</span>
-                <span class="detail-value">${t.paymentDetails.store}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Retail Ref</span>
-                <span class="detail-value" style="font-family: ui-monospace;">${t.paymentDetails.reference}</span>
-              </div>
-            `;
-          }
-        }
-      } else if (t.status === "unpaid") {
-        detailsHTML += `
-          <div class="detail-row">
-            <span class="detail-label">Due Date</span>
-            <span class="detail-value">${t.dueDate}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Action</span>
-            <span class="detail-value"><button class="btn-view" onclick="alert('Redirect to payment page')">Pay Now</button></span>
-          </div>
-        `;
-      } else if (t.status === "failed") {
-        detailsHTML += `
-          <div class="detail-row">
-            <span class="detail-label">Failure Reason</span>
-            <span class="detail-value" style="color: #991b1b; font-weight: 600;">${t.failureReason}</span>
-          </div>
-        `;
-        if (t.paymentDetails) {
-          detailsHTML += `
-            <div class="detail-row">
-              <span class="detail-label">Card Attempted</span>
-              <span class="detail-value">${t.paymentDetails.bank} ${t.paymentDetails.last4}</span>
+      </div>
+
+      <div class="card-custom">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Transaction History</h1>
+            <div class="flex gap-2">
+                <input id="searchInput" type="text" placeholder="Search..." class="form-control form-control-sm" style="width: 250px; height: 38px; border-radius: 8px;">
+                <select id="statusFilter" class="form-select form-select-sm" style="width: 150px; height: 38px; border-radius: 8px;">
+                    <option value="all">All Status</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="rejected">Rejected</option>
+                </select>
             </div>
-          `;
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Transaction</th>
+                <th>Method</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th style="text-align: right;">Amount</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { auth, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+
+    let allTransactions = [];
+    let currentPage = 1;
+    const rowsPerPage = 5;
+    const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+
+    // Load transactions from API
+    async function loadTransactions(userEmail) {
+        try {
+            const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                allTransactions = result.transactions.map(t => ({
+                    date: t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A',
+                    name: t.transaction_name || 'Unknown',
+                    method: t.payment_method || 'Online Payment',
+                    reference: t.reference || t.external_id,
+                    status: t.display_status || 'pending',
+                    amount: t.amount || 0,
+                    invoice_id: t.invoice_id
+                }));
+                
+                // Sort by date descending
+                allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                renderTable();
+            } else {
+                console.error('Failed to load transactions:', result.message);
+                renderTable(); // Show empty table
+            }
+        } catch (error) {
+            console.error('Error loading transactions:', error);
+            renderTable(); // Show empty table
         }
-        detailsHTML += `
-          <div class="detail-row">
-            <span class="detail-label">Action</span>
-            <span class="detail-value"><button class="btn-view" onclick="alert('Redirect to payment page')">Retry Payment</button></span>
-          </div>
-        `;
-      }
-
-      modalBody.innerHTML = detailsHTML;
-      modal.classList.add("active");
     }
 
-    function closeModal() {
-      document.getElementById("detailModal").classList.remove("active");
-    }
-
-    function applyFilters() {
-      const q = searchInput.value.toLowerCase();
-      const s = statusFilter.value;
-
-      const filtered = transactions.filter(t =>
-        (t.name.toLowerCase().includes(q) || 
-         t.reference.toLowerCase().includes(q) ||
-         t.invoiceId.toLowerCase().includes(q) ||
-         t.description.toLowerCase().includes(q)) &&
-        (s === "all" || t.status === s)
-      );
-      render(filtered);
-    }
-
-    render(transactions);
-    searchInput.addEventListener("input", applyFilters);
-    statusFilter.addEventListener("change", applyFilters);
-    document.getElementById("searchBtn").addEventListener("click", applyFilters);
-
-    // Close modal when clicking outside
-    document.getElementById("detailModal").addEventListener("click", function(e) {
-      if (e.target === this) closeModal();
+    // Initialize on auth state change
+    onAuthStateChanged(auth, (user) => {
+        if (user && user.email) {
+            loadTransactions(user.email);
+        } else {
+            console.log('No user logged in');
+            renderTable(); // Show empty table
+        }
     });
+
+    function renderTable() {
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        const statusTerm = document.getElementById("statusFilter").value;
+
+        // Filter
+        const filtered = allTransactions.filter(t => {
+            const matchesSearch = t.name.toLowerCase().includes(searchTerm) || t.reference.toLowerCase().includes(searchTerm);
+            const matchesStatus = statusTerm === "all" || t.status === statusTerm;
+            return matchesSearch && matchesStatus;
+        });
+
+        // Pagination Logic
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / rowsPerPage);
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const endIndex = Math.min(startIndex + rowsPerPage, totalItems);
+        const paginatedItems = filtered.slice(startIndex, endIndex);
+
+        // Render Table Rows
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+        
+        if (paginatedItems.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted italic">No transactions found.</td></tr>`;
+        }
+
+        paginatedItems.forEach(t => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${t.date}</td>
+                    <td class="font-bold text-slate-700">${t.name}</td>
+                    <td>${t.method}</td>
+                    <td style="font-family: monospace;">${t.reference}</td>
+                    <td><span class="pill ${t.status}">${t.status}</span></td>
+                    <td style="text-align: right; font-weight: 700;">${peso.format(t.amount)}</td>
+                    <td style="text-align: center;"><button class="btn-view" onclick="alert('Invoice ID: ${t.invoice_id || 'N/A'}')">View</button></td>
+                </tr>
+            `;
+        });
+
+        // Update Page Info
+        document.getElementById("pageInfo").textContent = `Showing ${totalItems > 0 ? startIndex + 1 : 0}-${endIndex} of ${totalItems} transactions`;
+        document.getElementById("prevBtn").disabled = currentPage === 1;
+        document.getElementById("nextBtn").disabled = currentPage === totalPages || totalPages === 0;
+
+        updateStats(filtered);
+    }
+
+    function updateStats(data) {
+        let p = 0, u = 0, f = 0;
+        allTransactions.forEach(t => { // Stats always base on full data
+            if(t.status === 'approved') p += t.amount;
+            else if(t.status === 'pending') u += t.amount;
+            else if(t.status === 'rejected') f += t.amount;
+        });
+        document.getElementById("totalPaidDisplay").textContent = peso.format(p);
+        document.getElementById("totalUnpaidDisplay").textContent = peso.format(u);
+        document.getElementById("totalFailedDisplay").textContent = peso.format(f);
+    }
+
+    window.changePage = function(direction) {
+        currentPage += direction;
+        renderTable();
+    };
+
+    // Event Listeners
+    document.getElementById("searchInput").addEventListener("input", () => { currentPage = 1; renderTable(); });
+    document.getElementById("statusFilter").addEventListener("change", () => { currentPage = 1; renderTable(); });
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
