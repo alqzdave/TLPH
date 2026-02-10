@@ -193,8 +193,52 @@
                 }, 10);
             });
 
-            // Example of how to fetch for Xendit:
-            // const amount = document.getElementById('xendit_raw_amount').value;
+            // Handle form submission with Xendit payment
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const amount = document.getElementById('xendit_raw_amount').value;
+                const formData = new FormData(form);
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                    
+                    const paymentPayload = {
+                        external_id: `cco-${Date.now()}`,
+                        amount: parseInt(amount),
+                        email: '', // Will be filled from user profile
+                        description: `CCO Registration - ${chemType.value} - ${businessNature.value}`,
+                        item_name: 'CCO Registration',
+                        success_url: `${window.location.origin}/user/license/environment/cco`,
+                        failure_url: `${window.location.origin}/user/license/environment/cco`
+                    };
+                    
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(paymentPayload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.invoice_url) {
+                        // Redirect to Xendit payment page
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert(`Payment error: ${result.message || 'Unknown error'}`);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply';
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Failed to process payment. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply';
+                }
+            });
         });
     </script>
 </body>
