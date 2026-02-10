@@ -5,28 +5,183 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DENR | Inventory Dashboard (Municipality View)</title>
 
+  <!-- Load ONCE -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
+  <style>
+    /* PH Gov Web Template-style: Verdana/Arial/Tahoma, ~12pt, flatter panels */
+    :root{
+      --gov-font: Verdana, Arial, Tahoma, sans-serif;
+      --gov-text: #111827;
+      --gov-muted: #4b5563;
+      --gov-border: #d1d5db;
+      --gov-bg: #f3f4f6;
+      --gov-panel: #ffffff;
+      --gov-primary: #0f172a;
+      --gov-focus: rgba(5, 150, 105, 0.18);
+    }
+
+    html, body{
+      font-family: var(--gov-font);
+      font-size: 16px; /* ~12pt */
+      color: var(--gov-text);
+      background: var(--gov-bg);
+    }
+
+    /* Layout wrapper */
+    .page-wrap{
+      padding: 16px;
+    }
+
+    /* Surfaces */
+    .panel, .card-kpi, .notice{
+      background: var(--gov-panel);
+      border: 1px solid var(--gov-border);
+      border-radius: 6px;
+      box-shadow: none;
+    }
+
+    /* Headings */
+    .gov-h1{
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: var(--gov-text);
+    }
+    .gov-subtitle{
+      font-weight: 400;
+      color: var(--gov-muted);
+    }
+
+    /* Pills */
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--gov-border);
+      background: #f9fafb;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    /* KPI card icon */
+    .card-kpi .icon{
+      height: 44px;
+      width: 44px;
+      border: 1px solid var(--gov-border);
+      background: #f9fafb;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      color: #374151;
+    }
+    .card-kpi .icon .material-icons-round{
+      font-size: 22px;
+    }
+
+    /* Buttons (restrained, gov style) */
+    .btn-outline-soft,
+    .btn-primary-soft{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-family: var(--gov-font);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      font-size: 12px;
+      border: 1px solid var(--gov-border);
+      background: #fff;
+      color: var(--gov-text);
+    }
+    .btn-outline-soft:hover{ background:#f9fafb; }
+    .btn-outline-soft:focus,
+    .btn-primary-soft:focus{
+      outline: none;
+      box-shadow: 0 0 0 4px var(--gov-focus);
+    }
+
+    .btn-primary-soft{
+      background: var(--gov-primary);
+      border-color: var(--gov-primary);
+      color: #fff;
+    }
+    .btn-primary-soft:hover{ filter: brightness(1.06); }
+
+    /* Labels */
+    .gov-label{
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gov-muted);
+      margin-bottom: 6px;
+      display:block;
+    }
+
+    /* Bootstrap selects: flatter and standard */
+    .form-select{
+      border-radius: 6px !important;
+      border-color: var(--gov-border) !important;
+      background-color: #f9fafb !important;
+      font-family: var(--gov-font);
+      font-weight: 600;
+      color: var(--gov-text);
+    }
+    .form-select:focus{
+      border-color: #10b981 !important;
+      box-shadow: 0 0 0 4px var(--gov-focus) !important;
+      background-color: #fff !important;
+    }
+
+    /* Table */
+    .table{
+      font-family: var(--gov-font);
+      font-size: 16px;
+    }
+    .table thead th{
+      background: #f9fafb;
+      font-weight: 700;
+      border-bottom: 1px solid var(--gov-border) !important;
+    }
+    .table tbody td{
+      border-bottom: 1px solid var(--gov-border) !important;
+      vertical-align: middle;
+    }
+
+    /* Reduce overly-heavy tailwind utility weights */
+    .font-black, .font-extrabold{ font-weight: 700 !important; }
+
+    @media print{
+      body{ background:#fff; }
+      .btn-outline-soft, #btnViewInventory { display:none !important; }
+      .panel, .card-kpi, .notice{ border: 1px solid #999; }
+    }
+  </style>
 </head>
 
 <body>
   {% include 'municipal/sidenav.html' %}
   {% include 'municipal/header.html' %}
-  
+
   <div class="page-wrap">
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
       <div>
-        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 m-0">
+        <h1 class="text-2xl md:text-3xl gov-h1 m-0">
           Inventory Dashboard
         </h1>
-        <p class="text-slate-500 font-semibold mt-1 mb-0">
+        <p class="gov-subtitle mt-1 mb-0">
           View-only inventory for your municipality.
         </p>
       </div>
@@ -36,21 +191,20 @@
           <span class="material-icons-round align-middle" style="font-size:18px;">restart_alt</span>
           Reset Filters
         </button>
-        <!-- VIEW ONLY: remove Add Item -->
       </div>
     </div>
 
     <!-- Municipality Restriction Notice -->
-    <div class="notice mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-      <div class="flex items-center gap-2 text-slate-700 fw-bold">
+    <div class="notice mb-6 p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div class="flex items-center gap-2 text-slate-800 fw-bold">
         <span class="material-icons-round" style="color:#064e3b;">lock</span>
         <span>
           Restricted View: You can only view inventory items within
-          <span class="fw-black" id="myMunicipalityLabel"></span>.
+          <span class="fw-bold" id="myMunicipalityLabel"></span>.
         </span>
       </div>
       <div class="pill">
-        <span class="material-icons-round" style="font-size:16px;">location_city</span>
+        <span class="material-icons-round" style="font-size:18px;">location_city</span>
         <span id="myMunicipalityPill"></span>
       </div>
     </div>
@@ -60,9 +214,9 @@
       <div class="card-kpi p-4">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Chemical Inventory</div>
-            <div class="text-3xl font-black mt-2" id="kpiChemical">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Chemical Inventory</div>
+            <div class="text-3xl font-bold mt-2" id="kpiChemical">0</div>
+            <div class="text-slate-600 text-sm mt-1">Total items</div>
           </div>
           <div class="icon"><span class="material-icons-round">science</span></div>
         </div>
@@ -71,9 +225,9 @@
       <div class="card-kpi p-4">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Natural Resources</div>
-            <div class="text-3xl font-black mt-2" id="kpiResources">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Natural Resources</div>
+            <div class="text-3xl font-bold mt-2" id="kpiResources">0</div>
+            <div class="text-slate-600 text-sm mt-1">Total items</div>
           </div>
           <div class="icon"><span class="material-icons-round">forest</span></div>
         </div>
@@ -82,9 +236,9 @@
       <div class="card-kpi p-4">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Protected Area</div>
-            <div class="text-3xl font-black mt-2" id="kpiProtected">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Protected Area</div>
+            <div class="text-3xl font-bold mt-2" id="kpiProtected">0</div>
+            <div class="text-slate-600 text-sm mt-1">Total items</div>
           </div>
           <div class="icon"><span class="material-icons-round">verified_user</span></div>
         </div>
@@ -93,29 +247,29 @@
       <div class="card-kpi p-4">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest">Biodiversity Inventory</div>
-            <div class="text-3xl font-black mt-2" id="kpiBiodiversity">0</div>
-            <div class="text-slate-400 font-semibold text-sm mt-1">Total items</div>
+            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Biodiversity Inventory</div>
+            <div class="text-3xl font-bold mt-2" id="kpiBiodiversity">0</div>
+            <div class="text-slate-600 text-sm mt-1">Total items</div>
           </div>
           <div class="icon"><span class="material-icons-round">pets</span></div>
         </div>
       </div>
     </div>
 
-    <!-- Inventory Category Overview + Filters (Municipality locked) -->
+    <!-- Inventory Category Overview + Filters (Region + Municipality locked) -->
     <div class="panel p-4 mb-6">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div>
-          <h2 class="text-xl font-black text-slate-900 m-0">Inventory Category Overview</h2>
-          <p class="text-slate-500 font-semibold mt-1 mb-0">
-            Filter by category and region. Municipality is locked to your account.
+          <h2 class="text-xl font-bold text-slate-900 m-0">Inventory Category Overview</h2>
+          <p class="gov-subtitle mt-1 mb-0">
+            Filter by category. Region and municipality are locked to your account.
           </p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
           <div>
-            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">Category</label>
-            <select class="form-select rounded-2xl py-2" id="filterCategory">
+            <label class="gov-label">Category</label>
+            <select class="form-select py-2" id="filterCategory">
               <option value="All" selected>All</option>
               <option value="Chemical Inventory">Chemical Inventory</option>
               <option value="Natural Resources">Natural Resources</option>
@@ -125,23 +279,15 @@
           </div>
 
           <div>
-            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">Region</label>
-            <select class="form-select rounded-2xl py-2" id="filterRegion">
-              <option value="All" selected>All</option>
-              <option value="NCR">NCR</option>
-              <option value="Region I">Region I</option>
-              <option value="Region II">Region II</option>
-              <option value="Region III">Region III</option>
-              <option value="Region IV-A">Region IV-A</option>
-              <option value="Region V">Region V</option>
+            <label class="gov-label">Region (Locked)</label>
+            <select class="form-select py-2" id="filterRegion" disabled>
+              <!-- injected by JS -->
             </select>
           </div>
 
           <div>
-            <label class="text-slate-500 font-extrabold uppercase text-[11px] tracking-widest mb-1 block">
-              Municipality (Locked)
-            </label>
-            <select class="form-select rounded-2xl py-2" id="filterMunicipality" disabled>
+            <label class="gov-label">Municipality (Locked)</label>
+            <select class="form-select py-2" id="filterMunicipality" disabled>
               <!-- injected by JS -->
             </select>
           </div>
@@ -149,20 +295,23 @@
       </div>
 
       <div class="mt-4 flex flex-wrap items-center gap-2">
-        <span class="pill"><span class="material-icons-round" style="font-size:16px;">filter_alt</span> Active Filters:</span>
+        <span class="pill">
+          <span class="material-icons-round" style="font-size:18px;">filter_alt</span>
+          Active Filters
+        </span>
         <span class="pill" id="pillCategory">Category: All</span>
-        <span class="pill" id="pillRegion">Region: All</span>
+        <span class="pill" id="pillRegion">Region: (Locked)</span>
         <span class="pill" id="pillMunicipality">Municipality: (Locked)</span>
-        <span class="ms-auto text-slate-500 font-bold" id="resultsCount">Showing 0 items</span>
+        <span class="ms-auto text-slate-600 fw-bold" id="resultsCount">Showing 0 items</span>
       </div>
     </div>
 
-    <!-- Items Table (View-only actions) -->
+    <!-- Items Table (View-only) -->
     <div class="panel p-4">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
         <div>
-          <h2 class="text-xl font-black text-slate-900 m-0">Inventory Items</h2>
-          <p class="text-slate-500 font-semibold mt-1 mb-0">
+          <h2 class="text-xl font-bold text-slate-900 m-0">Inventory Items</h2>
+          <p class="gov-subtitle mt-1 mb-0">
             Category, description, quantity. (View-only)
           </p>
         </div>
@@ -194,172 +343,162 @@
 
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- ✅ Replace your current <script> block with this updated one (Region + Municipality are BOTH locked) -->
-<script>
-  /**
-   * ✅ MUNICIPALITY + REGION RESTRICTED VIEW
-   * In production, set these from your login/session:
-   * - PHP example:
-   *   const MY_REGION = "<?= $_SESSION['region'] ?>";
-   *   const MY_MUNICIPALITY = "<?= $_SESSION['municipality'] ?>";
-   */
-  const MY_REGION = "NCR";                 // <-- CHANGE THIS TO THE LOGGED-IN USER'S REGION
-  const MY_MUNICIPALITY = "Quezon City";   // <-- CHANGE THIS TO THE LOGGED-IN USER'S MUNICIPALITY
+  <!-- Region + Municipality locked (unchanged logic, only UI styling improved above) -->
+  <script>
+    /**
+     * ✅ MUNICIPALITY + REGION RESTRICTED VIEW
+     * In production, set these from your login/session.
+     */
+    const MY_REGION = "NCR";                 // <-- CHANGE THIS TO THE LOGGED-IN USER'S REGION
+    const MY_MUNICIPALITY = "Quezon City";   // <-- CHANGE THIS TO THE LOGGED-IN USER'S MUNICIPALITY
 
-  // --- Demo data (replace with backend later) ---
-  const items = [
-    { id: 1, category: "Chemical Inventory", description: "Laboratory solvents (ethanol, acetone)", quantity: 24, region: "NCR", municipality: "Quezon City" },
-    { id: 2, category: "Natural Resources", description: "Seedling stock for reforestation", quantity: 450, region: "Region IV-A", municipality: "Calamba" },
-    { id: 3, category: "Protected Area", description: "Visitor permit logbook supply", quantity: 12, region: "Region V", municipality: "Legazpi" },
-    { id: 4, category: "Biodiversity Inventory", description: "Wildlife monitoring equipment tags", quantity: 80, region: "NCR", municipality: "Manila" },
-    { id: 5, category: "Chemical Inventory", description: "Water test reagent kits", quantity: 60, region: "Region III", municipality: "San Fernando" },
-    { id: 6, category: "Natural Resources", description: "Nursery tools set", quantity: 19, region: "NCR", municipality: "Quezon City" },
-  ];
+    // --- Demo data (replace with backend later) ---
+    const items = [
+      { id: 1, category: "Chemical Inventory", description: "Laboratory solvents (ethanol, acetone)", quantity: 24, region: "NCR", municipality: "Quezon City" },
+      { id: 2, category: "Natural Resources", description: "Seedling stock for reforestation", quantity: 450, region: "Region IV-A", municipality: "Calamba" },
+      { id: 3, category: "Protected Area", description: "Visitor permit logbook supply", quantity: 12, region: "Region V", municipality: "Legazpi" },
+      { id: 4, category: "Biodiversity Inventory", description: "Wildlife monitoring equipment tags", quantity: 80, region: "NCR", municipality: "Manila" },
+      { id: 5, category: "Chemical Inventory", description: "Water test reagent kits", quantity: 60, region: "Region III", municipality: "San Fernando" },
+      { id: 6, category: "Natural Resources", description: "Nursery tools set", quantity: 19, region: "NCR", municipality: "Quezon City" },
+    ];
 
-  const els = {
-    myMunicipalityLabel: document.getElementById("myMunicipalityLabel"),
-    myMunicipalityPill: document.getElementById("myMunicipalityPill"),
+    const els = {
+      myMunicipalityLabel: document.getElementById("myMunicipalityLabel"),
+      myMunicipalityPill: document.getElementById("myMunicipalityPill"),
 
-    kpiChemical: document.getElementById("kpiChemical"),
-    kpiResources: document.getElementById("kpiResources"),
-    kpiProtected: document.getElementById("kpiProtected"),
-    kpiBiodiversity: document.getElementById("kpiBiodiversity"),
+      kpiChemical: document.getElementById("kpiChemical"),
+      kpiResources: document.getElementById("kpiResources"),
+      kpiProtected: document.getElementById("kpiProtected"),
+      kpiBiodiversity: document.getElementById("kpiBiodiversity"),
 
-    filterCategory: document.getElementById("filterCategory"),
-    filterRegion: document.getElementById("filterRegion"),
-    filterMunicipality: document.getElementById("filterMunicipality"),
+      filterCategory: document.getElementById("filterCategory"),
+      filterRegion: document.getElementById("filterRegion"),
+      filterMunicipality: document.getElementById("filterMunicipality"),
 
-    pillCategory: document.getElementById("pillCategory"),
-    pillRegion: document.getElementById("pillRegion"),
-    pillMunicipality: document.getElementById("pillMunicipality"),
+      pillCategory: document.getElementById("pillCategory"),
+      pillRegion: document.getElementById("pillRegion"),
+      pillMunicipality: document.getElementById("pillMunicipality"),
 
-    resultsCount: document.getElementById("resultsCount"),
-    itemsTbody: document.getElementById("itemsTbody"),
+      resultsCount: document.getElementById("resultsCount"),
+      itemsTbody: document.getElementById("itemsTbody"),
 
-    btnReset: document.getElementById("btnReset"),
-    btnViewInventory: document.getElementById("btnViewInventory"),
-  };
+      btnReset: document.getElementById("btnReset"),
+      btnViewInventory: document.getElementById("btnViewInventory"),
+    };
 
-  // ✅ Hard-lock BOTH Region and Municipality filters
-  function initLocks() {
-    // Top notice (municipality)
-    els.myMunicipalityLabel.textContent = MY_MUNICIPALITY;
-    els.myMunicipalityPill.textContent = MY_MUNICIPALITY;
+    function initLocks() {
+      els.myMunicipalityLabel.textContent = MY_MUNICIPALITY;
+      els.myMunicipalityPill.textContent = MY_MUNICIPALITY;
 
-    // Lock Region dropdown
-    els.filterRegion.innerHTML = `<option value="${MY_REGION}" selected>${MY_REGION}</option>`;
-    els.filterRegion.disabled = true;
+      els.filterRegion.innerHTML = `<option value="${MY_REGION}" selected>${MY_REGION}</option>`;
+      els.filterRegion.disabled = true;
 
-    // Lock Municipality dropdown
-    els.filterMunicipality.innerHTML = `<option value="${MY_MUNICIPALITY}" selected>${MY_MUNICIPALITY}</option>`;
-    els.filterMunicipality.disabled = true;
-  }
-
-  function matchesFilters(item) {
-    const c = els.filterCategory.value;
-
-    const categoryOk = (c === "All") || (item.category === c);
-
-    // ✅ Enforce region + municipality restrictions in logic (cannot be bypassed)
-    const regionOk = item.region === MY_REGION;
-    const muniOk = item.municipality === MY_MUNICIPALITY;
-
-    return categoryOk && regionOk && muniOk;
-  }
-
-  function computeKpis(currentList) {
-    const countBy = (name) => currentList.filter(i => i.category === name).length;
-
-    els.kpiChemical.textContent = countBy("Chemical Inventory");
-    els.kpiResources.textContent = countBy("Natural Resources");
-    els.kpiProtected.textContent = countBy("Protected Area");
-    els.kpiBiodiversity.textContent = countBy("Biodiversity Inventory");
-  }
-
-  function renderTable(currentList) {
-    els.itemsTbody.innerHTML = "";
-
-    if (currentList.length === 0) {
-      els.itemsTbody.innerHTML = `
-        <tr>
-          <td colspan="4" class="text-center text-slate-500 fw-bold py-4">
-            No items found in <strong>${MY_MUNICIPALITY}</strong> (${MY_REGION}) for the selected filters.
-          </td>
-        </tr>
-      `;
-      els.resultsCount.textContent = "Showing 0 items";
-      return;
+      els.filterMunicipality.innerHTML = `<option value="${MY_MUNICIPALITY}" selected>${MY_MUNICIPALITY}</option>`;
+      els.filterMunicipality.disabled = true;
     }
 
-    currentList.forEach(item => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="fw-bold text-slate-800">${item.category}</td>
-        <td class="text-slate-600">${item.description}</td>
-        <td class="fw-black text-slate-900">${item.quantity}</td>
-        <td>
-          <button class="btn btn-sm btn-outline-success rounded-3 fw-bold" data-action="view" data-id="${item.id}">
-            <span class="material-icons-round align-middle" style="font-size:16px;">visibility</span>
-            View
-          </button>
-        </td>
-      `;
-      els.itemsTbody.appendChild(tr);
+    function matchesFilters(item) {
+      const c = els.filterCategory.value;
+      const categoryOk = (c === "All") || (item.category === c);
+
+      const regionOk = item.region === MY_REGION;
+      const muniOk = item.municipality === MY_MUNICIPALITY;
+
+      return categoryOk && regionOk && muniOk;
+    }
+
+    function computeKpis(currentList) {
+      const countBy = (name) => currentList.filter(i => i.category === name).length;
+
+      els.kpiChemical.textContent = countBy("Chemical Inventory");
+      els.kpiResources.textContent = countBy("Natural Resources");
+      els.kpiProtected.textContent = countBy("Protected Area");
+      els.kpiBiodiversity.textContent = countBy("Biodiversity Inventory");
+    }
+
+    function renderTable(currentList) {
+      els.itemsTbody.innerHTML = "";
+
+      if (currentList.length === 0) {
+        els.itemsTbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center text-slate-600 fw-bold py-4">
+              No items found in <strong>${MY_MUNICIPALITY}</strong> (${MY_REGION}) for the selected filters.
+            </td>
+          </tr>
+        `;
+        els.resultsCount.textContent = "Showing 0 items";
+        return;
+      }
+
+      currentList.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="fw-bold text-slate-800">${item.category}</td>
+          <td class="text-slate-700">${item.description}</td>
+          <td class="fw-bold text-slate-900">${item.quantity}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary rounded-2 fw-bold" data-action="view" data-id="${item.id}">
+              <span class="material-icons-round align-middle" style="font-size:16px;">visibility</span>
+              View
+            </button>
+          </td>
+        `;
+        els.itemsTbody.appendChild(tr);
+      });
+
+      els.resultsCount.textContent = `Showing ${currentList.length} item${currentList.length === 1 ? "" : "s"}`;
+    }
+
+    function refresh() {
+      const filtered = items.filter(matchesFilters);
+
+      els.pillCategory.textContent = `Category: ${els.filterCategory.value}`;
+      els.pillRegion.textContent = `Region: ${MY_REGION} (Locked)`;
+      els.pillMunicipality.textContent = `Municipality: ${MY_MUNICIPALITY} (Locked)`;
+
+      computeKpis(filtered);
+      renderTable(filtered);
+    }
+
+    els.filterCategory.addEventListener("change", refresh);
+
+    els.btnReset.addEventListener("click", () => {
+      els.filterCategory.value = "All";
+      refresh();
     });
 
-    els.resultsCount.textContent = `Showing ${currentList.length} item${currentList.length === 1 ? "" : "s"}`;
-  }
+    els.itemsTbody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action='view']");
+      if (!btn) return;
 
-  function refresh() {
-    const filtered = items.filter(matchesFilters);
+      const id = Number(btn.getAttribute("data-id"));
+      const item = items.find(i => i.id === id);
+      if (!item) return;
 
-    els.pillCategory.textContent = `Category: ${els.filterCategory.value}`;
-    els.pillRegion.textContent = `Region: ${MY_REGION} (Locked)`;
-    els.pillMunicipality.textContent = `Municipality: ${MY_MUNICIPALITY} (Locked)`;
+      if (item.region !== MY_REGION || item.municipality !== MY_MUNICIPALITY) {
+        alert("Access denied: This item is outside your assigned region/municipality.");
+        return;
+      }
 
-    computeKpis(filtered);
-    renderTable(filtered);
-  }
+      alert(
+        `Inventory Item (View)\n\n` +
+        `Category: ${item.category}\n` +
+        `Region: ${item.region}\n` +
+        `Municipality: ${item.municipality}\n` +
+        `Quantity: ${item.quantity}\n\n` +
+        `Description: ${item.description}`
+      );
+    });
 
-  // Only Category filter changes now (region/municipality are locked)
-  els.filterCategory.addEventListener("change", refresh);
+    els.btnViewInventory.addEventListener("click", () => {
+      alert(`Viewing inventory for ${MY_MUNICIPALITY} (${MY_REGION}) only.`);
+    });
 
-  els.btnReset.addEventListener("click", () => {
-    els.filterCategory.value = "All";
+    initLocks();
     refresh();
-  });
-
-  // Row View action (still enforces locks)
-  els.itemsTbody.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-action='view']");
-    if (!btn) return;
-
-    const id = Number(btn.getAttribute("data-id"));
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-
-    if (item.region !== MY_REGION || item.municipality !== MY_MUNICIPALITY) {
-      alert("Access denied: This item is outside your assigned region/municipality.");
-      return;
-    }
-
-    alert(
-      `Inventory Item (View)\n\n` +
-      `Category: ${item.category}\n` +
-      `Region: ${item.region}\n` +
-      `Municipality: ${item.municipality}\n` +
-      `Quantity: ${item.quantity}\n\n` +
-      `Description: ${item.description}`
-    );
-  });
-
-  els.btnViewInventory.addEventListener("click", () => {
-    alert(`Viewing inventory for ${MY_MUNICIPALITY} (${MY_REGION}) only.`);
-  });
-
-  // Init
-  initLocks();
-  refresh();
-</script>
+  </script>
+</body>
+</html>
