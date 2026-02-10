@@ -82,6 +82,11 @@ async function handlePaymentSubmit(event, form) {
 
     try {
         const email = await getCurrentUserEmail();
+        if (!email) {
+            alert("Please sign in before continuing with payment.");
+            return;
+        }
+        localStorage.setItem("denr_user_email", email);
         const payload = {
             external_id: `${externalPrefix}-${Date.now()}`,
             amount: amount,

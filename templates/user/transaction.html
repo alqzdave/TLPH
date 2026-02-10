@@ -81,7 +81,7 @@
     /* Stats Styling */
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
@@ -127,6 +127,7 @@
     .pill.approved { background: #dcfce7; color: #15803d; }
     .pill.pending { background: #fef9c3; color: #854d0e; }
     .pill.rejected { background: #fee2e2; color: #991b1b; }
+    .pill.cancelled { background: #f3f4f6; color: #4b5563; }
 
     .btn-view {
       background: #3b82f6;
@@ -144,6 +145,73 @@
       background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1050;
     }
     .modal-backdrop-custom.active { display: flex; }
+    
+    .modal-content-custom {
+      background: white;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .detail-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+    
+    .detail-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+    }
+    
+    .btn-cancel {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-cancel:hover {
+      background: #dc2626;
+    }
+    
+    .btn-cancel:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    
+    .btn-close-modal {
+      background: #e5e7eb;
+      color: #374151;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-close-modal:hover {
+      background: #d1d5db;
+    }
   </style>
 </head>
 
@@ -165,6 +233,10 @@
         <div class="stat-box">
           <div class="stat-label">Rejected Applications</div>
           <div class="stat-value" id="totalFailedDisplay">₱0.00</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Cancelled</div>
+          <div class="stat-value" id="totalCancelledDisplay">₱0.00</div>
         </div>
       </div>
 
@@ -190,6 +262,7 @@
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
                     <option value="rejected">Rejected</option>
+                    <option value="cancelled">Cancelled</option>
                 </select>
             </div>
         </div>
@@ -215,6 +288,31 @@
     </div>
   </main>
 
+  <!-- Transaction Detail Modal -->
+  <div class="modal-backdrop-custom" id="detailModal">
+    <div class="modal-content-custom">
+      <div style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #111827;">TRANSACTION DETAILS</h2>
+          <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div id="modalContent">
+          <!-- Content will be dynamically inserted here -->
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 2px solid #f1f5f9;">
+          <button class="btn-cancel" id="cancelBtn" onclick="cancelTransaction()" style="flex: 1;">
+            <i class="fa-solid fa-xmark mr-1"></i> Cancel Application
+          </button>
+          <button class="btn-close-modal" onclick="closeModal()" style="flex: 1;">
+            <i class="fa-solid fa-check mr-1"></i> Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { auth, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
 
@@ -231,13 +329,18 @@
             
             if (result.status === 'success') {
                 allTransactions = result.transactions.map(t => ({
+                    id: t.id,
                     date: t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A',
                     name: t.transaction_name || 'Unknown',
                     method: t.payment_method || 'Online Payment',
                     reference: t.reference || t.external_id,
                     status: t.display_status || 'pending',
                     amount: t.amount || 0,
-                    invoice_id: t.invoice_id
+                    invoice_id: t.invoice_id,
+                    description: t.description || '',
+                    external_id: t.external_id,
+                    user_email: t.user_email,
+                    updated_at: t.updated_at || t.created_at
                 }));
                 
                 // Sort by date descending
@@ -254,13 +357,22 @@
     }
 
     // Initialize on auth state change
+    function getStoredEmail() {
+      return (localStorage.getItem('denr_user_email') || '').trim();
+    }
+
     onAuthStateChanged(auth, (user) => {
-        if (user && user.email) {
-            loadTransactions(user.email);
+      if (user && user.email) {
+        loadTransactions(user.email);
+      } else {
+        const storedEmail = getStoredEmail();
+        if (storedEmail) {
+          loadTransactions(storedEmail);
         } else {
-            console.log('No user logged in');
-            renderTable(); // Show empty table
+          console.log('No user logged in');
+          renderTable(); // Show empty table
         }
+      }
     });
 
     function renderTable() {
@@ -298,7 +410,7 @@
                     <td style="font-family: monospace;">${t.reference}</td>
                     <td><span class="pill ${t.status}">${t.status}</span></td>
                     <td style="text-align: right; font-weight: 700;">${peso.format(t.amount)}</td>
-                    <td style="text-align: center;"><button class="btn-view" onclick="alert('Invoice ID: ${t.invoice_id || 'N/A'}')">View</button></td>
+                    <td style="text-align: center;"><button class="btn-view" onclick="viewTransaction('${t.reference}')">View</button></td>
                 </tr>
             `;
         });
@@ -312,15 +424,17 @@
     }
 
     function updateStats(data) {
-        let p = 0, u = 0, f = 0;
+        let p = 0, u = 0, f = 0, c = 0;
         allTransactions.forEach(t => { // Stats always base on full data
             if(t.status === 'approved') p += t.amount;
             else if(t.status === 'pending') u += t.amount;
             else if(t.status === 'rejected') f += t.amount;
+            else if(t.status === 'cancelled') c += t.amount;
         });
         document.getElementById("totalPaidDisplay").textContent = peso.format(p);
         document.getElementById("totalUnpaidDisplay").textContent = peso.format(u);
         document.getElementById("totalFailedDisplay").textContent = peso.format(f);
+        document.getElementById("totalCancelledDisplay").textContent = peso.format(c);
     }
 
     window.changePage = function(direction) {
@@ -331,6 +445,131 @@
     // Event Listeners
     document.getElementById("searchInput").addEventListener("input", () => { currentPage = 1; renderTable(); });
     document.getElementById("statusFilter").addEventListener("change", () => { currentPage = 1; renderTable(); });
+    
+    // Modal Functions
+    let currentTransaction = null;
+    
+    window.viewTransaction = function(reference) {
+        const transaction = allTransactions.find(t => t.reference === reference);
+        if (!transaction) return;
+        
+        currentTransaction = transaction;
+        
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = `
+            <div class="detail-row">
+                <span class="detail-label">Application Type</span>
+                <span class="detail-value">${transaction.name}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Description</span>
+                <span class="detail-value">${transaction.description || 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Reference Number</span>
+                <span class="detail-value" style="font-family: monospace;">${transaction.reference}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Invoice ID</span>
+                <span class="detail-value" style="font-family: monospace; font-size: 11px;">${transaction.invoice_id || 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Application Date</span>
+                <span class="detail-value">${transaction.date}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Last Updated</span>
+                <span class="detail-value">${transaction.updated_at ? new Date(transaction.updated_at).toLocaleString() : 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Payment Method</span>
+                <span class="detail-value">${transaction.method}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Amount</span>
+                <span class="detail-value" style="color: #15803d; font-size: 18px;">${peso.format(transaction.amount)}</span>
+            </div>
+            <div class="detail-row" style="border-bottom: none;">
+                <span class="detail-label">Status</span>
+                <span class="detail-value"><span class="pill ${transaction.status}">${transaction.status.toUpperCase()}</span></span>
+            </div>
+        `;
+        
+        // Show/hide cancel button based on status
+        const cancelBtn = document.getElementById('cancelBtn');
+        if (transaction.status === 'pending') {
+            cancelBtn.style.display = 'block';
+            cancelBtn.disabled = false;
+        } else {
+            cancelBtn.style.display = 'none';
+        }
+        
+        document.getElementById('detailModal').classList.add('active');
+    };
+    
+    window.closeModal = function() {
+        document.getElementById('detailModal').classList.remove('active');
+        currentTransaction = null;
+    };
+    
+    window.cancelTransaction = async function() {
+        if (!currentTransaction) return;
+        
+        if (!confirm(`Are you sure you want to cancel this application?\n\nReference: ${currentTransaction.reference}\nType: ${currentTransaction.name}`)) {
+            return;
+        }
+        
+        const cancelBtn = document.getElementById('cancelBtn');
+        cancelBtn.disabled = true;
+        cancelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Canceling...';
+        
+        try {
+            const user = auth.currentUser;
+            if (!user || !user.email) {
+                alert('User not authenticated');
+                return;
+            }
+            
+            const response = await fetch(`/api/payments/cancel-transaction`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reference: currentTransaction.reference,
+                    user_email: user.email
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                alert('Application canceled successfully!');
+                closeModal();
+                // Reload transactions
+                const user = auth.currentUser;
+                if (user && user.email) {
+                    await loadTransactions(user.email);
+                }
+            } else {
+                alert('Failed to cancel: ' + result.message);
+                cancelBtn.disabled = false;
+                cancelBtn.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Cancel Application';
+            }
+        } catch (error) {
+            console.error('Cancel error:', error);
+            alert('An error occurred while canceling the application.');
+            cancelBtn.disabled = false;
+            cancelBtn.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Cancel Application';
+        }
+    };
+    
+    // Close modal on backdrop click
+    document.getElementById('detailModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
   </script>
 </body>
 </html>
