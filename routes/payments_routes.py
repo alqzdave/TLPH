@@ -111,7 +111,7 @@ def create_invoice():
                 amount=amount,
                 item_name=data.get('item_name', 'License/Permit'),
                 description=data.get('description', 'DENR License/Permit Payment'),
-                status='PENDING'
+                status='Pending'
             )
             
             return jsonify({
@@ -264,13 +264,13 @@ def get_transactions():
         
         # Convert status to display format
         for transaction in transactions:
-            status = transaction.get('status', 'PENDING')
-            if status == 'PAID':
-                transaction['display_status'] = 'successful'
-            elif status == 'EXPIRED' or status == 'FAILED':
-                transaction['display_status'] = 'failed'
+            status = transaction.get('status', 'Pending')
+            if status == 'Approved' or status == 'PAID':
+                transaction['display_status'] = 'approved'
+            elif status == 'Rejected' or status == 'EXPIRED' or status == 'FAILED':
+                transaction['display_status'] = 'rejected'
             else:
-                transaction['display_status'] = 'unpaid'
+                transaction['display_status'] = 'pending'
         
         return jsonify({
             'status': 'success',

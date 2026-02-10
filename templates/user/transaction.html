@@ -124,9 +124,9 @@
       font-weight: 700;
       text-transform: uppercase;
     }
-    .pill.successful { background: #dcfce7; color: #15803d; }
-    .pill.unpaid { background: #fef9c3; color: #854d0e; }
-    .pill.failed { background: #fee2e2; color: #991b1b; }
+    .pill.approved { background: #dcfce7; color: #15803d; }
+    .pill.pending { background: #fef9c3; color: #854d0e; }
+    .pill.rejected { background: #fee2e2; color: #991b1b; }
 
     .btn-view {
       background: #3b82f6;
@@ -155,15 +155,15 @@
       
       <div class="stats">
         <div class="stat-box">
-          <div class="stat-label">Total Paid</div>
+          <div class="stat-label">Approved Applications</div>
           <div class="stat-value" id="totalPaidDisplay">₱0.00</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Pending Payments</div>
+          <div class="stat-label">Pending Review</div>
           <div class="stat-value" id="totalUnpaidDisplay">₱0.00</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Failed Attempts</div>
+          <div class="stat-label">Rejected Applications</div>
           <div class="stat-value" id="totalFailedDisplay">₱0.00</div>
         </div>
       </div>
@@ -187,9 +187,9 @@
                 <input id="searchInput" type="text" placeholder="Search..." class="form-control form-control-sm" style="width: 250px; height: 38px; border-radius: 8px;">
                 <select id="statusFilter" class="form-select form-select-sm" style="width: 150px; height: 38px; border-radius: 8px;">
                     <option value="all">All Status</option>
-                    <option value="successful">Successful</option>
-                    <option value="unpaid">Unpaid</option>
-                    <option value="failed">Failed</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="rejected">Rejected</option>
                 </select>
             </div>
         </div>
@@ -233,9 +233,9 @@
                 allTransactions = result.transactions.map(t => ({
                     date: t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A',
                     name: t.transaction_name || 'Unknown',
-                    method: t.payment_method || 'Not Paid',
+                    method: t.payment_method || 'Online Payment',
                     reference: t.reference || t.external_id,
-                    status: t.display_status || 'unpaid',
+                    status: t.display_status || 'pending',
                     amount: t.amount || 0,
                     invoice_id: t.invoice_id
                 }));
@@ -314,9 +314,9 @@
     function updateStats(data) {
         let p = 0, u = 0, f = 0;
         allTransactions.forEach(t => { // Stats always base on full data
-            if(t.status === 'successful') p += t.amount;
-            else if(t.status === 'unpaid') u += t.amount;
-            else if(t.status === 'failed') f += t.amount;
+            if(t.status === 'approved') p += t.amount;
+            else if(t.status === 'pending') u += t.amount;
+            else if(t.status === 'rejected') f += t.amount;
         });
         document.getElementById("totalPaidDisplay").textContent = peso.format(p);
         document.getElementById("totalUnpaidDisplay").textContent = peso.format(u);
