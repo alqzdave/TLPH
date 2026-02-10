@@ -9,7 +9,7 @@
                  class="h-9 w-9 object-contain bg-white rounded-full p-0.5 shadow-sm transition-transform group-hover:scale-105">
             <div class="flex flex-col leading-none">
                 <h1 class="text-white text-xl font-bold tracking-tight uppercase">DENR</h1>
-                <span class="text-[8px] text-green-200 font-medium tracking-widest uppercase">Department of Environtment and Natural Resources</span>
+                <span class="text-[8px] text-green-200 font-medium tracking-widest uppercase">Department of Environment and Natural Resources</span>
             </div>
         </div>
 
@@ -22,6 +22,11 @@
                 <a href="/user/application" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
                     Application
                 </a>
+                
+                <a href="/user/license/license" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
+                    License/Permit
+                </a>
+
                 <a href="/user/inventory" class="px-2 py-1.5 rounded text-white hover:bg-green-800 hover:text-green-100 font-medium transition-all no-underline text-[13px]">
                     Inventory
                 </a>
@@ -45,21 +50,29 @@
                     <i class="fa-solid fa-chevron-down text-[9px] text-green-200"></i>
                 </button> 
                 
-                <ul class="dropdown-menu dropdown-menu-end shadow-xl border-0 mt-2 rounded-lg p-1 animate-fade-in" aria-labelledby="profileDropdown" style="min-width: 160px;">
+                <ul class="dropdown-menu dropdown-menu-end shadow-xl border-0 mt-2 rounded-lg p-1 animate-fade-in" aria-labelledby="profileDropdown" style="min-width: 180px;">
                     <li class="px-2 py-1 mb-1">
-                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Account</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Account Settings</p>
                     </li>
                     <li>
                         <a class="dropdown-item rounded py-1.5 flex items-center gap-3 text-gray-700 hover:bg-green-50 transition-colors no-underline" href="/user/profile">
                             <i class="fa-solid fa-user-gear text-green-700 text-sm w-4 text-center"></i>
-                            <span class="font-medium text-[13px]">Profile</span>
+                            <span class="font-medium text-[13px]">Profile Info</span>
                         </a>
                     </li>
+                    
+                    <li>
+                        <a class="dropdown-item rounded py-1.5 flex items-center gap-3 text-gray-700 hover:bg-green-50 transition-colors no-underline" href="/user/license/license">
+                            <i class="fa-solid fa-id-card text-green-700 text-sm w-4 text-center"></i>
+                            <span class="font-medium text-[13px]">License/Permit</span>
+                        </a>
+                    </li>
+
                     <li><hr class="dropdown-divider bg-gray-100 my-1"></li>
                     <li>
                         <a class="dropdown-item rounded py-1.5 flex items-center gap-3 text-blue-600 hover:bg-blue-50 transition-colors no-underline" href="/user/transaction">
                             <i class="fa-solid fa-receipt text-blue-600 text-sm w-4 text-center"></i>
-                            <span class="font-medium text-[13px]">Transaction History</span>
+                            <span class="font-medium text-[13px]">Transactions</span>
                         </a>
                     </li>
                     <li><hr class="dropdown-divider bg-gray-100 my-1"></li>
@@ -77,7 +90,7 @@
 </header>
 
 <style>
-    /* Compact animation */
+    /* Subtle fade and slide animation for the menu */
     .animate-fade-in {
         animation: fadeIn 0.15s ease-out;
     }
@@ -85,7 +98,7 @@
         from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    /* Hover override for Bootstrap */
+    /* Ensure Bootstrap hover state matches DENR theme */
     .dropdown-item:hover {
         background-color: #f0fdf4 !important;
     }

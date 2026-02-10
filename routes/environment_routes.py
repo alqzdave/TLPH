@@ -21,3 +21,27 @@ def water_use():
 @bp.route('/hazardous')
 def hazardous_material():
     return render_template('user/license/environment/hazardous.html')
+
+@bp.route('/cco')
+def cco():
+    return render_template('user/license/environment/cco.html')
+
+@bp.route('/hazardous-waste')
+def hazardous_waste():
+    return render_template('user/license/environment/hazardous-waste-generator.html')
+
+@bp.route('pcl')
+def pcl():
+    return render_template('user/license/environment/pcl.html')
+
+@bp.route('permit-to-operate-air')
+def permit_to_operate_air():
+    return render_template('user/license/environment/permit-to-operate-air.html')
+
+@bp.route('piccs')
+def piccs():
+    return render_template('user/license/environment/piccs.html')
+
+@bp.route('water-dispose')
+def water_dispose():
+    return render_template('user/license/environment/water-dispose.html')
