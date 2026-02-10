@@ -1,9 +1,15 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, send_file
 from config import Config
 import requests
 from datetime import datetime
 import base64
 import transaction_storage
+from io import BytesIO
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 
 bp = Blueprint('payments', __name__, url_prefix='/api/payments')
 
@@ -278,6 +284,167 @@ def get_transactions():
             'status': 'success',
             'transactions': transactions
         }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@bp.route('/statement', methods=['GET'])
+def generate_statement():
+    """Generate PDF e-statement for user transactions"""
+    try:
+        user_email = request.args.get('email', '').strip()
+        
+        if not user_email:
+            return jsonify({
+                'status': 'error',
+                'message': 'Email is required'
+            }), 400
+        
+        # Get transactions
+        transactions = transaction_storage.get_user_transactions(user_email)
+        
+        if not transactions:
+            return jsonify({
+                'status': 'error',
+                'message': 'No transactions found'
+            }), 404
+        
+        # Create PDF in memory
+        pdf_buffer = BytesIO()
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+        story = []
+        styles = getSampleStyleSheet()
+        
+        # Title
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#111827'),
+            spaceAfter=6,
+            alignment=1  # Center
+        )
+        story.append(Paragraph("DENR TRANSACTION STATEMENT", title_style))
+        story.append(Paragraph("Department of Environment and Natural Resources", styles['Normal']))
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Statement info
+        info_style = ParagraphStyle(
+            'InfoStyle',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=colors.HexColor('#6b7280')
+        )
+        story.append(Paragraph(f"<b>Account Email:</b> {user_email}", info_style))
+        story.append(Paragraph(f"<b>Statement Date:</b> {datetime.now().strftime('%B %d, %Y')}", info_style))
+        story.append(Paragraph(f"<b>Total Transactions:</b> {len(transactions)}", info_style))
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Summary
+        story.append(Paragraph("SUMMARY", styles['Heading2']))
+        summary_data = [['Status', 'Count', 'Total Amount']]
+        
+        status_summary = {}
+        total_amount = 0
+        for t in transactions:
+            status = t.get('display_status', 'pending')
+            if status not in status_summary:
+                status_summary[status] = {'count': 0, 'amount': 0}
+            status_summary[status]['count'] += 1
+            status_summary[status]['amount'] += t.get('amount', 0)
+            total_amount += t.get('amount', 0)
+        
+        for status in ['approved', 'pending', 'rejected', 'cancelled']:
+            if status in status_summary:
+                data = status_summary[status]
+                summary_data.append([
+                    status.upper(),
+                    str(data['count']),
+                    f"₱{data['amount']:,.2f}"
+                ])
+        
+        summary_data.append(['TOTAL', str(len(transactions)), f"₱{total_amount:,.2f}"])
+        
+        summary_table = Table(summary_data, colWidths=[2*inch, 1.5*inch, 2*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#fbfcfe')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#6b7280')),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f3f4f6')),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e5e7eb')),
+        ]))
+        story.append(summary_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Transaction details
+        story.append(PageBreak())
+        story.append(Paragraph("TRANSACTION DETAILS", styles['Heading2']))
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Transaction table
+        trans_data = [['Date', 'Application Type', 'Reference', 'Amount', 'Status']]
+        
+        for t in transactions:
+            date_str = t.get('created_at', 'N/A')
+            if date_str and date_str != 'N/A':
+                try:
+                    date_str = datetime.fromisoformat(date_str).strftime('%Y-%m-%d')
+                except:
+                    pass
+            
+            trans_data.append([
+                date_str,
+                t.get('transaction_name', 'Unknown')[:30],  # Truncate long names
+                t.get('reference', '')[:25],  # Truncate reference
+                f"₱{t.get('amount', 0):,.2f}",
+                t.get('display_status', 'pending').upper()
+            ])
+        
+        trans_table = Table(trans_data, colWidths=[1.2*inch, 1.8*inch, 1.5*inch, 1.2*inch, 1.3*inch])
+        trans_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#fbfcfe')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#6b7280')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (3, 0), (3, -1), 'RIGHT'),  # Amount right-aligned
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e5e7eb')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9fafb')]),
+        ]))
+        story.append(trans_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Footer
+        story.append(Spacer(1, 0.5*inch))
+        footer_style = ParagraphStyle(
+            'FooterStyle',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=colors.HexColor('#9ca3af'),
+            alignment=1
+        )
+        story.append(Paragraph("This is an electronic statement generated by DENR Portal", footer_style))
+        story.append(Paragraph(f"Generated on: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", footer_style))
+        
+        # Build PDF
+        doc.build(story)
+        pdf_buffer.seek(0)
+        
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'DENR-Statement-{datetime.now().strftime("%Y-%m-%d")}.pdf'
+        )
         
     except Exception as e:
         return jsonify({

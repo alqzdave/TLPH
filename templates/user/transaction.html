@@ -91,6 +91,14 @@
       border: 1px solid #e5e7eb;
       border-radius: 12px;
       padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .stat-box:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+      transform: translateY(-2px);
     }
 
     .stat-label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
@@ -222,21 +230,25 @@
     <div class="container">
       
       <div class="stats">
-        <div class="stat-box">
+        <div class="stat-box" onclick="showStatDetails('approved')">
           <div class="stat-label">Approved Applications</div>
-          <div class="stat-value" id="totalPaidDisplay">₱0.00</div>
+          <div class="stat-value" id="totalPaidDisplay">0</div>
+          <div class="stat-amount" id="totalPaidAmount" style="display: none;"></div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box" onclick="showStatDetails('pending')">
           <div class="stat-label">Pending Review</div>
-          <div class="stat-value" id="totalUnpaidDisplay">₱0.00</div>
+          <div class="stat-value" id="totalUnpaidDisplay">0</div>
+          <div class="stat-amount" id="totalUnpaidAmount" style="display: none;"></div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box" onclick="showStatDetails('rejected')">
           <div class="stat-label">Rejected Applications</div>
-          <div class="stat-value" id="totalFailedDisplay">₱0.00</div>
+          <div class="stat-value" id="totalFailedDisplay">0</div>
+          <div class="stat-amount" id="totalFailedAmount" style="display: none;"></div>
         </div>
-        <div class="stat-box">
-          <div class="stat-label">Cancelled</div>
-          <div class="stat-value" id="totalCancelledDisplay">₱0.00</div>
+        <div class="stat-box" onclick="showStatDetails('cancelled')">
+          <div class="stat-label">Refunded Applications</div>
+          <div class="stat-value" id="totalRefundedDisplay">0</div>
+          <div class="stat-amount" id="totalRefundedAmount" style="display: none;"></div>
         </div>
       </div>
 
@@ -256,6 +268,9 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Transaction History</h1>
             <div class="flex gap-2">
+                <button id="estatementBtn" class="btn-view" onclick="downloadEStatement()" style="background: #10b981; white-space: nowrap;">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> E-Statement
+                </button>
                 <input id="searchInput" type="text" placeholder="Search..." class="form-control form-control-sm" style="width: 250px; height: 38px; border-radius: 8px;">
                 <select id="statusFilter" class="form-select form-select-sm" style="width: 150px; height: 38px; border-radius: 8px;">
                     <option value="all">All Status</option>
@@ -287,6 +302,33 @@
 
     </div>
   </main>
+
+  <!-- Stats Detail Modal -->
+  <div class="modal-backdrop-custom" id="statsModal">
+    <div class="modal-content-custom">
+      <div style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 id="statsModalTitle" style="margin: 0; font-size: 20px; font-weight: 800; color: #111827;">DETAILS</h2>
+          <button onclick="closeStatsModal()" style="background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="detail-row" style="flex-direction: column; border: none; gap: 8px;">
+            <span class="detail-label">Total Applications</span>
+            <span class="detail-value" id="statsModalCount" style="font-size: 32px; color: #111827;">0</span>
+          </div>
+          <div class="detail-row" style="flex-direction: column; border: none; gap: 8px;">
+            <span class="detail-label">Total Amount</span>
+            <span class="detail-value" id="statsModalAmount" style="font-size: 32px; color: #15803d;">₱0.00</span>
+          </div>
+        </div>
+        
+        <button class="btn-close-modal" onclick="closeStatsModal()" style="width: 100%; margin-top: 24px;">
+          <i class="fa-solid fa-check mr-1"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Transaction Detail Modal -->
   <div class="modal-backdrop-custom" id="detailModal">
@@ -424,17 +466,24 @@
     }
 
     function updateStats(data) {
-        let p = 0, u = 0, f = 0, c = 0;
+        let p = 0, u = 0, f = 0, r = 0;
+        let pAmount = 0, uAmount = 0, fAmount = 0, rAmount = 0;
         allTransactions.forEach(t => { // Stats always base on full data
-            if(t.status === 'approved') p += t.amount;
-            else if(t.status === 'pending') u += t.amount;
-            else if(t.status === 'rejected') f += t.amount;
-            else if(t.status === 'cancelled') c += t.amount;
+            if(t.status === 'approved') { p++; pAmount += t.amount; }
+            else if(t.status === 'pending') { u++; uAmount += t.amount; }
+            else if(t.status === 'rejected') { f++; fAmount += t.amount; }
+            else if(t.status === 'cancelled') { r++; rAmount += t.amount; }
         });
-        document.getElementById("totalPaidDisplay").textContent = peso.format(p);
-        document.getElementById("totalUnpaidDisplay").textContent = peso.format(u);
-        document.getElementById("totalFailedDisplay").textContent = peso.format(f);
-        document.getElementById("totalCancelledDisplay").textContent = peso.format(c);
+        document.getElementById("totalPaidDisplay").textContent = p;
+        document.getElementById("totalUnpaidDisplay").textContent = u;
+        document.getElementById("totalFailedDisplay").textContent = f;
+        document.getElementById("totalRefundedDisplay").textContent = r;
+        
+        // Store amounts for modal display
+        document.getElementById("totalPaidAmount").textContent = peso.format(pAmount);
+        document.getElementById("totalUnpaidAmount").textContent = peso.format(uAmount);
+        document.getElementById("totalFailedAmount").textContent = peso.format(fAmount);
+        document.getElementById("totalRefundedAmount").textContent = peso.format(rAmount);
     }
 
     window.changePage = function(direction) {
@@ -445,6 +494,73 @@
     // Event Listeners
     document.getElementById("searchInput").addEventListener("input", () => { currentPage = 1; renderTable(); });
     document.getElementById("statusFilter").addEventListener("change", () => { currentPage = 1; renderTable(); });
+    
+    // Stats Modal Functions
+    window.showStatDetails = function(status) {
+        let count = 0, amount = 0, title = '';
+        
+        if (status === 'approved') {
+            title = 'Approved Applications';
+            allTransactions.forEach(t => { if(t.status === 'approved') { count++; amount += t.amount; } });
+        } else if (status === 'pending') {
+            title = 'Pending Review';
+            allTransactions.forEach(t => { if(t.status === 'pending') { count++; amount += t.amount; } });
+        } else if (status === 'rejected') {
+            title = 'Rejected Applications';
+            allTransactions.forEach(t => { if(t.status === 'rejected') { count++; amount += t.amount; } });
+        } else if (status === 'cancelled') {
+            title = 'Refunded Applications';
+            allTransactions.forEach(t => { if(t.status === 'cancelled') { count++; amount += t.amount; } });
+        }
+        
+        document.getElementById('statsModalTitle').textContent = title.toUpperCase();
+        document.getElementById('statsModalCount').textContent = count;
+        document.getElementById('statsModalAmount').textContent = peso.format(amount);
+        document.getElementById('statsModal').classList.add('active');
+    };
+    
+    window.closeStatsModal = function() {
+        document.getElementById('statsModal').classList.remove('active');
+    };
+    
+    window.downloadEStatement = async function() {
+        const estatementBtn = document.getElementById('estatementBtn');
+        const userEmail = getStoredEmail() || (auth.currentUser ? auth.currentUser.email : '');
+        
+        if (!userEmail) {
+            alert('Unable to retrieve email. Please refresh the page.');
+            return;
+        }
+        
+        estatementBtn.disabled = true;
+        estatementBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Generating...';
+        
+        try {
+            const response = await fetch(`/api/payments/statement?email=${encodeURIComponent(userEmail)}`);
+            
+            if (!response.ok) {
+                throw new Error('Failed to generate statement');
+            }
+            
+            // Get the blob and create download link
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `DENR-Statement-${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+        } catch (error) {
+            console.error('Error downloading statement:', error);
+            alert('Failed to generate statement. Please try again.');
+        } finally {
+            estatementBtn.disabled = false;
+            estatementBtn.innerHTML = '<i class="fa-solid fa-file-pdf mr-1"></i> E-Statement';
+        }
+    };
     
     // Modal Functions
     let currentTransaction = null;
@@ -489,6 +605,12 @@
                 <span class="detail-label">Amount</span>
                 <span class="detail-value" style="color: #15803d; font-size: 18px;">${peso.format(transaction.amount)}</span>
             </div>
+            ${transaction.status === 'cancelled' ? `
+            <div class="detail-row">
+                <span class="detail-label">Refunded Amount</span>
+                <span class="detail-value" style="color: #ea580c; font-size: 18px; font-weight: 700;">${peso.format(transaction.amount)}</span>
+            </div>
+            ` : ''}
             <div class="detail-row" style="border-bottom: none;">
                 <span class="detail-label">Status</span>
                 <span class="detail-value"><span class="pill ${transaction.status}">${transaction.status.toUpperCase()}</span></span>
