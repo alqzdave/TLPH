@@ -215,24 +215,53 @@
     </div>
   </main>
 
-  <script>
-    // Sample Data
-    const allTransactions = [
-      { date: "2026-02-09", name: "Forest License Renewal", method: "Credit Card", reference: "FOR-20260209-001", status: "successful", amount: 2500 },
-      { date: "2026-02-08", name: "Fisheries Permit App", method: "Bank Transfer", reference: "FISH-20260208-002", status: "successful", amount: 1500 },
-      { date: "2026-02-07", name: "ECC Certification", method: "Over-the-counter", reference: "ENV-20260207-003", status: "unpaid", amount: 3000 },
-      { date: "2026-02-06", name: "Wildlife Permit", method: "Credit Card", reference: "WILD-20260206-004", status: "failed", amount: 800 },
-      { date: "2026-02-05", name: "Livestock Permit", method: "Retail Store", reference: "LIVE-20260205-005", status: "successful", amount: 950 },
-      { date: "2026-02-04", name: "Mine Operating Permit", method: "Bank Transfer", reference: "MINE-20260204-006", status: "unpaid", amount: 5000 },
-      { date: "2026-02-03", name: "PCL Compliance", method: "Credit Card", reference: "PCL-20260203-007", status: "successful", amount: 600 },
-      { date: "2026-02-02", name: "CCO Registration", method: "E-Wallet", reference: "CCO-20260202-008", status: "successful", amount: 700 },
-      { date: "2026-02-01", name: "Tree Cutting Permit", method: "Bank Transfer", reference: "TREE-20260201-009", status: "failed", amount: 1200 },
-      { date: "2026-01-30", name: "Water Discharge Fee", method: "Retail Store", reference: "WAT-20260130-010", status: "successful", amount: 1350 }
-    ];
+  <script type="module">
+    import { auth, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
 
+    let allTransactions = [];
     let currentPage = 1;
     const rowsPerPage = 5;
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+
+    // Load transactions from API
+    async function loadTransactions(userEmail) {
+        try {
+            const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                allTransactions = result.transactions.map(t => ({
+                    date: t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A',
+                    name: t.transaction_name || 'Unknown',
+                    method: t.payment_method || 'Not Paid',
+                    reference: t.reference || t.external_id,
+                    status: t.display_status || 'unpaid',
+                    amount: t.amount || 0,
+                    invoice_id: t.invoice_id
+                }));
+                
+                // Sort by date descending
+                allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                renderTable();
+            } else {
+                console.error('Failed to load transactions:', result.message);
+                renderTable(); // Show empty table
+            }
+        } catch (error) {
+            console.error('Error loading transactions:', error);
+            renderTable(); // Show empty table
+        }
+    }
+
+    // Initialize on auth state change
+    onAuthStateChanged(auth, (user) => {
+        if (user && user.email) {
+            loadTransactions(user.email);
+        } else {
+            console.log('No user logged in');
+            renderTable(); // Show empty table
+        }
+    });
 
     function renderTable() {
         const searchTerm = document.getElementById("searchInput").value.toLowerCase();
@@ -257,7 +286,7 @@
         tbody.innerHTML = "";
         
         if (paginatedItems.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted italic">No records found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted italic">No transactions found.</td></tr>`;
         }
 
         paginatedItems.forEach(t => {
@@ -269,7 +298,7 @@
                     <td style="font-family: monospace;">${t.reference}</td>
                     <td><span class="pill ${t.status}">${t.status}</span></td>
                     <td style="text-align: right; font-weight: 700;">${peso.format(t.amount)}</td>
-                    <td style="text-align: center;"><button class="btn-view" onclick="alert('Viewing '+ '${t.reference}')">View</button></td>
+                    <td style="text-align: center;"><button class="btn-view" onclick="alert('Invoice ID: ${t.invoice_id || 'N/A'}')">View</button></td>
                 </tr>
             `;
         });
@@ -294,16 +323,14 @@
         document.getElementById("totalFailedDisplay").textContent = peso.format(f);
     }
 
-    function changePage(direction) {
+    window.changePage = function(direction) {
         currentPage += direction;
         renderTable();
-    }
+    };
 
     // Event Listeners
     document.getElementById("searchInput").addEventListener("input", () => { currentPage = 1; renderTable(); });
     document.getElementById("statusFilter").addEventListener("change", () => { currentPage = 1; renderTable(); });
-
-    window.onload = renderTable;
   </script>
 </body>
 </html>

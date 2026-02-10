@@ -16,3 +16,6 @@ ENV/
 # Firebase
 firebase-credentials.json
 *-firebase-adminsdk-*.json
+
+# Transaction data
+data/transactions.json

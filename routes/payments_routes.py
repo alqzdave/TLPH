@@ -3,6 +3,7 @@ from config import Config
 import requests
 from datetime import datetime
 import base64
+import transaction_storage
 
 bp = Blueprint('payments', __name__, url_prefix='/api/payments')
 
@@ -101,6 +102,18 @@ def create_invoice():
         
         if response.status_code in [200, 201]:
             invoice = response.json()
+            
+            # Save transaction record
+            transaction_storage.add_transaction(
+                user_email=email,
+                external_id=external_id,
+                invoice_id=invoice.get('id'),
+                amount=amount,
+                item_name=data.get('item_name', 'License/Permit'),
+                description=data.get('description', 'DENR License/Permit Payment'),
+                status='PENDING'
+            )
+            
             return jsonify({
                 'status': 'success',
                 'invoice_id': invoice.get('id'),
@@ -187,14 +200,27 @@ def xendit_webhook():
         # Validate webhook signature (optional but recommended)
         # You should verify the signature using Xendit's verification process
         
-        if data.get('status') == 'PAID':
+        invoice_id = data.get('id')
+        status = data.get('status')
+        payment_method = data.get('payment_method')
+        paid_at = data.get('paid_at')
+        
+        # Update transaction status
+        if invoice_id:
+            transaction_storage.update_transaction_status(
+                invoice_id=invoice_id,
+                status=status,
+                payment_method=payment_method,
+                paid_at=paid_at
+            )
+        
+        if status == 'PAID':
             # Process successful payment
             external_id = data.get('external_id')
             amount = data.get('amount')
-            payment_method = data.get('payment_method')
             
-            # Update your database here
-            # Example: mark the license/permit as paid
+            # Additional processing can be done here
+            # Example: send email confirmation, update license status, etc.
             
             return jsonify({
                 'status': 'success',
@@ -219,3 +245,41 @@ def payment_form(service_type):
     return render_template('payment-form.html', 
                          service_type=service_type,
                          xendit_public_key=Config.XENDIT_PUBLIC_KEY)
+
+
+@bp.route('/transactions', methods=['GET'])
+def get_transactions():
+    """Get transactions for the logged-in user"""
+    try:
+        # Get user email from query parameter (sent from frontend)
+        user_email = request.args.get('email')
+        
+        if not user_email:
+            return jsonify({
+                'status': 'error',
+                'message': 'User email is required'
+            }), 400
+        
+        transactions = transaction_storage.get_user_transactions(user_email)
+        
+        # Convert status to display format
+        for transaction in transactions:
+            status = transaction.get('status', 'PENDING')
+            if status == 'PAID':
+                transaction['display_status'] = 'successful'
+            elif status == 'EXPIRED' or status == 'FAILED':
+                transaction['display_status'] = 'failed'
+            else:
+                transaction['display_status'] = 'unpaid'
+        
+        return jsonify({
+            'status': 'success',
+            'transactions': transactions
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
