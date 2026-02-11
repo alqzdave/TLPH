@@ -183,9 +183,10 @@
             }
         };
 
-        // View application details (placeholder)
+        // View application details
         window.viewDetails = function(applicationId) {
-            alert('Application details: ' + applicationId + '\nThis feature will be implemented next.');
+            // Redirect to the inventory stock info page to view full details
+            window.location.href = `/user/inventory/stock-info?id=${applicationId}`;
         };
 
         onAuthStateChanged(auth, user => {
