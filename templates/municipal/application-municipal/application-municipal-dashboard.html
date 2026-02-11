@@ -186,6 +186,7 @@
           const adminData = adminDoc.data();
           currentAdminMunicipality = adminData.municipality;
           console.log('Current admin municipality:', currentAdminMunicipality);
+          console.log('Admin full data:', adminData);
         }
         
         const applicationsRef = collection(db, 'applications');
@@ -219,11 +220,15 @@
           const userName = userInfo?.name || 'Unknown User';
           const userMunicipality = userInfo?.municipality;
           
+          console.log(`Application ${doc.id}: User municipality="${userMunicipality}", Admin municipality="${currentAdminMunicipality}"`);
+          
           // Filter: Only show applications from users in the same municipality
           if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
-            console.log(`Skipping application ${doc.id} - user municipality (${userMunicipality}) doesn't match admin municipality (${currentAdminMunicipality})`);
+            console.log(`⛔ SKIPPED: Application ${doc.id} - municipality mismatch`);
             return;
           }
+          
+          console.log(`✅ INCLUDED: Application ${doc.id}`);
           
           // Format date
           let filedDate = 'N/A';
