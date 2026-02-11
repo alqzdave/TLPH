@@ -180,10 +180,22 @@
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const amount = document.getElementById('xendit_raw_amount').value;
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'REDIRECTING...';
+                const formData = new FormData(form);
                 
                 try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing...';
+                    
+                    const paymentPayload = {
+                        external_id: `cco-${Date.now()}`,
+                        amount: parseInt(amount),
+                        email: '', // Will be filled from user profile
+                        description: `CCO Registration - ${chemType.value} - ${businessNature.value}`,
+                        item_name: 'CCO Registration',
+                        success_url: `${window.location.origin}/user/license/environment/cco`,
+                        failure_url: `${window.location.origin}/user/license/environment/cco`
+                    };
+                    
                     const response = await fetch('/api/payments/create-invoice', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -218,5 +230,6 @@
             });
         });
     </script>
+    <script type="module" src="{{ url_for('static', filename='js/license-payment.js') }}"></script>
 </body>
 </html>
