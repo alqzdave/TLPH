@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -168,6 +169,56 @@
     </section>
   </main>
 
+  <!-- View User Modal -->
+  <div id="viewModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40"></div>
+
+    <div class="relative mx-auto mt-24 w-[92%] max-w-xl rounded-md border border-gray-300 bg-white shadow-lg">
+      <div class="flex items-start justify-between border-b border-gray-200 px-4 py-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">User Details</h3>
+          <p class="mt-1 text-sm text-slate-600">Municipality-scoped view</p>
+        </div>
+
+        <button id="btnCloseModal"
+                type="button"
+                class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-800 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-emerald-100">
+          <span class="material-icons-round text-[18px]">close</span>
+          Close
+        </button>
+      </div>
+
+      <div class="px-4 py-4">
+        <dl class="grid grid-cols-1 gap-3 text-sm">
+          <div class="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <dt class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Name</dt>
+            <dd id="viewName" class="mt-1 font-bold text-slate-900">—</dd>
+          </div>
+
+          <div class="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <dt class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Email</dt>
+            <dd id="viewEmail" class="mt-1 text-slate-900">—</dd>
+          </div>
+
+          <div class="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <dt class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">User ID</dt>
+            <dd id="viewId" class="mt-1 text-slate-900">—</dd>
+          </div>
+
+          <div class="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <dt class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Municipality</dt>
+            <dd id="viewMunicipality" class="mt-1 text-slate-900">—</dd>
+          </div>
+
+          <div class="rounded-md border border-gray-200 bg-gray-50 p-3">
+            <dt class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Status</dt>
+            <dd id="viewStatus" class="mt-1 text-slate-900">—</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
   <script>
     /******************************************************************
      * SUB-ADMIN MUNICIPALITY SCOPE
@@ -209,6 +260,15 @@
 
     const usersTbody = document.getElementById("usersTbody");
 
+    // View modal DOM
+    const viewModal = document.getElementById("viewModal");
+    const btnCloseModal = document.getElementById("btnCloseModal");
+    const viewName = document.getElementById("viewName");
+    const viewEmail = document.getElementById("viewEmail");
+    const viewId = document.getElementById("viewId");
+    const viewMunicipality = document.getElementById("viewMunicipality");
+    const viewStatus = document.getElementById("viewStatus");
+
     function normalize(s){ return (s || "").toString().toLowerCase().trim(); }
 
     function scopedBase(){
@@ -238,10 +298,21 @@
     function rowHtml(u){
       const isDisabled = u.status === "Disabled";
 
+      const viewBtn = `
+        <button
+          class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-800 hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 whitespace-nowrap"
+          type="button"
+          data-action="view"
+          data-id="${u.id}">
+          <span class="material-icons-round text-[18px]">visibility</span>
+          View
+        </button>
+      `;
+
       const disableBtn = isDisabled
         ? `
           <button
-            class="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-900 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+            class="inline-flex items-center justify-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-900 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 whitespace-nowrap"
             type="button"
             data-action="enable"
             data-id="${u.id}">
@@ -251,7 +322,7 @@
         `
         : `
           <button
-            class="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-4 focus:ring-amber-100"
+            class="inline-flex items-center justify-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-4 focus:ring-amber-100 whitespace-nowrap"
             type="button"
             data-action="disable"
             data-id="${u.id}">
@@ -259,6 +330,17 @@
             Disable
           </button>
         `;
+
+      const removeBtn = `
+        <button
+          class="inline-flex items-center justify-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100 whitespace-nowrap"
+          type="button"
+          data-action="remove"
+          data-id="${u.id}">
+          <span class="material-icons-round text-[18px]">person_remove</span>
+          Remove
+        </button>
+      `;
 
       return `
         <tr class="border-b border-gray-200">
@@ -270,16 +352,10 @@
           <td class="px-3 py-3 text-sm text-slate-900" title="${u.municipality}">${u.municipality}</td>
           <td class="px-3 py-3 text-sm">${statusPill(u.status)}</td>
           <td class="px-3 py-3">
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-nowrap items-center gap-2 whitespace-nowrap">
+              ${viewBtn}
               ${disableBtn}
-              <button
-                class="inline-flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100"
-                type="button"
-                data-action="remove"
-                data-id="${u.id}">
-                <span class="material-icons-round text-[18px]">person_remove</span>
-                Remove
-              </button>
+              ${removeBtn}
             </div>
           </td>
         </tr>
@@ -327,6 +403,21 @@
     function mustBeInScope(user){
       if (!user) return false;
       return user.municipality === SUBADMIN_MUNICIPALITY;
+    }
+
+    // Modal helpers
+    function openViewModal(user){
+      viewName.textContent = user.name || "—";
+      viewEmail.textContent = user.email || "—";
+      viewId.textContent = user.id || "—";
+      viewMunicipality.textContent = user.municipality || "—";
+      viewStatus.textContent = user.status || "—";
+
+      viewModal.classList.remove("hidden");
+    }
+
+    function closeViewModal(){
+      viewModal.classList.add("hidden");
     }
 
     async function disableUser(userId){
@@ -391,6 +482,12 @@
       const action = btn.getAttribute("data-action");
       const id = btn.getAttribute("data-id");
 
+      if (action === "view") {
+        const user = workingUsers.find(u => u.id === id);
+        if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
+        openViewModal(user);
+      }
+
       if (action === "disable") disableUser(id);
       if (action === "enable") enableUser(id);
       if (action === "remove") removeUser(id);
@@ -412,6 +509,19 @@
 
     btnRefresh.addEventListener("click", () => {
       renderAll();
+    });
+
+    // Modal close events
+    btnCloseModal.addEventListener("click", closeViewModal);
+
+    // click outside the card closes modal (overlay is the first child)
+    viewModal.addEventListener("click", (e) => {
+      if (e.target === viewModal.firstElementChild) closeViewModal();
+    });
+
+    // Esc closes modal
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeViewModal();
     });
 
     // Init

@@ -160,17 +160,34 @@
   <script type="module">
     console.log('Script started');
     
-    import { db } from '/static/js/firebase-config.js';
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
     
     console.log('Firebase modules loaded', db);
 
     // ---- Fetch applications from Firestore ----
     let applicants = [];
+    let currentAdminMunicipality = null;
 
     async function loadApplications() {
       try {
         console.log('Loading applications...');
+        
+        // Get current admin's municipality
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.error('No user logged in');
+          return;
+        }
+        
+        const adminDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
+          currentAdminMunicipality = adminData.municipality;
+          console.log('Current admin municipality:', currentAdminMunicipality);
+        }
+        
         const applicationsRef = collection(db, 'applications');
         const querySnapshot = await getDocs(applicationsRef);
         
@@ -186,7 +203,8 @@
         usersSnapshot.forEach(userDoc => {
           const userData = userDoc.data();
           usersMap[userDoc.id] = {
-            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || 'Unknown User'
+            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || 'Unknown User',
+            municipality: userData.municipality || null
           };
         });
         
@@ -196,8 +214,16 @@
           const data = doc.data();
           console.log('Application data:', doc.id, data);
           
-          // Get user name
-          const userName = usersMap[data.userId]?.name || 'Unknown User';
+          // Get user info
+          const userInfo = usersMap[data.userId];
+          const userName = userInfo?.name || 'Unknown User';
+          const userMunicipality = userInfo?.municipality;
+          
+          // Filter: Only show applications from users in the same municipality
+          if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
+            console.log(`Skipping application ${doc.id} - user municipality (${userMunicipality}) doesn't match admin municipality (${currentAdminMunicipality})`);
+            return;
+          }
           
           // Format date
           let filedDate = 'N/A';
@@ -395,8 +421,15 @@
       btnAll.addEventListener("click", resetFilters);
       btnClear.addEventListener("click", resetFilters);
 
-      // Load applications on page load
-      loadApplications();
+      // Load applications after authentication
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loadApplications();
+        } else {
+          console.error('User not authenticated');
+          window.location.href = '/login';
+        }
+      });
 
   </script>
 </body>

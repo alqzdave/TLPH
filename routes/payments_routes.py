@@ -323,26 +323,26 @@ def generate_statement():
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=styles['Heading1'],
-            fontSize=24,
+            fontSize=20,
             textColor=colors.HexColor('#111827'),
-            spaceAfter=6,
+            spaceAfter=4,
             alignment=1  # Center
         )
         story.append(Paragraph("DENR TRANSACTION STATEMENT", title_style))
         story.append(Paragraph("Department of Environment and Natural Resources", styles['Normal']))
-        story.append(Spacer(1, 0.2*inch))
+        story.append(Spacer(1, 0.12*inch))
         
         # Statement info
         info_style = ParagraphStyle(
             'InfoStyle',
             parent=styles['Normal'],
-            fontSize=10,
+            fontSize=9,
             textColor=colors.HexColor('#6b7280')
         )
         story.append(Paragraph(f"<b>Account Email:</b> {user_email}", info_style))
         story.append(Paragraph(f"<b>Statement Date:</b> {datetime.now().strftime('%B %d, %Y')}", info_style))
         story.append(Paragraph(f"<b>Total Transactions:</b> {len(transactions)}", info_style))
-        story.append(Spacer(1, 0.3*inch))
+        story.append(Spacer(1, 0.15*inch))
         
         # Summary
         story.append(Paragraph("SUMMARY", styles['Heading2']))
@@ -369,25 +369,25 @@ def generate_statement():
         
         summary_data.append(['TOTAL', str(len(transactions)), f"₱{total_amount:,.2f}"])
         
-        summary_table = Table(summary_data, colWidths=[2*inch, 1.5*inch, 2*inch])
+        summary_table = Table(summary_data, colWidths=[1.8*inch, 1.3*inch, 1.8*inch])
         summary_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#fbfcfe')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#6b7280')),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
             ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f3f4f6')),
             ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e5e7eb')),
         ]))
         story.append(summary_table)
-        story.append(Spacer(1, 0.3*inch))
+        story.append(Spacer(1, 0.15*inch))
         
         # Transaction details
         story.append(PageBreak())
         story.append(Paragraph("TRANSACTION DETAILS", styles['Heading2']))
-        story.append(Spacer(1, 0.2*inch))
+        story.append(Spacer(1, 0.12*inch))
         
         # Transaction table
         trans_data = [['Date', 'Application Type', 'Reference', 'Amount', 'Status']]
@@ -408,27 +408,27 @@ def generate_statement():
                 t.get('display_status', 'pending').upper()
             ])
         
-        trans_table = Table(trans_data, colWidths=[1.2*inch, 1.8*inch, 1.5*inch, 1.2*inch, 1.3*inch])
+        trans_table = Table(trans_data, colWidths=[1.0*inch, 1.5*inch, 1.2*inch, 1.0*inch, 1.1*inch])
         trans_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#fbfcfe')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#6b7280')),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('ALIGN', (3, 0), (3, -1), 'RIGHT'),  # Amount right-aligned
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e5e7eb')),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9fafb')]),
         ]))
         story.append(trans_table)
-        story.append(Spacer(1, 0.3*inch))
+        story.append(Spacer(1, 0.15*inch))
         
         # Footer
-        story.append(Spacer(1, 0.5*inch))
+        story.append(Spacer(1, 0.2*inch))
         footer_style = ParagraphStyle(
             'FooterStyle',
             parent=styles['Normal'],
-            fontSize=9,
+            fontSize=8,
             textColor=colors.HexColor('#9ca3af'),
             alignment=1
         )

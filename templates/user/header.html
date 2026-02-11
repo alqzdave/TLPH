@@ -26,7 +26,7 @@
                 <a href="/user/history" class="px-2 py-1.5 rounded text-white hover:bg-green-800 font-medium no-underline text-[13px] transition-colors">History</a>
             </div>
 
-            <div class="dropdown">
+            <div class="dropdown relative z-[1100]">
                 <button class="flex items-center gap-2 bg-green-800/40 hover:bg-green-800 px-2 py-1 rounded-full border border-white/20 transition-all focus:outline-none" 
                         type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="https://ui-avatars.com/api/?name=User&background=fff&color=15803d&bold=true" 
@@ -35,7 +35,7 @@
                     <i class="fa-solid fa-chevron-down text-[9px] text-green-200"></i>
                 </button> 
                 
-                <ul class="dropdown-menu dropdown-menu-end shadow-xl border-0 mt-2 rounded-lg p-1 animate-fade-in" aria-labelledby="profileDropdown">
+                <ul class="dropdown-menu dropdown-menu-end shadow-xl border-0 mt-2 rounded-lg p-1 animate-fade-in z-[1100]" aria-labelledby="profileDropdown" style="z-index: 1100;">
                     <li class="px-2 py-1 mb-1 border-b border-gray-100">
                         <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Account Settings</p>
                     </li>

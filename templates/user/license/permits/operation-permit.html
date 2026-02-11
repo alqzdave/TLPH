@@ -12,125 +12,134 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
+<body class="bg-gray-50 min-h-screen text-slate-900 text-sm font-sans">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-6">
-        <div class="max-w-6xl mx-auto text-center mb-6">
-            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Operation Permit</h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Facility Licensing • Environmental Compliance & Operations</p>
+    <div class="container mx-auto px-2 lg:px-8 mt-3 sm:mt-4">
+        
+        <div class="max-w-6xl mx-auto text-center mb-3 sm:mb-4">
+            <h1 class="text-xl sm:text-2xl font-black uppercase tracking-tight text-green-800 px-2">Operation Permit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[8px] sm:text-[9px] mt-0.5">Facility Licensing • Environmental Compliance</p>
         </div>
 
-        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-5 mb-6">
             <form id="operationForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
                     
-                    <div class="space-y-4">
-                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                    <div class="space-y-3">
+                        <h3 class="text-green-800 font-black text-[10px] uppercase tracking-widest border-b pb-1 flex items-center gap-2">
                             <i class="fa-solid fa-industry"></i> Facility Specifications
                         </h3>
                         
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Operation Type <span class="text-red-500">*</span></label>
-                                <select id="operationType" name="operation_type" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
-                                    <option value="" disabled selected>Select...</option>
-                                    <option value="Processing">Processing Facility</option>
-                                    <option value="Warehouse">Storage/Warehouse</option>
-                                    <option value="Distribution">Distribution</option>
-                                    <option value="Fishery">Aquaculture</option>
-                                    <option value="Livestock">Farm/Livestock</option>
-                                </select>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[9px] font-black text-gray-700 uppercase mb-0.5">Operation Type <span class="text-red-500">*</span></label>
+                                    <select id="operationType" name="operation_type" required class="w-full border border-gray-300 rounded-lg px-2 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium transition-all">
+                                        <option value="" disabled selected>Select...</option>
+                                        <option value="Processing">Processing</option>
+                                        <option value="Warehouse">Storage</option>
+                                        <option value="Distribution">Distribution</option>
+                                        <option value="Fishery">Aquaculture</option>
+                                        <option value="Livestock">Farm</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black text-gray-700 uppercase mb-0.5">Capacity <span class="text-red-500">*</span></label>
+                                    <input type="text" id="capacity" name="capacity" required placeholder="e.g. 2 tons/day" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium bg-gray-50">
+                                </div>
                             </div>
+
                             <div>
-                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Capacity <span class="text-red-500">*</span></label>
-                                <input type="text" id="capacity" name="capacity" required placeholder="e.g. 2 tons/day" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                                <label class="block text-[9px] font-black text-gray-700 uppercase mb-0.5">Facility Address <span class="text-red-500">*</span></label>
+                                <input type="text" id="facilityAddress" name="facility_address" required placeholder="Complete Site Address" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium bg-gray-50">
                             </div>
-                        </div>
 
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Facility Address <span class="text-red-500">*</span></label>
-                            <input type="text" id="facilityAddress" name="facility_address" required placeholder="Complete Site Address" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Species / Product Handled <span class="text-red-500">*</span></label>
-                            <input type="text" id="speciesProduct" name="species_product" required placeholder="e.g. Tilapia, Timber, Poultry" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                            <div>
+                                <label class="block text-[9px] font-black text-gray-700 uppercase mb-0.5">Species / Product <span class="text-red-500">*</span></label>
+                                <input type="text" id="speciesProduct" name="species_product" required placeholder="e.g. Tilapia, Timber, Poultry" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium bg-gray-50">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="space-y-4">
-                        <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                    <div class="space-y-3">
+                        <h3 class="text-green-800 font-black text-[10px] uppercase tracking-widest border-b pb-1 flex items-center gap-2">
                             <i class="fa-solid fa-folder-open"></i> Technical Documentation
                         </h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                            
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="bioFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-clipboard-check text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
-                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Biosecurity</p>
-                                <p id="bioName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
+                                <i class="fa-solid fa-clipboard-check text-gray-300 group-hover:text-green-600 text-lg mb-1"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Biosecurity</p>
+                                <p id="bioName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1 text-center"></p>
                             </div>
 
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="sanFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-pump-soap text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
-                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Sanitation</p>
-                                <p id="sanName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
+                                <i class="fa-solid fa-pump-soap text-gray-300 group-hover:text-green-600 text-lg mb-1"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Sanitation</p>
+                                <p id="sanName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1 text-center"></p>
                             </div>
 
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="bizFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-id-card text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
-                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Business Reg</p>
-                                <p id="bizName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
+                                <i class="fa-solid fa-id-card text-gray-300 group-hover:text-green-600 text-lg mb-1"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Biz Reg</p>
+                                <p id="bizName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1 text-center"></p>
                             </div>
 
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="landFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-file-contract text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
-                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Land Tenure</p>
-                                <p id="landName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
+                                <i class="fa-solid fa-file-contract text-gray-300 group-hover:text-green-600 text-lg mb-1"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Tenure</p>
+                                <p id="landName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1 text-center"></p>
                             </div>
 
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="layoutFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-map text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
-                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Facility Layout</p>
-                                <p id="layoutName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
+                                <i class="fa-solid fa-map text-gray-300 group-hover:text-green-600 text-lg mb-1 transition-colors"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Layout</p>
+                                <p id="layoutName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1 text-center"></p>
                             </div>
 
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="wasteFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-recycle text-gray-300 group-hover:text-green-600 mb-1 transition-colors"></i>
-                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Waste Plan</p>
-                                <p id="wasteName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
+                                <i class="fa-solid fa-recycle text-gray-300 group-hover:text-green-600 text-lg mb-1 transition-colors"></i>
+                                <p class="text-[8px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none">Waste Plan</p>
+                                <p id="wasteName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1 text-center"></p>
                             </div>
-
                         </div>
+                        <p class="text-[8px] text-gray-400 italic text-center uppercase tracking-tighter">Submit all technical files for inspection</p>
                     </div>
                 </div>
 
-                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex flex-col">
-                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Facility operational licensing fee</p>
-                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
-                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Processing Fee:</span>
-                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">5,250.00</span></span>
+                <div class="mt-6 pt-4 border-t flex flex-col lg:flex-row justify-between items-center gap-4">
+                    
+                    <div class="flex flex-col items-center lg:items-start">
+                        <div class="bg-amber-50 px-3 py-1.5 rounded-lg border border-green-700 inline-flex items-center gap-2">
+                            <span class="text-[9px] font-black text-green-700 uppercase tracking-widest">Fee:</span>
+                            <span class="text-lg font-black text-green-700">₱ <span class="xendit-amount-value">5,250.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="5250">
                         </div>
                     </div>
                     
-                    <div class="flex gap-2 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Permit</button>
+                    <div class="flex flex-row gap-2 w-full lg:w-[400px]">
+                        <a href="/user/license/license" class="flex-1 px-2 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[9px] hover:bg-gray-100 transition-all flex items-center justify-center">
+                            Back
+                        </a>
+                        <button type="reset" id="resetBtn" class="flex-1 px-2 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[9px] hover:bg-gray-100 transition-all">
+                            Clear
+                        </button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 px-2 py-2.5 bg-gray-200 text-gray-400 font-black rounded-lg shadow-sm transition-all uppercase text-[9px] cursor-not-allowed">
+                            Apply
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
-        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR Resource Operation Management 2026</p>
+        <p class="text-center text-[8px] text-gray-300 uppercase tracking-[0.4em] mb-6">DENR • Facility Operations Management 2026</p>
     </div>
 
     
@@ -157,24 +166,22 @@
 
                 if (type && addr && cap && prod && filesDone) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
-                    submitBtn.classList.replace('text-gray-400', 'text-white');
-                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
-                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
+                    submitBtn.className = "flex-1 px-2 py-2.5 bg-green-700 hover:bg-green-800 text-white font-black rounded-lg shadow-md transition-all transform active:scale-95 uppercase text-[9px] cursor-pointer";
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
-                    submitBtn.classList.replace('text-white', 'text-gray-400');
-                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
+                    submitBtn.className = "flex-1 px-2 py-2.5 bg-gray-200 text-gray-400 font-black rounded-lg shadow-sm transition-all uppercase text-[9px] cursor-not-allowed";
                 }
             }
 
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
-                input.addEventListener('change', (e) => {
-                    document.getElementById(f.name).textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
-                    checkValidation();
-                });
+                if (input) {
+                    input.addEventListener('change', (e) => {
+                        const fileName = e.target.files[0] ? e.target.files[0].name : "";
+                        document.getElementById(f.name).textContent = fileName ? "✔ Selected" : "";
+                        checkValidation();
+                    });
+                }
             });
 
             form.querySelectorAll('input, select').forEach(el => {
@@ -184,7 +191,7 @@
 
             document.getElementById('resetBtn').addEventListener('click', () => {
                 setTimeout(() => {
-                    document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
+                    fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
                     checkValidation();
                 }, 10);
             });
@@ -192,4 +199,5 @@
     </script>
     <script type="module" src="{{ url_for('static', filename='js/license-payment.js') }}"></script>
 </body>
+
 </html>

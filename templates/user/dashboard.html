@@ -1,40 +1,841 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DENR Dashboard</title>
 
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- HTML2PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    a { text-decoration: none !important; }
+    .table-responsive { -webkit-overflow-scrolling: touch; }
+    canvas { max-width: 100% !important; }
+
+    /* REDUCED SIZES SECTION */
+    .bg-white.rounded-2xl { padding: 0.75rem !important; border-radius: 12px !important; } /* Smaller Card Padding */
+    .text-2xl { font-size: 1.25rem !important; } /* Smaller Stat Numbers */
+    .text-3xl { font-size: 1.5rem !important; } /* Smaller Stat Numbers */
+    
+    .h-\[220px\], .h-\[240px\] { height: 160px !important; } /* Smaller Graph Heights */
+    
+    .table td, .table th { padding: 6px 10px !important; font-size: 12px; } /* Compact Table */
+    
+    .control-field .form-control,
+    .control-field .form-select,
+    .control-btn {
+      height: 36px !important; /* Smaller Controls */
+      font-size: 13px !important;
+    }
+    
+    .mb-4 { margin-bottom: 0.75rem !important; }
+    .mb-6 { margin-bottom: 1rem !important; }
+    /* END REDUCED SIZES */
+
+    .control-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
 {% include 'user/header.html' %}
 
-<main class="container mx-auto px-4 py-6">
-    <div class="grid grid-cols-2 gap-2 lg:gap-4 max-w-[320px] lg:max-w-[600px] mx-auto">
-        
-        <a href="/user/application" 
-           class="bg-green-700 hover:bg-green-800 text-white py-2.5 lg:py-4 px-3 rounded-lg shadow-sm transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 lg:gap-3 border border-transparent">
-            <i class="fa-solid fa-file-lines text-[10px] lg:text-lg"></i>
-            <span class="text-[9px] lg:text-sm font-black uppercase tracking-tighter lg:tracking-widest">Applications</span>
-        </a>
-        
-        <a href="/user/inventory" 
-           class="bg-white border border-green-700 text-green-800 py-2.5 lg:py-4 px-3 rounded-lg shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 lg:gap-3">
-            <i class="fa-solid fa-boxes-stacked text-[10px] lg:text-lg"></i>
-            <span class="text-[9px] lg:text-sm font-black uppercase tracking-tighter lg:tracking-widest">Inventory</span>
-        </a>
+<main class="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
 
-    </div>
+  <!-- Your existing quick links -->
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-[360px] sm:max-w-[520px] lg:max-w-[700px] mx-auto mb-4 sm:mb-6">
+    <a href="/user/application"
+       class="bg-white hover:bg-green text-green-800 py-2 sm:py-3 px-3 rounded-xl shadow-sm transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3 border border-transparent">
+      <i class="fa-solid fa-file-lines text-[12px] sm:text-base lg:text-lg"></i>
+      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+        Applications
+      </span>
+    </a>
+
+    <a href="/user/inventory"
+       class="bg-white border border-green-700 text-green-800 py-2 sm:py-3 px-3 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3">
+      <i class="fa-solid fa-boxes-stacked text-[12px] sm:text-base lg:text-lg"></i>
+      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+        Inventory
+      </span>
+    </a>
+
+    <button id="downloadReportBtn" 
+       onclick="downloadDashboardReport()"
+       class="bg-white border border-green-700 text-green-800 py-3 sm:py-4 px-3 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center flex items-center justify-center gap-2 sm:gap-3">
+      <i class="fa-solid fa-file-pdf text-[12px] sm:text-base lg:text-lg"></i>
+      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+        Report
+      </span>
+    </button>
+  </div>
+
+  <div class="max-w-[1150px] mx-auto">
+
+    <section class="mb-4 sm:mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider"># Products</div>
+            <i class="fa-solid fa-cubes text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardNumProducts" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Unique items</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Qty</div>
+            <i class="fa-solid fa-boxes-stacked text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardTotalQty" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">All inventory</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Application Req</div>
+            <i class="fa-solid fa-file-circle-plus text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardAppReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Product application</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Service Req</div>
+            <i class="fa-solid fa-screwdriver-wrench text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardServiceReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Service request</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">License/Permit</div>
+            <i class="fa-solid fa-id-card-clip text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardLicenseReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">License / permit</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Successful Transactions</div>
+            <i class="fa-solid fa-circle-check text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardSuccessTxn" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Approved + paid</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-4 sm:mb-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3">
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Inventory: Types</h2>
+            <i class="fa-solid fa-chart-pie text-gray-400"></i>
+          </div>
+          <div class="h-[220px] sm:h-[240px]">
+            <canvas id="chartProductTypes"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Types</h2>
+            <i class="fa-solid fa-chart-column text-gray-400"></i>
+          </div>
+          <div class="h-[220px] sm:h-[240px]">
+            <canvas id="chartApplicationTypes"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Status</h2>
+            <i class="fa-solid fa-chart-simple text-gray-400"></i>
+          </div>
+          <div class="h-[220px] sm:h-[240px]">
+            <canvas id="chartStatus"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-3">
+      <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+        <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:gap-4">
+          <div class="control-field flex-1 min-w-[220px]">
+            <label for="searchInput" class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">
+              Search
+            </label>
+            <input id="searchInput" type="text" class="form-control"
+                   placeholder="Search..." />
+            </div>
+
+          <div class="control-field flex-1 min-w-[220px]">
+            <label for="typeFilter" class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">
+              Type Filter
+            </label>
+            <select id="typeFilter" class="form-select">
+              <option value="ALL" selected>All Types</option>
+              <option value="Product Application">Product Application</option>
+              <option value="Service Request">Service Request</option>
+              <option value="License/Permit Request">License/Permit Request</option>
+            </select>
+          </div>
+
+          <div class="flex gap-2 lg:justify-end w-full lg:w-auto">
+            <button id="btnClear" class="btn btn-outline-secondary control-btn w-1/2 lg:w-auto px-4">
+              <i class="fa-solid fa-eraser"></i> Clear
+            </button>
+            <button id="btnReset" class="btn btn-outline-success control-btn w-1/2 lg:w-auto px-4">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+        <div class="p-3 sm:p-4 border-b">
+          <div>
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Recent Requests</h2>
+            <div id="tableMeta" class="text-xs text-gray-400 mt-1">Showing 0 of 0</div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle m-0">
+            <thead class="table-light">
+              <tr>
+                <th class="text-nowrap">Reference #</th>
+                <th class="min-w-[220px]">Name of Application</th>
+                <th class="text-nowrap">Type</th>
+                <th class="text-nowrap">Payment Status</th>
+                <th class="text-nowrap">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
 </main>
 
-<style>
-    /* Clean up Bootstrap defaults */
-    a { text-decoration: none !important; }
-</style>
+<script type="module">
+  import { auth, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+
+  let allTransactions = [];
+  const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+
+  // Fetch real transaction data from API
+  async function loadTransactions(userEmail) {
+    try {
+      const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        allTransactions = result.transactions.map(t => ({
+          reference_num: t.external_id || t.reference || t.id,
+          name_of_application: t.transaction_name || 'Unknown',
+          type_of_application: mapApplicationType(t.transaction_name || ''),
+          payment_status: mapPaymentStatus(t.display_status || ''),
+          status: mapApplicationStatus(t.display_status || ''),
+          amount: t.amount || 0,
+          created_at: t.created_at || '',
+          invoice_id: t.invoice_id,
+          description: t.description || ''
+        }));
+        
+        // Sort by date descending
+        allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        computeCards();
+        initCharts();
+        renderTable(allTransactions);
+        updateTableMeta(allTransactions.length, allTransactions.length);
+      }
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    }
+  }
+
+  // Map transaction status to payment status
+  function mapPaymentStatus(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'approved') return 'Paid';
+    if (s === 'cancelled') return 'Refunded';
+    if (s === 'pending' || s === 'unpaid') return 'Unpaid';
+    return 'Pending';
+  }
+
+  // Map transaction status to application status
+  function mapApplicationStatus(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'approved') return 'Approved';
+    if (s === 'cancelled') return 'Rejected';
+    if (s === 'pending') return 'Pending';
+    return 'Unknown';
+  }
+
+  // Map application name to type
+  function mapApplicationType(name) {
+    const n = (name || '').toLowerCase();
+    if (n.includes('environment') || n.includes('clearance') || n.includes('hazardous') || 
+        n.includes('waste') || n.includes('water') || n.includes('air') || n.includes('pcl') || 
+        n.includes('piccs') || n.includes('cco')) {
+      return 'License/Permit Request';
+    }
+    if (n.includes('fisheries') || n.includes('fish') || n.includes('aqua') || n.includes('harvest') || 
+        n.includes('dealer') || n.includes('process') || n.includes('transport')) {
+      return 'License/Permit Request';
+    }
+    if (n.includes('forest') || n.includes('timber') || n.includes('tree') || n.includes('plantation') || 
+        n.includes('reforestation') || n.includes('nursery') || n.includes('non-timber')) {
+      return 'License/Permit Request';
+    }
+    if (n.includes('livestock') || n.includes('farm') || n.includes('animal') || n.includes('poultry') || 
+        n.includes('slaughter') || n.includes('meat')) {
+      return 'License/Permit Request';
+    }
+    if (n.includes('wildlife') || n.includes('collection') || n.includes('ownership') || n.includes('wildfarm')) {
+      return 'License/Permit Request';
+    }
+    if (n.includes('permit') || n.includes('export') || n.includes('import') || n.includes('operation') || 
+        n.includes('local-transport')) {
+      return 'License/Permit Request';
+    }
+    if (n.includes('service') || n.includes('compensation') || n.includes('soil') || n.includes('pest') || 
+        n.includes('typhoon') || n.includes('disease') || n.includes('compliance') || n.includes('visit')) {
+      return 'Service Request';
+    }
+    if (n.includes('fertilizer') || n.includes('chemical') || n.includes('registration') || 
+        n.includes('emergency') || n.includes('pesticide')) {
+      return 'Product Application';
+    }
+    return 'License/Permit Request';
+  }
+
+  function normalize(str) { return (str ?? "").toString().trim().toLowerCase(); }
+
+  function pillClassForPayment(payment) {
+    const p = normalize(payment);
+    if (p === "paid") return "bg-green-100 text-green-800 border-green-200";
+    if (p === "refunded") return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    if (p === "unpaid") return "bg-red-100 text-red-800 border-red-200";
+    return "bg-gray-100 text-gray-700 border-gray-200";
+  }
+
+  function pillClassForStatus(status) {
+    const s = normalize(status);
+    if (s === "approved") return "bg-green-100 text-green-800 border-green-200";
+    if (s === "pending") return "bg-blue-100 text-blue-800 border-blue-200";
+    if (s === "rejected") return "bg-red-100 text-red-800 border-red-200";
+    return "bg-gray-100 text-gray-700 border-gray-200";
+  }
+
+  function renderTable(rows) {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    if (!rows.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-gray-500 py-4">No results found.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    for (const r of rows) {
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td class="text-nowrap fw-semibold" title="${r.reference_num}" style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.reference_num}</td>
+          <td>${r.name_of_application}</td>
+          <td class="text-nowrap">${r.type_of_application}</td>
+          <td class="text-nowrap">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold border ${pillClassForPayment(r.payment_status)}">
+              ${r.payment_status}
+            </span>
+          </td>
+          <td class="text-nowrap">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold border ${pillClassForStatus(r.status)}">
+              ${r.status}
+            </span>
+          </td>
+        </tr>
+      `);
+    }
+  }
+
+  function updateTableMeta(showing, total) {
+    document.getElementById("tableMeta").textContent = `Showing ${showing} of ${total}`;
+  }
+
+  function applyFilters() {
+    const q = normalize(document.getElementById("searchInput").value);
+    const type = document.getElementById("typeFilter").value;
+
+    let filtered = [...allTransactions];
+
+    if (type !== "ALL") filtered = filtered.filter(r => r.type_of_application === type);
+
+    if (q) {
+      filtered = filtered.filter(r => {
+        const blob = [
+          r.reference_num,
+          r.name_of_application,
+          r.type_of_application,
+          r.payment_status,
+          r.status,
+        ].map(normalize).join(" ");
+        return blob.includes(q);
+      });
+    }
+
+    renderTable(filtered);
+    updateTableMeta(filtered.length, allTransactions.length);
+  }
+
+  /* Cards + Charts */
+  function computeCards() {
+    const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
+    const appReq = allTransactions.filter(r => r.type_of_application === "Product Application").length;
+    const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
+
+    const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && normalize(r.payment_status) === "paid").length;
+
+    // For inventory data, use placeholder for now (can be connected to inventory API later)
+    document.getElementById("cardNumProducts").textContent = "0";
+    document.getElementById("cardTotalQty").textContent = "0";
+    document.getElementById("cardAppReq").textContent = appReq;
+    document.getElementById("cardServiceReq").textContent = serviceReq;
+    document.getElementById("cardLicenseReq").textContent = licenseReq;
+    document.getElementById("cardSuccessTxn").textContent = successTxn;
+  }
+
+  function countBy(list, keyFn) {
+    const map = new Map();
+    for (const item of list) {
+      const k = keyFn(item);
+      map.set(k, (map.get(k) || 0) + 1);
+    }
+    return map;
+  }
+
+  function initCharts() {
+    // Clear any existing charts
+    const ctx1 = document.getElementById("chartProductTypes");
+    const ctx2 = document.getElementById("chartApplicationTypes");
+    const ctx3 = document.getElementById("chartStatus");
+    
+    if (ctx1.chart) ctx1.chart.destroy();
+    if (ctx2.chart) ctx2.chart.destroy();
+    if (ctx3.chart) ctx3.chart.destroy();
+
+    // Placeholder chart for product types
+    ctx1.chart = new Chart(ctx1, {
+      type: "doughnut",
+      data: { 
+        labels: ["Pending Data"], 
+        datasets: [{ data: [1], backgroundColor: ['#d1d5db'] }] 
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+    });
+
+    const appTypeCounts = countBy(allTransactions, x => x.type_of_application);
+    ctx2.chart = new Chart(ctx2, {
+      type: "bar",
+      data: { 
+        labels: Array.from(appTypeCounts.keys()), 
+        datasets: [{ 
+          data: Array.from(appTypeCounts.values()),
+          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b']
+        }] 
+      },
+      options: {
+        responsive: true, 
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    const statusCounts = countBy(allTransactions, x => x.status);
+    const desiredOrder = ["Pending", "Approved", "Rejected"];
+    const labels = desiredOrder.filter(x => statusCounts.has(x)).concat(Array.from(statusCounts.keys()).filter(x => !desiredOrder.includes(x)));
+    const colors = { "Approved": "#10b981", "Pending": "#3b82f6", "Rejected": "#ef4444" };
+    
+    ctx3.chart = new Chart(ctx3, {
+      type: "pie",
+      data: { 
+        labels, 
+        datasets: [{ 
+          data: labels.map(l => statusCounts.get(l) || 0),
+          backgroundColor: labels.map(l => colors[l] || '#d1d5db')
+        }] 
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+    });
+  }
+
+  // Initialize on auth state change
+  onAuthStateChanged(auth, (user) => {
+    let userEmail = '';
+    if (user && user.email) {
+      userEmail = user.email;
+    } else {
+      userEmail = localStorage.getItem('denr_user_email') || '';
+    }
+
+    if (userEmail) {
+      loadTransactions(userEmail);
+    }
+  });
+
+  // DOM event listeners
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("typeFilter").addEventListener("change", applyFilters);
+
+    document.getElementById("btnClear").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      applyFilters();
+    });
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("typeFilter").value = "ALL";
+      applyFilters();
+    });
+  });
+
+  // Expose functions to window for onclick handlers
+  window.applyFilters = applyFilters;
+
+  // Download Dashboard Report Function
+  window.downloadDashboardReport = async function() {
+    try {
+      const downloadBtn = document.getElementById('downloadReportBtn');
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating...';
+
+      // Create a container for the PDF content
+      const pdfContainer = document.createElement('div');
+      pdfContainer.style.padding = '20px';
+      pdfContainer.style.backgroundColor = '#ffffff';
+      pdfContainer.style.fontFamily = 'Arial, sans-serif';
+      pdfContainer.style.lineHeight = '1.3';
+
+      // Add header
+      const header = document.createElement('div');
+      header.style.textAlign = 'center';
+      header.style.marginBottom = '12px';
+      header.style.borderBottom = '2px solid #10b981';
+      header.style.paddingBottom = '8px';
+
+      header.innerHTML = `
+        <h1 style="color: #1b330d; font-size: 22px; margin: 0; font-weight: 800;">DENR Dashboard Report</h1>
+        <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Comprehensive Application & Transaction Summary</p>
+        <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 10px;">Generated: ${new Date().toLocaleString()}</p>
+      `;
+      pdfContainer.appendChild(header);
+
+      // Calculate all statistics
+      const totalTransactions = allTransactions.length;
+      const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
+      const appReq = allTransactions.filter(r => r.type_of_application === "Product Application").length;
+      const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
+      const approvedTxns = allTransactions.filter(r => normalize(r.status) === "approved").length;
+      const pendingTxns = allTransactions.filter(r => normalize(r.status) === "pending").length;
+      const rejectedTxns = allTransactions.filter(r => normalize(r.status) === "rejected").length;
+      const paidTxns = allTransactions.filter(r => normalize(r.payment_status) === "paid").length;
+      const refundedTxns = allTransactions.filter(r => normalize(r.payment_status) === "refunded").length;
+      const unpaidTxns = allTransactions.filter(r => normalize(r.payment_status) === "unpaid").length;
+      const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && normalize(r.payment_status) === "paid").length;
+      const totalAmount = allTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+      const approvedAmount = allTransactions.filter(r => normalize(r.status) === "approved").reduce((sum, t) => sum + (t.amount || 0), 0);
+      const pendingAmount = allTransactions.filter(r => normalize(r.status) === "pending").reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      // SECTION 1: Executive Summary
+      const execSummary = document.createElement('div');
+      execSummary.style.marginBottom = '12px';
+      execSummary.style.pageBreakInside = 'avoid';
+
+      const execTitle = document.createElement('h2');
+      execTitle.innerHTML = 'Executive Summary';
+      execTitle.style.color = '#1b330d';
+      execTitle.style.fontSize = '14px';
+      execTitle.style.fontWeight = '800';
+      execTitle.style.borderBottom = '2px solid #10b981';
+      execTitle.style.paddingBottom = '4px';
+      execTitle.style.marginBottom = '8px';
+      execSummary.appendChild(execTitle);
+
+      const summaryStats = document.createElement('div');
+      summaryStats.style.display = 'grid';
+      summaryStats.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      summaryStats.style.gap = '8px';
+      
+      summaryStats.innerHTML = `
+        <div style="background: #f0fdf4; padding: 10px; border-radius: 6px; border-left: 3px solid #10b981; page-break-inside: avoid;">
+          <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total Txns</p>
+          <h3 style="color: #10b981; font-size: 20px; margin: 4px 0 0 0; font-weight: 800;">${totalTransactions}</h3>
+        </div>
+        <div style="background: #fef3c7; padding: 10px; border-radius: 6px; border-left: 3px solid #f59e0b; page-break-inside: avoid;">
+          <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Success</p>
+          <h3 style="color: #f59e0b; font-size: 20px; margin: 4px 0 0 0; font-weight: 800;">${successTxn}</h3>
+        </div>
+        <div style="background: #eff6ff; padding: 10px; border-radius: 6px; border-left: 3px solid #3b82f6; page-break-inside: avoid;">
+          <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total</p>
+          <h3 style="color: #3b82f6; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">₱${totalAmount.toLocaleString()}</h3>
+        </div>
+      `;
+      execSummary.appendChild(summaryStats);
+      pdfContainer.appendChild(execSummary);
+
+      // SECTION 2: Application Type Breakdown
+      const typeBreakdown = document.createElement('div');
+      typeBreakdown.style.marginBottom = '12px';
+      typeBreakdown.style.pageBreakInside = 'avoid';
+
+      const typeTitle = document.createElement('h2');
+      typeTitle.innerHTML = 'Application Type Breakdown';
+      typeTitle.style.color = '#1b330d';
+      typeTitle.style.fontSize = '14px';
+      typeTitle.style.fontWeight = '800';
+      typeTitle.style.borderBottom = '2px solid #10b981';
+      typeTitle.style.paddingBottom = '4px';
+      typeTitle.style.marginBottom = '8px';
+      typeBreakdown.appendChild(typeTitle);
+
+      const typeGrid = document.createElement('div');
+      typeGrid.style.display = 'grid';
+      typeGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      typeGrid.style.gap = '8px';
+
+      const types = [
+        { name: 'License/Permit', count: licenseReq, color: '#10b981', bgColor: '#f0fdf4' },
+        { name: 'Product App', count: appReq, color: '#3b82f6', bgColor: '#eff6ff' },
+        { name: 'Service Request', count: serviceReq, color: '#f59e0b', bgColor: '#fef3c7' }
+      ];
+
+      types.forEach(type => {
+        const typeBox = document.createElement('div');
+        typeBox.style.background = type.bgColor;
+        typeBox.style.border = `1px solid ${type.color}`;
+        typeBox.style.padding = '10px';
+        typeBox.style.borderRadius = '6px';
+        typeBox.innerHTML = `
+          <div style="font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase;">${type.name}</div>
+          <div style="font-size: 24px; color: ${type.color}; font-weight: 800; margin-top: 4px;">${type.count}</div>
+          <div style="font-size: 9px; color: #9ca3af; margin-top: 2px;">${((type.count / totalTransactions) * 100).toFixed(1)}%</div>
+        `;
+        typeGrid.appendChild(typeBox);
+      });
+
+      typeBreakdown.appendChild(typeGrid);
+      pdfContainer.appendChild(typeBreakdown);
+
+      // SECTION 3: Application Status Analysis
+      const statusSection = document.createElement('div');
+      statusSection.style.marginBottom = '12px';
+      statusSection.style.pageBreakInside = 'avoid';
+
+      const statusTitle = document.createElement('h2');
+      statusTitle.innerHTML = 'Application Status Analysis';
+      statusTitle.style.color = '#1b330d';
+      statusTitle.style.fontSize = '14px';
+      statusTitle.style.fontWeight = '800';
+      statusTitle.style.borderBottom = '2px solid #10b981';
+      statusTitle.style.paddingBottom = '4px';
+      statusTitle.style.marginBottom = '8px';
+      statusSection.appendChild(statusTitle);
+
+      const statusGrid = document.createElement('div');
+      statusGrid.style.display = 'grid';
+      statusGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      statusGrid.style.gap = '8px';
+
+      const statuses = [
+        { name: 'Approved', count: approvedTxns, amount: approvedAmount, color: '#10b981', bgColor: '#f0fdf4' },
+        { name: 'Pending', count: pendingTxns, amount: pendingAmount, color: '#3b82f6', bgColor: '#eff6ff' },
+        { name: 'Rejected', count: rejectedTxns, amount: 0, color: '#ef4444', bgColor: '#fee2e2' }
+      ];
+
+      statuses.forEach(status => {
+        const statusBox = document.createElement('div');
+        statusBox.style.background = status.bgColor;
+        statusBox.style.border = `1px solid ${status.color}`;
+        statusBox.style.padding = '10px';
+        statusBox.style.borderRadius = '6px';
+        statusBox.innerHTML = `
+          <div style="font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase;">${status.name}</div>
+          <div style="font-size: 22px; color: ${status.color}; font-weight: 800; margin-top: 4px;">📊 ${status.count}</div>
+          <div style="font-size: 10px; color: ${status.color}; margin-top: 4px; font-weight: 700;">₱${status.amount.toLocaleString()}</div>
+        `;
+        statusGrid.appendChild(statusBox);
+      });
+
+      statusSection.appendChild(statusGrid);
+      pdfContainer.appendChild(statusSection);
+
+      // SECTION 4: Payment Status Analysis
+      const paymentSection = document.createElement('div');
+      paymentSection.style.marginBottom = '12px';
+      paymentSection.style.pageBreakInside = 'avoid';
+
+      const paymentTitle = document.createElement('h2');
+      paymentTitle.innerHTML = 'Payment Status Analysis';
+      paymentTitle.style.color = '#1b330d';
+      paymentTitle.style.fontSize = '14px';
+      paymentTitle.style.fontWeight = '800';
+      paymentTitle.style.borderBottom = '2px solid #10b981';
+      paymentTitle.style.paddingBottom = '4px';
+      paymentTitle.style.marginBottom = '8px';
+      paymentSection.appendChild(paymentTitle);
+
+      const paymentGrid = document.createElement('div');
+      paymentGrid.style.display = 'grid';
+      paymentGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      paymentGrid.style.gap = '8px';
+
+      const payments = [
+        { name: 'Paid', count: paidTxns, color: '#10b981', bgColor: '#f0fdf4' },
+        { name: 'Unpaid', count: unpaidTxns, color: '#ef4444', bgColor: '#fee2e2' },
+        { name: 'Refunded', count: refundedTxns, color: '#f59e0b', bgColor: '#fef3c7' }
+      ];
+
+      payments.forEach(payment => {
+        const paymentBox = document.createElement('div');
+        paymentBox.style.background = payment.bgColor;
+        paymentBox.style.border = `1px solid ${payment.color}`;
+        paymentBox.style.padding = '10px';
+        paymentBox.style.borderRadius = '6px';
+        paymentBox.innerHTML = `
+          <div style="font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase;">${payment.name}</div>
+          <div style="font-size: 24px; color: ${payment.color}; font-weight: 800; margin-top: 4px;">${payment.count}</div>
+        `;
+        paymentGrid.appendChild(paymentBox);
+      });
+
+      paymentSection.appendChild(paymentGrid);
+      pdfContainer.appendChild(paymentSection);
+
+      // SECTION 5: Detailed Transaction List
+      const detailsSection = document.createElement('div');
+      detailsSection.style.pageBreakBefore = 'always';
+      detailsSection.style.marginTop = '0px';
+
+      const detailsTitle = document.createElement('h2');
+      detailsTitle.innerHTML = 'Detailed Transaction List';
+      detailsTitle.style.color = '#1b330d';
+      detailsTitle.style.fontSize = '14px';
+      detailsTitle.style.fontWeight = '800';
+      detailsTitle.style.borderBottom = '2px solid #10b981';
+      detailsTitle.style.paddingBottom = '4px';
+      detailsTitle.style.marginBottom = '10px';
+      detailsSection.appendChild(detailsTitle);
+
+      // Add each transaction as a detailed card
+      allTransactions.forEach((transaction, idx) => {
+        const txnCard = document.createElement('div');
+        txnCard.style.marginBottom = '12px';
+        txnCard.style.padding = '10px';
+        txnCard.style.border = '1px solid #e5e7eb';
+        txnCard.style.borderRadius = '6px';
+        txnCard.style.backgroundColor = '#f9fafb';
+        txnCard.style.pageBreakInside = 'avoid';
+        txnCard.style.fontSize = '11px';
+
+        const statusColor = normalize(transaction.status) === 'approved' ? '#10b981' : 
+                           normalize(transaction.status) === 'pending' ? '#3b82f6' : '#ef4444';
+        const paymentColor = normalize(transaction.payment_status) === 'paid' ? '#10b981' : 
+                            normalize(transaction.payment_status) === 'refunded' ? '#f59e0b' : '#ef4444';
+
+        txnCard.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
+            <div>
+              <div style="font-size: 9px; color: #6b7280; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Txn #${idx + 1}</div>
+              <div style="color: #1b330d; font-size: 11px; font-weight: 700;">${transaction.name_of_application}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 12px; color: ${paymentColor}; font-weight: 800;">₱${(transaction.amount || 0).toLocaleString()}</div>
+              <div style="font-size: 9px; color: #9ca3af;">${new Date(transaction.created_at).toLocaleDateString()}</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; font-size: 10px;">
+            <div><span style="color: #6b7280; font-weight: 700;">Ref:</span> ${transaction.reference_num}</div>
+            <div><span style="color: #6b7280; font-weight: 700;">Type:</span> ${transaction.type_of_application}</div>
+            <div><span style="color: #6b7280; font-weight: 700;">Payment:</span> <span style="color: ${paymentColor}; font-weight: 700;">● ${transaction.payment_status}</span></div>
+            <div><span style="color: #6b7280; font-weight: 700;">Status:</span> <span style="color: ${statusColor}; font-weight: 700;">● ${transaction.status}</span></div>
+          </div>
+          <div style="background: white; padding: 6px; border-radius: 4px; font-size: 9px;">
+            <div style="margin: 2px 0;"><span style="font-weight: 700;">Invoice:</span> ${transaction.invoice_id || 'N/A'}</div>
+            <div style="margin: 2px 0;"><span style="font-weight: 700;">Desc:</span> ${(transaction.description || 'N/A').substring(0, 60)}</div>
+          </div>
+        `;
+
+        detailsSection.appendChild(txnCard);
+      });
+
+      pdfContainer.appendChild(detailsSection);
+
+      // Add footer
+      const footer = document.createElement('div');
+      footer.style.marginTop = '20px';
+      footer.style.paddingTop = '10px';
+      footer.style.borderTop = '1px solid #e5e7eb';
+      footer.style.textAlign = 'center';
+      footer.style.color = '#6b7280';
+      footer.style.fontSize = '10px';
+      footer.style.pageBreakInside = 'avoid';
+      footer.innerHTML = `
+        <p style="margin: 0; line-height: 1.2;">Official DENR Report | Txns: ${totalTransactions} | Success: ${successTxn} | Total: ₱${totalAmount.toLocaleString()}</p>
+        <p style="margin: 2px 0 0 0; font-size: 9px; color: #9ca3af;">ID: ${Date.now()} | Generated: ${new Date().toLocaleString()}</p>
+      `;
+      pdfContainer.appendChild(footer);
+
+      // Generate PDF
+      const opt = {
+        margin: 5,
+        filename: `DENR-Dashboard-Complete-Report-${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+      };
+
+      html2pdf().set(opt).from(pdfContainer).save();
+
+    } catch (error) {
+      console.error('Error generating dashboard report:', error);
+      alert('Failed to generate report. Please try again.');
+    } finally {
+      const downloadBtn = document.getElementById('downloadReportBtn');
+      downloadBtn.disabled = false;
+      downloadBtn.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Report';
+    }
+  };
+</script>
 
 </body>
 </html>
