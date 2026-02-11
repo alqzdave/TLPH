@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DENR | Landing Page Analytics</title>
 
-  <!-- Tailwind ONLY -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -25,7 +24,6 @@
     }
   </style>
 
-  <!-- Tailwind theme tokens (gov look) -->
   <script>
     tailwind.config = {
       theme: {
@@ -81,7 +79,6 @@
   </script>
 
   <div class="p-4">
-    <!-- Header -->
     <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div class="pl-2 md:pl-6">
         <h1 class="m-0 text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">DENR Portal Analytics</h1>
@@ -126,7 +123,6 @@
       </div>
     </div>
 
-    <!-- KPI Cards -->
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
         <div class="flex items-start justify-between">
@@ -169,7 +165,6 @@
       </div>
     </div>
 
-    <!-- Charts Row -->
     <div class="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
       <!-- Chart: Requests/Licenses/Permits -->
       <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
@@ -190,7 +185,6 @@
         </div>
       </div>
 
-      <!-- Chart: Application Status -->
       <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
         <div class="mb-3 flex items-center justify-between">
           <div>
@@ -210,7 +204,6 @@
       </div>
     </div>
 
-    <!-- Analytics Table -->
     <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
       <div class="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
@@ -259,7 +252,7 @@
   </div>
 
   <script>
-    // --- Demo dataset (replace with backend values later) ---
+
     let data = {
       serviceRequests: 128,
       licenses: 54,
@@ -318,7 +311,7 @@
       `).join("");
     }
 
-    // --- Charts ---
+
     const typeCtx = document.getElementById("typeChart");
     const statusCtx = document.getElementById("statusChart");
 
@@ -338,6 +331,7 @@
             borderWidth: 1
           }]
         },
+
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -374,7 +368,7 @@
       buildCharts();
     }
 
-    // Demo randomizer
+
     function rand(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
@@ -392,12 +386,8 @@
       refreshAll();
     });
 
-    // ✅ Add User button (wire this to your real route/modal later)
     els.btnAddUser.addEventListener("click", () => {
-      // Option A: route to a page
-      // window.location.href = "/municipal/users/create";
-
-      // Option B: open a modal (demo)
+   
       alert("Add User: connect this button to your user creation form/page (e.g., /users/add).");
     });
 
