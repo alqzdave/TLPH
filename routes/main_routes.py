@@ -15,6 +15,10 @@ def login():
 def register():
     return render_template('signup.html')
 
+@bp.route('/create-municipal-admin')
+def create_municipal_admin():
+    return render_template('create-municipal-admin.html')
+
 # Landing pages for different roles
 @bp.route('/national/dashboard')
 def national_dashboard():
