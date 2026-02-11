@@ -167,6 +167,7 @@
                     document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
                     checkValidation();
                 }, 10);
+            });
 
             // Handle form submission with Xendit payment
             form.addEventListener('submit', async (e) => {
@@ -184,7 +185,7 @@
                         email: '', // Will be filled from user profile
                         description: `PCL Certification - ${pclChemical.value}`,
                         item_name: 'PCL Certification',
-                        success_url: `${window.location.origin}/user/license/environment/pcl`,
+                        success_url: `${window.location.origin}/user/transaction`,
                         failure_url: `${window.location.origin}/user/license/environment/pcl`
                     };
                     
@@ -229,7 +230,7 @@
                                     email: '', // Will be filled from user profile
                                     description: `PCL Certificate - ${pclChemical.value}`,
                                     item_name: 'PCL Chemical Certificate',
-                                    success_url: `${window.location.origin}/user/license/environment/pcl`,
+                                    success_url: `${window.location.origin}/user/transaction`,
                                     failure_url: `${window.location.origin}/user/license/environment/pcl`
                                 };
                     
