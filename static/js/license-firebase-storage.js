@@ -164,11 +164,25 @@ export async function saveLicenseApplicationToFirebase(formData) {
             uploadedFilesCount: Object.keys(uploadedFiles).length
         });
         
-        // Save to Firestore
+        // Save to Firestore - BOTH collections
         const licenseCollection = collection(db, 'license_applications');
+        const transactionsCollection = collection(db, 'transactions');
+        
         const docRef = await addDoc(licenseCollection, applicationData);
         
+        // Also save to transactions collection
+        const transactionData = {
+            ...applicationData,
+            docId: docRef.id,
+            status: 'approved',  // For transactions, mark as approved
+            transactionType: 'license-application',
+            transactionDate: serverTimestamp()
+        };
+        
+        const transDocRef = await addDoc(transactionsCollection, transactionData);
+        
         console.log('License application saved to Firebase:', docRef.id);
+        console.log('Transaction record saved to Firebase:', transDocRef.id);
         
         return {
             success: true,
