@@ -1,39 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENR Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DENR Dashboard</title>
+
+  <!-- Tailwind + Bootstrap + FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    a { text-decoration: none !important; }
+    .table-responsive { -webkit-overflow-scrolling: touch; }
+    canvas { max-width: 100% !important; }
+
+    /* Make search/filter controls align perfectly */
+    .control-field .form-control,
+    .control-field .form-select {
+      height: 44px;               /* consistent control height */
+    }
+    .control-btn {
+      height: 44px;               /* same as inputs */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      white-space: nowrap;
+    }
+  </style>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
 {% include 'user/header.html' %}
 
-<main class="container mx-auto px-4 py-6">
-    <div class="grid grid-cols-2 gap-2 lg:gap-4 max-w-[320px] lg:max-w-[600px] mx-auto">
-        
-        <a href="/user/application" 
-           class="bg-green-700 hover:bg-green-800 text-white py-2.5 lg:py-4 px-3 rounded-lg shadow-sm transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 lg:gap-3 border border-transparent">
-            <i class="fa-solid fa-file-lines text-[10px] lg:text-lg"></i>
-            <span class="text-[9px] lg:text-sm font-black uppercase tracking-tighter lg:tracking-widest">Applications</span>
-        </a>
-        
-        <a href="/user/inventory" 
-           class="bg-white border border-green-700 text-green-800 py-2.5 lg:py-4 px-3 rounded-lg shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 lg:gap-3">
-            <i class="fa-solid fa-boxes-stacked text-[10px] lg:text-lg"></i>
-            <span class="text-[9px] lg:text-sm font-black uppercase tracking-tighter lg:tracking-widest">Inventory</span>
-        </a>
+<main class="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
 
-    </div>
+  <!-- Your existing quick links -->
+  <div class="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 max-w-[360px] sm:max-w-[520px] lg:max-w-[700px] mx-auto mb-4 sm:mb-6">
+    <a href="/user/application"
+       class="bg-white hover:bg-green text-green-800 py-3 sm:py-4 px-3 rounded-xl shadow-sm transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3 border border-transparent">
+      <i class="fa-solid fa-file-lines text-[12px] sm:text-base lg:text-lg"></i>
+      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+        Applications
+      </span>
+    </a>
+
+    <a href="/user/inventory"
+       class="bg-white border border-green-700 text-green-800 py-3 sm:py-4 px-3 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3">
+      <i class="fa-solid fa-boxes-stacked text-[12px] sm:text-base lg:text-lg"></i>
+      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+        Inventory
+      </span>
+    </a>
+  </div>
+
+  <div class="max-w-[1150px] mx-auto">
+
+    <!-- STAT CARDS -->
+    <section class="mb-4 sm:mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider"># Products</div>
+            <i class="fa-solid fa-cubes text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardNumProducts" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Unique items</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Qty</div>
+            <i class="fa-solid fa-boxes-stacked text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardTotalQty" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">All inventory</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Application Req</div>
+            <i class="fa-solid fa-file-circle-plus text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardAppReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Product application</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Service Req</div>
+            <i class="fa-solid fa-screwdriver-wrench text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardServiceReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Service request</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">License/Permit</div>
+            <i class="fa-solid fa-id-card-clip text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardLicenseReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">License / permit</div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Successful Txns</div>
+            <i class="fa-solid fa-circle-check text-green-700 text-sm sm:text-base"></i>
+          </div>
+          <div id="cardSuccessTxn" class="text-2xl sm:text-3xl font-black mt-1">0</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Approved + paid</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHARTS -->
+    <section class="mb-4 sm:mb-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3">
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Inventory: Product Types</h2>
+            <i class="fa-solid fa-chart-pie text-gray-400"></i>
+          </div>
+          <div class="h-[220px] sm:h-[240px]">
+            <canvas id="chartProductTypes"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Types</h2>
+            <i class="fa-solid fa-chart-column text-gray-400"></i>
+          </div>
+          <div class="h-[220px] sm:h-[240px]">
+            <canvas id="chartApplicationTypes"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Status</h2>
+            <i class="fa-solid fa-chart-simple text-gray-400"></i>
+          </div>
+          <div class="h-[220px] sm:h-[240px]">
+            <canvas id="chartStatus"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEARCH + TYPE FILTER (FIXED ALIGNMENT) -->
+    <section class="mb-3">
+      <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
+        <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:gap-4">
+          <!-- Search -->
+          <div class="control-field flex-1 min-w-[220px]">
+            <label for="searchInput" class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">
+              Search
+            </label>
+            <input id="searchInput" type="text" class="form-control"
+                   placeholder="Search reference, name, type, payment, status..." />
+            </div>
+
+          <!-- Type Filter -->
+          <div class="control-field flex-1 min-w-[220px]">
+            <label for="typeFilter" class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">
+              Type Filter
+            </label>
+            <select id="typeFilter" class="form-select">
+              <option value="ALL" selected>All Types</option>
+              <option value="Product Application">Product Application</option>
+              <option value="Service Request">Service Request</option>
+              <option value="License/Permit Request">License/Permit Request</option>
+            </select>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-2 lg:justify-end w-full lg:w-auto">
+            <button id="btnClear" class="btn btn-outline-secondary control-btn w-1/2 lg:w-auto">
+              <i class="fa-solid fa-eraser"></i> Clear
+            </button>
+            <button id="btnReset" class="btn btn-outline-success control-btn w-1/2 lg:w-auto">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABLE (REMOVED VIEW ALL BUTTON) -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+        <div class="p-3 sm:p-4 border-b">
+          <div>
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Recent Requests</h2>
+            <div id="tableMeta" class="text-xs text-gray-400 mt-1">Showing 0 of 0</div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle m-0">
+            <thead class="table-light">
+              <tr>
+                <th class="text-nowrap">Reference #</th>
+                <th class="min-w-[220px]">Name of Application</th>
+                <th class="text-nowrap">Type</th>
+                <th class="text-nowrap">Payment Status</th>
+                <th class="text-nowrap">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
 </main>
 
-<style>
-    /* Clean up Bootstrap defaults */
-    a { text-decoration: none !important; }
-</style>
+<script>
+const mockRequests = [
+  { reference_num: "DENR-2026-0001", name_of_application: "Chainsaw Registration", type_of_application: "License/Permit Request", payment_status: "Paid", status: "Approved" },
+  { reference_num: "DENR-2026-0002", name_of_application: "Seedling Purchase Request", type_of_application: "Product Application", payment_status: "Paid", status: "Pending" },
+  { reference_num: "DENR-2026-0003", name_of_application: "Hauling Service Request", type_of_application: "Service Request", payment_status: "Refunded", status: "Reject" },
+  { reference_num: "DENR-2026-0004", name_of_application: "Tree Cutting Permit", type_of_application: "License/Permit Request", payment_status: "Paid", status: "Pending" },
+  { reference_num: "DENR-2026-0005", name_of_application: "Soil Testing Service", type_of_application: "Service Request", payment_status: "Paid", status: "Approved" },
+];
+
+const mockInventory = [
+  { product_name: "Mahogany Seedlings", product_type: "Seedlings", quantity: 120 },
+  { product_name: "Narra Seedlings", product_type: "Seedlings", quantity: 80 },
+  { product_name: "Organic Fertilizer 25kg", product_type: "Fertilizer", quantity: 45 },
+  { product_name: "Tree Guards", product_type: "Supplies", quantity: 60 },
+  { product_name: "Gloves (Box)", product_type: "Supplies", quantity: 30 },
+  { product_name: "Shovel", product_type: "Tools", quantity: 12 },
+];
+
+function normalize(str) { return (str ?? "").toString().trim().toLowerCase(); }
+
+function pillClassForPayment(payment) {
+  const p = normalize(payment);
+  if (p === "paid") return "bg-green-100 text-green-800 border-green-200";
+  if (p === "refunded") return "bg-yellow-100 text-yellow-800 border-yellow-200";
+  return "bg-gray-100 text-gray-700 border-gray-200";
+}
+
+function pillClassForStatus(status) {
+  const s = normalize(status);
+  if (s === "approved") return "bg-green-100 text-green-800 border-green-200";
+  if (s === "pending") return "bg-blue-100 text-blue-800 border-blue-200";
+  if (s === "reject" || s === "rejected") return "bg-red-100 text-red-800 border-red-200";
+  return "bg-gray-100 text-gray-700 border-gray-200";
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+
+  if (!rows.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center text-gray-500 py-4">No results found.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  for (const r of rows) {
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td class="text-nowrap fw-semibold">${r.reference_num}</td>
+        <td>${r.name_of_application}</td>
+        <td class="text-nowrap">${r.type_of_application}</td>
+        <td class="text-nowrap">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold border ${pillClassForPayment(r.payment_status)}">
+            ${r.payment_status}
+          </span>
+        </td>
+        <td class="text-nowrap">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold border ${pillClassForStatus(r.status)}">
+            ${r.status}
+          </span>
+        </td>
+      </tr>
+    `);
+  }
+}
+
+function updateTableMeta(showing, total) {
+  document.getElementById("tableMeta").textContent = `Showing ${showing} of ${total}`;
+}
+
+function applyFilters() {
+  const q = normalize(document.getElementById("searchInput").value);
+  const type = document.getElementById("typeFilter").value;
+
+  let filtered = [...mockRequests];
+
+  if (type !== "ALL") filtered = filtered.filter(r => r.type_of_application === type);
+
+  if (q) {
+    filtered = filtered.filter(r => {
+      const blob = [
+        r.reference_num,
+        r.name_of_application,
+        r.type_of_application,
+        r.payment_status,
+        r.status,
+      ].map(normalize).join(" ");
+      return blob.includes(q);
+    });
+  }
+
+  renderTable(filtered);
+  updateTableMeta(filtered.length, mockRequests.length);
+}
+
+/* Cards + Charts */
+function computeCards() {
+  const numProducts = mockInventory.length;
+  const totalQty = mockInventory.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0);
+
+  const appReq = mockRequests.filter(r => r.type_of_application === "Product Application").length;
+  const serviceReq = mockRequests.filter(r => r.type_of_application === "Service Request").length;
+  const licenseReq = mockRequests.filter(r => r.type_of_application === "License/Permit Request").length;
+
+  const successTxn = mockRequests.filter(r => normalize(r.status) === "approved" && normalize(r.payment_status) === "paid").length;
+
+  document.getElementById("cardNumProducts").textContent = numProducts;
+  document.getElementById("cardTotalQty").textContent = totalQty;
+  document.getElementById("cardAppReq").textContent = appReq;
+  document.getElementById("cardServiceReq").textContent = serviceReq;
+  document.getElementById("cardLicenseReq").textContent = licenseReq;
+  document.getElementById("cardSuccessTxn").textContent = successTxn;
+}
+
+function countBy(list, keyFn) {
+  const map = new Map();
+  for (const item of list) {
+    const k = keyFn(item);
+    map.set(k, (map.get(k) || 0) + 1);
+  }
+  return map;
+}
+
+function initCharts() {
+  const productTypeCounts = countBy(mockInventory, x => x.product_type);
+  new Chart(document.getElementById("chartProductTypes"), {
+    type: "doughnut",
+    data: { labels: Array.from(productTypeCounts.keys()), datasets: [{ data: Array.from(productTypeCounts.values()) }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+  });
+
+  const appTypeCounts = countBy(mockRequests, x => x.type_of_application);
+  new Chart(document.getElementById("chartApplicationTypes"), {
+    type: "bar",
+    data: { labels: Array.from(appTypeCounts.keys()), datasets: [{ data: Array.from(appTypeCounts.values()) }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  const statusCounts = countBy(mockRequests, x => {
+    const s = normalize(x.status);
+    if (s === "rejected") return "Reject";
+    return x.status || "Unknown";
+  });
+  const desiredOrder = ["Pending", "Approved", "Reject"];
+  const labels = desiredOrder.filter(x => statusCounts.has(x)).concat(Array.from(statusCounts.keys()).filter(x => !desiredOrder.includes(x)));
+  new Chart(document.getElementById("chartStatus"), {
+    type: "pie",
+    data: { labels, datasets: [{ data: labels.map(l => statusCounts.get(l)) }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  computeCards();
+  initCharts();
+
+  renderTable(mockRequests);
+  updateTableMeta(mockRequests.length, mockRequests.length);
+
+  document.getElementById("searchInput").addEventListener("input", applyFilters);
+  document.getElementById("typeFilter").addEventListener("change", applyFilters);
+
+  document.getElementById("btnClear").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    applyFilters();
+  });
+
+  document.getElementById("btnReset").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("typeFilter").value = "ALL";
+    applyFilters();
+  });
+});
+</script>
 
 </body>
 </html>
