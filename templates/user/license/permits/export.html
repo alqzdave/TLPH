@@ -5,43 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Export Permit | DENR Portal</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-6">
-        <div class="max-w-6xl mx-auto text-center mb-6">
-            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Export Permit</h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Strategic Resource Exportation • International Trade Clearance</p>
+    <div class="container mx-auto px-2 sm:px-4 lg:px-8 mt-4 sm:mt-6">
+        <div class="max-w-6xl mx-auto text-center mb-4 sm:mb-6">
+            <h1 class="text-2xl sm:text-3xl font-black uppercase tracking-tight text-green-800">Export Permit</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] mt-1">Strategic Resource Exportation • International Trade</p>
         </div>
 
-        <div class="max-w-7xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-12">
-
-            <form id="exportForm" action="javascript:void(0)" method="POST" enctype="multipart/form-data">
-        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-10">
             <form id="exportForm" action="#" method="POST" enctype="multipart/form-data">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8">
                     
                     <div class="space-y-4">
                         <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-ship"></i> Shipment Details
                         </h3>
+                        
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Destination Country</label>
-                                <input type="text" id="destination" required placeholder="e.g. USA" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                                <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Destination</label>
+                                <input type="text" id="destination" required placeholder="e.g. USA" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium bg-gray-50 transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Port of Exit</label>
-                                <input type="text" id="portOfExit" required placeholder="e.g. Manila" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                                <input type="text" id="portOfExit" required placeholder="e.g. Manila" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium bg-gray-50 transition-all">
                             </div>
                         </div>
+
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Packaging</label>
@@ -49,26 +47,23 @@
                                     <option value="" disabled selected>Select...</option>
                                     <option value="box">Box-in-Box</option>
                                     <option value="crates">Wooden Crates</option>
-                                    <option value="pallet">Palletization</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Schedule</label>
-                                <input type="datetime-local" id="schedule" required class="w-full border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-green-600 outline-none text-xs font-bold">
+                                <input type="datetime-local" id="schedule" required class="w-full border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-green-600 outline-none text-[10px] font-bold">
                             </div>
                         </div>
 
-                        <div class="bg-green-50 rounded-xl p-4 border border-green-100 mt-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-xs font-bold text-green-900 leading-none">Protected Species Mode</p>
-                                    <p class="text-[9px] text-green-700 mt-1 uppercase font-black">Enable for CITES-listed species</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="wildlifeToggle" class="sr-only peer">
-                                    <div class="w-10 h-5 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
-                                </label>
+                        <div class="bg-green-50 rounded-xl p-3 border border-green-100 flex items-center justify-between mt-4">
+                            <div>
+                                <p class="text-[10px] font-bold text-green-900 leading-none">Protected Species Mode</p>
+                                <p class="text-[8px] text-green-700 mt-1 uppercase font-black italic">CITES-listed Species Only</p>
                             </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="wildlifeToggle" class="sr-only peer">
+                                <div class="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-green-600"></div>
+                            </label>
                         </div>
                     </div>
 
@@ -76,66 +71,65 @@
                         <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-folder-open"></i> Standard Documents
                         </h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+                        
+                        <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 sm:h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="invoiceFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-file-invoice-dollar text-gray-300 group-hover:text-green-600 mb-1"></i>
-                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Invoice / Packing List</p>
-                                <p id="invoiceName" class="text-[7px] text-green-600 font-bold truncate w-full mt-1 px-2"></p>
+                                <i class="fa-solid fa-file-invoice text-gray-300 group-hover:text-green-600 text-xs sm:text-lg"></i>
+                                <p class="text-[8px] sm:text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none mt-1">Invoice</p>
+                                <p id="invoiceFileName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
                             </div>
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-24 flex flex-col items-center justify-center cursor-pointer">
+
+                            <div class="group border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 sm:h-20 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="inspectFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <i class="fa-solid fa-clipboard-check text-gray-300 group-hover:text-green-600 mb-1"></i>
-                                <p class="text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-tight">Inspection Report</p>
-                                <p id="inspectName" class="text-[7px] text-green-600 font-bold truncate w-full mt-1 px-2"></p>
+                                <i class="fa-solid fa-clipboard-check text-gray-300 group-hover:text-green-600 text-xs sm:text-lg"></i>
+                                <p class="text-[8px] sm:text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none mt-1">Inspection</p>
+                                <p id="inspectFileName" class="text-[7px] text-green-600 font-bold truncate w-full px-1"></p>
                             </div>
                         </div>
 
-                        <div id="citesSection" class="hidden animate-pulse">
-                            <p class="text-[9px] font-black text-green-700 uppercase mb-2 tracking-widest">CITES Requirements:</p>
+                        <div id="citesSection" class="hidden space-y-2">
+                            <p class="text-[9px] font-black text-green-700 uppercase tracking-widest border-l-2 border-green-600 pl-2">CITES Requirements</p>
                             <div class="grid grid-cols-3 gap-2">
-                                <div class="group border-2 border-dashed border-green-200 rounded-lg p-2 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center h-20 flex flex-col items-center justify-center cursor-pointer">
+                                <div class="group border-2 border-dashed border-green-200 rounded-lg p-1.5 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 flex flex-col items-center justify-center cursor-pointer">
                                     <input type="file" id="citesPermit" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                    <i class="fa-solid fa-file-shield text-xs text-green-200 group-hover:text-green-600"></i>
-                                    <p class="text-[7px] font-black text-green-700 uppercase mt-1 leading-none">CITES Permit</p>
-                                    <p id="permitName" class="text-[6px] text-green-600 font-bold truncate mt-1 px-1"></p>
+                                    <i class="fa-solid fa-shield-dog text-[10px] text-green-300 group-hover:text-green-600"></i>
+                                    <p class="text-[7px] font-black text-green-700 uppercase mt-0.5 leading-none">Permit</p>
+                                    <p id="citesPermitName" class="text-[6px] text-green-600 font-bold truncate w-full"></p>
                                 </div>
-                                <div class="group border-2 border-dashed border-green-200 rounded-lg p-2 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center h-20 flex flex-col items-center justify-center cursor-pointer">
+                                <div class="group border-2 border-dashed border-green-200 rounded-lg p-1.5 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 flex flex-col items-center justify-center cursor-pointer">
                                     <input type="file" id="citesOrigin" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                    <i class="fa-solid fa-earth-asia text-xs text-green-200 group-hover:text-green-600"></i>
-                                    <p class="text-[7px] font-black text-green-700 uppercase mt-1 leading-none">Cert. Origin</p>
-                                    <p id="originName" class="text-[6px] text-green-600 font-bold truncate mt-1 px-1"></p>
+                                    <i class="fa-solid fa-earth-asia text-[10px] text-green-300 group-hover:text-green-600"></i>
+                                    <p class="text-[7px] font-black text-green-700 uppercase mt-0.5 leading-none">Origin</p>
+                                    <p id="citesOriginName" class="text-[6px] text-green-600 font-bold truncate w-full"></p>
                                 </div>
-                                <div class="group border-2 border-dashed border-green-200 rounded-lg p-2 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center h-20 flex flex-col items-center justify-center cursor-pointer">
+                                <div class="group border-2 border-dashed border-green-200 rounded-lg p-1.5 bg-green-50/30 hover:bg-white hover:border-green-600 transition-all text-center relative h-16 flex flex-col items-center justify-center cursor-pointer">
                                     <input type="file" id="citesWfp" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                    <i class="fa-solid fa-house-chimney-window text-xs text-green-200 group-hover:text-green-600"></i>
-                                    <p class="text-[7px] font-black text-green-700 uppercase mt-1 leading-none">Farm Permit</p>
-                                    <p id="wfpName" class="text-[6px] text-green-600 font-bold truncate mt-1 px-1"></p>
+                                    <i class="fa-solid fa-house-circle-check text-[10px] text-green-300 group-hover:text-green-600"></i>
+                                    <p class="text-[7px] font-black text-green-700 uppercase mt-0.5 leading-none">Farm</p>
+                                    <p id="citesWfpName" class="text-[6px] text-green-600 font-bold truncate w-full"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex flex-col">
-                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1">Total export clearance fee</p>
-                        <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
-                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Export Fee:</span>
-                            <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">3,500.00</span></span>
-                            <input type="hidden" id="xendit_raw_amount" value="3500">
-                        </div>
+                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3 w-full md:w-auto justify-center md:justify-start">
+                        <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Total Fee:</span>
+                        <span class="text-xl font-black text-green-700">₱ 3,500.00</span>
+                        <input type="hidden" id="xendit_raw_amount" value="3500">
                     </div>
                     
-                    <div class="flex gap-2 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
+                    <div class="flex flex-row gap-2 w-full md:w-auto">
+                        <a href="/user/license/license" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-100 flex items-center justify-center">Back</a>
+                        <button type="reset" id="resetBtn" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-100">Clear</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-[2] bg-gray-200 text-gray-400 font-black py-2.5 px-8 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply & Pay</button>
                     </div>
                 </div>
             </form>
         </div>
-        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR Forest Management Bureau 2026</p>
+        <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR Strategic Trade Section 2026</p>
     </div>
 
     <script>
@@ -145,20 +139,23 @@
             const wildlifeToggle = document.getElementById('wildlifeToggle');
             const citesSection = document.getElementById('citesSection');
 
-            const standardFields = ['destination', 'portOfExit', 'packaging', 'schedule'];
-            const standardFiles = ['invoiceFile', 'inspectFile'];
-            const citesFiles = ['citesPermit', 'citesOrigin', 'citesWfp'];
+            const fileMapping = [
+                { inputId: 'invoiceFile', displayId: 'invoiceFileName' },
+                { inputId: 'inspectFile', displayId: 'inspectFileName' },
+                { inputId: 'citesPermit', displayId: 'citesPermitName' },
+                { inputId: 'citesOrigin', displayId: 'citesOriginName' },
+                { inputId: 'citesWfp', displayId: 'citesWfpName' }
+            ];
 
             function checkValidation() {
-                const fieldsValid = standardFields.every(id => document.getElementById(id).value.trim() !== "");
-                const stdFilesValid = standardFiles.every(id => document.getElementById(id).files.length > 0);
-                
+                const inputsValid = ['destination', 'portOfExit', 'packaging', 'schedule'].every(id => document.getElementById(id).value.trim() !== "");
+                const stdFilesValid = ['invoiceFile', 'inspectFile'].every(id => document.getElementById(id).files.length > 0);
                 let citesValid = true;
                 if (wildlifeToggle.checked) {
-                    citesValid = citesFiles.every(id => document.getElementById(id).files.length > 0);
+                    citesValid = ['citesPermit', 'citesOrigin', 'citesWfp'].every(id => document.getElementById(id).files.length > 0);
                 }
 
-                if (fieldsValid && stdFilesValid && citesValid) {
+                if (inputsValid && stdFilesValid && citesValid) {
                     submitBtn.disabled = false;
                     submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
                     submitBtn.classList.replace('text-gray-400', 'text-white');
@@ -173,79 +170,42 @@
             }
 
             wildlifeToggle.addEventListener('change', () => {
-                citesSection.classList.toggle('hidden', !wildlifeToggle.checked);
-                citesFiles.forEach(id => document.getElementById(id).required = wildlifeToggle.checked);
+                if (!wildlifeToggle.checked) {
+                    // RESET CITES FILES AND TEXT DATA
+                    ['citesPermit', 'citesOrigin', 'citesWfp'].forEach(id => {
+                        const input = document.getElementById(id);
+                        const display = document.getElementById(id + 'Name');
+                        input.value = ""; 
+                        if(display) display.textContent = "";
+                    });
+                    citesSection.classList.add('hidden');
+                } else {
+                    citesSection.classList.remove('hidden');
+                }
                 checkValidation();
             });
 
-            // Handle filename displays and validation
-            [...standardFiles, ...citesFiles].forEach(id => {
-                const input = document.getElementById(id);
-                const displayId = id.includes('cites') ? id.replace('cites', '').toLowerCase() + 'Name' : id.replace('File', 'Name');
-                const display = document.getElementById(displayId);
-                
-                input.addEventListener('change', () => {
-                    if(display) display.textContent = input.files.length > 0 ? "✔ " + input.files[0].name : "";
-                    checkValidation();
-                });
+            fileMapping.forEach(map => {
+                const input = document.getElementById(map.inputId);
+                const display = document.getElementById(map.displayId);
+                if (input && display) {
+                    input.addEventListener('change', (e) => {
+                        display.textContent = e.target.files.length > 0 ? "✔ Selected" : "";
+                        checkValidation();
+                    });
+                }
             });
 
             form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
-                el.addEventListener('change', checkValidation);
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => {
                 setTimeout(() => {
-                    document.querySelectorAll('[id$="Name"]').forEach(el => el.textContent = "");
+                    fileMapping.forEach(m => document.getElementById(m.displayId).textContent = "");
                     citesSection.classList.add('hidden');
                     checkValidation();
                 }, 10);
-            });
-
-            // Handle form submission with Xendit payment
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const amount = document.getElementById('xendit_raw_amount').value;
-
-                try {
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Processing...';
-
-                    const paymentPayload = {
-                        external_id: `export-${Date.now()}`,
-                        amount: parseInt(amount),
-                        email: '', // Will be filled from user profile
-                        description: `Export Permit - ${document.getElementById('destination').value}`,
-                        item_name: 'Export Permit',
-                        success_url: `${window.location.origin}/user/license/permits/export`,
-                        failure_url: `${window.location.origin}/user/license/permits/export`
-                    };
-
-                    const response = await fetch('/api/payments/create-invoice', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(paymentPayload)
-                    });
-
-                    const result = await response.json();
-
-                    if (result.status === 'success' && result.invoice_url) {
-                        window.location.href = result.invoice_url;
-                    } else {
-                        alert(`Payment error: ${result.message || 'Unknown error'}`);
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Apply';
-                    }
-                } catch (error) {
-                    console.error('Payment error:', error);
-                    alert('Failed to process payment. Please try again.');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Apply';
-                }
             });
         });
     </script>
