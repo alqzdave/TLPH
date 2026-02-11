@@ -48,6 +48,14 @@ def user_profile():
 def user_transaction():
     return render_template('user/transaction.html')
 
+@bp.route('/user/transaction-history')
+def user_transaction_history():
+    return render_template('user/transaction-history.html')
+
+@bp.route('/user/history')
+def user_history():
+    return render_template('user/history.html')
+
 @bp.route('/user/application')
 def user_application():
     return render_template('user/application.html')

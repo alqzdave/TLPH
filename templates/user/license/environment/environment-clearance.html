@@ -154,6 +154,12 @@
                 }
             }
 
+            // Xendit logic can be added here
+            form.addEventListener('submit', function(e) {
+                // Kunin ang amount para sa Xendit: 
+                // const amount = document.getElementById('xendit_raw_amount').value;
+            });
+
             appType.addEventListener('change', () => {
                 if (appType.value === 'renewal' || appType.value === 'modification') {
                     prevSection.classList.remove('hidden');
@@ -228,5 +234,6 @@
             });
         });
     </script>
+    <script type="module" src="{{ url_for('static', filename='js/license-payment.js') }}"></script>
 </body>
 </html>

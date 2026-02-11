@@ -1,4 +1,5 @@
 import { auth, onAuthStateChanged } from "./firebase-config.js";
+import { saveLicenseApplicationToFirebase, collectLicenseFormData } from "./license-firebase-storage.js";
 
 const EMAIL_TIMEOUT_MS = 1500;
 let cachedEmail = "";
@@ -39,8 +40,12 @@ function slugify(value) {
 }
 
 function getItemName(form) {
+    const pageHeading = Array.from(document.querySelectorAll("h1")).find(
+        (heading) => !heading.closest("header")
+    );
+
     return form.dataset.itemName
-        || (document.querySelector("h1") && document.querySelector("h1").textContent.trim())
+        || (pageHeading && pageHeading.textContent.trim())
         || document.title
         || "License Application";
 }
@@ -54,6 +59,14 @@ function getExternalPrefix(form, itemName) {
 }
 
 function getSuccessUrl() {
+    const form = document.querySelector("form");
+    if (form && form.dataset.successUrl) {
+        return form.dataset.successUrl;
+    }
+    // Default redirect to transaction page after license application
+    if (window.location.pathname.includes('/user/license/')) {
+        return `${window.location.origin}/user/transaction`;
+    }
     return window.location.href.split("#")[0];
 }
 
@@ -73,6 +86,7 @@ async function handlePaymentSubmit(event, form) {
     const submitBtn = form.querySelector("button[type='submit']");
     if (submitBtn) {
         submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving application...';
     }
 
     const amount = parseInt(amountInput.value, 10);
@@ -84,11 +98,43 @@ async function handlePaymentSubmit(event, form) {
         const email = await getCurrentUserEmail();
         if (!email) {
             alert("Please sign in before continuing with payment.");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Apply Now';
+            }
             return;
         }
         localStorage.setItem("denr_user_email", email);
+        
+        const externalId = `${externalPrefix}-${Date.now()}`;
+        
+        // Collect and save form data to Firebase
+        try {
+            const formData = collectLicenseFormData('form');
+            if (submitBtn) {
+                submitBtn.textContent = 'Uploading documents...';
+            }
+            
+            formData.externalId = externalId;
+            formData.amount = amount;
+            
+            await saveLicenseApplicationToFirebase(formData);
+            
+            if (submitBtn) {
+                submitBtn.textContent = 'Processing payment...';
+            }
+        } catch (firebaseError) {
+            console.error('Firebase save error:', firebaseError);
+            alert('Error saving application data. Please try again.');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Apply Now';
+            }
+            return;
+        }
+        
         const payload = {
-            external_id: `${externalPrefix}-${Date.now()}`,
+            external_id: externalId,
             amount: amount,
             email: email,
             description: description,
@@ -120,6 +166,7 @@ async function handlePaymentSubmit(event, form) {
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
+            submitBtn.textContent = 'Apply Now';
         }
     }
 }
