@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Municipal Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #15803d; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #15803d; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #166534; }
+        .success { background: #d1fae5; color: #065f46; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+        .error { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Create Municipal Admin Account</h2>
+        <div id="message"></div>
+        
+        <div style="margin-bottom: 20px; padding: 15px; background: #f0fdf4; border-radius: 4px;">
+            <h3 style="margin-bottom: 10px; font-size: 14px;">Quick Create All 3 Accounts:</h3>
+            <button type="button" id="createAllBtn" style="background: #059669;">Create Victoria, Naujan, Calapan</button>
+        </div>
+        
+        <form id="createAdminForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" required placeholder="admin@municipality.gov.ph">
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="Min. 6 characters">
+            </div>
+            
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" id="firstName" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" id="lastName" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" id="phone" required placeholder="+63">
+            </div>
+            
+            <div class="form-group">
+                <label>Municipality</label>
+                <select id="municipality" required>
+                    <option value="">Select Municipality</option>
+                    <option value="Victoria">Victoria</option>
+                    <option value="Naujan">Naujan</option>
+                    <option value="Calapan">Calapan</option>
+                </select>
+            </div>
+            
+            <button type="submit">Create Municipal Admin</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { auth, db } from '/static/js/firebase-config.js';
+        import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const form = document.getElementById('createAdminForm');
+        const message = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            message.innerHTML = '';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const phone = document.getElementById('phone').value;
+            const municipality = document.getElementById('municipality').value;
+
+            if (password.length < 6) {
+                message.innerHTML = '<div class="error">Password must be at least 6 characters</div>';
+                return;
+            }
+
+            try {
+                // Create user with Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Save municipal admin profile to Firestore
+                await setDoc(doc(db, 'users', user.uid), {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    phone: phone,
+                    municipality: municipality,
+                    province: 'Oriental Mindoro',
+                    role: 'municipal',
+                    applicationType: 'municipal',
+                    status: 'active',
+                    createdAt: new Date().toISOString()
+                });
+
+                message.innerHTML = `<div class="success">Successfully created ${municipality} Municipal Admin!</div>`;
+                form.reset();
+                
+                // Sign out the newly created user so admin can create more accounts
+                await auth.signOut();
+
+            } catch (error) {
+                console.error('Error creating admin:', error);
+                message.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        });
+
+        // Quick create all 3 municipal accounts
+        document.getElementById('createAllBtn').addEventListener('click', async () => {
+            const accounts = [
+                { email: 'naujanmunicipal@gmail.com', password: '123456', firstName: 'Naujan', lastName: 'Municipal Admin', phone: '+63', municipality: 'Naujan' },
+                { email: 'victoriamunicipality@gmail.com', password: '123456', firstName: 'Victoria', lastName: 'Municipal Admin', phone: '+63', municipality: 'Victoria' },
+                { email: 'calapanmunicipality@gmail.com', password: '123456', firstName: 'Calapan', lastName: 'Municipal Admin', phone: '+63', municipality: 'Calapan' }
+            ];
+
+            message.innerHTML = '<div style="padding: 10px; background: #dbeafe; border-radius: 4px;">Creating accounts...</div>';
+
+            for (const account of accounts) {
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, account.email, account.password);
+                    const user = userCredential.user;
+
+                    await setDoc(doc(db, 'users', user.uid), {
+                        firstName: account.firstName,
+                        lastName: account.lastName,
+                        email: account.email,
+                        phone: account.phone,
+                        municipality: account.municipality,
+                        province: 'Oriental Mindoro',
+                        role: 'municipal',
+                        applicationType: 'municipal',
+                        status: 'active',
+                        createdAt: new Date().toISOString()
+                    });
+
+                    console.log(`Created: ${account.municipality}`);
+                    await auth.signOut();
+
+                } catch (error) {
+                    if (error.code === 'auth/email-already-in-use') {
+                        console.log(`${account.municipality} already exists`);
+                    } else {
+                        console.error(`Error creating ${account.municipality}:`, error);
+                    }
+                }
+            }
+
+            message.innerHTML = '<div class="success">Successfully created all 3 municipal admin accounts!<br>Victoria, Naujan, and Calapan admins are ready.</div>';
+        });
+    </script>
+</body>
+</html>
