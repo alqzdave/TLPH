@@ -15,16 +15,17 @@
 <body class="bg-gray-50 min-h-screen text-slate-900 text-sm">
     {% include 'user/header.html' %}
 
-    <div class="container mx-auto px-4 mt-6">
-        <div class="max-w-6xl mx-auto text-center mb-6">
-            <h1 class="text-3xl font-black uppercase tracking-tight text-green-800">Water Use / Discharge Clearance</h1>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Environmental Management Bureau • Effluent Regulation</p>
+    <div class="container mx-auto px-2 sm:px-4 lg:px-8 mt-4 sm:mt-6">
+        
+        <div class="max-w-6xl mx-auto text-center mb-4 sm:mb-6">
+            <h1 class="text-2xl sm:text-3xl font-black uppercase tracking-tight text-green-800 px-2">Water Use / Discharge Clearance</h1>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] mt-1">Environmental Management Bureau • Effluent Regulation</p>
         </div>
 
-        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
+        <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-10">
             <form id="dischargeForm" action="#" method="POST" enctype="multipart/form-data">
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8">
                     
                     <div class="space-y-4">
                         <h3 class="text-green-800 font-black text-xs uppercase tracking-widest border-b pb-2 flex items-center gap-2">
@@ -34,7 +35,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Waste Type <span class="text-red-500">*</span></label>
-                                <select id="wasteType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                <select id="wasteType" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium transition-all">
                                     <option value="" disabled selected>Select type...</option>
                                     <option value="greywater">Greywater</option>
                                     <option value="blackwater">Blackwater</option>
@@ -44,8 +45,8 @@
                             <div>
                                 <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Volume Estimate <span class="text-red-500">*</span></label>
                                 <div class="relative">
-                                    <input type="number" id="volume" required placeholder="0.00" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none font-bold text-xs">
-                                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[7px] text-gray-400 font-black uppercase">m³/CYCLE</span>
+                                    <input type="number" id="volume" required placeholder="0.00" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-green-600 outline-none font-bold text-xs bg-gray-50 transition-all">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[7px] text-gray-400 font-black uppercase">m³/C</span>
                                 </div>
                             </div>
                         </div>
@@ -53,7 +54,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Handling Method <span class="text-red-500">*</span></label>
-                                <select id="handlingMethod" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
+                                <select id="handlingMethod" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium transition-all">
                                     <option value="" disabled selected>Select...</option>
                                     <option value="on_site">On-site Treatment</option>
                                     <option value="off_site">Off-site Treatment</option>
@@ -61,13 +62,13 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Waste Hauler <span class="text-red-500">*</span></label>
-                                <input type="text" id="haulerName" required placeholder="Accredited Hauler" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium">
+                                <input type="text" id="haulerName" required placeholder="Accredited Hauler" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium transition-all">
                             </div>
                         </div>
 
                         <div class="bg-blue-50 rounded-xl p-3 border border-blue-100">
                             <p class="text-[9px] text-blue-800 font-bold uppercase tracking-tighter mb-1">Regulatory Info</p>
-                            <p class="text-[10px] text-blue-700 leading-tight">Hauler must be EMB-accredited for the specific waste type being discharged or treated.</p>
+                            <p class="text-[10px] text-blue-700 leading-tight">Hauler must be EMB-accredited for the specific waste type being treated.</p>
                         </div>
                     </div>
 
@@ -76,42 +77,47 @@
                             <i class="fa-solid fa-file-shield"></i> Documentation
                         </h3>
                         
-                        <div class="flex flex-col gap-3">
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
+                        <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 sm:h-24 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="planFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-file-waveform text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
-                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Waste Management Plan</p>
-                                </div>
-                                <p id="planName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-0.5"></p>
+                                <i class="fa-solid fa-file-waveform text-gray-300 group-hover:text-green-600 mb-1 text-base sm:text-xl transition-colors"></i>
+                                <p class="text-[8px] sm:text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none text-center">Management Plan</p>
+                                <p id="planName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1"></p>
                             </div>
 
-                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 flex flex-col items-center justify-center cursor-pointer">
+                            <div class="group border-2 border-dashed border-gray-200 rounded-xl p-2 bg-gray-50 hover:bg-white hover:border-green-600 transition-all text-center relative h-20 sm:h-24 flex flex-col items-center justify-center cursor-pointer">
                                 <input type="file" id="contractFile" required class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-handshake-angle text-gray-300 group-hover:text-green-600 text-lg transition-colors"></i>
-                                    <p class="text-[10px] font-black text-gray-400 group-hover:text-gray-700 uppercase">Disposal Agreement / Contract</p>
-                                </div>
-                                <p id="contractName" class="text-[7px] text-green-600 font-bold truncate w-full px-4 mt-0.5"></p>
+                                <i class="fa-solid fa-handshake-angle text-gray-300 group-hover:text-green-600 mb-1 text-base sm:text-xl transition-colors"></i>
+                                <p class="text-[8px] sm:text-[9px] font-black text-gray-400 group-hover:text-gray-700 uppercase leading-none text-center">Disposal Contract</p>
+                                <p id="contractName" class="text-[7px] text-green-600 font-bold truncate w-full px-1 mt-1"></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex flex-col">
-                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Effluent discharge clearance activation fee</p>
+                <div class="mt-8 pt-6 border-t flex flex-col lg:flex-row justify-between items-center gap-6">
+                    
+                    <div class="flex flex-col items-center lg:items-start w-full lg:w-auto">
+                        <p class="text-[9px] text-gray-400 font-black uppercase mb-1 italic">Effluent Clearance Activation Fee</p>
                         <div class="bg-amber-50 px-4 py-2 rounded-xl border border-green-700 inline-flex items-center gap-3">
-                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Clearance Fee:</span>
+                            <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">Total Fee:</span>
                             <span class="text-xl font-black text-green-700">₱ <span class="xendit-amount-value">1,250.00</span></span>
                             <input type="hidden" id="xendit_raw_amount" value="1250">
                         </div>
                     </div>
                     
-                    <div class="flex gap-2 w-full md:w-auto">
-                        <a href="/user/license/license" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-50 transition-colors">Back</a>
-                        <button type="reset" id="resetBtn" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-50 transition-colors">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">Apply Now</button>
+                    <div class="flex flex-row gap-2 w-full lg:w-[450px]">
+                        <a href="/user/license/license" class="flex-1 px-2 py-3 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase no-underline text-center text-[10px] hover:bg-gray-100 transition-all flex items-center justify-center">
+                            Back
+                        </a>
+                        
+                        <button type="reset" id="resetBtn" class="flex-1 px-2 py-3 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase text-[10px] hover:bg-gray-100 transition-all">
+                            Clear
+                        </button>
+                        
+                        <button type="submit" id="submitBtn" disabled class="flex-1 px-2 py-3 bg-gray-200 text-gray-400 font-black rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed">
+                            Apply & Pay
+                        </button>
                     </div>
                 </div>
             </form>
@@ -137,22 +143,18 @@
 
                 if (waste && vol > 0 && method && hauler && filesDone) {
                     submitBtn.disabled = false;
-                    submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
-                    submitBtn.classList.replace('text-gray-400', 'text-white');
-                    submitBtn.classList.replace('cursor-not-allowed', 'cursor-pointer');
-                    submitBtn.classList.add('hover:bg-green-800', 'active:scale-95');
+                    submitBtn.className = "flex-1 px-2 py-3 bg-green-700 hover:bg-green-800 text-white font-black rounded-lg shadow-md transition-all transform active:scale-95 uppercase text-[10px] cursor-pointer";
                 } else {
                     submitBtn.disabled = true;
-                    submitBtn.classList.replace('bg-green-700', 'bg-gray-200');
-                    submitBtn.classList.replace('text-white', 'text-gray-400');
-                    submitBtn.classList.replace('cursor-pointer', 'cursor-not-allowed');
+                    submitBtn.className = "flex-1 px-2 py-3 bg-gray-200 text-gray-400 font-black rounded-lg shadow-sm transition-all uppercase text-[10px] cursor-not-allowed";
                 }
             }
 
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
                 input.addEventListener('change', (e) => {
-                    document.getElementById(f.name).textContent = e.target.files[0] ? "✔ " + e.target.files[0].name : "";
+                    const fileName = e.target.files[0] ? e.target.files[0].name : "";
+                    document.getElementById(f.name).textContent = fileName ? "✔ Selected" : "";
                     checkValidation();
                 });
             });
@@ -160,6 +162,40 @@
             form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
                 el.addEventListener('change', checkValidation);
+            });
+
+            // Xendit Submission logic
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('xendit_raw_amount').value;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'PROCESSING...';
+                
+                try {
+                    const response = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            external_id: `wup-${Date.now()}`,
+                            amount: parseInt(amount),
+                            description: 'Water Use / Discharge Clearance',
+                            success_url: window.location.origin + '/user/license/environment/water-use',
+                            failure_url: window.location.origin + '/user/license/environment/water-use'
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success' && result.invoice_url) {
+                        window.location.href = result.invoice_url;
+                    } else {
+                        alert('Payment system error.');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Apply & Pay';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Apply & Pay';
+                }
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => {
@@ -184,7 +220,7 @@
                                     email: '', // Will be filled from user profile
                                     description: 'Water Use Permit',
                                     item_name: 'Water Use Permit',
-                                    success_url: `${window.location.origin}/user/license/environment/water-use`,
+                                    success_url: `${window.location.origin}/user/transaction`,
                                     failure_url: `${window.location.origin}/user/license/environment/water-use`
                                 };
                     

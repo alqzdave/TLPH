@@ -1,4 +1,5 @@
 import { auth, onAuthStateChanged } from "./firebase-config.js";
+import { saveLicenseApplicationToFirebase, collectLicenseFormData } from "./license-firebase-storage.js";
 
 const EMAIL_TIMEOUT_MS = 1500;
 let cachedEmail = "";
@@ -58,6 +59,14 @@ function getExternalPrefix(form, itemName) {
 }
 
 function getSuccessUrl() {
+    const form = document.querySelector("form");
+    if (form && form.dataset.successUrl) {
+        return form.dataset.successUrl;
+    }
+    // Default redirect to transaction page after license application
+    if (window.location.pathname.includes('/user/license/')) {
+        return `${window.location.origin}/user/transaction`;
+    }
     return window.location.href.split("#")[0];
 }
 
@@ -77,6 +86,7 @@ async function handlePaymentSubmit(event, form) {
     const submitBtn = form.querySelector("button[type='submit']");
     if (submitBtn) {
         submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving application...';
     }
 
     const amount = parseInt(amountInput.value, 10);
@@ -88,11 +98,58 @@ async function handlePaymentSubmit(event, form) {
         const email = await getCurrentUserEmail();
         if (!email) {
             alert("Please sign in before continuing with payment.");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Apply Now';
+            }
             return;
         }
         localStorage.setItem("denr_user_email", email);
+        
+        const externalId = `${externalPrefix}-${Date.now()}`;
+        
+        // Collect and save form data to Firebase
+        try {
+            console.log('Collecting form data...');
+            const formData = collectLicenseFormData('form');
+            console.log('Form data collected:', formData.applicationType);
+            
+            if (submitBtn) {
+                submitBtn.textContent = 'Uploading documents...';
+            }
+            
+            formData.externalId = externalId;
+            formData.amount = amount;
+            
+            console.log('Starting Firebase save...');
+            await saveLicenseApplicationToFirebase(formData);
+            console.log('Firebase save completed successfully');
+            
+            if (submitBtn) {
+                submitBtn.textContent = 'Processing payment...';
+            }
+        } catch (firebaseError) {
+            console.error('Firebase save error:', firebaseError);
+            let errorMessage = 'Error saving application data. Please try again.';
+            if (firebaseError.message.includes('not authenticated')) {
+                errorMessage = 'Please sign in before submitting the application.';
+            } else if (firebaseError.message.includes('No files')) {
+                errorMessage = 'Please upload all required documents.';
+            } else if (firebaseError.message.includes('Failed to upload')) {
+                errorMessage = 'Failed to upload documents. Please check file size and try again.';
+            } else if (firebaseError.message.includes('User not authenticated')) {
+                errorMessage = 'You must be logged in to submit an application.';
+            }
+            alert(errorMessage);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Apply Now';
+            }
+            return;
+        }
+        
         const payload = {
-            external_id: `${externalPrefix}-${Date.now()}`,
+            external_id: externalId,
             amount: amount,
             email: email,
             description: description,
@@ -124,6 +181,7 @@ async function handlePaymentSubmit(event, form) {
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
+            submitBtn.textContent = 'Apply Now';
         }
     }
 }
