@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DENR Dashboard</title>
 
-  <!-- Tailwind + Bootstrap + FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   
   <!-- HTML2PDF -->
@@ -22,13 +20,27 @@
     .table-responsive { -webkit-overflow-scrolling: touch; }
     canvas { max-width: 100% !important; }
 
-    /* Make search/filter controls align perfectly */
+    /* REDUCED SIZES SECTION */
+    .bg-white.rounded-2xl { padding: 0.75rem !important; border-radius: 12px !important; } /* Smaller Card Padding */
+    .text-2xl { font-size: 1.25rem !important; } /* Smaller Stat Numbers */
+    .text-3xl { font-size: 1.5rem !important; } /* Smaller Stat Numbers */
+    
+    .h-\[220px\], .h-\[240px\] { height: 160px !important; } /* Smaller Graph Heights */
+    
+    .table td, .table th { padding: 6px 10px !important; font-size: 12px; } /* Compact Table */
+    
     .control-field .form-control,
-    .control-field .form-select {
-      height: 44px;               /* consistent control height */
-    }
+    .control-field .form-select,
     .control-btn {
-      height: 44px;               /* same as inputs */
+      height: 36px !important; /* Smaller Controls */
+      font-size: 13px !important;
+    }
+    
+    .mb-4 { margin-bottom: 0.75rem !important; }
+    .mb-6 { margin-bottom: 1rem !important; }
+    /* END REDUCED SIZES */
+
+    .control-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -41,12 +53,16 @@
 <body class="bg-gray-100 min-h-screen">
 {% include 'user/header.html' %}
 
-<main class="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+<main class="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
 
+<<<<<<< HEAD
   <!-- Your existing quick links -->
   <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-[360px] sm:max-w-[520px] lg:max-w-[700px] mx-auto mb-4 sm:mb-6">
+=======
+  <div class="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 max-w-[360px] sm:max-w-[520px] lg:max-w-[700px] mx-auto mb-4 sm:mb-6">
+>>>>>>> origin/main
     <a href="/user/application"
-       class="bg-white hover:bg-green text-green-800 py-3 sm:py-4 px-3 rounded-xl shadow-sm transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3 border border-transparent">
+       class="bg-white hover:bg-green text-green-800 py-2 sm:py-3 px-3 rounded-xl shadow-sm transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3 border border-transparent">
       <i class="fa-solid fa-file-lines text-[12px] sm:text-base lg:text-lg"></i>
       <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
         Applications
@@ -54,7 +70,7 @@
     </a>
 
     <a href="/user/inventory"
-       class="bg-white border border-green-700 text-green-800 py-3 sm:py-4 px-3 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3">
+       class="bg-white border border-green-700 text-green-800 py-2 sm:py-3 px-3 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3">
       <i class="fa-solid fa-boxes-stacked text-[12px] sm:text-base lg:text-lg"></i>
       <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
         Inventory
@@ -73,7 +89,6 @@
 
   <div class="max-w-[1150px] mx-auto">
 
-    <!-- STAT CARDS -->
     <section class="mb-4 sm:mb-6">
       <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
         <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
@@ -132,12 +147,11 @@
       </div>
     </section>
 
-    <!-- CHARTS -->
     <section class="mb-4 sm:mb-6">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3">
         <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
           <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Inventory: Product Types</h2>
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Inventory: Types</h2>
             <i class="fa-solid fa-chart-pie text-gray-400"></i>
           </div>
           <div class="h-[220px] sm:h-[240px]">
@@ -167,20 +181,17 @@
       </div>
     </section>
 
-    <!-- SEARCH + TYPE FILTER (FIXED ALIGNMENT) -->
     <section class="mb-3">
       <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
         <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:gap-4">
-          <!-- Search -->
           <div class="control-field flex-1 min-w-[220px]">
             <label for="searchInput" class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">
               Search
             </label>
             <input id="searchInput" type="text" class="form-control"
-                   placeholder="Search reference, name, type, payment, status..." />
+                   placeholder="Search..." />
             </div>
 
-          <!-- Type Filter -->
           <div class="control-field flex-1 min-w-[220px]">
             <label for="typeFilter" class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">
               Type Filter
@@ -193,12 +204,11 @@
             </select>
           </div>
 
-          <!-- Buttons -->
           <div class="flex gap-2 lg:justify-end w-full lg:w-auto">
-            <button id="btnClear" class="btn btn-outline-secondary control-btn w-1/2 lg:w-auto">
+            <button id="btnClear" class="btn btn-outline-secondary control-btn w-1/2 lg:w-auto px-4">
               <i class="fa-solid fa-eraser"></i> Clear
             </button>
-            <button id="btnReset" class="btn btn-outline-success control-btn w-1/2 lg:w-auto">
+            <button id="btnReset" class="btn btn-outline-success control-btn w-1/2 lg:w-auto px-4">
               <i class="fa-solid fa-rotate-left"></i> Reset
             </button>
           </div>
@@ -206,7 +216,6 @@
       </div>
     </section>
 
-    <!-- TABLE (REMOVED VIEW ALL BUTTON) -->
     <section class="mb-6">
       <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
         <div class="p-3 sm:p-4 border-b">

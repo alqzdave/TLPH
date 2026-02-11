@@ -184,6 +184,7 @@
                 submitBtn.textContent = 'REDIRECTING...';
                 
                 try {
+
                     submitBtn.disabled = true;
                     submitBtn.textContent = 'Processing...';
                     
@@ -196,7 +197,6 @@
                         success_url: `${window.location.origin}/user/transaction`,
                         failure_url: `${window.location.origin}/user/license/environment/pcl`
                     };
-                    
                     const response = await fetch('/api/payments/create-invoice', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -222,7 +222,6 @@
                     submitBtn.textContent = 'Apply & Pay';
                 }
             });
-
             document.getElementById('resetBtn').addEventListener('click', () => {
                 setTimeout(() => {
                     fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
@@ -272,7 +271,6 @@
                                 submitBtn.textContent = 'Apply';
                             }
                         });
-
             });
         });
     </script>

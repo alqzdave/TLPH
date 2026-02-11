@@ -225,6 +225,7 @@
                 }, 10);
             });
 
+
             // Handle form submission with Xendit payment
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -269,6 +270,7 @@
                     submitBtn.textContent = 'Apply';
                 }
             });
+
         });
     </script>
     <script type="module" src="{{ url_for('static', filename='js/license-payment.js') }}"></script>

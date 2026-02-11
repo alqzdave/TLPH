@@ -6,123 +6,33 @@
     <title>All Services & Trainings - DENR TLPH</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #f4f7f4;
-            color: #1a2e05;
-            overflow-x: hidden;
-        }
-
+        body { font-family: 'Montserrat', sans-serif; background-color: #f4f7f4; color: #1a2e05; overflow-x: hidden; }
         .text-denr-dark { color: #1b330d; }
         .bg-denr-dark { background-color: #2d5016; }
-
-        /* Responsive Title */
-        .page-title h1 {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #2d5016;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 3px solid #2d5016;
-            display: inline-block;
-            margin-bottom: 0.5rem;
-        }
+        .page-title h1 { font-size: 1.4rem; font-weight: 800; color: #2d5016; text-transform: uppercase; letter-spacing: 1px; border-bottom: 3px solid #2d5016; display: inline-block; margin-bottom: 0.5rem; }
         @media (min-width: 768px) { .page-title h1 { font-size: 1.8rem; } }
-
-        /* Compact Card Adjustment */
-        .service-card {
-            background: white;
-            border-radius: 4px;
-            border: 1px solid #d1dbcf;
-            transition: all 0.2s ease;
-            padding: 0.8rem !important;
-        }
+        .service-card { background: white; border-radius: 4px; border: 1px solid #d1dbcf; transition: all 0.2s ease; padding: 0.8rem !important; }
         @media (min-width: 768px) { .service-card { padding: 0.6rem 1.2rem !important; } }
-
-        .service-card:hover {
-            border-color: #2d5016;
-            background-color: #f0f4ef;
-        }
-
-        .type-badge {
-            display: inline-block;
-            padding: 1px 8px;
-            border-radius: 3px;
-            font-size: 0.55rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            background-color: #e8f5e9;
-            color: #2d5016;
-            border: 1px solid #c8e6c9;
-            margin-bottom: 4px;
-        }
-
-        .service-name {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #1b330d;
-            line-height: 1.2;
-        }
+        .service-card:hover { border-color: #2d5016; background-color: #f0f4ef; }
+        .type-badge { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 0.55rem; font-weight: 700; text-transform: uppercase; background-color: #e8f5e9; color: #2d5016; border: 1px solid #c8e6c9; margin-bottom: 4px; }
+        .service-name { font-size: 0.85rem; font-weight: 700; color: #1b330d; line-height: 1.2; }
         @media (min-width: 768px) { .service-name { font-size: 0.95rem; } }
-
         .service-desc { font-size: 0.75rem; color: #555; margin-bottom: 0; }
-
-        .meta-group {
-            display: flex;
-            gap: 12px;
-            font-size: 0.65rem;
-            color: #666;
-            margin-top: 4px;
-        }
+        .meta-group { display: flex; gap: 12px; font-size: 0.65rem; color: #666; margin-top: 4px; }
         .meta-group i { color: #2d5016; }
-
-        /* Responsive Filters (Swipeable on Mobile) */
-        .filter-container {
-            display: flex;
-            overflow-x: auto;
-            gap: 8px;
-            padding-bottom: 10px;
-            scrollbar-width: none; /* Firefox */
-        }
-        .filter-container::-webkit-scrollbar { display: none; } /* Chrome/Safari */
-
-        .filter-btn {
-            padding: 6px 14px;
-            border-radius: 4px;
-            border: 1px solid #2d5016;
-            background: white;
-            color: #2d5016;
-            font-weight: 600;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            transition: 0.2s;
-        }
-        .filter-btn.active, .filter-btn:hover { background: #2d5016; color: white; }
-
-        /* Responsive Button */
-        .btn-apply {
-            background-color: #2d5016;
-            color: white !important;
-            border-radius: 4px;
-            font-weight: 700;
-            padding: 8px 15px;
-            font-size: 0.7rem;
-            text-align: center;
-            width: 100%; /* Full width on Mobile */
-        }
+        .filter-container { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 10px; scrollbar-width: none; }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .filter-btn { padding: 6px 14px; border-radius: 4px; border: 1px solid #2d5016; background: white; color: #2d5016; font-weight: 600; font-size: 0.75rem; white-space: nowrap; transition: 0.2s; }
+        .filter-btn.active, .filter-btn:hover { background: #2d5016 !important; color: white !important; }
+        .btn-apply { background-color: #2d5016; color: white !important; border-radius: 4px; font-weight: 700; padding: 8px 15px; font-size: 0.7rem; text-align: center; width: 100%; }
         @media (min-width: 768px) { .btn-apply { width: auto; padding: 5px 15px; } }
-
-        .search-input {
-            border: 1px solid #2d5016;
-            border-radius: 4px;
-            padding: 10px 15px 10px 40px;
-            font-size: 0.9rem;
-        }
+        .search-input { border: 1px solid #2d5016; border-radius: 4px; padding: 10px 15px 10px 40px; font-size: 0.9rem; }
+        .dropdown-menu { z-index: 2050 !important; }
     </style>
 </head>
 <body>
@@ -183,10 +93,7 @@
                             <span class="type-badge">Seminar / Training</span>
                             <h3 class="service-name uppercase">GAP Training</h3>
                             <p class="service-desc">Master sustainable farming techniques to improve yields.</p>
-                            <div class="meta-group">
-                                <span><i class="fas fa-clock"></i> 2 Days</span>
-                                <span><i class="fas fa-users"></i> Max 30</span>
-                            </div>
+                            <div class="meta-group"><span><i class="fas fa-clock"></i> 2 Days</span><span><i class="fas fa-users"></i> Max 30</span></div>
                         </div>
                         <a href="/user/seminar/gap/apply" class="btn-apply block md:inline-block">REGISTER</a>
                     </div>
@@ -195,10 +102,7 @@
                             <span class="type-badge">Seminar / Training</span>
                             <h3 class="service-name uppercase">Pest & Disease Management</h3>
                             <p class="service-desc">Integrated strategies and disease prevention for healthy crops.</p>
-                            <div class="meta-group">
-                                <span><i class="fas fa-clock"></i> 1 Day</span>
-                                <span><i class="fas fa-users"></i> Max 40</span>
-                            </div>
+                            <div class="meta-group"><span><i class="fas fa-clock"></i> 1 Day</span><span><i class="fas fa-users"></i> Max 40</span></div>
                         </div>
                         <a href="/user/seminar/pest-disease/apply" class="btn-apply block md:inline-block">REGISTER</a>
                     </div>
@@ -207,9 +111,7 @@
                             <span class="type-badge">Seminar / Training</span>
                             <h3 class="service-name uppercase">Safe Pesticide Handling</h3>
                             <p class="service-desc">Training on proper pesticide application and emergency measures.</p>
-                            <div class="meta-group">
-                                <span><i class="fas fa-clock"></i> 1 Day</span>
-                            </div>
+                            <div class="meta-group"><span><i class="fas fa-clock"></i> 1 Day</span></div>
                         </div>
                         <a href="/user/seminar/pesticide/apply" class="btn-apply block md:inline-block">REGISTER</a>
                     </div>
@@ -218,9 +120,7 @@
                             <span class="type-badge">Seminar / Training</span>
                             <h3 class="service-name uppercase">Nursery/Propagation Seminar</h3>
                             <p class="service-desc">Plant propagation techniques and nursery management.</p>
-                            <div class="meta-group">
-                                <span><i class="fas fa-clock"></i> 2 Days</span>
-                            </div>
+                            <div class="meta-group"><span><i class="fas fa-clock"></i> 2 Days</span></div>
                         </div>
                         <a href="/user/seminar/nursery/apply" class="btn-apply block md:inline-block">REGISTER</a>
                     </div>
@@ -229,9 +129,7 @@
                             <span class="type-badge">Seminar / Training</span>
                             <h3 class="service-name uppercase">Regulatory Compliance Orientation</h3>
                             <p class="service-desc">Orientation on documentation and agricultural protocols.</p>
-                            <div class="meta-group">
-                                <span><i class="fas fa-clock"></i> Half Day</span>
-                            </div>
+                            <div class="meta-group"><span><i class="fas fa-clock"></i> Half Day</span></div>
                         </div>
                         <a href="/user/seminar/regulatory/apply" class="btn-apply block md:inline-block">REGISTER</a>
                     </div>
@@ -279,7 +177,7 @@
 
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fertilizer / Pesticide">
                         <div class="flex-1">
-                            <span class="type-badge">Fertilizer / Pesticide</span>
+                            <span class="type-badge">Chemicals</span>
                             <h3 class="service-name uppercase">Input Usage Approval</h3>
                             <p class="service-desc">Approval for specialized agricultural input applications.</p>
                         </div>
@@ -287,7 +185,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fertilizer / Pesticide">
                         <div class="flex-1">
-                            <span class="type-badge">Fertilizer / Pesticide</span>
+                            <span class="type-badge">Chemicals</span>
                             <h3 class="service-name uppercase">Chemical Registration/Clearance</h3>
                             <p class="service-desc">Clearance processing for chemical safety protocols.</p>
                         </div>
@@ -295,7 +193,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fertilizer / Pesticide">
                         <div class="flex-1">
-                            <span class="type-badge">Fertilizer / Pesticide</span>
+                            <span class="type-badge">Chemicals</span>
                             <h3 class="service-name uppercase">Emergency Pest Control</h3>
                             <p class="service-desc">Urgent technical intervention against pest outbreaks.</p>
                         </div>
@@ -303,7 +201,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fertilizer / Pesticide">
                         <div class="flex-1">
-                            <span class="type-badge">Fertilizer / Pesticide</span>
+                            <span class="type-badge">Chemicals</span>
                             <h3 class="service-name uppercase">Fertilizer Recommendation</h3>
                             <p class="service-desc">Technical advice on fertilizer types and dosage.</p>
                         </div>
@@ -311,7 +209,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Fertilizer / Pesticide">
                         <div class="flex-1">
-                            <span class="type-badge">Fertilizer / Pesticide</span>
+                            <span class="type-badge">Chemicals</span>
                             <h3 class="service-name uppercase">Pesticide Recommendation</h3>
                             <p class="service-desc">Advice on safe and effective pesticide choices.</p>
                         </div>
@@ -320,7 +218,7 @@
 
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Financial Assistance">
                         <div class="flex-1">
-                            <span class="type-badge">Financial Assistance</span>
+                            <span class="type-badge">Financial</span>
                             <h3 class="service-name uppercase">Subsidy Application</h3>
                             <p class="service-desc">Subsidies for agricultural equipment or seeds.</p>
                         </div>
@@ -328,7 +226,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Financial Assistance">
                         <div class="flex-1">
-                            <span class="type-badge">Financial Assistance</span>
+                            <span class="type-badge">Financial</span>
                             <h3 class="service-name uppercase">Grant Assistance</h3>
                             <p class="service-desc">Innovation grants or project-based financial help.</p>
                         </div>
@@ -336,7 +234,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Financial Assistance">
                         <div class="flex-1">
-                            <span class="type-badge">Financial Assistance</span>
+                            <span class="type-badge">Financial</span>
                             <h3 class="service-name uppercase">Loan Endorsement</h3>
                             <p class="service-desc">Endorsement for low-interest agricultural loans.</p>
                         </div>
@@ -344,7 +242,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Financial Assistance">
                         <div class="flex-1">
-                            <span class="type-badge">Financial Assistance</span>
+                            <span class="type-badge">Financial</span>
                             <h3 class="service-name uppercase">Crop Insurance Support</h3>
                             <p class="service-desc">Assistance in filing and securing crop insurance.</p>
                         </div>
@@ -352,7 +250,7 @@
                     </div>
                     <div class="service-card flex flex-col md:flex-row md:items-center justify-between gap-3 searchable-item" data-category="Financial Assistance">
                         <div class="flex-1">
-                            <span class="type-badge">Financial Assistance</span>
+                            <span class="type-badge">Financial</span>
                             <h3 class="service-name uppercase">Startup/Expansion Support</h3>
                             <p class="service-desc">Guidance for starting or expanding farm operations.</p>
                         </div>
@@ -362,47 +260,50 @@
             </div>
         </div>
 
-        <div class="mt-8 border-t pt-4">
-            <a href="/user/dashboard" class="text-denr-dark font-bold no-underline hover:underline inline-flex items-center">
-                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        <div class="mt-12 pt-6 border-t border-gray-200 flex justify-center">
+            <a href="/user/dashboard" class="text-denr-dark font-black no-underline hover:underline inline-flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-70 hover:opacity-100 transition-opacity">
+                <i class="fas fa-arrow-left text-[9px]"></i> Back to Dashboard
             </a>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const searchInput = document.getElementById('serviceSearch');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const items = document.querySelectorAll('.searchable-item');
-        const noResults = document.getElementById('noResults');
-
-        function filterItems() {
-            const searchText = searchInput.value.toLowerCase();
-            const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
-            let count = 0;
-
-            items.forEach(item => {
-                const name = item.querySelector('.service-name').innerText.toLowerCase();
-                const category = item.getAttribute('data-category');
-                const matchesSearch = name.includes(searchText);
-                const matchesFilter = (activeFilter === 'all' || category === activeFilter);
-
-                if (matchesSearch && matchesFilter) {
-                    item.style.display = "flex";
-                    count++;
-                } else {
-                    item.style.display = "none";
-                }
+        document.addEventListener('DOMContentLoaded', function () {
+            // FIX DROPDOWN
+            var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl)
             });
-            noResults.classList.toggle('hidden', count > 0);
-        }
 
-        searchInput.addEventListener('keyup', filterItems);
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                filterItems();
-                if(window.innerWidth < 1024) window.scrollTo({ top: searchInput.offsetTop - 20, behavior: 'smooth' });
+            // SEARCH & FILTER
+            const searchInput = document.getElementById('serviceSearch');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const items = document.querySelectorAll('.searchable-item');
+            const noResults = document.getElementById('noResults');
+
+            function filterItems() {
+                const searchText = searchInput.value.toLowerCase();
+                const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+                let count = 0;
+                items.forEach(item => {
+                    const name = item.querySelector('.service-name').innerText.toLowerCase();
+                    const category = item.getAttribute('data-category');
+                    const matchesSearch = name.includes(searchText);
+                    const matchesFilter = (activeFilter === 'all' || category === activeFilter);
+                    if (matchesSearch && matchesFilter) { item.style.display = "flex"; count++; } 
+                    else { item.style.display = "none"; }
+                });
+                noResults.classList.toggle('hidden', count > 0);
+            }
+            if (searchInput) searchInput.addEventListener('keyup', filterItems);
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterItems();
+                    if(window.innerWidth < 1024) window.scrollTo({ top: searchInput.offsetTop - 20, behavior: 'smooth' });
+                });
             });
         });
     </script>
