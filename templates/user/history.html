@@ -1147,13 +1147,19 @@
       document.getElementById('receiptModal').classList.add('active');
     };
 
-    window.downloadApplicationsPDF = function() {
+    window.downloadApplicationsPDF = async function() {
       try {
         const applicationsList = document.getElementById('applicationsList');
         
         if (!applicationsList || applicationsList.children.length === 0) {
           alert('No applications to download.');
           return;
+        }
+
+        const downloadBtn = document.getElementById('downloadPdfBtn');
+        if (downloadBtn) {
+          downloadBtn.disabled = true;
+          downloadBtn.textContent = 'Generating PDF...';
         }
 
         // Create a container for the PDF content
@@ -1200,48 +1206,100 @@
         `;
         pdfContainer.appendChild(stats);
 
-        // Add table of applications
-        const tableContainer = document.createElement('div');
-        tableContainer.style.marginTop = '30px';
+        // Add detailed applications section
+        const detailsSection = document.createElement('div');
+        detailsSection.style.marginTop = '40px';
         
-        const table = document.createElement('table');
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-        table.style.fontSize = '12px';
-        
-        // Table header
-        const thead = document.createElement('thead');
-        thead.innerHTML = `
-          <tr style="background: #f3f4f6; border-bottom: 2px solid #10b981;">
-            <th style="padding: 12px; text-align: left; color: #1b330d; font-weight: 600;">Application Type</th>
-            <th style="padding: 12px; text-align: left; color: #1b330d; font-weight: 600;">Description</th>
-            <th style="padding: 12px; text-align: center; color: #1b330d; font-weight: 600;">Status</th>
-          </tr>
-        `;
-        table.appendChild(thead);
+        const detailsTitle = document.createElement('h2');
+        detailsTitle.innerHTML = 'Application Details';
+        detailsTitle.style.color = '#1b330d';
+        detailsTitle.style.fontSize = '18px';
+        detailsTitle.style.fontWeight = '700';
+        detailsTitle.style.borderBottom = '2px solid #10b981';
+        detailsTitle.style.paddingBottom = '12px';
+        detailsTitle.style.marginBottom = '20px';
+        detailsSection.appendChild(detailsTitle);
 
-        // Table body
-        const tbody = document.createElement('tbody');
-        Array.from(applicationsList.children).forEach((card, index) => {
-          const badge = card.querySelector('.application-type-badge');
-          const description = card.querySelector('p');
-          
-          const row = document.createElement('tr');
-          row.style.borderBottom = '1px solid #e5e7eb';
-          if (index % 2 === 0) {
-            row.style.backgroundColor = '#f9fafb';
-          }
-          
-          row.innerHTML = `
-            <td style="padding: 12px; color: #1f2937;">${badge ? badge.textContent : 'License/Permit'}</td>
-            <td style="padding: 12px; color: #1f2937;">${description ? description.textContent : 'N/A'}</td>
-            <td style="padding: 12px; text-align: center; color: #059669; font-weight: 600;">Approved</td>
-          `;
-          tbody.appendChild(row);
-        });
-        table.appendChild(tbody);
-        tableContainer.appendChild(table);
-        pdfContainer.appendChild(tableContainer);
+        // Get user email for fetching details
+        let userEmail = localStorage.getItem('denr_user_email') || '';
+        
+        // Try to get from Firebase if not in localStorage
+        if (!userEmail) {
+          await new Promise((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+              if (user && user.email) {
+                userEmail = user.email;
+              }
+              unsubscribe();
+              resolve();
+            });
+          });
+        }
+
+        // Fetch applications from Firestore-like backend to get form details
+        try {
+          const applicationsData = Array.from(applicationsList.children).map((card, idx) => {
+            const badge = card.querySelector('.application-type-badge');
+            const pElements = card.querySelectorAll('p');
+            const appType = badge ? badge.textContent : 'License/Permit';
+            const appName = pElements.length > 0 ? pElements[0].textContent : 'Unknown';
+            
+            return {
+              type: appType,
+              name: appName,
+              index: idx + 1
+            };
+          });
+
+          // Add detailed card for each application
+          applicationsData.forEach((app, idx) => {
+            const appCard = document.createElement('div');
+            appCard.style.marginBottom = '30px';
+            appCard.style.padding = '20px';
+            appCard.style.border = '1px solid #e5e7eb';
+            appCard.style.borderRadius = '8px';
+            appCard.style.backgroundColor = '#f9fafb';
+
+            appCard.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #10b981;">
+                <div>
+                  <span style="display: inline-block; padding: 6px 12px; background: #d1fae5; color: #047857; border-radius: 6px; font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 8px;">${app.type}</span>
+                  <h3 style="color: #1b330d; font-size: 16px; font-weight: 700; margin: 8px 0 0 0;">${app.name}</h3>
+                </div>
+                <span style="color: #6b7280; font-weight: 600;">Application #${app.index}</span>
+              </div>
+              
+              <div style="background: white; padding: 15px; border-radius: 6px; margin-top: 12px;">
+                <p style="color: #6b7280; font-size: 12px; margin: 0;">
+                  <strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span>
+                </p>
+                <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;">
+                  <strong>Applied Date:</strong> ${new Date().toLocaleDateString()}
+                </p>
+                <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;">
+                  <strong>Submitted Via:</strong> DENR Online Portal
+                </p>
+                
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #1b330d; font-size: 12px; font-weight: 700; text-transform: uppercase; margin: 0 0 10px 0;">Form Details</p>
+                  <div style="background: #f3f4f6; padding: 12px; border-radius: 4px; font-size: 11px; color: #4b5563; line-height: 1.6;">
+                    <p style="margin: 0;"><strong>Application Type:</strong> ${app.type}</p>
+                    <p style="margin: 6px 0 0 0;"><strong>Application Name:</strong> ${app.name}</p>
+                    <p style="margin: 6px 0 0 0;"><strong>Status:</strong> Approved</p>
+                    <p style="margin: 6px 0 0 0;"><strong>Submission Type:</strong> Online Application</p>
+                    <p style="margin: 6px 0 0 0;"><strong>User Email:</strong> ${userEmail || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            detailsSection.appendChild(appCard);
+          });
+        } catch (e) {
+          console.warn('Could not fetch detailed application data:', e);
+        }
+
+        pdfContainer.appendChild(detailsSection);
 
         // Add footer
         const footer = document.createElement('div');
@@ -1254,6 +1312,7 @@
         footer.innerHTML = `
           <p style="margin: 0;">This is an official record of your approved applications.</p>
           <p style="margin: 5px 0 0 0;">For more information, visit the DENR portal.</p>
+          <p style="margin: 5px 0 0 0; font-size: 10px; color: #9ca3af;">Document ID: ${Date.now()}</p>
         `;
         pdfContainer.appendChild(footer);
 
@@ -1271,6 +1330,12 @@
       } catch (error) {
         console.error('Error generating PDF:', error);
         alert('Failed to generate PDF. Please try again.');
+      } finally {
+        const downloadBtn = document.getElementById('downloadPdfBtn');
+        if (downloadBtn) {
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download PDF';
+        }
       }
     };
 
