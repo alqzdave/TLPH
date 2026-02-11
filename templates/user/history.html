@@ -6,6 +6,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <title>History | DENR Portal</title>
 
   <style>
@@ -183,59 +184,69 @@
       background: white;
       border: 1px solid #e5e7eb;
       border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
       transition: all 0.3s ease;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
     }
 
     .application-card:hover {
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
       border-color: #10b981;
-      transform: translateY(-2px);
+      transform: translateY(-4px);
     }
 
     .application-header {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      flex: 1;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .application-type-badge {
       display: inline-block;
-      padding: 8px 14px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      background: #dbeafe;
-      color: #0369a1;
+      letter-spacing: 0.5px;
+      background: #d1fae5;
+      color: #047857;
       white-space: nowrap;
+      width: fit-content;
+    }
+
+    .application-card p {
+      margin: 0;
+      color: #374151;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.4;
     }
 
     .receipt-btn {
-      background: #10b981;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: white;
       border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-size: 12px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
-      align-self: flex-end;
-      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .receipt-btn:hover {
-      background: #059669;
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
     }
 
     .receipt-btn:active {
@@ -881,17 +892,27 @@
 
         <!-- Applications Tab -->
         <div id="applications" class="tab-content active">
-          <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
-            <i class="fa-solid fa-info-circle"></i> Your approved applications for licenses and permits.
-          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              <i class="fa-solid fa-info-circle"></i> Your approved applications for licenses and permits.
+            </p>
+            <button id="downloadPdfBtn" onclick="downloadApplicationsPDF()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+              <i class="fa-solid fa-download"></i> Download PDF
+            </button>
+          </div>
           <div id="applicationsList"></div>
         </div>
 
         <!-- Inventory History Tab -->
         <div id="inventory" class="tab-content">
-          <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
-            <i class="fa-solid fa-info-circle"></i> Your inventory stock transaction history.
-          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              <i class="fa-solid fa-info-circle"></i> Your inventory stock transaction history.
+            </p>
+            <button id="downloadInventoryPdfBtn" onclick="downloadInventoryHistoryPDF()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+              <i class="fa-solid fa-download"></i> Download PDF
+            </button>
+          </div>
           <div id="inventoryList" style="min-height: 400px;"></div>
         </div>
       </div>
@@ -1055,18 +1076,24 @@
             
             // Determine application type from transaction name
             const appType = t.transaction_type || extractAppType(t.transaction_name) || 'License/Permit';
+            const appDescription = t.transaction_name || 'Unknown Application';
+            const appAmount = peso.format(t.amount || 0);
             
             html += `
               <div class="application-card">
-                <div class="application-header" style="justify-content: space-between; align-items: center; width: 100%;">
-                  <div style="flex: 1;">
-                    <span class="application-type-badge">${appType}</span>
-                    <p style="margin-top: 8px; color: #374151; font-size: 14px; font-weight: 500;">${t.transaction_name || 'Unknown Application'}</p>
+                <div class="application-header">
+                  <span class="application-type-badge">${appType}</span>
+                  <div>
+                    <p>${appDescription}</p>
+                    <div style="font-size: 12px; color: #9ca3af; margin-top: 6px;">
+                      <span style="margin-right: 16px;"><strong>Amount:</strong> ${appAmount}</span>
+                      <span><strong>Date:</strong> ${date}</span>
+                    </div>
                   </div>
-                  <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
-                    <i class="fa-solid fa-file-pdf mr-1"></i> View Receipt
-                  </button>
                 </div>
+                <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
+                  <i class="fa-solid fa-file-pdf"></i> Receipt
+                </button>
               </div>
             `;
           });
@@ -1120,8 +1147,268 @@
       document.getElementById('receiptModal').classList.add('active');
     };
 
-    window.closeReceipt = function() {
-      document.getElementById('receiptModal').classList.remove('active');
+    window.downloadApplicationsPDF = function() {
+      try {
+        const applicationsList = document.getElementById('applicationsList');
+        
+        if (!applicationsList || applicationsList.children.length === 0) {
+          alert('No applications to download.');
+          return;
+        }
+
+        // Create a container for the PDF content
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '30px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        // Add header
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '30px';
+        header.style.borderBottom = '2px solid #10b981';
+        header.style.paddingBottom = '20px';
+        
+        header.innerHTML = `
+          <h1 style="color: #1b330d; font-size: 24px; margin: 0;">DENR License & Permit Applications</h1>
+          <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 14px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 5px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+
+        // Add application summary statistics
+        const stats = document.createElement('div');
+        stats.style.display = 'grid';
+        stats.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        stats.style.gap = '20px';
+        stats.style.marginBottom = '30px';
+        
+        const appCount = applicationsList.children.length;
+        stats.innerHTML = `
+          <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; text-align: center;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0; text-transform: uppercase;">Total Applications</p>
+            <h3 style="color: #10b981; font-size: 28px; margin: 5px 0 0 0;">${appCount}</h3>
+          </div>
+          <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; text-align: center;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0; text-transform: uppercase;">Status</p>
+            <h3 style="color: #3b82f6; font-size: 28px; margin: 5px 0 0 0;">Approved</h3>
+          </div>
+          <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; text-align: center;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0; text-transform: uppercase;">Format</p>
+            <h3 style="color: #f59e0b; font-size: 28px; margin: 5px 0 0 0;">PDF</h3>
+          </div>
+        `;
+        pdfContainer.appendChild(stats);
+
+        // Add table of applications
+        const tableContainer = document.createElement('div');
+        tableContainer.style.marginTop = '30px';
+        
+        const table = document.createElement('table');
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+        table.style.fontSize = '12px';
+        
+        // Table header
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+          <tr style="background: #f3f4f6; border-bottom: 2px solid #10b981;">
+            <th style="padding: 12px; text-align: left; color: #1b330d; font-weight: 600;">Application Type</th>
+            <th style="padding: 12px; text-align: left; color: #1b330d; font-weight: 600;">Description</th>
+            <th style="padding: 12px; text-align: center; color: #1b330d; font-weight: 600;">Status</th>
+          </tr>
+        `;
+        table.appendChild(thead);
+
+        // Table body
+        const tbody = document.createElement('tbody');
+        Array.from(applicationsList.children).forEach((card, index) => {
+          const badge = card.querySelector('.application-type-badge');
+          const description = card.querySelector('p');
+          
+          const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid #e5e7eb';
+          if (index % 2 === 0) {
+            row.style.backgroundColor = '#f9fafb';
+          }
+          
+          row.innerHTML = `
+            <td style="padding: 12px; color: #1f2937;">${badge ? badge.textContent : 'License/Permit'}</td>
+            <td style="padding: 12px; color: #1f2937;">${description ? description.textContent : 'N/A'}</td>
+            <td style="padding: 12px; text-align: center; color: #059669; font-weight: 600;">Approved</td>
+          `;
+          tbody.appendChild(row);
+        });
+        table.appendChild(tbody);
+        tableContainer.appendChild(table);
+        pdfContainer.appendChild(tableContainer);
+
+        // Add footer
+        const footer = document.createElement('div');
+        footer.style.marginTop = '40px';
+        footer.style.paddingTop = '20px';
+        footer.style.borderTop = '1px solid #e5e7eb';
+        footer.style.textAlign = 'center';
+        footer.style.color = '#6b7280';
+        footer.style.fontSize = '12px';
+        footer.innerHTML = `
+          <p style="margin: 0;">This is an official record of your approved applications.</p>
+          <p style="margin: 5px 0 0 0;">For more information, visit the DENR portal.</p>
+        `;
+        pdfContainer.appendChild(footer);
+
+        // Generate PDF
+        const opt = {
+          margin: 10,
+          filename: `DENR_Applications_${new Date().getTime()}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+
+        html2pdf().set(opt).from(pdfContainer).save();
+
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Failed to generate PDF. Please try again.');
+      }
+    };
+
+    window.downloadInventoryHistoryPDF = function() {
+      try {
+        const inventoryList = document.getElementById('inventoryList');
+        
+        if (!inventoryList || inventoryList.children.length === 0) {
+          alert('No inventory history to download.');
+          return;
+        }
+
+        // Create a container for the PDF content
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '30px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        // Add header
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '30px';
+        header.style.borderBottom = '2px solid #10b981';
+        header.style.paddingBottom = '20px';
+        
+        header.innerHTML = `
+          <h1 style="color: #1b330d; font-size: 24px; margin: 0;">DENR Inventory Stock History</h1>
+          <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 14px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 5px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+
+        // Add summary statistics
+        const stats = document.createElement('div');
+        stats.style.display = 'grid';
+        stats.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        stats.style.gap = '20px';
+        stats.style.marginBottom = '30px';
+        
+        // Count inventory entries
+        const inventoryEntries = inventoryList.querySelectorAll('[class*="card"], [class*="item"], table tbody tr').length;
+        
+        stats.innerHTML = `
+          <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; text-align: center;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0; text-transform: uppercase;">Total Transactions</p>
+            <h3 style="color: #10b981; font-size: 28px; margin: 5px 0 0 0;">${inventoryEntries}</h3>
+          </div>
+          <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; text-align: center;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0; text-transform: uppercase;">Report Type</p>
+            <h3 style="color: #3b82f6; font-size: 28px; margin: 5px 0 0 0;">Inventory</h3>
+          </div>
+          <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; text-align: center;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0; text-transform: uppercase;">Format</p>
+            <h3 style="color: #f59e0b; font-size: 28px; margin: 5px 0 0 0;">PDF</h3>
+          </div>
+        `;
+        pdfContainer.appendChild(stats);
+
+        // Add inventory data section
+        const dataSection = document.createElement('div');
+        dataSection.style.marginTop = '30px';
+        
+        // Try to extract table data if available
+        const table = inventoryList.querySelector('table');
+        if (table) {
+          // Clone and style the table
+          const clonedTable = table.cloneNode(true);
+          clonedTable.style.width = '100%';
+          clonedTable.style.borderCollapse = 'collapse';
+          clonedTable.style.fontSize = '12px';
+          
+          // Style table rows and cells
+          clonedTable.querySelectorAll('th').forEach(th => {
+            th.style.padding = '12px';
+            th.style.textAlign = 'left';
+            th.style.color = '#1b330d';
+            th.style.fontWeight = '600';
+            th.style.background = '#f3f4f6';
+            th.style.borderBottom = '2px solid #10b981';
+          });
+          
+          clonedTable.querySelectorAll('td').forEach((td, index) => {
+            td.style.padding = '12px';
+            td.style.color = '#1f2937';
+            td.style.borderBottom = '1px solid #e5e7eb';
+          });
+          
+          clonedTable.querySelectorAll('tr').forEach((tr, rowIndex) => {
+            if (rowIndex % 2 === 1 && rowIndex > 0) {
+              tr.style.backgroundColor = '#f9fafb';
+            }
+          });
+          
+          dataSection.appendChild(clonedTable);
+        } else {
+          // If no table, create summary from inventory list
+          const summary = document.createElement('div');
+          summary.innerHTML = `
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981;">
+              <h3 style="color: #1b330d; margin-top: 0;">Inventory Transactions Summary</h3>
+              <p style="color: #6b7280; font-size: 14px;">Total Stock Entries: <strong>${inventoryEntries}</strong></p>
+              <p style="color: #6b7280; font-size: 14px; margin-bottom: 0;">Last Updated: <strong>${new Date().toLocaleDateString()}</strong></p>
+            </div>
+          `;
+          dataSection.appendChild(summary);
+        }
+        
+        pdfContainer.appendChild(dataSection);
+
+        // Add footer
+        const footer = document.createElement('div');
+        footer.style.marginTop = '40px';
+        footer.style.paddingTop = '20px';
+        footer.style.borderTop = '1px solid #e5e7eb';
+        footer.style.textAlign = 'center';
+        footer.style.color = '#6b7280';
+        footer.style.fontSize = '12px';
+        footer.innerHTML = `
+          <p style="margin: 0;">This is an official record of your inventory stock transactions.</p>
+          <p style="margin: 5px 0 0 0;">For more information, visit the DENR portal.</p>
+        `;
+        pdfContainer.appendChild(footer);
+
+        // Generate PDF
+        const opt = {
+          margin: 10,
+          filename: `DENR_Inventory_History_${new Date().getTime()}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+
+        html2pdf().set(opt).from(pdfContainer).save();
+
+      } catch (error) {
+        console.error('Error generating inventory PDF:', error);
+        alert('Failed to generate PDF. Please try again.');
+      }
     };
 
     // Load inventory history content
