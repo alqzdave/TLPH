@@ -155,6 +155,10 @@ This project is made possible by the dedicated efforts of the following contribu
   📧 pagaduanjohnmark29@gmail.com  
   🔗 GitHub: [@johnmark009](https://github.com/johnmark009)
 
+- **Huriecane Ivan Ganio**  
+  🔗 GitHub: [@Huriecane](https://github.com/Huriecane)  
+  📝 Team Member & Contributor
+
 ### Special Thanks
 
 Special thanks to the **DENR TLPH Team** for their support and guidance throughout the development of this project.
