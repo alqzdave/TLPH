@@ -19,14 +19,19 @@ export function getCurrentUser() {
  */
 async function uploadFileToStorage(file, userId, collectionType, filename) {
     try {
+        // Validate file object
+        if (!file || !file.name) {
+            throw new Error('Invalid file object');
+        }
+        
         const timestamp = Date.now();
         const fileExtension = file.name.split('.').pop();
         const uniqueFilename = `${filename || file.name.split('.')[0]}_${timestamp}.${fileExtension}`;
         const storagePath = `license-applications/${userId}/${collectionType}/${uniqueFilename}`;
         
         const storageRef = ref(storage, storagePath);
-        await uploadBytes(storageRef, file);
-        const downloadUrl = await getDownloadURL(storageRef);
+        const uploadResult = await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(uploadResult.ref);
         
         return {
             name: file.name,
@@ -38,7 +43,7 @@ async function uploadFileToStorage(file, userId, collectionType, filename) {
         };
     } catch (error) {
         console.error('Error uploading file:', error);
-        throw new Error(`Failed to upload file: ${file.name}`);
+        throw new Error(`Failed to upload file: ${file.name || 'unknown'} - ${error.message}`);
     }
 }
 
@@ -47,9 +52,15 @@ async function uploadFileToStorage(file, userId, collectionType, filename) {
  */
 async function uploadMultipleFiles(fileList, userId, collectionType, filenamePrefix) {
     try {
+        // Convert FileList to array if needed
+        if (!fileList || fileList.length === 0) {
+            throw new Error('No files to upload');
+        }
+        
+        const filesArray = Array.from(fileList);
         const uploadedFiles = [];
         
-        for (let file of fileList) {
+        for (let file of filesArray) {
             const fileData = await uploadFileToStorage(file, userId, collectionType, filenamePrefix);
             uploadedFiles.push(fileData);
         }
@@ -57,7 +68,7 @@ async function uploadMultipleFiles(fileList, userId, collectionType, filenamePre
         return uploadedFiles;
     } catch (error) {
         console.error('Error uploading multiple files:', error);
-        throw error;
+        throw new Error(`File upload failed: ${error.message}`);
     }
 }
 
@@ -66,38 +77,65 @@ async function uploadMultipleFiles(fileList, userId, collectionType, filenamePre
  */
 export async function saveLicenseApplicationToFirebase(formData) {
     try {
+        console.log('Starting Firebase save with formData:', {
+            appType: formData.applicationType,
+            hasMainProofFiles: !!formData.mainProofFiles,
+            mainProofFilesLength: formData.mainProofFiles ? formData.mainProofFiles.length : 0,
+            hasPrevPermitFile: !!formData.prevPermitFile
+        });
+        
         // Get current user
         const user = await getCurrentUser();
         
         if (!user) {
-            throw new Error('User not authenticated');
+            throw new Error('User not authenticated. Please login and try again.');
         }
+        
+        console.log('User authenticated:', user.email);
         
         const userId = user.uid;
         const userEmail = user.email;
         const applicationType = formData.applicationType || 'license';
         
+        // Validate that we have at least some form data
+        if (!formData) {
+            throw new Error('No form data provided');
+        }
+        
         // Process file uploads first
         let uploadedFiles = {};
         
-        // Upload main/proof documents
+        // Validate and upload main/proof documents
         if (formData.mainProofFiles && formData.mainProofFiles.length > 0) {
-            uploadedFiles.mainProof = await uploadMultipleFiles(
-                formData.mainProofFiles,
-                userId,
-                applicationType,
-                'proof'
-            );
+            try {
+                console.log('Uploading main proof files:', formData.mainProofFiles.length);
+                uploadedFiles.mainProof = await uploadMultipleFiles(
+                    formData.mainProofFiles,
+                    userId,
+                    applicationType,
+                    'proof'
+                );
+                console.log('Main proof files uploaded successfully');
+            } catch (uploadError) {
+                throw new Error(`Failed to upload proof documents: ${uploadError.message}`);
+            }
         }
         
-        // Upload previous permit if exists
+        // Validate and upload previous permit if exists
         if (formData.prevPermitFile) {
-            uploadedFiles.prevPermit = await uploadFileToStorage(
-                formData.prevPermitFile,
-                userId,
-                applicationType,
-                'previous-permit'
-            );
+            try {
+                console.log('Uploading previous permit file');
+                uploadedFiles.prevPermit = await uploadFileToStorage(
+                    formData.prevPermitFile,
+                    userId,
+                    applicationType,
+                    'previous-permit'
+                );
+                console.log('Previous permit uploaded successfully');
+            } catch (e) {
+                console.warn('Warning: Could not upload previous permit file:', e);
+                // Continue without previous permit if it's optional
+            }
         }
         
         // Prepare application data for Firestore
@@ -107,7 +145,7 @@ export async function saveLicenseApplicationToFirebase(formData) {
             applicationType: applicationType,
             formData: {
                 ...formData,
-                // Replace file objects with null, we only store file metadata
+                // Remove file objects, keep only metadata
                 mainProofFiles: null,
                 prevPermitFile: null
             },
@@ -119,6 +157,12 @@ export async function saveLicenseApplicationToFirebase(formData) {
             externalId: formData.externalId || null,
             amount: formData.amount || null
         };
+        
+        console.log('Saving to Firestore:', {
+            userId,
+            applicationType,
+            uploadedFilesCount: Object.keys(uploadedFiles).length
+        });
         
         // Save to Firestore
         const licenseCollection = collection(db, 'license_applications');
@@ -133,7 +177,11 @@ export async function saveLicenseApplicationToFirebase(formData) {
         };
     } catch (error) {
         console.error('Error saving license application:', error);
-        throw error;
+        // Re-throw with more specific message
+        if (error.message.includes('User not authenticated')) {
+            throw error;  // Keep the original message
+        }
+        throw new Error(`Failed to save application: ${error.message}`);
     }
 }
 
@@ -155,7 +203,7 @@ export function collectEnvironmentClearanceFormData() {
         const formData = {
             applicationType: 'environmental-clearance',
             complianceType: complianceType.value,
-            applicationType: appType.value,
+            appType: appType.value,
             mainProofFiles: mainProof.files,
             prevPermitFile: prevPermitInput && prevPermitInput.files.length > 0 ? prevPermitInput.files[0] : null,
             amount: xenditAmount ? parseInt(xenditAmount.value) : null,
@@ -179,7 +227,6 @@ export function collectLicenseFormData(formSelector = 'form', fieldsToExtract = 
             throw new Error(`Form not found with selector: ${formSelector}`);
         }
         
-        const formData = new FormData(form);
         const data = {
             applicationType: 'license',
             submittedAt: new Date().toISOString(),
@@ -187,33 +234,32 @@ export function collectLicenseFormData(formSelector = 'form', fieldsToExtract = 
         };
         
         // Collect text/select inputs
-        form.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], select, textarea').forEach(field => {
-            if (field.name) {
-                data.formFields[field.name] = field.value;
+        form.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="date"], select, textarea').forEach(field => {
+            if (field.name || field.id) {
+                const key = field.name || field.id;
+                data.formFields[key] = field.value;
             }
         });
         
-        // Collect file inputs and get files
-        const fileInputs = {};
+        // Collect file inputs separately (FileList objects)
+        let mainProofFound = false;
+        let prevPermitFound = false;
+        
         form.querySelectorAll('input[type="file"]').forEach(field => {
-            if (field.files && field.files.length > 0) {
-                fileInputs[field.id] = field.files;
+            if (field.id === 'mainProof' && field.files && field.files.length > 0) {
+                data.mainProofFiles = field.files;
+                mainProofFound = true;
+            }
+            if (field.id === 'prevPermitInput' && field.files && field.files.length > 0) {
+                data.prevPermitFile = field.files[0];
+                prevPermitFound = true;
             }
         });
-        
-        // Add specific file references for easier access
-        if (fileInputs.mainProof) {
-            data.mainProofFiles = fileInputs.mainProof;
-        }
-        if (fileInputs.prevPermitInput) {
-            data.prevPermitFile = fileInputs.prevPermitInput[0];
-        }
-        data.files = fileInputs;
         
         // Get xendit amount if available
         const xenditAmount = document.getElementById('xendit_raw_amount');
         if (xenditAmount) {
-            data.amount = parseInt(xenditAmount.value);
+            data.amount = parseInt(xenditAmount.value) || 0;
         }
         
         // Detect application type from page heading
@@ -223,7 +269,7 @@ export function collectLicenseFormData(formSelector = 'form', fieldsToExtract = 
         
         if (pageHeading) {
             const heading = pageHeading.textContent.toLowerCase();
-            if (heading.includes('environmental') || heading.includes('clearance')) {
+            if (heading.includes('environment') || heading.includes('clearance')) {
                 data.applicationType = 'environmental-clearance';
             } else if (heading.includes('fisheries')) {
                 data.applicationType = 'fisheries-license';
@@ -235,6 +281,13 @@ export function collectLicenseFormData(formSelector = 'form', fieldsToExtract = 
                 data.applicationType = 'wildlife-license';
             }
         }
+        
+        console.log('Collected form data:', {
+            applicationType: data.applicationType,
+            hasMainProof: mainProofFound,
+            hasPrevePermit: prevPermitFound,
+            amount: data.amount
+        });
         
         return data;
     } catch (error) {

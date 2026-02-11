@@ -110,7 +110,10 @@ async function handlePaymentSubmit(event, form) {
         
         // Collect and save form data to Firebase
         try {
+            console.log('Collecting form data...');
             const formData = collectLicenseFormData('form');
+            console.log('Form data collected:', formData.applicationType);
+            
             if (submitBtn) {
                 submitBtn.textContent = 'Uploading documents...';
             }
@@ -118,14 +121,26 @@ async function handlePaymentSubmit(event, form) {
             formData.externalId = externalId;
             formData.amount = amount;
             
+            console.log('Starting Firebase save...');
             await saveLicenseApplicationToFirebase(formData);
+            console.log('Firebase save completed successfully');
             
             if (submitBtn) {
                 submitBtn.textContent = 'Processing payment...';
             }
         } catch (firebaseError) {
             console.error('Firebase save error:', firebaseError);
-            alert('Error saving application data. Please try again.');
+            let errorMessage = 'Error saving application data. Please try again.';
+            if (firebaseError.message.includes('not authenticated')) {
+                errorMessage = 'Please sign in before submitting the application.';
+            } else if (firebaseError.message.includes('No files')) {
+                errorMessage = 'Please upload all required documents.';
+            } else if (firebaseError.message.includes('Failed to upload')) {
+                errorMessage = 'Failed to upload documents. Please check file size and try again.';
+            } else if (firebaseError.message.includes('User not authenticated')) {
+                errorMessage = 'You must be logged in to submit an application.';
+            }
+            alert(errorMessage);
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Apply Now';
