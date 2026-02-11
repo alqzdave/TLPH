@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Licensing Portal - DENR TLPH</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -31,6 +32,7 @@
             display: inline-block;
             margin-bottom: 0.5rem;
         }
+
         @media (min-width: 768px) { .page-title h1 { font-size: 1.8rem; } }
 
         .service-card {
@@ -40,6 +42,7 @@
             transition: all 0.2s ease;
             padding: 0.8rem !important;
         }
+
         @media (min-width: 768px) { .service-card { padding: 0.6rem 1.2rem !important; } }
 
         .service-card:hover {
@@ -67,6 +70,7 @@
             color: #1b330d;
             line-height: 1.2;
         }
+
         @media (min-width: 768px) { .service-name { font-size: 0.95rem; } }
 
         .service-desc { font-size: 0.75rem; color: #555; margin-bottom: 0; }
@@ -78,6 +82,7 @@
             padding-bottom: 10px;
             scrollbar-width: none;
         }
+
         .mobile-filter-container::-webkit-scrollbar { display: none; }
 
         .filter-btn {
@@ -90,6 +95,7 @@
             font-size: 0.75rem;
             white-space: nowrap;
         }
+
         .filter-btn.active, .filter-btn:hover { background: #2d5016; color: white; }
 
         .btn-apply {
@@ -101,6 +107,7 @@
             font-size: 0.7rem;
             text-align: center;
         }
+
         @media (min-width: 768px) { .btn-apply { width: auto; padding: 5px 15px; } }
 
         .search-input {
@@ -109,8 +116,11 @@
             padding: 10px 15px 10px 40px;
             font-size: 0.9rem;
         }
+
+        .dropdown-menu { z-index: 2050 !important; }
     </style>
 </head>
+
 <body>
     {% include 'user/header.html' %}
 
@@ -445,42 +455,71 @@
             </div>
         </div>
 
-        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center">
-            <a href="/user/dashboard" class="text-denr-dark font-bold no-underline hover:underline inline-flex items-center">
-                <i class="fas fa-arrow-left mr-2"></i> Return to Dashboard
+        <div class="mt-12 pt-6 border-t border-gray-200 flex justify-center">
+            <a href="/user/dashboard" class="text-denr-dark font-black no-underline hover:underline inline-flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-70 hover:opacity-100 transition-opacity">
+                <i class="fas fa-arrow-left text-[9px]"></i> 
+                Return to Dashboard
             </a>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        const searchInput = document.getElementById('serviceSearch');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const items = document.querySelectorAll('.searchable-item');
-        const noResults = document.getElementById('noResults');
-
-        function filterList() {
-            const searchText = searchInput.value.toLowerCase();
-            const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
-            let count = 0;
-
-            items.forEach(item => {
-                const name = item.querySelector('.service-name').innerText.toLowerCase();
-                const desc = item.querySelector('.service-desc').innerText.toLowerCase();
-                const category = item.getAttribute('data-category');
-                const matchesSearch = name.includes(searchText) || desc.includes(searchText);
-                const matchesFilter = (activeFilter === 'all' || category === activeFilter);
-                if (matchesSearch && matchesFilter) { item.style.display = "flex"; count++; } else { item.style.display = "none"; }
+        document.addEventListener('DOMContentLoaded', function () {
+            // FIX: Manual initialization for Bootstrap Dropdowns
+            var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl)
             });
-            noResults.classList.toggle('hidden', count > 0);
-        }
 
-        searchInput.addEventListener('keyup', filterList);
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                filterList();
-                if(window.innerWidth < 1024) window.scrollTo({ top: searchInput.offsetTop - 20, behavior: 'smooth' });
+            // FIX: Mobile menu toggle logic
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', function () {
+                    const bsCollapse = bootstrap.Collapse.getInstance(mobileMenu) || new bootstrap.Collapse(mobileMenu);
+                    bsCollapse.toggle();
+                });
+            }
+
+            // Search and Filter Logic
+            const searchInput = document.getElementById('serviceSearch');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const items = document.querySelectorAll('.searchable-item');
+            const noResults = document.getElementById('noResults');
+
+            function filterList() {
+                const searchText = searchInput.value.toLowerCase();
+                const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+                let count = 0;
+
+                items.forEach(item => {
+                    const name = item.querySelector('.service-name').innerText.toLowerCase();
+                    const desc = item.querySelector('.service-desc').innerText.toLowerCase();
+                    const category = item.getAttribute('data-category');
+                    const matchesSearch = name.includes(searchText) || desc.includes(searchText);
+                    const matchesFilter = (activeFilter === 'all' || category === activeFilter);
+                    
+                    if (matchesSearch && matchesFilter) { 
+                        item.style.display = "flex"; 
+                        count++; 
+                    } else { 
+                        item.style.display = "none"; 
+                    }
+                });
+                noResults.classList.toggle('hidden', count > 0);
+            }
+
+            if (searchInput) searchInput.addEventListener('keyup', filterList);
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterList();
+                    if(window.innerWidth < 1024) window.scrollTo({ top: searchInput.offsetTop - 20, behavior: 'smooth' });
+                });
             });
         });
     </script>
