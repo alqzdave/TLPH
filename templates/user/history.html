@@ -17,8 +17,8 @@
     }
 
     .main-wrapper {
-      padding-top: 20px;
-      padding-bottom: 50px;
+      padding-top: 24px;
+      padding-bottom: 60px;
     }
 
     .container {
@@ -28,32 +28,33 @@
     }
 
     h1 { 
-      font-size: 22px; 
+      font-size: 28px; 
       font-weight: 800;
-      margin: 0 0 20px; 
+      margin: 0 0 24px; 
       color: #111827;
       text-transform: uppercase;
+      letter-spacing: -1px;
     }
 
     .card-custom {
       background: #fff;
       border: 1px solid #e5e7eb;
       border-radius: 16px;
-      padding: 24px;
+      padding: 32px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .tabs-container {
       display: flex;
       gap: 8px;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
       border-bottom: 2px solid #e5e7eb;
       padding-bottom: 0;
       overflow-x: auto;
     }
 
     .tab-btn {
-      padding: 12px 20px;
+      padding: 14px 24px;
       border: none;
       background: transparent;
       color: #6b7280;
@@ -84,8 +85,22 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-content > p {
+      background: #eff6ff;
+      border-left: 4px solid #10b981;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px !important;
+      font-weight: 500;
+    }
+
+    .tab-content > p i {
+      color: #10b981;
+      margin-right: 8px;
     }
 
     /* Transaction History Styles */
@@ -93,21 +108,26 @@
       background: white;
       border: 1px solid #e5e7eb;
       border-radius: 12px;
-      padding: 20px;
+      padding: 24px;
       margin-bottom: 16px;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
     }
 
     .transaction-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12);
       border-color: #10b981;
+      transform: translateY(-2px);
     }
 
     .transaction-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .permit-name {
@@ -125,15 +145,17 @@
       text-transform: uppercase;
       background: #dcfce7;
       color: #15803d;
+      flex-shrink: 0;
     }
 
     .transaction-details {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      margin-bottom: 12px;
-      padding-bottom: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
       border-bottom: 1px solid #f1f5f9;
+      flex: 1;
     }
 
     .detail-item {
@@ -144,34 +166,64 @@
       color: #6b7280;
       font-weight: 600;
       text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.4px;
+      margin-bottom: 6px;
     }
 
     .detail-value {
       color: #111827;
-      font-weight: 600;
-      margin-top: 4px;
+      font-weight: 700;
+      margin-top: 0;
+      font-size: 14px;
     }
 
     .receipt-btn {
       background: #10b981;
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 12px 20px;
       border-radius: 6px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
+      white-space: nowrap;
+      align-self: flex-end;
+      margin-top: auto;
     }
 
     .receipt-btn:hover {
       background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .receipt-btn:active {
+      transform: translateY(0);
     }
 
     .empty-message {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 40px;
+      color: #9ca3af;
+      background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+      border-radius: 12px;
+      border: 1px dashed #e5e7eb;
+    }
+
+    .empty-message i {
+      font-size: 56px;
+      color: #d1d5db;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .empty-message p {
+      font-size: 16px;
       color: #6b7280;
+      margin: 0;
+      font-weight: 500;
     }
 
     /* Receipt Modal */
@@ -181,15 +233,22 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1050;
+      backdrop-filter: blur(4px);
     }
 
     .receipt-modal.active {
       display: flex;
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .receipt-content {
@@ -199,8 +258,20 @@
       width: 90%;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
       padding: 40px;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from { 
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     .receipt-header {
@@ -292,15 +363,322 @@
 
     .print-btn:hover {
       background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     .close-btn {
-      background: #e5e7eb;
+      background: #f3f4f6;
       color: #374151;
+      border: 1px solid #e5e7eb;
     }
 
     .close-btn:hover {
-      background: #d1d5db;
+      background: #e5e7eb;
+      border-color: #d1d5db;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .close-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Inventory History Styling */
+    #inventoryList main { padding: 0 !important; }
+    
+    #inventoryList h1,
+    #inventoryList h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #111827;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    #inventoryList p {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 32px;
+    }
+
+    #inventoryList [class*="card"] {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 24px;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    #inventoryList [class*="card"]:hover {
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12);
+      border-color: #10b981;
+      transform: translateY(-2px);
+    }
+
+    #inventoryList [class*="item-id"],
+    #inventoryList [class*="reference"],
+    #inventoryList code {
+      background: #f3f4f6;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #10b981;
+      white-space: nowrap;
+      border: 1px solid #e5e7eb;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    #inventoryList [class*="item-name"],
+    #inventoryList strong {
+      font-size: 16px;
+      font-weight: 800;
+      color: #111827;
+      display: block;
+      margin-bottom: 12px;
+      grid-column: 1;
+    }
+
+    #inventoryList [class*="item-info"],
+    #inventoryList [class*="info-group"] {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 20px;
+      margin-bottom: 0;
+      grid-column: 1;
+      width: 100%;
+    }
+
+    #inventoryList [class*="info-label"],
+    #inventoryList [class*="label"],
+    #inventoryList small,
+    #inventoryList label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    #inventoryList [class*="info-value"],
+    #inventoryList [class*="value"],
+    #inventoryList [class*="amount"] {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    #inventoryList [class*="amount"],
+    #inventoryList [class*="sales"],
+    #inventoryList [class*="total"] {
+      color: #10b981;
+      font-size: 16px;
+    }
+
+    #inventoryList button,
+    #inventoryList [role="button"] {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    #inventoryList button:hover,
+    #inventoryList [role="button"]:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    #inventoryList a[class*="close"],
+    #inventoryList a.close {
+      background: #f3f4f6 !important;
+      color: transparent !important;
+      border: 1px solid #e5e7eb !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 6px !important;
+      font-size: 0 !important;
+      text-decoration: none !important;
+      cursor: pointer !important;
+      transition: all 0.2s !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      position: relative !important;
+    }
+
+    #inventoryList a[class*="close"]::before,
+    #inventoryList a.close::before {
+      content: "✕" !important;
+      font-size: 18px !important;
+      color: #6b7280 !important;
+      position: absolute !important;
+    }
+
+    #inventoryList a[class*="close"]:hover,
+    #inventoryList a.close:hover {
+      background: #e5e7eb !important;
+      border-color: #d1d5db !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    #inventoryList a[class*="close"]:hover::before,
+    #inventoryList a.close:hover::before {
+      color: #374151 !important;
+    }
+
+    #inventoryList .exit-btn {
+      background: #f3f4f6 !important;
+      color: transparent !important;
+      border: 1px solid #e5e7eb !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 6px !important;
+      font-size: 0 !important;
+      text-decoration: none !important;
+      cursor: pointer !important;
+      transition: all 0.2s !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      flex-shrink: 0 !important;
+      position: relative !important;
+    }
+
+    #inventoryList .exit-btn span {
+      display: none !important;
+    }
+
+    #inventoryList .exit-btn::before {
+      content: "✕" !important;
+      font-size: 18px !important;
+      color: #6b7280 !important;
+      position: absolute !important;
+      font-family: Arial, sans-serif !important;
+      font-weight: bold !important;
+    }
+
+    #inventoryList .exit-btn:hover {
+      background: #e5e7eb !important;
+      border-color: #d1d5db !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    #inventoryList .exit-btn:hover::before {
+      color: #374151 !important;
+    }
+
+    #inventoryList .close {
+      background: #f3f4f6 !important;
+      color: transparent !important;
+      border: 1px solid #e5e7eb !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 6px !important;
+      font-size: 0 !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      transition: all 0.2s !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      position: relative !important;
+    }
+
+    #inventoryList .close::before {
+      content: "✕" !important;
+      font-size: 18px !important;
+      color: #6b7280 !important;
+      position: absolute !important;
+      font-family: Arial, sans-serif !important;
+      font-weight: bold !important;
+    }
+
+    #inventoryList .close:hover {
+      background: #e5e7eb !important;
+      border-color: #d1d5db !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    #inventoryList .close:hover::before {
+      color: #374151 !important;
+    }
+
+    #inventoryList [class*="secure"] {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #15803d;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    }
+
+    #inventoryList article,
+    #inventoryList section {
+      margin-bottom: 0;
+    }
+
+    /* Responsive adjustments for inventory cards */
+    @media (max-width: 1200px) {
+      #inventoryList [class*="card"] {
+        grid-template-columns: 1fr auto;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      #inventoryList [class*="card"] {
+        grid-template-columns: 1fr;
+      }
+
+      #inventoryList [class*="item-info"],
+      #inventoryList [class*="info-group"] {
+        grid-column: 1;
+      }
+
+      #inventoryList [class*="secure"],
+      #inventoryList a[class*="close"],
+      #inventoryList button {
+        justify-self: start;
+      }
     }
 
     @media print {
@@ -309,35 +687,112 @@
       .receipt-modal { background: none; }
     }
 
-    /* Inventory History Styles */
-    .inventory-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      .card-custom {
+        padding: 20px;
+      }
+
+      .transaction-details {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .receipt-content {
+        padding: 24px;
+      }
+
+      #inventoryList [class*="card"] {
+        padding: 16px;
+        gap: 16px;
+      }
     }
 
-    .inventory-table thead {
-      background: #f9fafb;
-      border-bottom: 2px solid #e5e7eb;
+    @media (max-width: 640px) {
+      .transaction-card > div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      .receipt-btn {
+        align-self: stretch;
+        width: 100%;
+      }
+
+      .transaction-details {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      #inventoryList [class*="card"] {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      #inventoryList [class*="secure"],
+      #inventoryList a[class*="close"],
+      #inventoryList button {
+        justify-self: start;
+      }
     }
 
-    .inventory-table th {
-      padding: 12px;
-      text-align: left;
-      font-weight: 700;
-      color: #374151;
-      text-transform: uppercase;
-      font-size: 11px;
-    }
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 20px;
+      }
 
-    .inventory-table td {
-      padding: 12px;
-      border-bottom: 1px solid #e5e7eb;
-      color: #6b7280;
-    }
+      .card-custom {
+        padding: 16px;
+        border-radius: 12px;
+      }
 
-    .inventory-table tbody tr:hover {
-      background: #f9fafb;
+      .transaction-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .transaction-details {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .tabs-container {
+        gap: 4px;
+        margin-bottom: 20px;
+      }
+
+      .tab-btn {
+        padding: 10px 14px;
+        font-size: 12px;
+      }
+
+      .receipt-modal {
+        padding: 20px;
+      }
+
+      .receipt-content {
+        width: 100%;
+        padding: 20px;
+      }
+
+      #inventoryList [class*="card"] {
+        flex-direction: column;
+        padding: 16px;
+        gap: 12px;
+      }
+
+      #inventoryList [class*="item-info"],
+      #inventoryList [class*="info-group"] {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .receipt-btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -372,13 +827,7 @@
           <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
             <i class="fa-solid fa-info-circle"></i> Your inventory stock transaction history.
           </p>
-          <div id="inventoryList">
-            <iframe 
-              src="/user/inventory/stock-history" 
-              style="width: 100%; height: 600px; border: none; border-radius: 8px;"
-              title="Inventory History">
-            </iframe>
-          </div>
+          <div id="inventoryList" style="min-height: 400px;"></div>
         </div>
       </div>
     </div>
@@ -535,35 +984,37 @@
 
             html += `
               <div class="transaction-card">
-                <div class="transaction-header">
-                  <div>
-                    <div class="permit-name">${t.transaction_name || 'Unknown'}</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; gap: 20px; flex-wrap: wrap;">
+                  <div style="flex: 1; min-width: 300px;">
+                    <div class="transaction-header" style="margin-bottom: 12px; border: none;">
+                      <div>
+                        <div class="permit-name">${t.transaction_name || 'Unknown'}</div>
+                      </div>
+                      <span class="status-badge">Approved</span>
+                    </div>
+                    <div class="transaction-details" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">
+                      <div class="detail-item">
+                        <div class="detail-label">Date</div>
+                        <div class="detail-value">${date}</div>
+                      </div>
+                      <div class="detail-item">
+                        <div class="detail-label">Reference</div>
+                        <div class="detail-value" style="font-size: 11px; font-family: monospace;">${t.reference || t.external_id}</div>
+                      </div>
+                      <div class="detail-item">
+                        <div class="detail-label">Amount Paid</div>
+                        <div class="detail-value" style="color: #10b981; font-size: 16px;">${peso.format(t.amount || 0)}</div>
+                      </div>
+                      <div class="detail-item">
+                        <div class="detail-label">Last Updated</div>
+                        <div class="detail-value" style="font-size: 11px;">${updated !== 'N/A' ? new Date(updated).toLocaleDateString() : 'N/A'}</div>
+                      </div>
+                    </div>
                   </div>
-                  <span class="status-badge">Approved</span>
+                  <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> View Receipt
+                  </button>
                 </div>
-
-                <div class="transaction-details">
-                  <div class="detail-item">
-                    <div class="detail-label">Date</div>
-                    <div class="detail-value">${date}</div>
-                  </div>
-                  <div class="detail-item">
-                    <div class="detail-label">Reference</div>
-                    <div class="detail-value" style="font-size: 11px; font-family: monospace;">${t.reference || t.external_id}</div>
-                  </div>
-                  <div class="detail-item">
-                    <div class="detail-label">Amount Paid</div>
-                    <div class="detail-value" style="color: #10b981; font-size: 16px;">${peso.format(t.amount || 0)}</div>
-                  </div>
-                  <div class="detail-item">
-                    <div class="detail-label">Last Updated</div>
-                    <div class="detail-value" style="font-size: 11px;">${updated !== 'N/A' ? new Date(updated).toLocaleDateString() : 'N/A'}</div>
-                  </div>
-                </div>
-
-                <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
-                  <i class="fa-solid fa-file-pdf mr-1"></i> View Receipt
-                </button>
               </div>
             `;
           });
@@ -604,8 +1055,50 @@
       document.getElementById('receiptModal').classList.remove('active');
     };
 
+    // Load inventory history content
+    async function loadInventoryHistory() {
+      try {
+        const response = await fetch('/user/inventory/stock-history');
+        const html = await response.text();
+        
+        // Create a temporary div to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // Remove header and footer elements
+        const header = tempDiv.querySelector('header');
+        if (header) header.remove();
+        
+        const nav = tempDiv.querySelector('nav');
+        if (nav) nav.remove();
+        
+        // Find the main content area
+        const mainContent = tempDiv.querySelector('main');
+        if (mainContent) {
+          document.getElementById('inventoryList').innerHTML = mainContent.innerHTML;
+        } else {
+          document.getElementById('inventoryList').innerHTML = '<p style="text-align: center; color: #6b7280;">Unable to load inventory history.</p>';
+        }
+      } catch (error) {
+        console.error('Error loading inventory history:', error);
+        document.getElementById('inventoryList').innerHTML = '<p style="text-align: center; color: #6b7280;">Error loading inventory history.</p>';
+      }
+    }
+
     // Load transactions on page load
     loadTransactions();
+    
+    // Load inventory history when tab is clicked
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      if (btn.dataset.tab === 'inventory') {
+        btn.addEventListener('click', function() {
+          if (!document.getElementById('inventoryList').getAttribute('data-loaded')) {
+            loadInventoryHistory();
+            document.getElementById('inventoryList').setAttribute('data-loaded', 'true');
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>
