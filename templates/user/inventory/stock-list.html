@@ -117,8 +117,12 @@
             const categoryLabel = categoryLabels[app.category] || app.category;
             const imageUrl = (app.files?.crop || app.files?.land) || categoryImages[app.category] || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop';
             
+            // Use correct field names from inventory collection
+            const investment = app.investment || 0;
+            const harvestQuantity = app.harvestQuantity || 0;
+            
             // Calculate estimated price per unit (investment / harvest quantity)
-            const pricePerUnit = app.harvestQty > 0 ? (app.investmentQty / app.harvestQty).toFixed(2) : '0.00';
+            const pricePerUnit = harvestQuantity > 0 ? (investment / harvestQuantity).toFixed(2) : '0.00';
 
             return `
                 <a href="/user/inventory/stock-info?id=${app.id}" class="group flex flex-col bg-white border border-slate-200 card-compact overflow-hidden transition-all hover:border-emerald-600 no-underline shadow-sm hover:shadow-md">
@@ -126,23 +130,23 @@
                         <img src="${imageUrl}" 
                              class="w-full h-full object-cover transition-transform group-hover:scale-110"
                              onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
-                        ${app.status === 'approved' ? '<div class="absolute top-2 right-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-[7px] font-black uppercase"><i class="fa-solid fa-check"></i> Active</div>' : ''}
+                        ${app.status === 'active' ? '<div class="absolute top-2 right-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-[7px] font-black uppercase"><i class="fa-solid fa-check"></i> Active</div>' : ''}
                     </div>
                     
                     <div class="p-3 flex flex-col flex-grow">
                         <div class="flex flex-col mb-2">
                             <span class="text-[7px] font-black text-emerald-600 uppercase mb-0.5">${categoryLabel}</span>
-                            <h3 class="text-sm font-black text-emerald-950 mb-0 line-clamp-1">${app.id?.substring(0, 12) || 'Product'}</h3>
+                            <h3 class="text-sm font-black text-emerald-950 mb-0 line-clamp-1">${app.productName || app.id?.substring(0, 12) || 'Product'}</h3>
                         </div>
                         
                         <div class="mt-auto pt-2 border-t border-slate-50 grid grid-cols-1 gap-1">
                             <div class="flex justify-between items-center">
                                 <label class="text-[7px] font-bold text-slate-400 uppercase">Harvest Qty</label>
-                                <span class="text-[11px] font-black text-slate-900">${formatNumber(app.harvestQty)} <small class="text-[7px]">UNITS</small></span>
+                                <span class="text-[11px] font-black text-slate-900">${formatNumber(harvestQuantity)} <small class="text-[7px]">UNITS</small></span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <label class="text-[7px] font-bold text-slate-400 uppercase">Investment</label>
-                                <span class="text-[11px] font-black text-emerald-700">₱${formatNumber(app.investmentQty)}</span>
+                                <span class="text-[11px] font-black text-emerald-700">₱${formatNumber(investment)}</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <label class="text-[7px] font-bold text-slate-400 uppercase">Unit Price</label>
@@ -156,29 +160,42 @@
 
         async function loadInventory(userId) {
             try {
-                // Query approved applications for the current user
+                console.log('Loading inventory for user:', userId);
+                
+                // Query inventory collection for the current user
                 const q = query(
-                    collection(db, 'applications'), 
-                    where('userId', '==', userId),
-                    where('status', '==', 'approved')
+                    collection(db, 'inventory'), 
+                    where('userId', '==', userId)
                 );
                 
                 const querySnapshot = await getDocs(q);
+                console.log('Inventory items found:', querySnapshot.size);
+                
                 loadingState.classList.add('hidden');
 
                 if (querySnapshot.empty) {
+                    console.log('No inventory items found');
                     emptyState.classList.remove('hidden');
                     return;
                 }
 
                 const items = [];
-                querySnapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+                querySnapshot.forEach(doc => {
+                    const data = { id: doc.id, ...doc.data() };
+                    console.log('Inventory item:', data);
+                    items.push(data);
+                });
                 
-                // Sort by submission date (newest first)
-                items.sort((a, b) => (b.submittedAt?.toDate?.() || 0) - (a.submittedAt?.toDate?.() || 0));
+                // Sort by creation date (newest first)
+                items.sort((a, b) => {
+                    const aTime = a.createdAt?.toDate?.() || a.approvedAt?.toDate?.() || 0;
+                    const bTime = b.createdAt?.toDate?.() || b.approvedAt?.toDate?.() || 0;
+                    return bTime - aTime;
+                });
 
                 inventoryGrid.innerHTML = items.map(item => createInventoryCard(item)).join('');
                 inventoryGrid.classList.remove('hidden');
+                console.log('✅ Inventory loaded successfully');
 
             } catch (error) {
                 console.error('Error loading inventory:', error);
