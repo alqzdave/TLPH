@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DENR | Licensing & Permits Bureau</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            denr: '#006400',
+            'permit-amber': '#d97706',
+            'permit-slate': '#475569',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-[#f1f5f9] font-sans text-slate-900">
+
+  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    
+    <header class="bg-white border border-slate-300 border-t-4 border-t-permit-amber rounded-lg p-4 flex items-center gap-6 shadow-sm">
+      <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+        <span class="material-icons-round text-permit-amber text-3xl">verified_user</span>
+      </div>
+      <div class="flex-1">
+        <h1 class="font-serif text-xl font-black uppercase tracking-tight text-slate-800">Licensing & Permits Registry</h1>
+        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">National Regulatory Compliance & Legal Certification</p>
+      </div>
+      <div class="flex gap-2">
+          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Registry Export</button>
+          <button class="bg-permit-amber text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
+            <span class="material-icons-round text-xs">gavel</span> New Permit Case
+          </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Active Licenses</p>
+          <h3 class="text-2xl font-black">8,402</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-permit-amber">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">New Submissions</p>
+          <h3 class="text-2xl font-black text-permit-amber">114</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-blue-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Legal Review</p>
+          <h3 class="text-2xl font-black text-blue-600">42</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-denr">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Issued (MTD)</p>
+          <h3 class="text-2xl font-black text-denr">462</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-red-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Revoked/Expired</p>
+          <h3 class="text-2xl font-black text-red-600">28</h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Permit Issuance Volume (6-Month Trend)</h4>
+            <div class="h-[250px]">
+                <canvas id="permitTrendChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Permit Type Concentration</h4>
+            <div class="h-[250px]">
+                <canvas id="permitTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
+        
+        <div class="p-4 bg-slate-50 border-b space-y-4">
+            <div class="relative">
+              <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+              <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-permit-amber outline-none shadow-sm" placeholder="Search Permit Reference, Applicant Name, or LGU...">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Permit Category</label>
+                <select id="catFilter" class="w-full px-2 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Permit Types</option>
+                  </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region</label>
+                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Regions</option>
+                  <option value="IV-B">Region IV-B</option>
+                  <option value="NCR">NCR</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Municipality</label>
+                <select id="munFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white disabled:opacity-50" disabled>
+                  <option value="all">All Municipalities</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Legal Status</label>
+                <select id="statusFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Status</option>
+                  <option>Approved</option>
+                  <option>Pending</option>
+                  <option>To Review</option>
+                  <option>Reject</option>
+                </select>
+              </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
+                    <th class="px-6 py-4">Reference & Applicant</th>
+                    <th class="px-6 py-4">Permit Category</th>
+                    <th class="px-6 py-4">Region</th>
+                    <th class="px-6 py-4">Municipality</th>
+                    <th class="px-6 py-4 text-center">Status</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="permitTableBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
+            </table>
+        </div>
+        
+        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+            <div>Case Load Count: <span id="resCount" class="text-permit-amber">0</span> Permits</div>
+            <div class="flex items-center gap-4">
+              <span>Page 1 of 42</span>
+              <div class="flex gap-1">
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const PERMIT_CATEGORIES = [
+      "import permit", "Wildlife Trade Permit", "Transport Local Permit", "Harvest Permit", 
+      "Meat Transport / Shipping Permit", "Slaughterhouse Accreditation Permit",
+      "Poultry Farm Registration", "Animal Health Veterinary Clearance", "Wildlife Possession & Ownership Permit", 
+      "Wildlife Transport Licensing Permit", "Wildlife Collection Licensing Permit", "Wildlife Farm & Breeding Registration", 
+      "Tree Cutting Permit", "Timber Wood / Transfer Permit", "Reforestation Agreement", "Nursery Accreditation", 
+      "Non-Timber Collection Permit", "Environment Compliance Certificate (ECC)", "Waste Management Permit", 
+      "Hazardous Material Handling Clearance", "Aquaculture Farm Registration", "Fish Transport Permit", 
+      "Fish Dealer / Trade License", "Collection / Harvest Permit", "Wastewater Discharge Permit (WWDP)", 
+      "Permit to Operate (PTO) Air Pollution", "Hazardous Waste Generator (HWG) ID", "PICCS validation", 
+      "PCL Compliance Certificate", "Chemical Control Orders (CCOs)", "Certificate of Tree Plantation Ownership (CTPO)"
+    ];
+
+    const MUN_DATA = { "IV-B": ["Calapan", "Naujan", "Victoria"], "NCR": ["Quezon City", "Manila"] };
+
+    const MOCK_DATA = [
+      { ref: "PMT-88201", name: "Alqz Dave", cat: "Wildlife Trade Permit", reg: "IV-B", mun: "Calapan", status: "Approved" },
+      { ref: "PMT-88202", name: "Green Logistics", cat: "Timber Wood / Transfer Permit", reg: "IV-B", mun: "Naujan", status: "Pending" },
+      { ref: "PMT-88203", name: "Apex Mining", cat: "Environment Compliance Certificate (ECC)", reg: "NCR", mun: "Manila", status: "To Review" }
+    ];
+
+    function initTable() {
+      const catFilter = document.getElementById('catFilter');
+      PERMIT_CATEGORIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c.toUpperCase(); catFilter.appendChild(opt);
+      });
+
+      document.getElementById('regFilter').addEventListener('change', function(e) {
+        const munFilter = document.getElementById('munFilter');
+        const region = e.target.value;
+        munFilter.innerHTML = '<option value="all">All Municipalities</option>';
+        if(region !== 'all' && MUN_DATA[region]) {
+            munFilter.disabled = false;
+            MUN_DATA[region].forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m; munFilter.appendChild(opt);
+            });
+        } else { munFilter.disabled = true; }
+        applyFilters();
+      });
+
+      ['tableSearch', 'catFilter', 'munFilter', 'statusFilter'].forEach(id => {
+          document.getElementById(id).addEventListener('input', applyFilters);
+      });
+
+      renderTable(MOCK_DATA);
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('tableSearch').value.toLowerCase();
+        const cat = document.getElementById('catFilter').value;
+        const reg = document.getElementById('regFilter').value;
+        const mun = document.getElementById('munFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        const filtered = MOCK_DATA.filter(item => {
+            const matchSearch = item.ref.toLowerCase().includes(search) || item.name.toLowerCase().includes(search);
+            const matchCat = cat === 'all' || item.cat === cat;
+            const matchReg = reg === 'all' || item.reg === reg;
+            const matchMun = mun === 'all' || item.mun === mun;
+            const matchStatus = status === 'all' || item.status === status;
+            return matchSearch && matchCat && matchReg && matchMun && matchStatus;
+        });
+        renderTable(filtered);
+    }
+
+    function renderTable(data) {
+      const body = document.getElementById('permitTableBody');
+      body.innerHTML = '';
+      document.getElementById('resCount').textContent = data.length;
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-amber-50/30 transition-colors group";
+        
+        let sClass = "bg-slate-100 text-slate-600 border-slate-200";
+        if(row.status === 'Approved') sClass = "bg-green-100 text-green-700 border-green-200";
+        if(row.status === 'Pending') sClass = "bg-amber-100 text-amber-700 border-amber-200";
+        if(row.status === 'To Review') sClass = "bg-blue-100 text-blue-700 border-blue-200";
+        if(row.status === 'Reject') sClass = "bg-red-100 text-red-700 border-red-200";
+
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-black text-permit-amber uppercase tracking-tight">${row.ref}</div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase">${row.name}</div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="px-2 py-0.5 rounded border border-slate-200 bg-white text-[9px] font-black uppercase max-w-[200px] inline-block truncate">${row.cat}</span>
+          </td>
+          <td class="px-6 py-4 font-bold text-slate-700 uppercase">${row.reg}</td>
+          <td class="px-6 py-4 font-bold text-slate-700 uppercase">${row.mun}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded border text-[9px] font-black uppercase ${sClass}">${row.status}</span>
+          </td>
+          <td class="px-6 py-4 text-right whitespace-nowrap">
+            <div class="flex gap-1 justify-end">
+              <button title="View" class="p-1.5 hover:bg-slate-200 rounded text-slate-500"><span class="material-icons-round text-sm">visibility</span></button>
+              <button title="Approve" class="p-1.5 hover:bg-green-100 rounded text-green-600"><span class="material-icons-round text-sm">check_circle</span></button>
+              <button title="Reject" class="p-1.5 hover:bg-red-100 rounded text-red-600"><span class="material-icons-round text-sm">cancel</span></button>
+              <button title="Export" class="p-1.5 hover:bg-slate-200 rounded text-slate-500"><span class="material-icons-round text-sm">file_download</span></button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function initCharts() {
+      new Chart(document.getElementById('permitTrendChart'), {
+        type: 'line',
+        data: {
+          labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+          datasets: [{
+            label: 'Permits Issued',
+            data: [280, 310, 290, 420, 390, 462],
+            borderColor: '#d97706',
+            backgroundColor: 'rgba(217, 119, 6, 0.05)',
+            fill: true, tension: 0.4, borderWidth: 3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
+      });
+
+      new Chart(document.getElementById('permitTypeChart'), {
+        type: 'radar',
+        data: {
+          labels: ['Wildlife', 'Timber', 'ECC', 'Chemical', 'Agri'],
+          datasets: [{
+            label: 'Case Distribution',
+            data: [85, 60, 95, 40, 70],
+            backgroundColor: 'rgba(217, 119, 6, 0.2)',
+            borderColor: '#d97706',
+            borderWidth: 2
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { ticks: { display: false }, pointLabels: { font: { size: 9, weight: 'bold' } } } } }
+      });
+    }
+
+    window.onload = () => { initTable(); initCharts(); };
+  </script>
+</body>
+</html>
