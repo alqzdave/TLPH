@@ -14,6 +14,10 @@ def applications():
 def view_application(application_id):
     return render_template('municipal/application-municipal/application-municipal-view-profile.html')
 
+@bp.route('/applications/details/<application_id>')
+def application_details(application_id):
+    return render_template('municipal/application-municipal/application-details.html')
+
 @bp.route('/services')
 def services():
     return render_template('municipal/service-municipal/service-municipal-dashboard.html')
