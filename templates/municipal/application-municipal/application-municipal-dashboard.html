@@ -220,12 +220,15 @@
           console.log(`✅ INCLUDED: Application ${doc.id}`);
           let filedDate = 'N/A';
           let dateObj = new Date();
-          if (data.createdAt) {
+          const dateField = data.createdAt || data.submittedAt;
+          if (dateField) {
             // Handle both Firebase Timestamp and ISO string dates
-            if (typeof data.createdAt.toDate === 'function') {
-              dateObj = data.createdAt.toDate();
-            } else if (typeof data.createdAt === 'string') {
-              dateObj = new Date(data.createdAt);
+            if (typeof dateField.toDate === 'function') {
+              dateObj = dateField.toDate();
+            } else if (typeof dateField === 'string') {
+              dateObj = new Date(dateField);
+            } else if (dateField.seconds) {
+              dateObj = new Date(dateField.seconds * 1000);
             }
             filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
           }
@@ -255,7 +258,7 @@
             filedDate: filedDate,
             status: statusText,
             statusKey: statusKey,
-            timestamp: data.createdAt ? (typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : new Date(data.createdAt)) : new Date()
+            timestamp: dateField ? (typeof dateField.toDate === 'function' ? dateField.toDate() : (typeof dateField === 'string' ? new Date(dateField) : new Date(dateField.seconds * 1000))) : new Date()
           });
         });
         applicants.sort((a, b) => b.timestamp - a.timestamp);

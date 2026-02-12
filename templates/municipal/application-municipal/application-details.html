@@ -267,23 +267,24 @@
                 // Generate reference number
                 // Handle both Firebase Timestamp and ISO string dates
                 let date = null;
-                console.log('Raw createdAt value:', applicationData.createdAt);
-                console.log('createdAt type:', typeof applicationData.createdAt);
+                const dateField = applicationData.createdAt || applicationData.submittedAt;
+                console.log('Raw date field value:', dateField);
+                console.log('Date field type:', typeof dateField);
                 
-                if (applicationData.createdAt) {
-                    if (typeof applicationData.createdAt.toDate === 'function') {
-                        date = applicationData.createdAt.toDate();
+                if (dateField) {
+                    if (typeof dateField.toDate === 'function') {
+                        date = dateField.toDate();
                         console.log('✅ Parsed as Firebase Timestamp:', date);
-                    } else if (typeof applicationData.createdAt === 'string') {
-                        date = new Date(applicationData.createdAt);
+                    } else if (typeof dateField === 'string') {
+                        date = new Date(dateField);
                         console.log('✅ Parsed as ISO string:', date);
-                    } else if (applicationData.createdAt.seconds) {
+                    } else if (dateField.seconds) {
                         // Handle Firestore Timestamp object
-                        date = new Date(applicationData.createdAt.seconds * 1000);
+                        date = new Date(dateField.seconds * 1000);
                         console.log('✅ Parsed as Firestore Timestamp object:', date);
                     }
                 } else {
-                    console.warn('⚠️ No createdAt field found in application data');
+                    console.warn('⚠️ No createdAt or submittedAt field found in application data');
                 }
                 
                 // Only generate reference if we have a valid date
