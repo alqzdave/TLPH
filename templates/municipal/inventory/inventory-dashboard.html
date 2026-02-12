@@ -129,7 +129,7 @@
           <div class="flex items-center gap-2 rounded-md border border-govborder bg-slate-50 px-3 py-2 focus-within:border-g500 focus-within:shadow-focus focus-within:bg-white">
             <span class="material-icons-round text-slate-500" style="font-size:20px;">search</span>
             <input id="searchInput" class="w-full bg-transparent outline-none text-[14px]"
-                   type="text" placeholder="Search category, description, region, municipality..." />
+                   type="text" placeholder="Search category, description, province, municipality..." />
           </div>
         </div>
 
@@ -170,7 +170,7 @@
               <th class="text-left px-3 py-3 border-b border-govborder font-bold min-w-[210px]">Category</th>
               <th class="text-left px-3 py-3 border-b border-govborder font-bold">Description</th>
               <th class="text-left px-3 py-3 border-b border-govborder font-bold min-w-[120px]">Quantity</th>
-              <th class="text-left px-3 py-3 border-b border-govborder font-bold min-w-[180px]">Region</th>
+              <th class="text-left px-3 py-3 border-b border-govborder font-bold min-w-[180px]">Province</th>
               <th class="text-left px-3 py-3 border-b border-govborder font-bold min-w-[200px]">Municipality</th>
               <th class="text-left px-3 py-3 border-b border-govborder font-bold min-w-[160px]">Actions</th>
             </tr>
@@ -182,65 +182,69 @@
   </main>
 
 
-  <script>
+  <script type="module">
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-    const MY_REGION = "NCR";
-    const MY_MUNICIPALITY = "Quezon City";
+    let MY_REGION = "";
+    let MY_MUNICIPALITY = "";
+    let MY_PROVINCE = "";
 
     class InventoryItem {
-      constructor({ id, category, description, quantity, region, municipality }) {
-        this.id = Number(id);
+      constructor({ id, category, description, quantity, region, municipality, province }) {
+        this.id = String(id);
         this.category = String(category);
         this.description = String(description);
         this.quantity = Number(quantity ?? 0);
-        this.region = String(region);
-        this.municipality = String(municipality);
+        this.region = String(region || "");
+        this.municipality = String(municipality || "");
+        this.province = String(province || "");
       }
-      inScope(region, municipality) {
-        return this.region === region && this.municipality === municipality;
+      inScope(municipality) {
+        return this.municipality === municipality;
       }
       matches(q) {
         q = (q || "").toLowerCase().trim();
         if (!q) return true;
-        const hay = `${this.category} ${this.description} ${this.region} ${this.municipality} ${this.quantity}`.toLowerCase();
+        const hay = `${this.category} ${this.description} ${this.region} ${this.municipality} ${this.province} ${this.quantity}`.toLowerCase();
         return hay.includes(q);
       }
     }
 
-    class InventoryRepository {
-      async getAll() { throw new Error("Not implemented"); }
-    }
-
-    class MockInventoryRepository extends InventoryRepository {
-      async getAll() {
-        const raw = [
-          { id: 1, category:"Chemical Inventory", description:"Laboratory solvents (ethanol, acetone)", quantity:24, region:"NCR", municipality:"Quezon City" },
-          { id: 2, category:"Chemical Inventory", description:"Water test reagent kits (pH, nitrates)", quantity:60, region:"NCR", municipality:"Quezon City" },
-          { id: 3, category:"Chemical Inventory", description:"Spill containment pads and neutralizer", quantity:15, region:"NCR", municipality:"Quezon City" },
-          { id: 4, category:"Natural Resources", description:"Nursery tools set (shovels, pruners, gloves)", quantity:19, region:"NCR", municipality:"Quezon City" },
-          { id: 5, category:"Natural Resources", description:"Seedling stock for reforestation (narra, acacia)", quantity:300, region:"NCR", municipality:"Quezon City" },
-          { id: 6, category:"Protected Area", description:"Visitor permit logbook supply", quantity:12, region:"NCR", municipality:"Quezon City" },
-          { id: 7, category:"Protected Area", description:"Boundary marker paint and signage materials", quantity:35, region:"NCR", municipality:"Quezon City" },
-          { id: 8, category:"Biodiversity Inventory", description:"Wildlife monitoring tags (RFID) and bands", quantity:80, region:"NCR", municipality:"Quezon City" },
-          { id: 9, category:"Biodiversity Inventory", description:"Camera trap batteries and SD cards", quantity:50, region:"NCR", municipality:"Quezon City" },
-          { id: 10, category:"Biodiversity Inventory", description:"Wildlife monitoring equipment tags", quantity:80, region:"NCR", municipality:"Manila" },
-          { id: 11, category:"Natural Resources", description:"Seedling stock for reforestation", quantity:450, region:"Region IV-A", municipality:"Calamba" },
-          { id: 12, category:"Protected Area", description:"Ranger uniform patches", quantity:20, region:"Region V", municipality:"Legazpi" },
-          { id: 13, category:"Chemical Inventory", description:"Hazard label stickers and containers", quantity:120, region:"Region III", municipality:"San Fernando" },
-        ];
-
-        return raw.map(r => new InventoryItem(r));
-      }
-    }
-
-    class FirebaseInventoryRepository extends InventoryRepository {
+    class FirebaseInventoryRepository {
       constructor({ db, collectionName = "inventory" }) {
-        super();
         this.db = db;
         this.collectionName = collectionName;
       }
       async getAll() {
-        throw new Error("Firebase repository not wired yet.");
+        try {
+          console.log('Fetching inventory from Firestore...');
+          const inventoryRef = collection(this.db, this.collectionName);
+          const snapshot = await getDocs(inventoryRef);
+          
+          console.log('Total inventory items found:', snapshot.size);
+          
+          const items = [];
+          snapshot.forEach(docSnapshot => {
+            const data = docSnapshot.data();
+            items.push(new InventoryItem({
+              id: docSnapshot.id,
+              category: data.category || 'Uncategorized',
+              description: data.description || 'No description',
+              quantity: data.quantity || 0,
+              region: data.region || '',
+              municipality: data.municipality || '',
+              province: data.province || ''
+            }));
+          });
+          
+          console.log('Inventory items loaded:', items.length);
+          return items;
+        } catch (error) {
+          console.error('Error fetching inventory:', error);
+          return [];
+        }
       }
     }
 
@@ -274,7 +278,7 @@
       const q = els.searchInput.value;
 
       return allItems.filter(i =>
-        i.inScope(MY_REGION, MY_MUNICIPALITY) &&
+        i.inScope(MY_MUNICIPALITY) &&
         (cat === "All" || i.category === cat) &&
         i.matches(q)
       );
@@ -291,7 +295,7 @@
         els.itemsTbody.innerHTML = `
           <tr>
             <td colspan="6" class="px-3 py-6 text-center text-govmuted font-bold">
-              No items found in <span class="font-bold">${MY_MUNICIPALITY}</span> (${MY_REGION}) for the selected filters.
+              No items found in <span class="font-bold">${MY_MUNICIPALITY}</span> for the selected filters.
             </td>
           </tr>
         `;
@@ -304,7 +308,7 @@
           <td class="px-3 py-3 border-b border-govborder font-bold text-slate-800">${i.category}</td>
           <td class="px-3 py-3 border-b border-govborder text-slate-700">${i.description}</td>
           <td class="px-3 py-3 border-b border-govborder font-bold text-slate-900">${i.quantity}</td>
-          <td class="px-3 py-3 border-b border-govborder text-slate-700">${i.region}</td>
+          <td class="px-3 py-3 border-b border-govborder text-slate-700">${i.province || i.region}</td>
           <td class="px-3 py-3 border-b border-govborder text-slate-700">${i.municipality}</td>
           <td class="px-3 py-3 border-b border-govborder">
             <button
@@ -332,20 +336,20 @@
       const btn = e.target.closest("button[data-action='view']");
       if (!btn) return;
 
-      const id = Number(btn.dataset.id);
+      const id = String(btn.dataset.id);
       const item = allItems.find(x => x.id === id);
 
       if (!item) return;
 
-      if (!item.inScope(MY_REGION, MY_MUNICIPALITY)) {
-        alert("Access denied: This item is outside your assigned region/municipality.");
+      if (!item.inScope(MY_MUNICIPALITY)) {
+        alert("Access denied: This item is outside your assigned municipality.");
         return;
       }
 
       alert(
         `Inventory Item (View)\n\n` +
         `Category: ${item.category}\n` +
-        `Region: ${item.region}\n` +
+        `Province: ${item.province}\n` +
         `Municipality: ${item.municipality}\n` +
         `Quantity: ${item.quantity}\n\n` +
         `Description: ${item.description}`
@@ -353,13 +357,45 @@
     }
 
     async function init() {
-      els.myMunicipalityLabel.textContent = MY_MUNICIPALITY;
-      els.myMunicipalityPill.textContent = MY_MUNICIPALITY;
+      try {
+        console.log('Initializing inventory dashboard...');
+        
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.error('No user logged in');
+          window.location.href = '/login';
+          return;
+        }
+        
+        // Get admin's municipality
+        const adminDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
+          MY_MUNICIPALITY = adminData.municipality || '';
+          MY_PROVINCE = adminData.province || 'Oriental Mindoro';
+          MY_REGION = 'Region IV-B (MIMAROPA)';
+          
+          console.log('Current admin municipality:', MY_MUNICIPALITY);
+          console.log('Current admin province:', MY_PROVINCE);
+        }
+        
+        els.myMunicipalityLabel.textContent = MY_MUNICIPALITY;
+        els.myMunicipalityPill.textContent = MY_MUNICIPALITY;
 
-      const repo = new MockInventoryRepository();
+        const repo = new FirebaseInventoryRepository({ db });
 
-      allItems = await repo.getAll();
-      refresh();
+        allItems = await repo.getAll();
+        console.log('All items loaded:', allItems.length);
+        
+        // Filter to show only municipality-specific items
+        const municipalityItems = allItems.filter(i => i.inScope(MY_MUNICIPALITY));
+        console.log('Municipality-specific items:', municipalityItems.length);
+        
+        refresh();
+      } catch (error) {
+        console.error('Error initializing:', error);
+        throw error;
+      }
     }
 
     els.filterCategory.addEventListener("change", refresh);
@@ -372,13 +408,22 @@
 
     els.itemsTbody.addEventListener("click", onViewClick);
 
-    init().catch(err => {
-      console.error(err);
-      els.itemsTbody.innerHTML = `
-        <tr><td colspan="6" class="px-3 py-6 text-center text-red-700 font-bold">
-          Failed to load inventory. Check console for details.
-        </td></tr>
-      `;
+    // Initialize with authentication
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('User authenticated:', user.email);
+        init().catch(err => {
+          console.error(err);
+          els.itemsTbody.innerHTML = `
+            <tr><td colspan="6" class="px-3 py-6 text-center text-red-700 font-bold">
+              Failed to load inventory. Check console for details.
+            </td></tr>
+          `;
+        });
+      } else {
+        console.log('No user authenticated, redirecting...');
+        window.location.href = '/login';
+      }
     });
   </script>
 </body>
