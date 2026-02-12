@@ -2017,7 +2017,7 @@
       }
     }
 
-    }
+    
 
     // Load Service Requests from Firebase
     async function loadServiceRequests() {
@@ -2035,8 +2035,7 @@
 
         const q = query(
           collection(db, 'service_requests'),
-          where('userId', '==', currentUser.uid),
-          orderBy('createdAt', 'desc')
+          where('userId', '==', currentUser.uid)
         );
 
         const querySnapshot = await getDocs(q);
@@ -2051,10 +2050,25 @@
           return;
         }
 
-        let html = '';
+        // Convert to array and sort by createdAt (newest first)
+        const services = [];
         querySnapshot.forEach((doc) => {
-          const service = doc.data();
-          const serviceId = doc.id;
+          services.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+
+        // Sort by createdAt descending (newest first)
+        services.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        let html = '';
+        services.forEach((service) => {
+          const serviceId = service.id;
           
           // Format date
           const createdDate = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {
