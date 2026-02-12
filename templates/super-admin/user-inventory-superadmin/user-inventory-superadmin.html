@@ -227,7 +227,6 @@
         const tr = document.createElement('tr');
         tr.className = "hover:bg-indigo-50 transition-colors group";
         
-        // Dynamic stock coloring
         const stockStatus = row.curr < (row.init * 0.5) ? 'text-red-600 font-black' : 'text-slate-800';
 
         tr.innerHTML = `
