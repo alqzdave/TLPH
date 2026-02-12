@@ -364,6 +364,24 @@
     const rowsPerPage = 5;
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
+    function isServiceTransaction(transaction) {
+      const name = (transaction.transaction_name || '').toLowerCase();
+      const description = (transaction.description || '').toLowerCase();
+      const externalId = (transaction.external_id || transaction.reference || '').toLowerCase();
+
+      if (externalId.startsWith('service-')) return true;
+
+      const serviceKeywords = [
+        'service', 'compensation', 'pest', 'typhoon',
+        'compliance', 'disease', 'visit', 'farm',
+        'fertilizer', 'financial', 'seminar'
+      ];
+
+      return serviceKeywords.some(keyword =>
+        name.includes(keyword) || description.includes(keyword)
+      );
+    }
+
     // Load transactions from API
     async function loadTransactions(userEmail) {
         try {
@@ -371,7 +389,9 @@
             const result = await response.json();
             
             if (result.status === 'success') {
-                allTransactions = result.transactions.map(t => ({
+          const filteredTransactions = result.transactions.filter(t => !isServiceTransaction(t));
+
+          allTransactions = filteredTransactions.map(t => ({
                     id: t.id,
                     date: t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A',
                     name: t.transaction_name || 'Unknown',

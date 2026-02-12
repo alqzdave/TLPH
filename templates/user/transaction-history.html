@@ -361,6 +361,24 @@
 
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
+    function isServiceTransaction(transaction) {
+      const name = (transaction.transaction_name || '').toLowerCase();
+      const description = (transaction.description || '').toLowerCase();
+      const externalId = (transaction.external_id || transaction.reference || '').toLowerCase();
+
+      if (externalId.startsWith('service-')) return true;
+
+      const serviceKeywords = [
+        'service', 'compensation', 'pest', 'typhoon',
+        'compliance', 'disease', 'visit', 'farm',
+        'fertilizer', 'financial', 'seminar'
+      ];
+
+      return serviceKeywords.some(keyword =>
+        name.includes(keyword) || description.includes(keyword)
+      );
+    }
+
     async function loadTransactions() {
       try {
         let userEmail = null;
@@ -395,9 +413,9 @@
         const result = await response.json();
 
         if (result.status === 'success' && result.transactions) {
-          // Filter only approved/paid transactions
+          // Filter only approved/paid transactions and exclude service requests
           const approvedTransactions = result.transactions.filter(t => 
-            t.display_status === 'approved'
+            t.display_status === 'approved' && !isServiceTransaction(t)
           );
 
           if (approvedTransactions.length === 0) {
