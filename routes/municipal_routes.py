@@ -14,6 +14,10 @@ def applications():
 def view_application(application_id):
     return render_template('municipal/application-municipal/application-municipal-view-profile.html')
 
+@bp.route('/applications/details/<application_id>')
+def application_details(application_id):
+    return render_template('municipal/application-municipal/application-details.html')
+
 @bp.route('/services')
 def services():
     return render_template('municipal/service-municipal/service-municipal-dashboard.html')
@@ -41,3 +45,11 @@ def transactions():
 @bp.route('/users')
 def users():
     return render_template('municipal/user-management-municipal/user-management-municipal.html')
+
+@bp.route('/profile')
+def profile():
+    return render_template('municipal/municipal-profile.html')
+
+@bp.route('/notification')
+def notification():
+    return render_template('municipal/notification.html')

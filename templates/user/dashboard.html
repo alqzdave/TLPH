@@ -308,6 +308,7 @@
   import { query, where, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   let allTransactions = [];
+  let inventoryStats = { count: 0, totalQty: 0 };
   const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
   // Fetch real transaction data from API and Firebase
@@ -375,6 +376,31 @@
       updateTableMeta(allTransactions.length, allTransactions.length);
     } catch (error) {
       console.error('Error loading transactions:', error);
+    }
+  }
+
+  async function fetchInventoryStats(userId) {
+    try {
+      const q = query(
+        collection(db, 'applications'),
+        where('userId', '==', userId),
+        where('status', '==', 'approved')
+      );
+      const querySnapshot = await getDocs(q);
+
+      let count = 0;
+
+      querySnapshot.forEach((doc) => {
+        const item = doc.data();
+        count += 1;
+      });
+
+      inventoryStats = { count, totalQty: count };
+      computeCards();
+    } catch (error) {
+      console.error('Error loading inventory stats:', error);
+      inventoryStats = { count: 0, totalQty: 0 };
+      computeCards();
     }
   }
 
@@ -532,9 +558,8 @@
 
     const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && (normalize(r.payment_status) === "paid" || normalize(r.payment_status) === "n/a")).length;
 
-    // For inventory data, use placeholder for now (can be connected to inventory API later)
-    document.getElementById("cardNumProducts").textContent = "0";
-    document.getElementById("cardTotalQty").textContent = "0";
+    document.getElementById("cardNumProducts").textContent = inventoryStats.count.toLocaleString();
+    document.getElementById("cardTotalQty").textContent = inventoryStats.totalQty.toLocaleString();
     document.getElementById("cardAppReq").textContent = licenseReq + serviceReq; // Total applications
     document.getElementById("cardServiceReq").textContent = serviceReq;
     document.getElementById("cardLicenseReq").textContent = licenseReq;
@@ -605,6 +630,12 @@
 
     if (userEmail) {
       loadTransactions(userEmail, userId);
+      if (userId) {
+        fetchInventoryStats(userId);
+      } else {
+        inventoryStats = { count: 0, totalQty: 0 };
+        computeCards();
+      }
     }
   });
 

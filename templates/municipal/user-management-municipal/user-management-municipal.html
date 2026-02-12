@@ -279,6 +279,14 @@
       return !!user && user.municipality === SUBADMIN_MUNICIPALITY;
     }
 
+    function getUserById(id) {
+      return allUsers.find(u => u.id === id) || null;
+    }
+
+    function getUserById(id) {
+      return allUsers.find(u => u.id === id) || null;
+    }
+
     function statusPill(status){
       const base = "inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]";
       if (status === "Active") return `<span class="${base} text-emerald-800">Active</span>`;
@@ -423,13 +431,18 @@
       kpiTotal.textContent = total;
       kpiActive.textContent = active;
       kpiDisabled.textContent = disabled;
-      kpiActions.textContent = repo.actionCount;
+      kpiActions.textContent = actionCount;
     }
 
     async function renderAll(){
+      if (!SUBADMIN_MUNICIPALITY) {
+        scopeChip.textContent = 'Municipality: —';
+        return;
+      }
+      
       scopeChip.textContent = `Municipality: ${SUBADMIN_MUNICIPALITY}`;
 
-      const scoped = await repo.getScoped();
+      const scoped = allUsers;
 
       const filtered = applyFilters(scoped, {
         query: searchInput.value,
@@ -443,28 +456,34 @@
     }
 
     async function handleView(id){
-      const user = await repo.getById(id);
-      if (!inScope(user)) return alert("Access denied: out of scope.");
+      const user = getUserById(id);
+      if (!user || !inScope(user)) return alert("User not found or out of scope.");
       openViewModal(user);
     }
 
     async function handleDisable(id){
-      const user = await repo.getById(id);
+      const user = getUserById(id);
       if (!inScope(user)) return alert("Access denied: out of scope.");
       if (user.status === "Disabled") return alert("User is already disabled.");
 
       const ok = confirm(
         `Disable user?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
-        `In production, do this server-side (e.g., set a disabled flag / Firebase Auth disable).`
+        `This will update the user status in Firestore.`
       );
       if (!ok) return;
 
-      await repo.setStatus(id, "Disabled");
-      renderAll();
+      try {
+        await updateDoc(doc(db, 'users', id), { status: 'Disabled' });
+        actionCount++;
+        await loadUsers();
+      } catch (error) {
+        console.error('Error disabling user:', error);
+        alert('Failed to disable user: ' + error.message);
+      }
     }
 
     async function handleEnable(id){
-      const user = await repo.getById(id);
+      const user = getUserById(id);
       if (!inScope(user)) return alert("Access denied: out of scope.");
       if (user.status === "Active") return alert("User is already active.");
 
@@ -473,22 +492,34 @@
       );
       if (!ok) return;
 
-      await repo.setStatus(id, "Active");
-      renderAll();
+      try {
+        await updateDoc(doc(db, 'users', id), { status: 'Active' });
+        actionCount++;
+        await loadUsers();
+      } catch (error) {
+        console.error('Error enabling user:', error);
+        alert('Failed to enable user: ' + error.message);
+      }
     }
 
     async function handleRemove(id){
-      const user = await repo.getById(id);
+      const user = getUserById(id);
       if (!inScope(user)) return alert("Access denied: out of scope.");
 
       const ok = confirm(
         `Remove user account?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
-        `In production, delete/disable server-side with strict scope checks.`
+        `This will permanently delete the user from Firestore. This action cannot be undone.`
       );
       if (!ok) return;
 
-      await repo.remove(id);
-      renderAll();
+      try {
+        await deleteDoc(doc(db, 'users', id));
+        actionCount++;
+        await loadUsers();
+      } catch (error) {
+        console.error('Error removing user:', error);
+        alert('Failed to remove user: ' + error.message);
+      }
     }
 
     usersTbody.addEventListener("click", (e) => {
@@ -518,7 +549,7 @@
       renderAll();
     });
 
-    btnRefresh.addEventListener("click", () => renderAll());
+    btnRefresh.addEventListener("click", () => loadUsers());
     btnCloseModal.addEventListener("click", closeViewModal);
 
     viewModal.addEventListener("click", (e) => {
@@ -529,5 +560,14 @@
       if (e.key === "Escape") closeViewModal();
     });
 
-    renderAll();
+    // Authentication check and data loading
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        console.log('No user authenticated, redirecting to login...');
+        window.location.href = '/login';
+      } else {
+        console.log('User authenticated:', user.email);
+        loadUsers();
+      }
+    });
 </script>

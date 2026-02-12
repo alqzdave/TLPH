@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DENR | System Audit Logs</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            denr: '#006400',
+            'audit-crimson': '#991b1b',
+            'audit-slate': '#0f172a',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+
+  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    
+    <header class="bg-white border border-slate-300 border-t-4 border-t-audit-crimson rounded-lg p-4 flex items-center gap-6 shadow-sm">
+      <div class="bg-slate-900 p-2 rounded-lg border border-slate-700">
+        <span class="material-icons-round text-white text-3xl">history_edu</span>
+      </div>
+      <div class="flex-1">
+        <h1 class="font-serif text-xl font-black uppercase tracking-tight text-slate-800">System Forensic Audit Logs</h1>
+        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Immutable Trail of Administrative Actions & Security Events</p>
+      </div>
+      <div class="flex gap-2">
+          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Export Audit Trail</button>
+          <button class="bg-audit-crimson text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
+            <span class="material-icons-round text-xs">verified</span> Archive Logs
+          </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Events (24h)</p>
+          <h3 class="text-2xl font-black">4,210</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-audit-crimson">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Security Alerts</p>
+          <h3 class="text-2xl font-black text-audit-crimson">03</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-blue-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Privilege Changes</p>
+          <h3 class="text-2xl font-black text-blue-600">12</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-denr">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Admin Logins</p>
+          <h3 class="text-2xl font-black text-denr">48</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-amber-500">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">System Syncs</p>
+          <h3 class="text-2xl font-black text-amber-600">15</h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Activity Frequency (Hourly)</h4>
+            <div class="h-[250px]">
+                <canvas id="auditTrendChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Event Severity Mix</h4>
+            <div class="h-[250px]">
+                <canvas id="severityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+        
+        <div class="p-4 bg-slate-50 border-b space-y-4">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-[300px] relative">
+                  <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">manage_search</span>
+                  <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-audit-crimson outline-none shadow-sm" placeholder="Filter by Admin Name, Action, or IP Address...">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Severity Level</label>
+                <select id="severityFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Levels</option>
+                  <option class="text-blue-600">Info</option>
+                  <option class="text-amber-600">Warning</option>
+                  <option class="text-red-600">Critical</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Module</label>
+                <select id="moduleFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Modules</option>
+                  <option>Applications</option>
+                  <option>User Assets</option>
+                  <option>Transactions</option>
+                  <option>Privileges</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region Scope</label>
+                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">National View</option>
+                  <option>Region IV-B</option>
+                  <option>NCR</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <button id="resetAudit" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-black uppercase bg-white hover:bg-slate-50 transition-colors">Clear History View</button>
+              </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
+                    <th class="px-6 py-4">Timestamp</th>
+                    <th class="px-6 py-4">Administrator</th>
+                    <th class="px-6 py-4">Action Performed</th>
+                    <th class="px-6 py-4">Module</th>
+                    <th class="px-6 py-4">Origin IP</th>
+                    <th class="px-6 py-4 text-center">Severity</th>
+                    <th class="px-6 py-4 text-right">Details</th>
+                  </tr>
+                </thead>
+                <tbody id="auditTableBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
+            </table>
+        </div>
+        
+        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+            <div>Log Entry Count: <span id="resCount" class="text-audit-crimson">0</span> Records</div>
+            <div class="flex items-center gap-4">
+              <span>Page 1 of 120</span>
+              <div class="flex gap-1">
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const AUDIT_DATA = [
+      { time: "2026-02-12 15:04:22", admin: "Dave Alqz", action: "Privilege Delegation", mod: "Privileges", ip: "192.168.1.42", sev: "Warning", msg: "Granted Cross-Jurisdictional View to Cedric Admin" },
+      { time: "2026-02-12 14:30:10", admin: "Cedric Admin", action: "Permit Approved", mod: "Licensing", ip: "110.54.128.12", sev: "Info", msg: "Approved Wildlife Trade Permit PMT-88201" },
+      { time: "2026-02-12 13:15:45", admin: "System", action: "Automated Sync", mod: "Database", ip: "Localhost", sev: "Info", msg: "National Database Synchronization successful" },
+      { time: "2026-02-12 11:20:00", admin: "Elena Cruz", action: "Record Deleted", mod: "User Assets", ip: "122.53.11.204", sev: "Critical", msg: "Permanently removed Asset ID DN-INV-402" },
+      { time: "2026-02-11 23:55:12", admin: "Unauthorized", action: "Login Attempt", mod: "Auth", ip: "45.12.88.19", sev: "Critical", msg: "Failed login attempt from unknown IP" }
+    ];
+
+    function initAudit() {
+      ['tableSearch', 'severityFilter', 'moduleFilter'].forEach(id => {
+          document.getElementById(id).addEventListener('input', applyAuditFilters);
+      });
+      renderAuditTable(AUDIT_DATA);
+      initAuditCharts();
+    }
+
+    function applyAuditFilters() {
+        const search = document.getElementById('tableSearch').value.toLowerCase();
+        const sev = document.getElementById('severityFilter').value;
+        const mod = document.getElementById('moduleFilter').value;
+
+        const filtered = AUDIT_DATA.filter(item => {
+            const matchSearch = item.admin.toLowerCase().includes(search) || item.msg.toLowerCase().includes(search);
+            const matchSev = sev === 'all' || item.sev === sev;
+            const matchMod = mod === 'all' || item.mod === mod;
+            return matchSearch && matchSev && matchMod;
+        });
+        renderAuditTable(filtered);
+    }
+
+    function renderAuditTable(data) {
+      const body = document.getElementById('auditTableBody');
+      body.innerHTML = '';
+      document.getElementById('resCount').textContent = data.length;
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition-colors";
+        
+        let sevClass = "bg-blue-100 text-blue-700 border-blue-200";
+        if(row.sev === 'Warning') sevClass = "bg-amber-100 text-amber-700 border-amber-200";
+        if(row.sev === 'Critical') sevClass = "bg-red-100 text-red-700 border-red-200 font-black ring-1 ring-red-400";
+
+        tr.innerHTML = `
+          <td class="px-6 py-4 text-slate-400 font-bold tabular-nums">${row.time}</td>
+          <td class="px-6 py-4 font-black text-slate-800 uppercase tracking-tight">${row.admin}</td>
+          <td class="px-6 py-4 font-bold text-slate-600">${row.action}</td>
+          <td class="px-6 py-4 uppercase text-[9px] font-black text-slate-400">${row.mod}</td>
+          <td class="px-6 py-4 font-mono text-[10px] text-slate-500">${row.ip}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded border text-[9px] font-black uppercase ${sevClass}">${row.sev}</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <button onclick="alert('${row.msg}')" class="text-slate-400 hover:text-audit-crimson"><span class="material-icons-round text-sm">info</span></button>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function initAuditCharts() {
+      new Chart(document.getElementById('auditTrendChart'), {
+        type: 'line',
+        data: {
+          labels: ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
+          datasets: [{
+            label: 'Log Entries',
+            data: [450, 620, 840, 310, 420, 980, 1100],
+            borderColor: '#991b1b',
+            backgroundColor: 'rgba(153, 27, 27, 0.05)',
+            fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
+      });
+
+      new Chart(document.getElementById('severityChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Info', 'Warning', 'Critical'],
+          datasets: [{
+            data: [3800, 350, 60],
+            backgroundColor: ['#2563eb', '#d97706', '#991b1b'],
+            borderWidth: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9, weight: 'bold' } } } } }
+      });
+    }
+
+    window.onload = initAudit;
+  </script>
+</body>
+</html>

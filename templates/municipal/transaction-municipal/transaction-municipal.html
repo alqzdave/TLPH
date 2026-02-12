@@ -57,8 +57,8 @@
         <button id="demoRefreshBtn"
                 class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-800 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-emerald-100"
                 type="button">
-          <span class="material-icons-round text-[18px]">shuffle</span>
-          Demo Refresh
+          <span class="material-icons-round text-[18px]">refresh</span>
+          Refresh
         </button>
 
         <button id="exportBtn"
@@ -198,44 +198,13 @@
     </section>
   </div>
 
-  <script>
+  <script type="module">
+  import { auth, db } from '/static/js/firebase-config.js';
+  import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-  const CURRENT_MUNICIPALITY = "San Juan";
-
-  class TransactionsRepository {
-    constructor({ municipality }) {
-      this.municipality = municipality;
-
-      this._mock = [
-        { id:"TX-1001", municipality:"San Juan", payer:"Juan Dela Cruz", type:"Import Permit",  date:"2026-02-01", status:"Paid",    amount:1250.00 },
-        { id:"TX-1002", municipality:"San Juan", payer:"Maria Santos",   type:"Licensing Fee", date:"2026-02-03", status:"Pending", amount:0.00 },
-        { id:"TX-1003", municipality:"San Juan", payer:"Andrea Reyes",   type:"Service Fee",   date:"2026-02-05", status:"Paid",    amount:499.99 },
-        { id:"TX-1004", municipality:"San Juan", payer:"",              type:"Other",         date:"2026-02-06", status:"Failed",  amount:0.00 },
-
-        { id:"TX-2001", municipality:"Bacoor",   payer:"Leo Cruz",       type:"Import Permit", date:"2026-01-28", status:"Paid",    amount:900.00 },
-        { id:"TX-2002", municipality:"Bacoor",   payer:"Ana Lim",        type:"Service Fee",   date:"2026-02-02", status:"Pending", amount:0.00 },
-
-        { id:"TX-3001", municipality:"Makati",   payer:"Carlo Tan",      type:"Licensing Fee", date:"2026-01-30", status:"Paid",    amount:1500.00 },
-        { id:"TX-3002", municipality:"Mika Bautista",  type:"Other",     date:"2026-02-04", status:"Paid",    amount:300.00, municipality:"Makati" },
-      ];
-    }
-
-    async getAll() {
-      return [...this._mock]; 
-    }
-
-    async getByMunicipality() {
-      const all = await this.getAll();
-      return all.filter(t => t.municipality === this.municipality);
-    }
-
-    async shuffleMock() {
-      this._mock = [...this._mock].sort(() => Math.random() - 0.5);
-      return this.getAll();
-    }
-  }
-
-  const repo = new TransactionsRepository({ municipality: CURRENT_MUNICIPALITY });
+  let CURRENT_MUNICIPALITY = null;
+  let allTransactions = [];
 
   const peso = new Intl.NumberFormat("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2
@@ -373,12 +342,101 @@
     }
   }
 
+  async function loadTransactions() {
+    try {
+      console.log('Loading transactions...');
+      
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        console.error('No user logged in');
+        return;
+      }
+      
+      // Get admin's municipality
+      const adminDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      if (adminDoc.exists()) {
+        const adminData = adminDoc.data();
+        CURRENT_MUNICIPALITY = adminData.municipality;
+        console.log('Current admin municipality:', CURRENT_MUNICIPALITY);
+        scopeChip.textContent = `Municipality: ${CURRENT_MUNICIPALITY}`;
+      }
+      
+      // Create a map of users with their municipalities
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      const usersMap = {};
+      
+      usersSnapshot.forEach(userDoc => {
+        const userData = userDoc.data();
+        usersMap[userDoc.id] = {
+          name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || 'Unknown User',
+          municipality: userData.municipality || null
+        };
+      });
+      
+      console.log('Users loaded:', Object.keys(usersMap).length);
+      
+      // Fetch transactions
+      const transactionsRef = collection(db, 'transactions');
+      const transactionsSnapshot = await getDocs(transactionsRef);
+      
+      console.log('Total transactions found:', transactionsSnapshot.size);
+      
+      allTransactions = [];
+      
+      transactionsSnapshot.forEach(docSnapshot => {
+        const data = docSnapshot.data();
+        const userInfo = usersMap[data.userId];
+        const userName = userInfo?.name || 'Unknown User';
+        const userMunicipality = userInfo?.municipality;
+        
+        // Filter by municipality
+        console.log(`Transaction ${docSnapshot.id}: User municipality="${userMunicipality}", Admin municipality="${CURRENT_MUNICIPALITY}"`);
+        if (CURRENT_MUNICIPALITY && userMunicipality !== CURRENT_MUNICIPALITY) {
+          console.log(`⛔ SKIPPED: Transaction ${docSnapshot.id} - municipality mismatch`);
+          return;
+        }
+        
+        console.log(`✅ INCLUDED: Transaction ${docSnapshot.id}`);
+        
+        let dateStr = 'N/A';
+        if (data.createdAt) {
+          const dateObj = data.createdAt.toDate();
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          dateStr = `${year}-${month}-${day}`;
+        }
+        
+        allTransactions.push({
+          id: docSnapshot.id,
+          municipality: userMunicipality,
+          payer: userName,
+          type: data.transactionType || data.type || 'Other',
+          date: dateStr,
+          status: data.status || 'Pending',
+          amount: Number(data.amount) || 0
+        });
+      });
+      
+      console.log('Filtered transactions:', allTransactions.length);
+      
+      renderAll();
+      
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    }
+  }
+
   async function renderAll(){
+    if (!CURRENT_MUNICIPALITY) {
+      scopeChip.textContent = 'Municipality: —';
+      return;
+    }
+    
     scopeChip.textContent = `Municipality: ${CURRENT_MUNICIPALITY}`;
 
-    const base = await repo.getByMunicipality();
-
-    const filtered = applySearchAndStatus(base);
+    const filtered = applySearchAndStatus(allTransactions);
 
     const stats = computeStats(filtered);
     renderKpis(stats);
@@ -387,8 +445,7 @@
   }
 
   document.getElementById("demoRefreshBtn").addEventListener("click", async () => {
-    await repo.shuffleMock();
-    await renderAll();
+    await loadTransactions();
   });
 
   document.getElementById("exportBtn").addEventListener("click", () => {
@@ -408,5 +465,14 @@
     if (e.key === "Enter") renderAll();
   });
 
-  renderAll();
+  // Authentication check and data loading
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      console.log('No user authenticated, redirecting to login...');
+      window.location.href = '/login';
+    } else {
+      console.log('User authenticated:', user.email);
+      loadTransactions();
+    }
+  });
 </script>
