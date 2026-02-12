@@ -1,107 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DENR - Department of Environment and Natural Resources</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo">
-                <span>DENR</span>
+<body class="bg-gray-50 overflow-x-hidden">
+
+    <nav id="navbar" class="navbar fixed top-0 left-0 w-full z-[1000] bg-white transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center h-20">
+            
+            <div class="nav-logo flex items-center gap-3 shrink-0">
+                <img src="{{ url_for('static', filename='images/denr.jpg') }}" 
+                     alt="DENR" class="h-12 w-12 rounded-full object-cover shadow-md">
+                <span class="font-bold text-xl md:text-2xl">DENR</span>
             </div>
-            <ul class="nav-menu">
-                <li><a href="#home" class="nav-link active">Home</a></li>
+
+            <ul class="nav-menu hidden lg:flex items-center gap-10 list-none mb-0">
+                <li><a href="#home" class="nav-link">Home</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
                 <li><a href="#services" class="nav-link">Services</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
-                <li><a href="/login" class="nav-btn">Login</a></li>
+                <li><a href="/login" class="nav-btn no-underline">Login</a></li>
             </ul>
+
+            <button id="mobileMenuBtn" class="lg:hidden text-2xl text-green-900 focus:outline-none">
+                <i class="fas fa-bars-staggered"></i>
+            </button>
+        </div>
+
+        <div id="mobileMenu" class="hidden lg:hidden bg-white border-t border-gray-100 shadow-xl overflow-hidden">
+            <div class="flex flex-col p-6 space-y-4 font-bold text-gray-700">
+                <a href="#home" class="mobile-link hover:text-green-700 py-2 border-b border-gray-50 no-underline">Home</a>
+                <a href="#about" class="mobile-link hover:text-green-700 py-2 border-b border-gray-50 no-underline">About</a>
+                <a href="#services" class="mobile-link hover:text-green-700 py-2 border-b border-gray-50 no-underline">Services</a>
+                <a href="#contact" class="mobile-link hover:text-green-700 py-2 border-b border-gray-50 no-underline">Contact</a>
+                <div class="pt-2">
+                    <a href="/login" class="block bg-green-800 text-white text-center py-3 rounded-xl no-underline">Login</a>
+                </div>
+            </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero-section">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1 class="hero-title">Department of Environment and Natural Resources</h1>
-            <p class="hero-subtitle">Protecting, Conserving, and Managing the Environment for Future Generations</p>
-            <div class="hero-buttons">
+    <section id="home" class="hero-section h-screen flex items-center justify-center text-center px-6 relative">
+        <div class="hero-overlay absolute inset-0 z-0"></div>
+        <div class="hero-content relative z-10 max-w-4xl">
+            <h1 class="hero-title text-4xl md:text-6xl font-black mb-6 animate-fadeInUp">
+                Department of Environment and Natural Resources
+            </h1>
+            <p class="hero-subtitle text-lg md:text-2xl mb-10 opacity-90">
+                Protecting, Conserving, and Managing the Environment for Future Generations
+            </p>
+            <div class="hero-buttons flex flex-col sm:flex-row gap-5 justify-center">
                 <a href="/register" class="btn btn-primary">Get Started</a>
                 <a href="#about" class="btn btn-secondary">Learn More</a>
             </div>
         </div>
-        <div class="scroll-indicator">
-            <a href="#about">
-                <i class="fas fa-chevron-down"></i>
-            </a>
+        <div class="scroll-indicator absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
+            <a href="#about"><i class="fas fa-chevron-down text-white text-3xl"></i></a>
         </div>
     </section>
 
-    <!-- About Section -->
-    <section id="about" class="about-section">
-        <div class="container">
-            <h2 class="section-title">About</h2>
+    <section id="about" class="about-section py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl md:text-5xl font-black text-center mb-16">About the Agency</h2>
             
-            <!-- Mandate -->
-            <div class="about-card mandate-card">
-                <div class="card-icon">
-                    <i class="fas fa-landmark"></i>
-                </div>
-                <div class="card-content">
-                    <h3>Mandate</h3>
-                    <p>The Department of Environment and Natural Resources (DENR) through Executive Order 192, Series of 1987 is mandated to be the government agency primarily responsible for the conservation, management, development, and proper use of the country's environment and natural resources, specifically forest and grazing lands, mineral resources, including those in reservation and watershed areas, and lands of the public domain, as well as the licensing and regulation of all natural resources as may be provided for by law in order to ensure equitable sharing of the benefits derived therefrom for the welfare of the present and future generations of Filipinos.</p>
+            <div class="about-card mandate-card flex flex-col md:flex-row items-center gap-10 p-8 md:p-12 mb-12 shadow-lg rounded-3xl">
+                <div class="card-icon shrink-0"><i class="fas fa-landmark text-5xl"></i></div>
+                <div class="card-content text-justify md:text-left">
+                    <h3 class="text-2xl font-bold mb-4">Mandate</h3>
+                    <p>The DENR is primarily responsible for the conservation, management, development, and proper use of the country's environment and natural resources...</p>
                 </div>
             </div>
 
-            <!-- Vision, Mission, Core Function -->
-            <div class="about-grid">
-                <div class="about-card">
-                    <div class="card-icon">
-                        <i class="fas fa-binoculars"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Vision</h3>
-                        <p>A nation enjoying and sustaining its natural resources and a clean and healthy environment.</p>
-                    </div>
+            <div class="about-grid grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="about-card p-10 text-center rounded-3xl shadow-md border-t-4 border-green-700">
+                    <div class="card-icon mb-6"><i class="fas fa-binoculars text-4xl"></i></div>
+                    <h3 class="text-xl font-bold mb-4">Vision</h3>
+                    <p class="text-gray-500">A nation enjoying and sustaining its natural resources.</p>
                 </div>
-
-                <div class="about-card">
-                    <div class="card-icon">
-                        <i class="fas fa-compass"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Mission</h3>
-                        <p>To mobilize our citizenry in protecting, conserving, and managing the environment and natural resources for the present and future generations.</p>
-                    </div>
+                <div class="about-card p-10 text-center rounded-3xl shadow-md border-t-4 border-green-700">
+                    <div class="card-icon mb-6"><i class="fas fa-compass text-4xl"></i></div>
+                    <h3 class="text-xl font-bold mb-4">Mission</h3>
+                    <p class="text-gray-500">To mobilize our citizenry in protecting the environment.</p>
                 </div>
-
-                <div class="about-card">
-                    <div class="card-icon">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Core Function</h3>
-                        <p>DENR is tasked to formulate and implement policies, guidelines, rules and regulations relating to environmental management and pollution prevention and control.</p>
-                    </div>
+                <div class="about-card p-10 text-center rounded-3xl shadow-md border-t-4 border-green-700">
+                    <div class="card-icon mb-6"><i class="fas fa-briefcase text-4xl"></i></div>
+                    <h3 class="text-xl font-bold mb-4">Core Function</h3>
+                    <p class="text-gray-500">Formulate policies for environmental management.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2026 Department of Environment and Natural Resources. All rights reserved.</p>
+    <footer class="footer bg-slate-900 text-white py-12 px-6">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="text-3xl font-black mb-4">DENR</div>
+            <p class="opacity-70 mb-8 max-w-md mx-auto">Official Portal for Environmental Monitoring and Resource Management.</p>
+            <p class="text-xs uppercase tracking-widest">&copy; 2026 DENR - TLPH Project. All Rights Reserved.</p>
         </div>
     </footer>
 
     <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+    
+    <script>
+        const menuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
 </body>
 </html>

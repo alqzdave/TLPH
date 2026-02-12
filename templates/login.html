@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - TLPH</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <a href="/" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-    </a>
     
     <style>
+        body { font-family: 'Poppins', sans-serif; }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -35,52 +34,70 @@
             opacity: 0.8;
             cursor: not-allowed;
         }
+        /* Siguraduhin na ang image background ay laging cover */
+        .auth-left {
+            background-size: cover;
+            background-position: center;
+            min-height: 200px; /* Para may height pa rin sa mobile */
+        }
     </style>
+</head>
+<body class="bg-[#f5f5f5] min-h-screen flex items-center justify-center p-4">
+
+    <a href="/" class="back-button fixed top-6 left-6 z-50 bg-white p-2 rounded-full shadow-md">
+        <i class="fas fa-arrow-left"></i>
+    </a>
     
-    <div class="auth-container">
-        <div class="auth-left">
-            <div class="auth-content">
-                <h1>Welcome!</h1>
-                <p>Sign in to continue to TLPH</p>
+    <div class="flex flex-col md:flex-row w-full max-w-[1000px] bg-white rounded-[20px] shadow-2xl overflow-hidden">
+        
+        <div class="auth-left w-full md:w-1/2 p-10 md:p-12 flex items-center justify-center text-white relative">
+            <div class="auth-content text-center relative z-10">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">Welcome!</h1>
+                <p class="text-base md:text-lg opacity-90">Sign in to continue to TLPH</p>
             </div>
+            <div class="absolute inset-0 bg-black/20 md:bg-transparent"></div>
         </div>
         
-        <div class="auth-right">
-            <div class="auth-box">
-                <div class="auth-header">
-                    <h2>Login</h2>
-                    <p>Enter your credentials to access your account</p>
+        <div class="auth-right w-full md:w-1/2 p-6 sm:p-10 md:p-12 flex items-center justify-center">
+            <div class="auth-box w-full max-w-[400px]">
+                <div class="auth-header mb-6 text-center md:text-left">
+                    <h2 class="text-2xl md:text-3xl font-bold text-[#333]">Login</h2>
+                    <p class="text-gray-500 mt-2 text-sm">Enter your credentials to access your account</p>
                 </div>
                 
-                <form class="auth-form" id="loginForm">
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                <form class="auth-form space-y-4" id="loginForm">
+                    <div class="form-group flex flex-col gap-1">
+                        <label for="email" class="text-sm font-semibold text-[#333]">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:border-[#15803d] transition-all">
                     </div>
                     
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <div class="form-group flex flex-col gap-1">
+                        <label for="password" class="text-sm font-semibold text-[#333]">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:border-[#15803d] transition-all">
                     </div>
                     
-                    <div class="form-options">
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="remember">
+                    <div class="form-options flex items-center justify-between text-xs sm:text-sm py-2">
+                        <label class="checkbox-container flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="remember" class="w-4 h-4 accent-[#15803d]">
                             <span>Remember me</span>
                         </label>
-                        <a href="#" class="forgot-password">Forgot Password?</a>
+                        <a href="#" class="forgot-password text-[#15803d] hover:underline">Forgot Password?</a>
                     </div>
                     
-                    <button type="submit" class="btn-primary" id="loginBtn">
+                    <button type="submit" class="btn-primary w-full bg-[#15803d] text-white py-3 rounded-lg font-bold flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98]" id="loginBtn">
                         <span class="spinner"></span>
                         <span class="btn-text">Sign In</span>
                     </button>
                     
-                    <div class="divider">
-                        <span>OR</span>
+                    <div class="divider flex items-center gap-4 py-2 text-gray-400 text-xs font-bold">
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                        OR
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
                     </div>
                     
-                    <button type="button" class="btn-google">
+                    <button type="button" class="btn-google w-full border border-gray-300 py-2.5 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition-all font-medium text-gray-600 text-sm">
                         <svg width="18" height="18" viewBox="0 0 18 18">
                             <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
                             <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
@@ -90,8 +107,8 @@
                         Continue with Google
                     </button>
                     
-                    <div class="auth-footer">
-                        <p>Don't have an account? <a href="{{ url_for('main.register') }}">Register Now</a></p>
+                    <div class="auth-footer text-center pt-2">
+                        <p class="text-sm text-gray-600">Don't have an account? <a href="{{ url_for('main.register') }}" class="text-[#15803d] font-bold hover:underline">Register Now</a></p>
                     </div>
                 </form>
             </div>
