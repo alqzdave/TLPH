@@ -235,7 +235,7 @@
                 e.preventDefault();
 
                 try {
-                    btnText.textContent = 'Submitting...';
+                    btnText.textContent = 'Processing Payment...';
                     submitBtn.disabled = true;
 
                     const currentUser = auth.currentUser;
@@ -249,25 +249,51 @@
                     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
                     const userData = userDoc.data() || {};
                     
-                    // Bundle the data for Cloud Firestore
+                    // Prepare invoice data for Xendit payment
+                    const amount = parseInt(document.getElementById('xendit_raw_amount').value) || 2450;
+                    const productName = productNameInput.value.trim();
+                    const category = categorySelect.value;
+                    
+                    // Create invoice via Xendit API
+                    const invoiceResponse = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            amount: amount,
+                            email: currentUser.email,
+                            external_id: `app-${currentUser.uid}-${Date.now()}`,
+                            description: `Application for ${productName} - ${category}`,
+                            item_name: productName,
+                            first_name: userData.firstName || '',
+                            last_name: userData.lastName || '',
+                            phone: userData.phone || '',
+                            success_url: `${window.location.origin}/user/application`,
+                            failure_url: `${window.location.origin}/user/application/apply?payment=failed`
+                        })
+                    });
+
+                    const invoiceData = await invoiceResponse.json();
+
+                    if (invoiceData.status !== 'success') {
+                        throw new Error(invoiceData.message || 'Failed to create invoice');
+                    }
+
+                    // Store application data temporarily in localStorage before redirecting to payment
                     const applicationData = {
                         userId: currentUser.uid,
                         userEmail: currentUser.email,
                         userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
                         municipality: userData.municipality || 'Unknown',
                         province: userData.province || 'Oriental Mindoro',
-                        
-                        // Form Input Data
-                        productName: productNameInput.value.trim(),
-                        category: categorySelect.value,
+                        productName: productName,
+                        category: category,
                         investmentQty: parseFloat(investmentInput.value) || 0,
                         harvestQty: parseFloat(harvestInput.value) || 0,
-                        
-                        // Metadata
                         status: 'pending',
-                        createdAt: serverTimestamp(),
-                        
-                        // File References (Note: Actual file upload to Firebase Storage is separate)
+                        invoiceId: invoiceData.invoice_id,
+                        externalId: invoiceData.external_id,
                         fileReferences: {
                             barangayCert: document.getElementById('brgyFile').files[0].name,
                             landTitle: document.getElementById('titleFile').files[0].name,
@@ -278,16 +304,17 @@
                             businessPlan: document.getElementById('planFile').files[0].name
                         }
                     };
-
-                    // Execute Database Transaction
-                    const docRef = await addDoc(collection(db, 'applications'), applicationData);
-                    console.log('Application saved with ID:', docRef.id);
-
-                    alert('Application for ' + applicationData.productName + ' submitted successfully!');
-                    window.location.href = '/user/application';
+                    
+                    localStorage.setItem('pendingApplication', JSON.stringify(applicationData));
+                    
+                    console.log('Invoice created:', invoiceData);
+                    console.log('Redirecting to payment URL:', invoiceData.invoice_url);
+                    
+                    // Redirect to Xendit payment page
+                    window.location.href = invoiceData.invoice_url;
 
                 } catch (error) {
-                    console.error('Error submitting application:', error);
+                    console.error('Error processing payment:', error);
                     alert('Error: ' + error.message);
                     btnText.textContent = 'Apply Now';
                     submitBtn.disabled = false;
