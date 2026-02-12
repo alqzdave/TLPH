@@ -108,22 +108,28 @@ export async function submitServiceRequest(config) {
       }
 
       // Store service request in Firebase
-      const docRef = await addDoc(collection(db, 'service_requests'), {
+      const serviceRequestData = {
         ...serviceData,
         invoiceId: invoiceData.invoice_id,
         externalId: invoiceData.external_id,
         amount: amount
-      });
+      };
+      
+      const docRef = await addDoc(collection(db, 'service_requests'), serviceRequestData);
 
       console.log('Service request saved with ID:', docRef.id);
+
+      // Store data in localStorage for confirmation page
+      localStorage.setItem('pendingServiceRequest', JSON.stringify(serviceRequestData));
+      localStorage.setItem('servicePaymentUrl', invoiceData.invoice_url);
 
       // Call success callback if provided
       if (config.onSuccess) {
         await config.onSuccess(invoiceData);
       }
 
-      // Redirect to payment
-      window.location.href = invoiceData.invoice_url;
+      // Redirect to confirmation page
+      window.location.href = '/user/service-confirmation';
 
     } catch (error) {
       console.error('Error processing service request:', error);
@@ -208,14 +214,16 @@ export async function submitFreeServiceRequest(config) {
 
       console.log('Service request saved with ID:', docRef.id);
 
+      // Store data in localStorage for confirmation page
+      localStorage.setItem('pendingServiceRequest', JSON.stringify(serviceData));
+
       // Call success callback if provided
       if (config.onSuccess) {
         await config.onSuccess();
       }
 
-      // Show success and redirect
-      alert('Service request submitted successfully!');
-      window.location.href = config.redirectUrl || '/user/service/service';
+      // Redirect to confirmation page
+      window.location.href = '/user/service-confirmation';
 
     } catch (error) {
       console.error('Error submitting service request:', error);

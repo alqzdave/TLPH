@@ -2193,6 +2193,25 @@
     // Load applications on page load
     loadApplications();
     
+    // Check URL hash to auto-open specific tab
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.substring(1); // Remove the # symbol
+      
+      if (hash === 'services') {
+        // Click the services tab
+        const servicesTab = document.querySelector('.tab-btn[data-tab="services"]');
+        if (servicesTab) {
+          servicesTab.click();
+        }
+      } else if (hash === 'inventory') {
+        // Click the inventory tab
+        const inventoryTab = document.querySelector('.tab-btn[data-tab="inventory"]');
+        if (inventoryTab) {
+          inventoryTab.click();
+        }
+      }
+    });
+    
     // Load inventory history when tab is clicked
     document.querySelectorAll('.tab-btn').forEach(btn => {
       if (btn.dataset.tab === 'inventory') {
