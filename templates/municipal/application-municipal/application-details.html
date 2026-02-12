@@ -265,7 +265,15 @@
             
             try {
                 // Generate reference number
-                const date = applicationData.createdAt ? applicationData.createdAt.toDate() : new Date();
+                // Handle both Firebase Timestamp and ISO string dates
+                let date = new Date();
+                if (applicationData.createdAt) {
+                    if (typeof applicationData.createdAt.toDate === 'function') {
+                        date = applicationData.createdAt.toDate();
+                    } else if (typeof applicationData.createdAt === 'string') {
+                        date = new Date(applicationData.createdAt);
+                    }
+                }
                 const refNumber = `APP-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}-${currentApplicationId.substring(0, 6).toUpperCase()}`;
                 console.log('Reference number:', refNumber);
                 document.getElementById('refNumber').textContent = refNumber;

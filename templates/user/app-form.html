@@ -317,7 +317,7 @@
                             // Save application directly to Firestore
                             const docRef = await addDoc(collection(db, 'applications'), {
                                 ...applicationData,
-                                createdAt: new Date().toISOString(),
+                                createdAt: serverTimestamp(),
                                 paymentStatus: 'paid_dev_mode',
                                 paymentMethod: 'Development Mode'
                             });
