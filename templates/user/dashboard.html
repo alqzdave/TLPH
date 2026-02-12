@@ -147,11 +147,11 @@
 
         <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
           <div class="flex items-center justify-between">
-            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Application Req</div>
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Requests</div>
             <i class="fa-solid fa-file-circle-plus text-green-700 text-sm sm:text-base"></i>
           </div>
           <div id="cardAppReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
-          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Product application</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">All applications</div>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
@@ -258,9 +258,8 @@
             </label>
             <select id="typeFilter" class="form-select">
               <option value="ALL" selected>All Types</option>
-              <option value="Product Application">Product Application</option>
-              <option value="Service Request">Service Request</option>
               <option value="License/Permit Request">License/Permit Request</option>
+              <option value="Service Request">Service Request</option>
             </select>
           </div>
 
@@ -306,36 +305,75 @@
 </main>
 
 <script type="module">
-  import { auth, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+  import { auth, onAuthStateChanged, db } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+  import { query, where, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   let allTransactions = [];
   const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-  async function loadTransactions(userEmail) {
+  // Fetch real transaction data from API and Firebase
+  async function loadTransactions(userEmail, userId) {
     try {
+      // Fetch payment transactions from API
       const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
       const result = await response.json();
       
+      let paymentTransactions = [];
       if (result.status === 'success') {
-        allTransactions = result.transactions.map(t => ({
+        paymentTransactions = result.transactions.map(t => ({
           reference_num: t.external_id || t.reference || t.id,
           name_of_application: t.transaction_name || 'Unknown',
-          type_of_application: mapApplicationType(t.transaction_name || ''),
+          type_of_application: mapApplicationType(t.transaction_name || '', 'payment'),
           payment_status: mapPaymentStatus(t.display_status || ''),
           status: mapApplicationStatus(t.display_status || ''),
           amount: t.amount || 0,
           created_at: t.created_at || '',
           invoice_id: t.invoice_id,
-          description: t.description || ''
+          description: t.description || '',
+          source: 'payment'
         }));
-        
-        allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        
-        computeCards();
-        initCharts();
-        renderTable(allTransactions);
-        updateTableMeta(allTransactions.length, allTransactions.length);
       }
+
+      // Fetch service requests from Firebase
+      let serviceTransactions = [];
+      if (userId) {
+        try {
+          const q = query(
+            collection(db, 'service_requests'),
+            where('userId', '==', userId)
+          );
+          const querySnapshot = await getDocs(q);
+          
+          querySnapshot.forEach((doc) => {
+            const service = doc.data();
+            serviceTransactions.push({
+              reference_num: service.externalId || doc.id,
+              name_of_application: service.serviceType || 'Service Request',
+              type_of_application: 'Service Request',
+              payment_status: service.paymentStatus === 'free' ? 'N/A' : mapPaymentStatus(service.paymentStatus || 'pending'),
+              status: mapApplicationStatus(service.status || 'pending'),
+              amount: service.amount || 0,
+              created_at: service.createdAt || new Date().toISOString(),
+              invoice_id: service.invoiceId || 'N/A',
+              description: service.serviceType || '',
+              source: 'service'
+            });
+          });
+        } catch (err) {
+          console.error('Error fetching service requests:', err);
+        }
+      }
+
+      // Combine all transactions
+      allTransactions = [...paymentTransactions, ...serviceTransactions];
+      
+      // Sort by date descending
+      allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      computeCards();
+      initCharts();
+      renderTable(allTransactions);
+      updateTableMeta(allTransactions.length, allTransactions.length);
     } catch (error) {
       console.error('Error loading transactions:', error);
     }
@@ -357,40 +395,70 @@
     return 'Unknown';
   }
 
-  function mapApplicationType(name) {
+  // Map application name to type based on actual template structure
+  function mapApplicationType(name, source = '') {
     const n = (name || '').toLowerCase();
-    if (n.includes('environment') || n.includes('clearance') || n.includes('hazardous') || 
-        n.includes('waste') || n.includes('water') || n.includes('air') || n.includes('pcl') || 
-        n.includes('piccs') || n.includes('cco')) {
+    
+    // Service requests are always categorized as Service Request
+    if (source === 'service' || n.includes('service request')) {
+      return 'Service Request';
+    }
+    
+    // Environment licenses (templates/user/license/environment/)
+    if (n.includes('cco') || n.includes('environment') || n.includes('clearance') || 
+        n.includes('hazardous') || n.includes('waste') || n.includes('water') || 
+        n.includes('air') || n.includes('pcl') || n.includes('piccs')) {
       return 'License/Permit Request';
     }
-    if (n.includes('fisheries') || n.includes('fish') || n.includes('aqua') || n.includes('harvest') || 
-        n.includes('dealer') || n.includes('process') || n.includes('transport')) {
+    
+    // Fisheries licenses (templates/user/license/fisheries/)
+    if (n.includes('fisheries') || n.includes('fish') || n.includes('aqua') || 
+        n.includes('harvest') || n.includes('dealer') || n.includes('process')) {
       return 'License/Permit Request';
     }
-    if (n.includes('forest') || n.includes('timber') || n.includes('tree') || n.includes('plantation') || 
-        n.includes('reforestation') || n.includes('nursery') || n.includes('non-timber')) {
+    
+    // Forest licenses (templates/user/license/forest/)
+    if (n.includes('forest') || n.includes('timber') || n.includes('tree') || 
+        n.includes('plantation') || n.includes('reforestation') || n.includes('nursery')) {
       return 'License/Permit Request';
     }
-    if (n.includes('livestock') || n.includes('farm') || n.includes('animal') || n.includes('poultry') || 
+    
+    // Livestock licenses (templates/user/license/livestock/)
+    if (n.includes('livestock') || n.includes('animal') || n.includes('poultry') || 
         n.includes('slaughter') || n.includes('meat')) {
       return 'License/Permit Request';
     }
-    if (n.includes('wildlife') || n.includes('collection') || n.includes('ownership') || n.includes('wildfarm')) {
+    
+    // Wildlife licenses (templates/user/license/wildlife/)
+    if (n.includes('wildlife') || n.includes('collection') || n.includes('ownership') || 
+        n.includes('wildfarm')) {
       return 'License/Permit Request';
     }
-    if (n.includes('permit') || n.includes('export') || n.includes('import') || n.includes('operation') || 
-        n.includes('local-transport')) {
+    
+    // General permits (templates/user/license/permits/)
+    if (n.includes('export') || n.includes('import') || n.includes('operation') || 
+        n.includes('local-transport') || n.includes('permit')) {
       return 'License/Permit Request';
     }
-    if (n.includes('service') || n.includes('compensation') || n.includes('soil') || n.includes('pest') || 
-        n.includes('typhoon') || n.includes('disease') || n.includes('compliance') || n.includes('visit')) {
+    
+    // Service requests (templates/user/service/)
+    // - compensation/ (pest, typhoon)
+    // - farm/ (compliance, disease, initial_visit, etc.)
+    // - fertilizer/
+    // - financial/
+    // - Seminar/
+    if (n.includes('compensation') || n.includes('pest') || n.includes('typhoon') || 
+        n.includes('compliance') || n.includes('disease') || n.includes('visit') || 
+        n.includes('fertilizer') || n.includes('financial') || n.includes('seminar') || 
+        n.includes('farm service')) {
       return 'Service Request';
     }
-    if (n.includes('fertilizer') || n.includes('chemical') || n.includes('registration') || 
-        n.includes('emergency') || n.includes('pesticide')) {
-      return 'Product Application';
+    
+    // Default to License/Permit for license-related items
+    if (n.includes('license')) {
+      return 'License/Permit Request';
     }
+    
     return 'License/Permit Request';
   }
 
@@ -461,12 +529,14 @@
 
   function computeCards() {
     const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
-    const appReq = allTransactions.filter(r => r.type_of_application === "Product Application").length;
     const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
-    const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && normalize(r.payment_status) === "paid").length;
+
+    const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && (normalize(r.payment_status) === "paid" || normalize(r.payment_status) === "n/a")).length;
+
+    // For inventory data, use placeholder for now (can be connected to inventory API later)
     document.getElementById("cardNumProducts").textContent = "0";
     document.getElementById("cardTotalQty").textContent = "0";
-    document.getElementById("cardAppReq").textContent = appReq;
+    document.getElementById("cardAppReq").textContent = licenseReq + serviceReq; // Total applications
     document.getElementById("cardServiceReq").textContent = serviceReq;
     document.getElementById("cardLicenseReq").textContent = licenseReq;
     document.getElementById("cardSuccessTxn").textContent = successTxn;
@@ -500,7 +570,10 @@
       type: "bar",
       data: { 
         labels: Array.from(appTypeCounts.keys()), 
-        datasets: [{ data: Array.from(appTypeCounts.values()), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'] }] 
+        datasets: [{ 
+          data: Array.from(appTypeCounts.values()),
+          backgroundColor: ['#10b981', '#3b82f6']
+        }] 
       },
       options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
     });
@@ -521,8 +594,19 @@
   }
 
   onAuthStateChanged(auth, (user) => {
-    let email = user?.email || localStorage.getItem('denr_user_email') || '';
-    if (email) loadTransactions(email);
+    let userEmail = '';
+    let userId = '';
+    
+    if (user && user.email) {
+      userEmail = user.email;
+      userId = user.uid;
+    } else {
+      userEmail = localStorage.getItem('denr_user_email') || '';
+    }
+
+    if (userEmail) {
+      loadTransactions(userEmail, userId);
+    }
   });
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -565,13 +649,14 @@
 
       const totalTransactions = allTransactions.length;
       const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
-      const appReq = allTransactions.filter(r => r.type_of_application === "Product Application").length;
       const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
       const approvedTxns = allTransactions.filter(r => normalize(r.status) === "approved").length;
       const pendingTxns = allTransactions.filter(r => normalize(r.status) === "pending").length;
       const rejectedTxns = allTransactions.filter(r => normalize(r.status) === "rejected").length;
       const paidTxns = allTransactions.filter(r => normalize(r.payment_status) === "paid").length;
-      const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && normalize(r.payment_status) === "paid").length;
+      const refundedTxns = allTransactions.filter(r => normalize(r.payment_status) === "refunded").length;
+      const unpaidTxns = allTransactions.filter(r => normalize(r.payment_status) === "unpaid").length;
+      const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && (normalize(r.payment_status) === "paid" || normalize(r.payment_status) === "n/a")).length;
       const totalAmount = allTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
       const approvedAmount = allTransactions.filter(r => normalize(r.status) === "approved").reduce((sum, t) => sum + (t.amount || 0), 0);
       const pendingAmount = allTransactions.filter(r => normalize(r.status) === "pending").reduce((sum, t) => sum + (t.amount || 0), 0);
@@ -619,6 +704,129 @@
       `;
       pdfContainer.appendChild(breakdown);
 
+      const typeTitle = document.createElement('h2');
+      typeTitle.innerHTML = 'Application Type Breakdown';
+      typeTitle.style.color = '#1b330d';
+      typeTitle.style.fontSize = '14px';
+      typeTitle.style.fontWeight = '800';
+      typeTitle.style.borderBottom = '2px solid #10b981';
+      typeTitle.style.paddingBottom = '4px';
+      typeTitle.style.marginBottom = '8px';
+      typeBreakdown.appendChild(typeTitle);
+
+      const typeGrid = document.createElement('div');
+      typeGrid.style.display = 'grid';
+      typeGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      typeGrid.style.gap = '8px';
+
+      const types = [
+        { name: 'License/Permit', count: licenseReq, color: '#10b981', bgColor: '#f0fdf4' },
+        { name: 'Service Request', count: serviceReq, color: '#3b82f6', bgColor: '#eff6ff' }
+      ];
+
+      types.forEach(type => {
+        const typeBox = document.createElement('div');
+        typeBox.style.background = type.bgColor;
+        typeBox.style.border = `1px solid ${type.color}`;
+        typeBox.style.padding = '10px';
+        typeBox.style.borderRadius = '6px';
+        typeBox.innerHTML = `
+          <div style="font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase;">${type.name}</div>
+          <div style="font-size: 24px; color: ${type.color}; font-weight: 800; margin-top: 4px;">${type.count}</div>
+          <div style="font-size: 9px; color: #9ca3af; margin-top: 2px;">${((type.count / totalTransactions) * 100).toFixed(1)}%</div>
+        `;
+        typeGrid.appendChild(typeBox);
+      });
+
+      typeBreakdown.appendChild(typeGrid);
+      pdfContainer.appendChild(typeBreakdown);
+
+      // SECTION 3: Application Status Analysis
+      const statusSection = document.createElement('div');
+      statusSection.style.marginBottom = '12px';
+      statusSection.style.pageBreakInside = 'avoid';
+
+      const statusTitle = document.createElement('h2');
+      statusTitle.innerHTML = 'Application Status Analysis';
+      statusTitle.style.color = '#1b330d';
+      statusTitle.style.fontSize = '14px';
+      statusTitle.style.fontWeight = '800';
+      statusTitle.style.borderBottom = '2px solid #10b981';
+      statusTitle.style.paddingBottom = '4px';
+      statusTitle.style.marginBottom = '8px';
+      statusSection.appendChild(statusTitle);
+
+      const statusGrid = document.createElement('div');
+      statusGrid.style.display = 'grid';
+      statusGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      statusGrid.style.gap = '8px';
+
+      const statuses = [
+        { name: 'Approved', count: approvedTxns, amount: approvedAmount, color: '#10b981', bgColor: '#f0fdf4' },
+        { name: 'Pending', count: pendingTxns, amount: pendingAmount, color: '#3b82f6', bgColor: '#eff6ff' },
+        { name: 'Rejected', count: rejectedTxns, amount: 0, color: '#ef4444', bgColor: '#fee2e2' }
+      ];
+
+      statuses.forEach(status => {
+        const statusBox = document.createElement('div');
+        statusBox.style.background = status.bgColor;
+        statusBox.style.border = `1px solid ${status.color}`;
+        statusBox.style.padding = '10px';
+        statusBox.style.borderRadius = '6px';
+        statusBox.innerHTML = `
+          <div style="font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase;">${status.name}</div>
+          <div style="font-size: 22px; color: ${status.color}; font-weight: 800; margin-top: 4px;">📊 ${status.count}</div>
+          <div style="font-size: 10px; color: ${status.color}; margin-top: 4px; font-weight: 700;">₱${status.amount.toLocaleString()}</div>
+        `;
+        statusGrid.appendChild(statusBox);
+      });
+
+      statusSection.appendChild(statusGrid);
+      pdfContainer.appendChild(statusSection);
+
+      // SECTION 4: Payment Status Analysis
+      const paymentSection = document.createElement('div');
+      paymentSection.style.marginBottom = '12px';
+      paymentSection.style.pageBreakInside = 'avoid';
+
+      const paymentTitle = document.createElement('h2');
+      paymentTitle.innerHTML = 'Payment Status Analysis';
+      paymentTitle.style.color = '#1b330d';
+      paymentTitle.style.fontSize = '14px';
+      paymentTitle.style.fontWeight = '800';
+      paymentTitle.style.borderBottom = '2px solid #10b981';
+      paymentTitle.style.paddingBottom = '4px';
+      paymentTitle.style.marginBottom = '8px';
+      paymentSection.appendChild(paymentTitle);
+
+      const paymentGrid = document.createElement('div');
+      paymentGrid.style.display = 'grid';
+      paymentGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      paymentGrid.style.gap = '8px';
+
+      const payments = [
+        { name: 'Paid', count: paidTxns, color: '#10b981', bgColor: '#f0fdf4' },
+        { name: 'Unpaid', count: unpaidTxns, color: '#ef4444', bgColor: '#fee2e2' },
+        { name: 'Refunded', count: refundedTxns, color: '#f59e0b', bgColor: '#fef3c7' }
+      ];
+
+      payments.forEach(payment => {
+        const paymentBox = document.createElement('div');
+        paymentBox.style.background = payment.bgColor;
+        paymentBox.style.border = `1px solid ${payment.color}`;
+        paymentBox.style.padding = '10px';
+        paymentBox.style.borderRadius = '6px';
+        paymentBox.innerHTML = `
+          <div style="font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase;">${payment.name}</div>
+          <div style="font-size: 24px; color: ${payment.color}; font-weight: 800; margin-top: 4px;">${payment.count}</div>
+        `;
+        paymentGrid.appendChild(paymentBox);
+      });
+
+      paymentSection.appendChild(paymentGrid);
+      pdfContainer.appendChild(paymentSection);
+
+      // SECTION 5: Detailed Transaction List
       const detailsSection = document.createElement('div');
       detailsSection.style.pageBreakBefore = 'always';
       detailsSection.innerHTML = `<h2 style="color: #1b330d; font-size: 14px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 4px; margin-bottom: 10px;">Detailed Transaction List</h2>`;

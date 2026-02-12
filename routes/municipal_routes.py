@@ -26,6 +26,14 @@ def view_service(service_id):
 def inventory():
     return render_template('municipal/inventory/inventory-dashboard.html')
 
+@bp.route('/user-inventory')
+def user_inventory():
+    return render_template('municipal/user-inventory-municipal/user-inventory-municiapl.html')
+
+@bp.route('/license-permit')
+def license_permit():
+    return render_template('municipal/license-permit-municapal/license-permit-municipal.html')
+
 @bp.route('/transactions')
 def transactions():
     return render_template('municipal/transaction-municipal/transaction-municipal.html')
