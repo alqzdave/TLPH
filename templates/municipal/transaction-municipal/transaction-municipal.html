@@ -204,17 +204,13 @@
   </div>
 
   <script>
-  /******************************************************************
-   * MUNICIPALITY-ONLY VIEW
-   * (Demo: client filter. Production: enforce on backend too.)
-   ******************************************************************/
+    
   const CURRENT_MUNICIPALITY = "San Juan";
 
   class TransactionsRepository {
     constructor({ municipality }) {
       this.municipality = municipality;
 
-      // Mock data lives inside the class now
       this._mock = [
         { id:"TX-1001", municipality:"San Juan", payer:"Juan Dela Cruz", type:"Import Permit",  date:"2026-02-01", status:"Paid",    amount:1250.00 },
         { id:"TX-1002", municipality:"San Juan", payer:"Maria Santos",   type:"Licensing Fee", date:"2026-02-03", status:"Pending", amount:0.00 },
@@ -229,19 +225,15 @@
       ];
     }
 
-    // ✅ Use this today (mock), later swap implementation to Firebase
     async getAll() {
-      // In Firebase version: fetch from Firestore/Realtime DB here
-      return [...this._mock]; // return a copy (avoid accidental mutation)
+      return [...this._mock]; 
     }
 
-    // Optional helper: municipality-scoped fetch
     async getByMunicipality() {
       const all = await this.getAll();
       return all.filter(t => t.municipality === this.municipality);
     }
 
-    // Demo helper
     async shuffleMock() {
       this._mock = [...this._mock].sort(() => Math.random() - 0.5);
       return this.getAll();
@@ -386,11 +378,9 @@
     }
   }
 
-  // ✅ Now async because it can fetch from Firebase later
   async function renderAll(){
     scopeChip.textContent = `Municipality: ${CURRENT_MUNICIPALITY}`;
 
-    // scoped fetch from repo
     const base = await repo.getByMunicipality();
 
     const filtered = applySearchAndStatus(base);
