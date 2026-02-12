@@ -56,11 +56,39 @@
     <script type="module">
         import { auth, db } from '/static/js/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
         const applicationsList = document.getElementById('applicationsList');
+
+        // Handle pending application after payment success
+        async function processPendingApplication() {
+            try {
+                const pendingAppData = localStorage.getItem('pendingApplication');
+                if (pendingAppData) {
+                    const appData = JSON.parse(pendingAppData);
+                    
+                    // Add the application to Firestore with payment confirmation
+                    const docRef = await addDoc(collection(db, 'applications'), {
+                        ...appData,
+                        status: 'under-review', // Change status to under-review after payment
+                        submittedAt: serverTimestamp(),
+                        paymentStatus: 'completed'
+                    });
+                    
+                    console.log('Application saved after payment with ID:', docRef.id);
+                    
+                    // Clear the pending application from localStorage
+                    localStorage.removeItem('pendingApplication');
+                    
+                    // Show success message
+                    alert('Payment successful! Your application has been submitted.');
+                }
+            } catch (error) {
+                console.error('Error processing pending application:', error);
+            }
+        }
 
         const categoryLabels = {
             'farming': 'Crop & Plant',
@@ -190,8 +218,12 @@
             window.location.href = `/user/inventory/stock-info?id=${applicationId}`;
         };
 
-        onAuthStateChanged(auth, user => {
-            if (user) loadApplications(user.uid);
+        onAuthStateChanged(auth, async user => {
+            if (user) {
+                // Process any pending application from payment redirect
+                await processPendingApplication();
+                loadApplications(user.uid);
+            }
             else window.location.href = '/login';
         });
     </script>

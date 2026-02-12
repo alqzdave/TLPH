@@ -24,6 +24,11 @@ def service_request():
     """Shows service request page"""
     return render_template('user/service/service.html')
 
+@bp.route('/service-confirmation')
+def service_confirmation():
+    """Shows service request confirmation page"""
+    return render_template('user/service-confirmation.html')
+
 
 @bp.route('/compensation/typhoon')
 def compensation_typhoon():

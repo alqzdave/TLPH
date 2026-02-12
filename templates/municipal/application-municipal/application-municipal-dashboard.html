@@ -90,7 +90,6 @@
         <div class="relative w-full md:w-[280px]">
           <select id="categorySelect" class="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-700 outline-none hover:border-emerald-300 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100">
             <option value="" selected>All Categories</option>
-            <!-- Keep your original values if needed -->
             <option value="Crop_Plant">Crop & Plant</option>
             <option value="Livestock_Poultry">Livestock & Poultry</option>
             <option value="Fisheries_Aquaculture">Fisheries & Aquaculture</option>
@@ -213,16 +212,12 @@
           const userMunicipality = userInfo?.municipality;
           
           console.log(`Application ${doc.id}: User municipality="${userMunicipality}", Admin municipality="${currentAdminMunicipality}"`);
-          
-          // Filter: Only show applications from users in the same municipality
           if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
             console.log(`⛔ SKIPPED: Application ${doc.id} - municipality mismatch`);
             return;
           }
           
           console.log(`✅ INCLUDED: Application ${doc.id}`);
-          
-          // Format date
           let filedDate = 'N/A';
           let dateObj = new Date();
           if (data.createdAt) {
@@ -258,8 +253,6 @@
             timestamp: data.createdAt ? data.createdAt.toDate() : new Date()
           });
         });
-        
-        // Sort by date descending
         applicants.sort((a, b) => b.timestamp - a.timestamp);
         
         console.log('Final applicants array:', applicants);

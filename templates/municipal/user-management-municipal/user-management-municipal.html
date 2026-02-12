@@ -5,8 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DENR | User Management (Municipality View)</title>
-
-  <!-- Tailwind + Material Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
@@ -33,7 +31,7 @@
   {% include 'municipal/sidenav.html' %}
 
   <main class="mx-auto w-full max-w-[1400px] px-4 py-5">
-    <!-- Header -->
+
     <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-4">
       <div>
         <h1 class="text-2xl font-bold tracking-tight">User Management</h1>
@@ -57,7 +55,6 @@
       </div>
     </div>
 
-    <!-- Notice -->
     <div class="mb-4 rounded-md border border-gray-300 bg-white p-3">
       <div class="flex items-start gap-2">
         <span class="material-icons-round text-slate-700">lock</span>
@@ -71,7 +68,6 @@
       </div>
     </div>
 
-    <!-- KPIs -->
     <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-4">
       <div class="rounded-md border border-gray-300 bg-white p-4">
         <div class="text-xs font-bold uppercase tracking-[0.12em] text-slate-600">Total Users</div>
@@ -98,7 +94,6 @@
       </div>
     </section>
 
-    <!-- Filters -->
     <section class="rounded-md border border-gray-300 bg-white p-4 mb-4">
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:flex-wrap">
@@ -136,7 +131,6 @@
       </div>
     </section>
 
-    <!-- Table -->
     <section class="rounded-md border border-gray-300 bg-white p-4">
       <div class="flex items-start justify-between gap-3 mb-3">
         <div>
@@ -169,7 +163,6 @@
     </section>
   </main>
 
-  <!-- View User Modal -->
   <div id="viewModal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40"></div>
 
@@ -220,79 +213,122 @@
   </div>
 
   <script>
-    /******************************************************************
-     * SUB-ADMIN MUNICIPALITY SCOPE
-     * Production: set from session/user claims, and ENFORCE on backend.
-     ******************************************************************/
-    const SUBADMIN_MUNICIPALITY = "San Juan"; // <-- replace with logged-in sub-admin municipality
+    
+    const SUBADMIN_MUNICIPALITY = "San Juan"; 
 
-    /******************************************************************
-     * DEMO DATA (replace with backend/Firestore)
-     ******************************************************************/
-    const ALL_USERS = [
-      { id:"U-0001", name:"Juan Dela Cruz", email:"juan.delacruz@email.com", municipality:"San Juan", status:"Active" },
-      { id:"U-0002", name:"Maria Santos",   email:"maria.santos@email.com", municipality:"San Juan", status:"Disabled" },
-      { id:"U-0003", name:"Andrea Reyes",   email:"andrea.reyes@email.com", municipality:"San Juan", status:"Active" },
+    class UsersRepository {
+      constructor({ municipality }) {
+        this.municipality = municipality;
 
-      { id:"U-0101", name:"Leo Cruz",       email:"leo.cruz@email.com", municipality:"Bacoor", status:"Active" },
-      { id:"U-0102", name:"Ana Lim",        email:"ana.lim@email.com",  municipality:"Bacoor", status:"Active" },
+        this._users = [
+          { id:"U-0001", name:"Juan Dela Cruz", email:"juan.delacruz@email.com", municipality:"San Juan", status:"Active" },
+          { id:"U-0002", name:"Maria Santos",   email:"maria.santos@email.com", municipality:"San Juan", status:"Disabled" },
+          { id:"U-0003", name:"Andrea Reyes",   email:"andrea.reyes@email.com", municipality:"San Juan", status:"Active" },
 
-      { id:"U-0201", name:"Carlo Tan",      email:"carlo.tan@email.com", municipality:"Makati", status:"Disabled" },
-    ];
+          { id:"U-0101", name:"Leo Cruz",       email:"leo.cruz@email.com", municipality:"Bacoor", status:"Active" },
+          { id:"U-0102", name:"Ana Lim",        email:"ana.lim@email.com",  municipality:"Bacoor", status:"Active" },
 
-    // Working set (simulate updates/deletes for this session)
-    let workingUsers = [...ALL_USERS];
-    let actionCount = 0;
+          { id:"U-0201", name:"Carlo Tan",      email:"carlo.tan@email.com", municipality:"Makati", status:"Disabled" },
+        ];
 
-    // DOM
-    const scopeChip = document.getElementById("scopeChip");
-    const resultsChip = document.getElementById("resultsChip");
+        this._actionCount = 0;
+      }
 
-    const kpiTotal = document.getElementById("kpiTotal");
-    const kpiActive = document.getElementById("kpiActive");
-    const kpiDisabled = document.getElementById("kpiDisabled");
-    const kpiActions = document.getElementById("kpiActions");
+      async getAll() {
+        return [...this._users];
+      }
 
-    const searchInput = document.getElementById("searchInput");
-    const statusSelect = document.getElementById("statusSelect");
-    const btnClear = document.getElementById("btnClear");
-    const btnRefresh = document.getElementById("btnRefresh");
+      async getScoped() {
+        const all = await this.getAll();
+        return all.filter(u => u.municipality === this.municipality);
+      }
 
-    const usersTbody = document.getElementById("usersTbody");
+      async getById(id) {
+        const all = await this.getAll();
+        return all.find(u => u.id === id) || null;
+      }
 
-    // View modal DOM
-    const viewModal = document.getElementById("viewModal");
-    const btnCloseModal = document.getElementById("btnCloseModal");
-    const viewName = document.getElementById("viewName");
-    const viewEmail = document.getElementById("viewEmail");
-    const viewId = document.getElementById("viewId");
-    const viewMunicipality = document.getElementById("viewMunicipality");
-    const viewStatus = document.getElementById("viewStatus");
+      async setStatus(id, nextStatus) {
+        const idx = this._users.findIndex(u => u.id === id);
+        if (idx === -1) return false;
 
-    function normalize(s){ return (s || "").toString().toLowerCase().trim(); }
+        this._users[idx] = { ...this._users[idx], status: nextStatus };
+        this._actionCount += 1;
+        return true;
+      }
 
-    function scopedBase(){
-      return workingUsers.filter(u => u.municipality === SUBADMIN_MUNICIPALITY);
+      async remove(id) {
+        const before = this._users.length;
+        this._users = this._users.filter(u => u.id !== id);
+        const changed = this._users.length !== before;
+        if (changed) this._actionCount += 1;
+        return changed;
+      }
+
+      get actionCount() {
+        return this._actionCount;
+      }
     }
 
-    function applyFilters(data){
-      const q = normalize(searchInput.value);
-      const status = statusSelect.value;
+    const repo = new UsersRepository({ municipality: SUBADMIN_MUNICIPALITY });
 
-      const filtered = data.filter(u => {
-        const matchQ = !q || normalize(u.name).includes(q) || normalize(u.email).includes(q);
-        const matchStatus = status === "all" || u.status === status;
-        return matchQ && matchStatus;
-      });
+    const $ = (id) => document.getElementById(id);
+    const normalize = (s) => (s || "").toString().toLowerCase().trim();
 
-      resultsChip.textContent = `Showing ${filtered.length} of ${data.length}`;
-      return filtered;
+    function inScope(user) {
+      return !!user && user.municipality === SUBADMIN_MUNICIPALITY;
     }
 
     function statusPill(status){
       const base = "inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]";
       if (status === "Active") return `<span class="${base} text-emerald-800">Active</span>`;
       return `<span class="${base} text-slate-700">Disabled</span>`;
+    }
+
+    function applyFilters(list, { query, status }) {
+      const q = normalize(query);
+      return list.filter(u => {
+        const matchQ = !q || normalize(u.name).includes(q) || normalize(u.email).includes(q);
+        const matchStatus = status === "all" || u.status === status;
+        return matchQ && matchStatus;
+      });
+    }
+
+    const scopeChip    = $("scopeChip");
+    const resultsChip  = $("resultsChip");
+
+    const kpiTotal     = $("kpiTotal");
+    const kpiActive    = $("kpiActive");
+    const kpiDisabled  = $("kpiDisabled");
+    const kpiActions   = $("kpiActions");
+
+    const searchInput  = $("searchInput");
+    const statusSelect = $("statusSelect");
+    const btnClear     = $("btnClear");
+    const btnRefresh   = $("btnRefresh");
+    const usersTbody   = $("usersTbody");
+
+    // Modal DOM
+    const viewModal         = $("viewModal");
+    const btnCloseModal     = $("btnCloseModal");
+    const viewName          = $("viewName");
+    const viewEmail         = $("viewEmail");
+    const viewId            = $("viewId");
+    const viewMunicipality  = $("viewMunicipality");
+    const viewStatus        = $("viewStatus");
+
+
+    function openViewModal(user){
+      viewName.textContent = user.name || "—";
+      viewEmail.textContent = user.email || "—";
+      viewId.textContent = user.id || "—";
+      viewMunicipality.textContent = user.municipality || "—";
+      viewStatus.textContent = user.status || "—";
+      viewModal.classList.remove("hidden");
+    }
+
+    function closeViewModal(){
+      viewModal.classList.add("hidden");
     }
 
     function rowHtml(u){
@@ -309,7 +345,7 @@
         </button>
       `;
 
-      const disableBtn = isDisabled
+      const toggleBtn = isDisabled
         ? `
           <button
             class="inline-flex items-center justify-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-900 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 whitespace-nowrap"
@@ -354,7 +390,7 @@
           <td class="px-3 py-3">
             <div class="flex flex-nowrap items-center gap-2 whitespace-nowrap">
               ${viewBtn}
-              ${disableBtn}
+              ${toggleBtn}
               ${removeBtn}
             </div>
           </td>
@@ -387,47 +423,35 @@
       kpiTotal.textContent = total;
       kpiActive.textContent = active;
       kpiDisabled.textContent = disabled;
-      kpiActions.textContent = actionCount;
+      kpiActions.textContent = repo.actionCount;
     }
 
-    function renderAll(){
+    async function renderAll(){
       scopeChip.textContent = `Municipality: ${SUBADMIN_MUNICIPALITY}`;
 
-      const base = scopedBase();
-      const filtered = applyFilters(base);
+      const scoped = await repo.getScoped();
 
-      renderKpis(base);
+      const filtered = applyFilters(scoped, {
+        query: searchInput.value,
+        status: statusSelect.value
+      });
+
+      resultsChip.textContent = `Showing ${filtered.length} of ${scoped.length}`;
+
+      renderKpis(scoped);
       renderTable(filtered);
     }
 
-    function mustBeInScope(user){
-      if (!user) return false;
-      return user.municipality === SUBADMIN_MUNICIPALITY;
+    async function handleView(id){
+      const user = await repo.getById(id);
+      if (!inScope(user)) return alert("Access denied: out of scope.");
+      openViewModal(user);
     }
 
-    // Modal helpers
-    function openViewModal(user){
-      viewName.textContent = user.name || "—";
-      viewEmail.textContent = user.email || "—";
-      viewId.textContent = user.id || "—";
-      viewMunicipality.textContent = user.municipality || "—";
-      viewStatus.textContent = user.status || "—";
-
-      viewModal.classList.remove("hidden");
-    }
-
-    function closeViewModal(){
-      viewModal.classList.add("hidden");
-    }
-
-    async function disableUser(userId){
-      const user = workingUsers.find(u => u.id === userId);
-      if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
-
-      if (user.status === "Disabled"){
-        alert("User is already disabled.");
-        return;
-      }
+    async function handleDisable(id){
+      const user = await repo.getById(id);
+      if (!inScope(user)) return alert("Access denied: out of scope.");
+      if (user.status === "Disabled") return alert("User is already disabled.");
 
       const ok = confirm(
         `Disable user?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
@@ -435,33 +459,27 @@
       );
       if (!ok) return;
 
-      user.status = "Disabled";
-      actionCount += 1;
+      await repo.setStatus(id, "Disabled");
       renderAll();
     }
 
-    async function enableUser(userId){
-      const user = workingUsers.find(u => u.id === userId);
-      if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
-
-      if (user.status === "Active"){
-        alert("User is already active.");
-        return;
-      }
+    async function handleEnable(id){
+      const user = await repo.getById(id);
+      if (!inScope(user)) return alert("Access denied: out of scope.");
+      if (user.status === "Active") return alert("User is already active.");
 
       const ok = confirm(
         `Enable user?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}`
       );
       if (!ok) return;
 
-      user.status = "Active";
-      actionCount += 1;
+      await repo.setStatus(id, "Active");
       renderAll();
     }
 
-    async function removeUser(userId){
-      const user = workingUsers.find(u => u.id === userId);
-      if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
+    async function handleRemove(id){
+      const user = await repo.getById(id);
+      if (!inScope(user)) return alert("Access denied: out of scope.");
 
       const ok = confirm(
         `Remove user account?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
@@ -469,12 +487,10 @@
       );
       if (!ok) return;
 
-      workingUsers = workingUsers.filter(u => u.id !== userId);
-      actionCount += 1;
+      await repo.remove(id);
       renderAll();
     }
 
-    // Events
     usersTbody.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-action]");
       if (!btn) return;
@@ -482,24 +498,19 @@
       const action = btn.getAttribute("data-action");
       const id = btn.getAttribute("data-id");
 
-      if (action === "view") {
-        const user = workingUsers.find(u => u.id === id);
-        if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
-        openViewModal(user);
-      }
-
-      if (action === "disable") disableUser(id);
-      if (action === "enable") enableUser(id);
-      if (action === "remove") removeUser(id);
+      if (action === "view") return handleView(id);
+      if (action === "disable") return handleDisable(id);
+      if (action === "enable") return handleEnable(id);
+      if (action === "remove") return handleRemove(id);
     });
 
     let debounce;
     searchInput.addEventListener("input", () => {
       clearTimeout(debounce);
-      debounce = setTimeout(renderAll, 150);
+      debounce = setTimeout(() => renderAll(), 150);
     });
 
-    statusSelect.addEventListener("change", renderAll);
+    statusSelect.addEventListener("change", () => renderAll());
 
     btnClear.addEventListener("click", () => {
       searchInput.value = "";
@@ -507,25 +518,16 @@
       renderAll();
     });
 
-    btnRefresh.addEventListener("click", () => {
-      renderAll();
-    });
-
-    // Modal close events
+    btnRefresh.addEventListener("click", () => renderAll());
     btnCloseModal.addEventListener("click", closeViewModal);
 
-    // click outside the card closes modal (overlay is the first child)
     viewModal.addEventListener("click", (e) => {
       if (e.target === viewModal.firstElementChild) closeViewModal();
     });
 
-    // Esc closes modal
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeViewModal();
     });
 
-    // Init
     renderAll();
-  </script>
-</body>
-</html>
+</script>
