@@ -12,534 +12,332 @@
         }
         
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f8fafc;
+            padding: 8px; /* Minimal padding for mobile */
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 900px;
+            margin: 10px auto;
             background: white;
-            padding: 30px;
-            border: 1px solid #ddd;
+            padding: 18px; /* Squeezed padding */
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
         
-        h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #333;
+        /* Header Fix */
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px; /* Reduced gap */
+            gap: 10px;
         }
-        
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
+
+        .header-text h2 {
+            font-size: 20px; /* Smaller title */
+            color: #15803d;
+            letter-spacing: -0.5px;
         }
-        
+
+        .header-text .subtitle {
+            color: #64748b;
+            font-size: 12px; /* Smaller font */
+        }
+
+        .logo-img {
+            width: 50px; /* Smaller logo */
+            height: 50px;
+            object-fit: contain;
+        }
+
+        /* Compact Grid */
+        #signupForm {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 15px; /* Tighter gap */
+        }
+
+        .full-width, .step-title, .actions, .auth-footer, .terms-row {
+            grid-column: 1 / -1;
+        }
+
         .step-title {
-            font-size: 18px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
+            font-size: 13px; /* Smaller uppercase titles */
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            padding-bottom: 5px;
+            border-bottom: 1.5px solid #f1f5f9;
+            margin-top: 5px;
         }
-        
+
         .form-group {
-            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
         }
         
         label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-size: 14px;
+            margin-bottom: 3px;
+            color: #334155;
+            font-size: 11px; /* Smaller label */
+            font-weight: 700;
+            text-transform: uppercase;
         }
         
-        .required {
-            color: red;
-        }
+        .required { color: #ef4444; }
         
         input, select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            font-size: 14px;
+            padding: 8px 10px; /* Slimmer inputs */
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            background-color: #ffffff;
+            transition: border-color 0.2s;
         }
         
         input:focus, select:focus {
             outline: none;
             border-color: #15803d;
+            background-color: #fff;
         }
-        
-        button {
-            padding: 12px 24px;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-            margin-right: 10px;
-            margin-top: 10px;
+
+        /* Dynamic Blocks */
+        #tenantFields, #cooperativeFields, #agribusinessFields, #researchFields {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 15px;
         }
-        
+
         .btn-primary {
+            width: 100%;
             background: #15803d;
             color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #14532d;
         }
-        
-        .btn-primary:hover {
-            background: #166534;
-        }
-        
-        .btn-secondary {
-            background: #ddd;
-            color: #333;
-        }
-        
-        .btn-secondary:hover {
-            background: #ccc;
-        }
-        
+
         .btn-link {
             background: none;
             color: #15803d;
-            text-decoration: underline;
-            padding: 0;
-        }
-        
-        .form-hint {
+            font-weight: 700;
             font-size: 12px;
-            color: #666;
-            display: block;
-            margin-top: 5px;
+            cursor: pointer;
+            border: none;
+            text-decoration: underline;
         }
-        
-        .otp-message {
-            padding: 10px;
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
+
         .checkbox-container {
             display: flex;
-            align-items: flex-start;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: #475569;
         }
-        
-        .checkbox-container input[type="checkbox"] {
-            width: auto;
-            margin-top: 3px;
+
+        /* --- MOBILE TWEAKS --- */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                margin: 5px auto;
+            }
+
+            .header-flex {
+                flex-direction: row; /* Keep logo and text side-by-side but small */
+            }
+
+            #signupForm, #tenantFields, #cooperativeFields, #agribusinessFields, #researchFields {
+                grid-template-columns: 1fr; /* Stack everything vertically */
+                gap: 8px;
+            }
+
+            input, select {
+                padding: 10px; /* Slightly taller for thumbs but still slim */
+            }
         }
-        
+
         .auth-footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
             text-align: center;
-            font-size: 14px;
+            font-size: 12px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
         }
-        
+
         .auth-footer a {
             color: #15803d;
+            font-weight: 700;
             text-decoration: none;
         }
-        
-        .auth-footer a:hover {
-            text-decoration: underline;
-        }
-        
-        a {
-            color: #15803d;
-        }
-
-                /* Make the page use more width but still centered */
-        .container {
-        max-width: 1100px;   /* wider than 600 */
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        }
-
-        /* 2-column responsive form layout */
-        #signupForm {
-        display: grid;
-        grid-template-columns: 1fr 1fr;  /* 2 columns on desktop */
-        gap: 16px 18px;
-        align-items: start;
-        }
-
-        /* Make headings span full width */
-        #signupForm .step-title,
-        #signupForm h3,
-        #signupForm .otp-message,
-        #signupForm .auth-footer {
-        grid-column: 1 / -1;
-        }
-
-        /* Make these groups span full width (single row across both columns) */
-        .full-width {
-        grid-column: 1 / -1;
-        }
-
-        /* Make the dynamic blocks (tenantFields, cooperativeFields...) act like grid items */
-        #tenantFields,
-        #cooperativeFields,
-        #agribusinessFields,
-        #researchFields {
-        grid-column: 1 / -1;            /* block spans full width */
-        display: grid;
-        grid-template-columns: 1fr 1fr;  /* inside block also 2 columns */
-        gap: 16px 18px;
-        }
-
-        /* For inputs that should take whole row inside dynamic blocks */
-        #tenantFields .full-width,
-        #cooperativeFields .full-width,
-        #agribusinessFields .full-width,
-        #researchFields .full-width {
-        grid-column: 1 / -1;
-        }
-
-        /* OTP row: input + button on same line (desktop) */
-        .otp-row {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        }
-        .otp-row input { flex: 1; }
-
-        /* Buttons row full width */
-        .actions {
-        grid-column: 1 / -1;
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        }
-
-        /* Terms full width */
-        .terms-row {
-        grid-column: 1 / -1;
-        }
-
-        /* Mobile: stack everything */
-        @media (max-width: 900px) {
-        #signupForm { grid-template-columns: 1fr; }
-        #tenantFields,
-        #cooperativeFields,
-        #agribusinessFields,
-        #researchFields { grid-template-columns: 1fr; }
-
-        .otp-row { flex-direction: column; align-items: stretch; }
-        .actions button { width: 100%; }
-        }
-
-        .full-width-btn {
-            width: 100%;
-            display: block;
-}
-
-
     </style>
 </head>
 <body>
     <div class="container">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <div>
-                        <h2 style="margin-bottom: 5px;">Registration</h2>
-                        <p class="subtitle" style="margin-bottom: 0;">Fill in your details to register</p>
+        <div class="header-flex">
+            <div class="header-text">
+                <h2>Registration</h2>
+                <p class="subtitle">Complete the form below</p>
+            </div>
+            <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo" class="logo-img">
+        </div>
+        
+        <form id="signupForm">
+            <h3 class="step-title">Basic Info</h3>
+            
+            <div class="form-group full-width">
+                <label for="applicationType">Account Type <span class="required">*</span></label>
+                <select id="applicationType" name="applicationType" required>
+                    <option value="">Select Type</option>
+                    <option value="tenant">Tenant/Individual</option>
+                    <option value="cooperative">Cooperative</option>
+                    <option value="agribusiness">Agribusiness Company</option>
+                    <option value="research">Research Institution</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="firstName" id="firstNameLabel">First Name <span class="required">*</span></label>
+                <input type="text" id="firstName" name="firstName" placeholder="First name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="lastName" id="lastNameLabel">Last Name <span class="required">*</span></label>
+                <input type="text" id="lastName" name="lastName" placeholder="Last name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" placeholder="email@link.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Phone <span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="09XXXXXXXXX" required>
+            </div>
+            
+            <div id="dynamicFields" class="full-width">
+                <div id="tenantFields">
+                    <div class="form-group full-width">
+                        <label for="address">Address <span class="required">*</span></label>
+                        <input type="text" id="address" name="address" placeholder="St., Brgy, Town">
                     </div>
-                    <img src="{{ url_for('static', filename='images/denr.jpg') }}" alt="DENR Logo" style="width: 80px; height: 80px; object-fit: contain;">
-                </div>
-                
-                <form id="signupForm">
-                    <h3 class="step-title">Registration Form</h3>
-                    
                     <div class="form-group">
-                        <label for="applicationType">Application Type <span class="required">*</span></label>
-                        <select id="applicationType" name="applicationType" required>
-                            <option value="">Select Application Type</option>
-                            <option value="tenant">Tenant/Individual</option>
-                            <option value="cooperative">Cooperative</option>
-                            <option value="agribusiness">Agribusiness Company</option>
-                            <option value="research">Research Institution</option>
+                        <label for="province">Province <span class="required">*</span></label>
+                        <select id="province" name="province"><option value="">Select</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="municipality">Municipality <span class="required">*</span></label>
+                        <select id="municipality" name="municipality" disabled><option value="">Select</option></select>
+                    </div>
+                </div>
+
+                <div id="cooperativeFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="cdaNumber">CDA No. <span class="required">*</span></label>
+                        <input type="text" id="cdaNumber" name="cdaNumber">
+                    </div>
+                    <div class="form-group">
+                        <label for="registrationDate">Reg. Date <span class="required">*</span></label>
+                        <input type="date" id="registrationDate" name="registrationDate">
+                    </div>
+                </div>
+
+                <div id="agribusinessFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="businessRegNumber">SEC/DTI No. <span class="required">*</span></label>
+                        <input type="text" id="businessRegNumber" name="businessRegNumber">
+                    </div>
+                    <div class="form-group">
+                        <label for="businessType">Type <span class="required">*</span></label>
+                        <select id="businessType" name="businessType">
+                            <option value="corporation">Corp.</option>
+                            <option value="sole">Sole Prop.</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group" id="firstNameGroup">
-                        <label for="firstName" id="firstNameLabel">First Name / Organization Name <span class="required">*</span></label>
-                        <input type="text" id="firstName" name="firstName" placeholder="Enter name" required>
-                    </div>
-                    
-                    <div class="form-group" id="lastNameGroup">
-                        <label for="lastName" id="lastNameLabel">Last Name / Contact Person <span class="required">*</span></label>
-                        <input type="text" id="lastName" name="lastName" placeholder="Enter name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">Email Address <span class="required">*</span></label>
-                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phone">Phone Number <span class="required">*</span></label>
-                        <input type="tel" id="phone" name="phone" placeholder="+63 XXX XXX XXXX" required>
-                    </div>
-                    
-                    <!-- Fields for Tenant/Individual -->
-                    <div id="tenantFields">
-                        <div class="form-group">
-                                <label for="address">Address <span class="required">*</span></label>
-                                <input type="text" id="address" name="address" placeholder="Street, Barangay">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="province">Province <span class="required">*</span></label>
-                                <select id="province" name="province">
-                                    <option value="">Select Province</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="municipality">Municipality <span class="required">*</span></label>
-                                <select id="municipality" name="municipality" disabled>
-                                    <option value="">Select Province First</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="farmSize">Farm Size (hectares)</label>
-                                <input type="number" id="farmSize" name="farmSize" placeholder="0.00" step="0.01">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="cropType">Primary Crop Type</label>
-                                <input type="text" id="cropType" name="cropType" placeholder="e.g., Rice, Corn, Vegetables">
-                            </div>
-                        </div>
-                        
-                        <!-- Fields for Cooperative -->
-                        <div id="cooperativeFields" style="display: none;">
-                            <div class="form-group">
-                                <label for="cdaNumber">Registration Number (CDA) <span class="required">*</span></label>
-                                <input type="text" id="cdaNumber" name="cdaNumber" placeholder="CDA Registration Number">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="registrationDate">Date of Registration <span class="required">*</span></label>
-                                <input type="date" id="registrationDate" name="registrationDate">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="officeAddress">Office Address <span class="required">*</span></label>
-                                <input type="text" id="officeAddress" name="officeAddress" placeholder="Complete office address">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="coopProvince">Province <span class="required">*</span></label>
-                                <select id="coopProvince" name="coopProvince">
-                                    <option value="">Select Province</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="coopMunicipality">Municipality <span class="required">*</span></label>
-                                <select id="coopMunicipality" name="coopMunicipality" disabled>
-                                    <option value="">Select Province First</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="primaryActivity">Primary Agricultural Activity/Crops <span class="required">*</span></label>
-                                <input type="text" id="primaryActivity" name="primaryActivity" placeholder="e.g., Rice Production, Vegetable Farming">
-                            </div>
-                        </div>
-                        
-                        <!-- Fields for Agribusiness Company -->
-                        <div id="agribusinessFields" style="display: none;">
-                            <div class="form-group">
-                                <label for="businessRegNumber">Business Registration Number (DTI/SEC) <span class="required">*</span></label>
-                                <input type="text" id="businessRegNumber" name="businessRegNumber" placeholder="DTI/SEC Registration Number">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="businessType">Type of Business <span class="required">*</span></label>
-                                <select id="businessType" name="businessType">
-                                    <option value="">Select Business Type</option>
-                                    <option value="corporation">Corporation</option>
-                                    <option value="partnership">Partnership</option>
-                                    <option value="sole_proprietorship">Sole Proprietorship</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="businessRegDate">Date of Registration <span class="required">*</span></label>
-                                <input type="date" id="businessRegDate" name="businessRegDate">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="businessAddress">Business Address <span class="required">*</span></label>
-                                <input type="text" id="businessAddress" name="businessAddress" placeholder="Complete business address">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="businessProvince">Province <span class="required">*</span></label>
-                                <select id="businessProvince" name="businessProvince">
-                                    <option value="">Select Province</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="businessMunicipality">Municipality <span class="required">*</span></label>
-                                <select id="businessMunicipality" name="businessMunicipality" disabled>
-                                    <option value="">Select Province First</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="natureOfBusiness">Nature of Business/Products <span class="required">*</span></label>
-                                <input type="text" id="natureOfBusiness" name="natureOfBusiness" placeholder="e.g., Agricultural Products Trading, Food Processing">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="businessScale">Business Scale <span class="required">*</span></label>
-                                <select id="businessScale" name="businessScale">
-                                    <option value="">Select Business Scale</option>
-                                    <option value="small">Small</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="large">Large</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Fields for Research Institution -->
-                        <div id="researchFields" style="display: none;">
-                            <div class="form-group">
-                                <label for="accreditationNumber">Registration/Accreditation Number <span class="required">*</span></label>
-                                <input type="text" id="accreditationNumber" name="accreditationNumber" placeholder="Registration/Accreditation Number">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="institutionType">Type of Institution <span class="required">*</span></label>
-                                <select id="institutionType" name="institutionType">
-                                    <option value="">Select Institution Type</option>
-                                    <option value="government">Government</option>
-                                    <option value="private">Private</option>
-                                    <option value="academic">Academic</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="institutionAddress">Institution Address <span class="required">*</span></label>
-                                <input type="text" id="institutionAddress" name="institutionAddress" placeholder="Complete institution address">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="institutionProvince">Province <span class="required">*</span></label>
-                                <select id="institutionProvince" name="institutionProvince">
-                                    <option value="">Select Province</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="institutionMunicipality">Municipality <span class="required">*</span></label>
-                                <select id="institutionMunicipality" name="institutionMunicipality" disabled>
-                                    <option value="">Select Province First</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="researchFocus">Research Focus/Specialization <span class="required">*</span></label>
-                                <input type="text" id="researchFocus" name="researchFocus" placeholder="e.g., Agricultural Technology, Crop Science">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="password">Create Password <span class="required">*</span></label>
-                            <input type="password" id="password" name="password" placeholder="Create a password" required>
-                            <small class="form-hint">Must be at least 8 characters</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="otpCode">OTP Code <span class="required">*</span></label>
-                            <input type="text" id="otpCode" name="otpCode" placeholder="Enter 6-digit code" maxlength="6" required>
-                            <button type="button" class="btn-link" onclick="sendOTP()">Send OTP</button>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="checkbox-container">
-                                <input type="checkbox" name="terms" required>
-                                <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
-                            </label>
-                        </div>
-                        
-                        <div class="actions">
-                        <button type="submit" class="btn-primary full-width-btn">Complete Registration</button>
-                        </div>
+                </div>
 
-                    
-                    <div class="auth-footer">
-                        <p>Already have an account? <a href="{{ url_for('main.login') }}">Sign In</a></p>
+                <div id="researchFields" style="display: none;">
+                    <div class="form-group full-width">
+                        <label for="accreditationNumber">Accreditation No. <span class="required">*</span></label>
+                        <input type="text" id="accreditationNumber" name="accreditationNumber">
                     </div>
-                </form>
+                </div>
             </div>
-        </div>
+
+            <h3 class="step-title">Security</h3>
+            
+            <div class="form-group">
+                <label for="password">Password <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">Confirm <span class="required">*</span></label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+            
+            <div class="form-group full-width">
+                <label for="otpCode">OTP <span class="required">*</span></label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="otpCode" name="otpCode" placeholder="6-digits" maxlength="6" required>
+                    <button type="button" class="btn-link" onclick="sendOTP()">Send</button>
+                </div>
+            </div>
+            
+            <div class="terms-row">
+                <label class="checkbox-container">
+                    <input type="checkbox" name="terms" required>
+                    <span>I agree to the <a href="#">Terms & Privacy</a></span>
+                </label>
+            </div>
+            
+            <div class="actions">
+                <button type="submit" class="btn-primary">Register Account</button>
+            </div>
+
+            <div class="auth-footer">
+                <p>Have an account? <a href="{{ url_for('main.login') }}">Sign In</a></p>
+            </div>
+        </form>
     </div>
-    
+
     <script type="module" src="{{ url_for('static', filename='js/ph-locations.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script>
-        // Show/hide fields based on application type
         document.addEventListener('DOMContentLoaded', function() {
             const appType = document.getElementById('applicationType');
-            const firstNameLabel = document.getElementById('firstNameLabel');
-            const lastNameLabel = document.getElementById('lastNameLabel');
-            const firstName = document.getElementById('firstName');
-            const lastName = document.getElementById('lastName');
+            const sections = ['tenantFields', 'cooperativeFields', 'agribusinessFields', 'researchFields'];
             
-            if (appType) {
-                appType.addEventListener('change', function() {
-                    const value = this.value;
+            appType.addEventListener('change', function() {
+                const value = this.value;
+                sections.forEach(id => document.getElementById(id).style.display = 'none');
+                if (value) {
+                    const activeSection = document.getElementById(value + 'Fields');
+                    if (activeSection) activeSection.style.display = 'grid';
                     
-                    // Hide all
-                    document.getElementById('tenantFields').style.display = 'none';
-                    document.getElementById('cooperativeFields').style.display = 'none';
-                    document.getElementById('agribusinessFields').style.display = 'none';
-                    document.getElementById('researchFields').style.display = 'none';
+                    const fNameLabel = document.getElementById('firstNameLabel');
+                    const lNameLabel = document.getElementById('lastNameLabel');
                     
-                    // Update labels and show fields
-                    if (value === 'tenant' || value === '') {
-                        firstNameLabel.innerHTML = 'First Name <span class="required">*</span>';
-                        lastNameLabel.innerHTML = 'Last Name <span class="required">*</span>';
-                        firstName.placeholder = 'First name';
-                        lastName.placeholder = 'Last name';
-                        document.getElementById('tenantFields').style.display = 'block';
-                    } else if (value === 'cooperative') {
-                        firstNameLabel.innerHTML = 'Cooperative Name <span class="required">*</span>';
-                        lastNameLabel.innerHTML = 'Contact Person Name <span class="required">*</span>';
-                        firstName.placeholder = 'Cooperative name';
-                        lastName.placeholder = 'Contact person name';
-                        document.getElementById('cooperativeFields').style.display = 'block';
-                    } else if (value === 'agribusiness') {
-                        firstNameLabel.innerHTML = 'Company Name <span class="required">*</span>';
-                        lastNameLabel.innerHTML = 'Authorized Representative Name <span class="required">*</span>';
-                        firstName.placeholder = 'Company name';
-                        lastName.placeholder = 'Representative name';
-                        document.getElementById('agribusinessFields').style.display = 'block';
-                    } else if (value === 'research') {
-                        firstNameLabel.innerHTML = 'Institution Name <span class="required">*</span>';
-                        lastNameLabel.innerHTML = 'Contact Person Name <span class="required">*</span>';
-                        firstName.placeholder = 'Institution name';
-                        lastName.placeholder = 'Contact person name';
-                        document.getElementById('researchFields').style.display = 'block';
+                    if (value === 'tenant') {
+                        fNameLabel.innerText = 'First Name *';
+                        lNameLabel.innerText = 'Last Name *';
+                    } else {
+                        fNameLabel.innerText = 'Org. Name *';
+                        lNameLabel.innerText = 'Contact Person *';
                     }
-                });
-            }
+                }
+            });
         });
     </script>
 </body>

@@ -12,7 +12,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   
-  <!-- HTML2PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
@@ -21,24 +20,23 @@
     canvas { max-width: 100% !important; }
 
     /* REDUCED SIZES SECTION */
-    .bg-white.rounded-2xl { padding: 0.75rem !important; border-radius: 12px !important; } /* Smaller Card Padding */
-    .text-2xl { font-size: 1.25rem !important; } /* Smaller Stat Numbers */
-    .text-3xl { font-size: 1.5rem !important; } /* Smaller Stat Numbers */
+    .bg-white.rounded-2xl { padding: 0.75rem !important; border-radius: 12px !important; }
+    .text-2xl { font-size: 1.25rem !important; }
+    .text-3xl { font-size: 1.5rem !important; }
     
-    .h-\[220px\], .h-\[240px\] { height: 160px !important; } /* Smaller Graph Heights */
+    .h-\[220px\], .h-\[240px\] { height: 160px !important; }
     
-    .table td, .table th { padding: 6px 10px !important; font-size: 12px; } /* Compact Table */
+    .table td, .table th { padding: 6px 10px !important; font-size: 12px; }
     
     .control-field .form-control,
     .control-field .form-select,
     .control-btn {
-      height: 36px !important; /* Smaller Controls */
+      height: 36px !important;
       font-size: 13px !important;
     }
     
     .mb-4 { margin-bottom: 0.75rem !important; }
     .mb-6 { margin-bottom: 1rem !important; }
-    /* END REDUCED SIZES */
 
     .control-btn {
       display: inline-flex;
@@ -46,6 +44,49 @@
       justify-content: center;
       gap: .35rem;
       white-space: nowrap;
+    }
+
+    /* DOWNLOAD BUTTON FIX PARA HINDI LUMALAKI SA MOBILE */
+    #downloadReportBtn {
+        min-width: 80px;
+        transition: all 0.2s ease;
+    }
+
+    @media (max-width: 640px) {
+        #downloadReportBtn {
+            width: 45px !important;
+            height: 45px !important;
+            padding: 0 !important;
+            border-radius: 12px !important;
+            flex-direction: column !important;
+        }
+        #downloadReportBtn span { display: none; }
+        #downloadReportBtn i { margin: 0 !important; font-size: 1.2rem; }
+    }
+
+    /* CAROUSEL TO GRID RESET FOR DESKTOP */
+    @media (min-width: 1024px) {
+        .carousel-inner {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 1rem !important;
+        }
+        .carousel-item {
+            display: block !important;
+            margin-right: 0 !important;
+            flex: 0 0 auto !important;
+            width: 100% !important;
+        }
+        .carousel-control-prev, .carousel-control-next, .carousel-indicators {
+            display: none !important;
+        }
+    }
+
+    .carousel-indicators [data-bs-target] {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #15803d; /* green-700 */
     }
   </style>
 </head>
@@ -55,33 +96,32 @@
 
 <main class="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
 
-  <!-- Your existing quick links -->
-  <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-[360px] sm:max-w-[520px] lg:max-w-[700px] mx-auto mb-4 sm:mb-6">
+<div class="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-4 max-w-[400px] sm:max-w-[600px] lg:max-w-[800px] mx-auto mb-4 sm:mb-6">
     <a href="/user/application"
-       class="bg-white hover:bg-green text-green-800 py-2 sm:py-3 px-3 rounded-xl shadow-sm transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3 border border-transparent">
-      <i class="fa-solid fa-file-lines text-[12px] sm:text-base lg:text-lg"></i>
-      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+       class="bg-white border border-green-700 text-green-800 py-2 sm:py-3 px-1 rounded-xl shadow-sm transition-all transform active:scale-95 text-center no-underline flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
+      <i class="fa-solid fa-file-lines text-[14px] sm:text-base lg:text-lg"></i>
+      <span class="text-[8px] sm:text-xs lg:text-sm font-black uppercase tracking-tighter sm:tracking-normal">
         Applications
       </span>
     </a>
 
     <a href="/user/inventory"
-       class="bg-white border border-green-700 text-green-800 py-2 sm:py-3 px-3 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex items-center justify-center gap-2 sm:gap-3">
-      <i class="fa-solid fa-boxes-stacked text-[12px] sm:text-base lg:text-lg"></i>
-      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+       class="bg-white border border-green-700 text-green-800 py-2 sm:py-3 px-1 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center no-underline flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
+      <i class="fa-solid fa-boxes-stacked text-[14px] sm:text-base lg:text-lg"></i>
+      <span class="text-[8px] sm:text-xs lg:text-sm font-black uppercase tracking-tighter sm:tracking-normal">
         Inventory
       </span>
     </a>
 
     <button id="downloadReportBtn" 
        onclick="downloadDashboardReport()"
-       class="bg-white border border-green-700 text-green-800 py-3 sm:py-4 px-3 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center flex items-center justify-center gap-2 sm:gap-3">
-      <i class="fa-solid fa-file-pdf text-[12px] sm:text-base lg:text-lg"></i>
-      <span class="text-[10px] sm:text-xs lg:text-sm font-black uppercase tracking-tight sm:tracking-wider lg:tracking-widest">
+       class="bg-white border border-green-700 text-green-800 py-2 sm:py-3 px-1 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
+      <i class="fa-solid fa-file-pdf text-[14px] sm:text-base lg:text-lg"></i>
+      <span class="text-[8px] sm:text-xs lg:text-sm font-black uppercase tracking-tighter sm:tracking-normal">
         Report
       </span>
     </button>
-  </div>
+</div>
 
   <div class="max-w-[1150px] mx-auto">
 
@@ -144,40 +184,64 @@
     </section>
 
     <section class="mb-4 sm:mb-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3">
-        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Inventory: Types</h2>
-            <i class="fa-solid fa-chart-pie text-gray-400"></i>
-          </div>
-          <div class="h-[220px] sm:h-[240px]">
-            <canvas id="chartProductTypes"></canvas>
-          </div>
+      <div id="graphCarousel" class="carousel slide lg:static" data-bs-ride="false">
+        
+        <div class="carousel-indicators lg:hidden !-mb-6">
+          <button type="button" data-bs-target="#graphCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+          <button type="button" data-bs-target="#graphCarousel" data-bs-slide-to="1"></button>
+          <button type="button" data-bs-target="#graphCarousel" data-bs-slide-to="2"></button>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Types</h2>
-            <i class="fa-solid fa-chart-column text-gray-400"></i>
+        <div class="carousel-inner lg:grid lg:grid-cols-3 lg:gap-3 overflow-visible">
+          
+          <div class="carousel-item active lg:block">
+            <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4 mx-1">
+              <div class="flex items-center justify-between mb-2">
+                <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Inventory: Types</h2>
+                <i class="fa-solid fa-chart-pie text-gray-400"></i>
+              </div>
+              <div class="h-[220px] sm:h-[240px]">
+                <canvas id="chartProductTypes"></canvas>
+              </div>
+            </div>
           </div>
-          <div class="h-[220px] sm:h-[240px]">
-            <canvas id="chartApplicationTypes"></canvas>
+
+          <div class="carousel-item lg:block">
+            <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4 mx-1">
+              <div class="flex items-center justify-between mb-2">
+                <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Types</h2>
+                <i class="fa-solid fa-chart-column text-gray-400"></i>
+              </div>
+              <div class="h-[220px] sm:h-[240px]">
+                <canvas id="chartApplicationTypes"></canvas>
+              </div>
+            </div>
           </div>
+
+          <div class="carousel-item lg:block">
+            <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4 mx-1">
+              <div class="flex items-center justify-between mb-2">
+                <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Status</h2>
+                <i class="fa-solid fa-chart-simple text-gray-400"></i>
+              </div>
+              <div class="h-[220px] sm:h-[240px]">
+                <canvas id="chartStatus"></canvas>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs sm:text-sm font-black uppercase tracking-widest text-gray-700 m-0">Applications: Status</h2>
-            <i class="fa-solid fa-chart-simple text-gray-400"></i>
-          </div>
-          <div class="h-[220px] sm:h-[240px]">
-            <canvas id="chartStatus"></canvas>
-          </div>
-        </div>
+        <button class="carousel-control-prev lg:hidden !w-[10%] invert" type="button" data-bs-target="#graphCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        <button class="carousel-control-next lg:hidden !w-[10%] invert" type="button" data-bs-target="#graphCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
       </div>
     </section>
 
-    <section class="mb-3">
+    <section class="mb-3 pt-3">
       <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
         <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:gap-4">
           <div class="control-field flex-1 min-w-[220px]">
@@ -315,7 +379,6 @@
     }
   }
 
-  // Map transaction status to payment status
   function mapPaymentStatus(status) {
     const s = (status || '').toLowerCase();
     if (s === 'approved') return 'Paid';
@@ -324,7 +387,6 @@
     return 'Pending';
   }
 
-  // Map transaction status to application status
   function mapApplicationStatus(status) {
     const s = (status || '').toLowerCase();
     if (s === 'approved') return 'Approved';
@@ -421,16 +483,10 @@
   function renderTable(rows) {
     const tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
-
     if (!rows.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="5" class="text-center text-gray-500 py-4">No results found.</td>
-        </tr>
-      `;
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 py-4">No results found.</td></tr>`;
       return;
     }
-
     for (const r of rows) {
       tbody.insertAdjacentHTML("beforeend", `
         <tr>
@@ -459,29 +515,18 @@
   function applyFilters() {
     const q = normalize(document.getElementById("searchInput").value);
     const type = document.getElementById("typeFilter").value;
-
     let filtered = [...allTransactions];
-
     if (type !== "ALL") filtered = filtered.filter(r => r.type_of_application === type);
-
     if (q) {
       filtered = filtered.filter(r => {
-        const blob = [
-          r.reference_num,
-          r.name_of_application,
-          r.type_of_application,
-          r.payment_status,
-          r.status,
-        ].map(normalize).join(" ");
+        const blob = [r.reference_num, r.name_of_application, r.type_of_application, r.payment_status, r.status].map(normalize).join(" ");
         return blob.includes(q);
       });
     }
-
     renderTable(filtered);
     updateTableMeta(filtered.length, allTransactions.length);
   }
 
-  /* Cards + Charts */
   function computeCards() {
     const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
     const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
@@ -507,22 +552,16 @@
   }
 
   function initCharts() {
-    // Clear any existing charts
     const ctx1 = document.getElementById("chartProductTypes");
     const ctx2 = document.getElementById("chartApplicationTypes");
     const ctx3 = document.getElementById("chartStatus");
-    
     if (ctx1.chart) ctx1.chart.destroy();
     if (ctx2.chart) ctx2.chart.destroy();
     if (ctx3.chart) ctx3.chart.destroy();
 
-    // Placeholder chart for product types
     ctx1.chart = new Chart(ctx1, {
       type: "doughnut",
-      data: { 
-        labels: ["Pending Data"], 
-        datasets: [{ data: [1], backgroundColor: ['#d1d5db'] }] 
-      },
+      data: { labels: ["Pending Data"], datasets: [{ data: [1], backgroundColor: ['#d1d5db'] }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
     });
 
@@ -536,12 +575,7 @@
           backgroundColor: ['#10b981', '#3b82f6']
         }] 
       },
-      options: {
-        responsive: true, 
-        maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-        plugins: { legend: { display: false } }
-      }
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
     });
 
     const statusCounts = countBy(allTransactions, x => x.status);
@@ -553,16 +587,12 @@
       type: "pie",
       data: { 
         labels, 
-        datasets: [{ 
-          data: labels.map(l => statusCounts.get(l) || 0),
-          backgroundColor: labels.map(l => colors[l] || '#d1d5db')
-        }] 
+        datasets: [{ data: labels.map(l => statusCounts.get(l) || 0), backgroundColor: labels.map(l => colors[l] || '#d1d5db') }] 
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
     });
   }
 
-  // Initialize on auth state change
   onAuthStateChanged(auth, (user) => {
     let userEmail = '';
     let userId = '';
@@ -579,47 +609,37 @@
     }
   });
 
-  // DOM event listeners
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("searchInput").addEventListener("input", applyFilters);
     document.getElementById("typeFilter").addEventListener("change", applyFilters);
-
-    document.getElementById("btnClear").addEventListener("click", () => {
-      document.getElementById("searchInput").value = "";
-      applyFilters();
-    });
-
-    document.getElementById("btnReset").addEventListener("click", () => {
-      document.getElementById("searchInput").value = "";
-      document.getElementById("typeFilter").value = "ALL";
-      applyFilters();
-    });
+    document.getElementById("btnClear").addEventListener("click", () => { document.getElementById("searchInput").value = ""; applyFilters(); });
+    document.getElementById("btnReset").addEventListener("click", () => { document.getElementById("searchInput").value = ""; document.getElementById("typeFilter").value = "ALL"; applyFilters(); });
   });
 
-  // Expose functions to window for onclick handlers
   window.applyFilters = applyFilters;
 
-  // Download Dashboard Report Function
+  /* DOWNLOAD REPORT FUNCTION - ALL ORIGINAL LOGIC INCLUDED */
   window.downloadDashboardReport = async function() {
+    const downloadBtn = document.getElementById('downloadReportBtn');
+    const isMobile = window.innerWidth < 640;
+    
     try {
-      const downloadBtn = document.getElementById('downloadReportBtn');
       downloadBtn.disabled = true;
-      downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating...';
+      downloadBtn.innerHTML = isMobile 
+        ? '<i class="fa-solid fa-spinner fa-spin"></i>' 
+        : '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating...';
 
-      // Create a container for the PDF content
       const pdfContainer = document.createElement('div');
       pdfContainer.style.padding = '20px';
       pdfContainer.style.backgroundColor = '#ffffff';
       pdfContainer.style.fontFamily = 'Arial, sans-serif';
       pdfContainer.style.lineHeight = '1.3';
 
-      // Add header
       const header = document.createElement('div');
       header.style.textAlign = 'center';
       header.style.marginBottom = '12px';
       header.style.borderBottom = '2px solid #10b981';
       header.style.paddingBottom = '8px';
-
       header.innerHTML = `
         <h1 style="color: #1b330d; font-size: 22px; margin: 0; font-weight: 800;">DENR Dashboard Report</h1>
         <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Comprehensive Application & Transaction Summary</p>
@@ -627,7 +647,6 @@
       `;
       pdfContainer.appendChild(header);
 
-      // Calculate all statistics
       const totalTransactions = allTransactions.length;
       const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
       const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
@@ -642,47 +661,48 @@
       const approvedAmount = allTransactions.filter(r => normalize(r.status) === "approved").reduce((sum, t) => sum + (t.amount || 0), 0);
       const pendingAmount = allTransactions.filter(r => normalize(r.status) === "pending").reduce((sum, t) => sum + (t.amount || 0), 0);
 
-      // SECTION 1: Executive Summary
       const execSummary = document.createElement('div');
       execSummary.style.marginBottom = '12px';
-      execSummary.style.pageBreakInside = 'avoid';
-
-      const execTitle = document.createElement('h2');
-      execTitle.innerHTML = 'Executive Summary';
-      execTitle.style.color = '#1b330d';
-      execTitle.style.fontSize = '14px';
-      execTitle.style.fontWeight = '800';
-      execTitle.style.borderBottom = '2px solid #10b981';
-      execTitle.style.paddingBottom = '4px';
-      execTitle.style.marginBottom = '8px';
-      execSummary.appendChild(execTitle);
-
-      const summaryStats = document.createElement('div');
-      summaryStats.style.display = 'grid';
-      summaryStats.style.gridTemplateColumns = 'repeat(3, 1fr)';
-      summaryStats.style.gap = '8px';
-      
-      summaryStats.innerHTML = `
-        <div style="background: #f0fdf4; padding: 10px; border-radius: 6px; border-left: 3px solid #10b981; page-break-inside: avoid;">
-          <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total Txns</p>
-          <h3 style="color: #10b981; font-size: 20px; margin: 4px 0 0 0; font-weight: 800;">${totalTransactions}</h3>
-        </div>
-        <div style="background: #fef3c7; padding: 10px; border-radius: 6px; border-left: 3px solid #f59e0b; page-break-inside: avoid;">
-          <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Success</p>
-          <h3 style="color: #f59e0b; font-size: 20px; margin: 4px 0 0 0; font-weight: 800;">${successTxn}</h3>
-        </div>
-        <div style="background: #eff6ff; padding: 10px; border-radius: 6px; border-left: 3px solid #3b82f6; page-break-inside: avoid;">
-          <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total</p>
-          <h3 style="color: #3b82f6; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">₱${totalAmount.toLocaleString()}</h3>
+      execSummary.innerHTML = `
+        <h2 style="color: #1b330d; font-size: 14px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 4px; margin-bottom: 8px;">Executive Summary</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <div style="background: #f0fdf4; padding: 10px; border-radius: 6px; border-left: 3px solid #10b981;">
+              <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total Txns</p>
+              <h3 style="color: #10b981; font-size: 20px; margin: 4px 0 0 0; font-weight: 800;">${totalTransactions}</h3>
+            </div>
+            <div style="background: #fef3c7; padding: 10px; border-radius: 6px; border-left: 3px solid #f59e0b;">
+              <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Success</p>
+              <h3 style="color: #f59e0b; font-size: 20px; margin: 4px 0 0 0; font-weight: 800;">${successTxn}</h3>
+            </div>
+            <div style="background: #eff6ff; padding: 10px; border-radius: 6px; border-left: 3px solid #3b82f6;">
+              <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total</p>
+              <h3 style="color: #3b82f6; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">₱${totalAmount.toLocaleString()}</h3>
+            </div>
         </div>
       `;
-      execSummary.appendChild(summaryStats);
       pdfContainer.appendChild(execSummary);
 
-      // SECTION 2: Application Type Breakdown
-      const typeBreakdown = document.createElement('div');
-      typeBreakdown.style.marginBottom = '12px';
-      typeBreakdown.style.pageBreakInside = 'avoid';
+      /* App Breakdown Section */
+      const breakdown = document.createElement('div');
+      breakdown.style.marginBottom = '12px';
+      breakdown.innerHTML = `
+        <h2 style="color: #1b330d; font-size: 14px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 4px; margin-bottom: 8px;">Breakdown</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <div style="background: #f0fdf4; border: 1px solid #10b981; padding: 10px; border-radius: 6px;">
+              <div style="font-size: 10px; color: #6b7280; font-weight: 700;">LICENSE/PERMIT</div>
+              <div style="font-size: 24px; color: #10b981; font-weight: 800;">${licenseReq}</div>
+            </div>
+            <div style="background: #eff6ff; border: 1px solid #3b82f6; padding: 10px; border-radius: 6px;">
+              <div style="font-size: 10px; color: #6b7280; font-weight: 700;">PRODUCT APP</div>
+              <div style="font-size: 24px; color: #3b82f6; font-weight: 800;">${appReq}</div>
+            </div>
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 10px; border-radius: 6px;">
+              <div style="font-size: 10px; color: #6b7280; font-weight: 700;">SERVICE REQ</div>
+              <div style="font-size: 24px; color: #f59e0b; font-weight: 800;">${serviceReq}</div>
+            </div>
+        </div>
+      `;
+      pdfContainer.appendChild(breakdown);
 
       const typeTitle = document.createElement('h2');
       typeTitle.innerHTML = 'Application Type Breakdown';
@@ -809,95 +829,38 @@
       // SECTION 5: Detailed Transaction List
       const detailsSection = document.createElement('div');
       detailsSection.style.pageBreakBefore = 'always';
-      detailsSection.style.marginTop = '0px';
-
-      const detailsTitle = document.createElement('h2');
-      detailsTitle.innerHTML = 'Detailed Transaction List';
-      detailsTitle.style.color = '#1b330d';
-      detailsTitle.style.fontSize = '14px';
-      detailsTitle.style.fontWeight = '800';
-      detailsTitle.style.borderBottom = '2px solid #10b981';
-      detailsTitle.style.paddingBottom = '4px';
-      detailsTitle.style.marginBottom = '10px';
-      detailsSection.appendChild(detailsTitle);
-
-      // Add each transaction as a detailed card
+      detailsSection.innerHTML = `<h2 style="color: #1b330d; font-size: 14px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 4px; margin-bottom: 10px;">Detailed Transaction List</h2>`;
+      
       allTransactions.forEach((transaction, idx) => {
+        const sColor = normalize(transaction.status) === 'approved' ? '#10b981' : normalize(transaction.status) === 'pending' ? '#3b82f6' : '#ef4444';
+        const pColor = normalize(transaction.payment_status) === 'paid' ? '#10b981' : '#ef4444';
         const txnCard = document.createElement('div');
-        txnCard.style.marginBottom = '12px';
-        txnCard.style.padding = '10px';
-        txnCard.style.border = '1px solid #e5e7eb';
-        txnCard.style.borderRadius = '6px';
-        txnCard.style.backgroundColor = '#f9fafb';
-        txnCard.style.pageBreakInside = 'avoid';
-        txnCard.style.fontSize = '11px';
-
-        const statusColor = normalize(transaction.status) === 'approved' ? '#10b981' : 
-                           normalize(transaction.status) === 'pending' ? '#3b82f6' : '#ef4444';
-        const paymentColor = normalize(transaction.payment_status) === 'paid' ? '#10b981' : 
-                            normalize(transaction.payment_status) === 'refunded' ? '#f59e0b' : '#ef4444';
-
+        txnCard.style.cssText = 'margin-bottom:12px; padding:10px; border:1px solid #e5e7eb; border-radius:6px; background:#f9fafb; page-break-inside:avoid; font-size:11px;';
         txnCard.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
-            <div>
-              <div style="font-size: 9px; color: #6b7280; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Txn #${idx + 1}</div>
-              <div style="color: #1b330d; font-size: 11px; font-weight: 700;">${transaction.name_of_application}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-size: 12px; color: ${paymentColor}; font-weight: 800;">₱${(transaction.amount || 0).toLocaleString()}</div>
-              <div style="font-size: 9px; color: #9ca3af;">${new Date(transaction.created_at).toLocaleDateString()}</div>
-            </div>
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #10b981; padding-bottom:8px; margin-bottom:8px;">
+            <div><div style="font-size:9px; font-weight:700;">Txn #${idx+1}</div><div style="font-weight:700;">${transaction.name_of_application}</div></div>
+            <div style="text-align:right;"><div style="font-size:12px; font-weight:800; color:${pColor};">₱${(transaction.amount || 0).toLocaleString()}</div></div>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; font-size: 10px;">
-            <div><span style="color: #6b7280; font-weight: 700;">Ref:</span> ${transaction.reference_num}</div>
-            <div><span style="color: #6b7280; font-weight: 700;">Type:</span> ${transaction.type_of_application}</div>
-            <div><span style="color: #6b7280; font-weight: 700;">Payment:</span> <span style="color: ${paymentColor}; font-weight: 700;">● ${transaction.payment_status}</span></div>
-            <div><span style="color: #6b7280; font-weight: 700;">Status:</span> <span style="color: ${statusColor}; font-weight: 700;">● ${transaction.status}</span></div>
-          </div>
-          <div style="background: white; padding: 6px; border-radius: 4px; font-size: 9px;">
-            <div style="margin: 2px 0;"><span style="font-weight: 700;">Invoice:</span> ${transaction.invoice_id || 'N/A'}</div>
-            <div style="margin: 2px 0;"><span style="font-weight: 700;">Desc:</span> ${(transaction.description || 'N/A').substring(0, 60)}</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:10px;">
+            <div>Ref: ${transaction.reference_num}</div><div>Type: ${transaction.type_of_application}</div>
+            <div>Payment: <span style="color:${pColor}; font-weight:700;">● ${transaction.payment_status}</span></div>
+            <div>Status: <span style="color:${sColor}; font-weight:700;">● ${transaction.status}</span></div>
           </div>
         `;
-
         detailsSection.appendChild(txnCard);
       });
-
       pdfContainer.appendChild(detailsSection);
 
-      // Add footer
-      const footer = document.createElement('div');
-      footer.style.marginTop = '20px';
-      footer.style.paddingTop = '10px';
-      footer.style.borderTop = '1px solid #e5e7eb';
-      footer.style.textAlign = 'center';
-      footer.style.color = '#6b7280';
-      footer.style.fontSize = '10px';
-      footer.style.pageBreakInside = 'avoid';
-      footer.innerHTML = `
-        <p style="margin: 0; line-height: 1.2;">Official DENR Report | Txns: ${totalTransactions} | Success: ${successTxn} | Total: ₱${totalAmount.toLocaleString()}</p>
-        <p style="margin: 2px 0 0 0; font-size: 9px; color: #9ca3af;">ID: ${Date.now()} | Generated: ${new Date().toLocaleString()}</p>
-      `;
-      pdfContainer.appendChild(footer);
+      const opt = { margin: 5, filename: `DENR-Report-${new Date().toISOString().split('T')[0]}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' } };
+      await html2pdf().set(opt).from(pdfContainer).save();
 
-      // Generate PDF
-      const opt = {
-        margin: 5,
-        filename: `DENR-Dashboard-Complete-Report-${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-      };
-
-      html2pdf().set(opt).from(pdfContainer).save();
-
-    } catch (error) {
-      console.error('Error generating dashboard report:', error);
-      alert('Failed to generate report. Please try again.');
+    } catch (e) { 
+      console.error(e); 
     } finally {
-      const downloadBtn = document.getElementById('downloadReportBtn');
       downloadBtn.disabled = false;
-      downloadBtn.innerHTML = '<i class="fa-solid fa-file-pdf mr-2"></i> Download Report';
+      downloadBtn.innerHTML = isMobile
+        ? '<i class="fa-solid fa-file-pdf"></i>'
+        : '<i class="fa-solid fa-file-pdf mr-2"></i> Report';
     }
   };
 </script>
