@@ -1318,6 +1318,17 @@
       document.getElementById('receiptModal').classList.add('active');
     };
 
+    window.closeReceipt = function() {
+      document.getElementById('receiptModal').classList.remove('active');
+    };
+
+    // Close receipt modal when clicking outside of it
+    document.getElementById('receiptModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeReceipt();
+      }
+    });
+
     window.downloadApplicationsPDF = async function() {
       try {
         const applicationsList = document.getElementById('applicationsList');
