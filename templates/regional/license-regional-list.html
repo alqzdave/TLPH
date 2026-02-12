@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regional Dashboard | DENR Oversight</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { gov: ['Arial', 'Verdana', 'sans-serif'], },
+          colors: {
+            gov: {
+              text: '#111827', border: '#cbd5e1', bg: '#f1f5f9', panel: '#ffffff',
+              primary: '#1e3a8a', // Regional Navy Blue
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* PROTECT ICONS FROM ARIAL FORCE */
+    *:not(.material-icons-round) { font-family: Arial, Verdana, sans-serif !important; }
+    .material-icons-round { font-family: 'Material Icons Round' !important; }
+
+    /* SIDENAV OFFSET */
+    .main-wrapper { 
+      margin-left: 300px; 
+      min-height: 100vh;
+      padding-top: 30px; 
+      transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 1024px) { .main-wrapper { margin-left: 0; padding: 20px; } }
+    @media print { .no-print { display: none !important; } .main-wrapper { margin-left: 0 !important; } }
+  </style>
+</head>
+
+<body class="bg-gov-bg text-gov-text">
+  <div class="pointer-events-none fixed inset-0 -z-10 bg-no-repeat opacity-[0.03]" style="background-image:url('/static/images/denr.jpg'); background-position:center 30%; background-size:500px;"></div>
+
+  {% include 'regional/sidenav.html' %}
+
+  <div class="main-wrapper px-6 py-8 md:px-10">
+    <div class="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between border-b border-slate-300 pb-5">
+      <div>
+        <h1 class="text-[11px] font-black uppercase tracking-[0.2em] text-gov-primary m-0">Regional Oversight Dashboard</h1>
+        <p class="mt-1 text-2xl font-black text-slate-900 uppercase m-0 tracking-tight">Consolidated Applications • Region IV-A</p>
+      </div>
+      <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">
+        National Audit Trail Enabled
+      </div>
+    </div>
+
+    <section class="grid gap-4 md:grid-cols-3 mb-8">
+      <div class="rounded-0 border border-gov-border bg-white p-5 shadow-sm border-t-4 border-t-teal-600">
+        <div class="flex items-center gap-4">
+          <span class="material-icons-round text-teal-600 text-3xl">task_alt</span>
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Approved Permits</p>
+            <p class="text-3xl font-black text-slate-900" id="statAccepted">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-0 border border-gov-border bg-white p-5 shadow-sm border-t-4 border-t-rose-600">
+        <div class="flex items-center gap-4">
+          <span class="material-icons-round text-rose-600 text-3xl">unpublished</span>
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Rejected Requests</p>
+            <p class="text-3xl font-black text-slate-900" id="statRejected">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-0 border border-gov-border bg-white p-5 shadow-sm border-t-4 border-t-amber-500">
+        <div class="flex items-center gap-4">
+          <span class="material-icons-round text-amber-500 text-3xl">pending_actions</span>
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Regional Pending</p>
+            <p class="text-3xl font-black text-slate-900" id="statPending">0</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-6 rounded-0 border border-gov-border bg-white p-5 shadow-sm">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Province</label>
+          <select id="provinceSelect" class="w-full border border-gov-border bg-slate-50 px-3 py-2 text-[11px] font-bold uppercase outline-none focus:border-gov-primary transition-all">
+            <option value="">All Provinces</option>
+            <option value="CAVITE">Cavite</option>
+            <option value="LAGUNA">Laguna</option>
+            <option value="BATANGAS">Batangas</option>
+            <option value="RIZAL">Rizal</option>
+            <option value="QUEZON">Quezon</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Global Search</label>
+          <div class="flex items-center gap-2 border border-gov-border bg-slate-50 px-3 py-2 focus-within:bg-white focus-within:border-gov-primary transition-all">
+            <span class="material-icons-round text-slate-400 text-sm">search</span>
+            <input id="searchInput" type="text" placeholder="Search name, ref, or town..." class="w-full bg-transparent text-xs font-bold uppercase tracking-wider outline-none" />
+          </div>
+        </div>
+        <div class="flex items-end">
+          <button id="btnClear" class="w-full border border-slate-300 bg-white py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all">Reset Filters</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="hidden grid-cols-12 items-center gap-3 px-5 py-3 text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 md:grid border-b border-slate-200">
+      <div class="col-span-4">Applicant & Reference</div>
+      <div class="col-span-2">Municipality</div>
+      <div class="col-span-3">Permit Category</div>
+      <div class="col-span-2 text-center">Status</div>
+      <div class="col-span-1 text-right">View</div>
+    </div>
+
+    <div id="rows" class="mt-2 grid grid-cols-1 gap-2">
+      </div>
+
+    <div id="emptyState" class="mt-10 hidden text-center py-20 border border-dashed border-slate-300 bg-white">
+      <span class="material-icons-round text-slate-200 text-6xl">folder_off</span>
+      <p class="mt-4 text-[11px] font-black uppercase tracking-widest text-slate-400">No regional records found</p>
+    </div>
+
+    <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.5em] mt-16">DENR Region IV-A Administrative Portal • 2026</p>
+  </div>
+
+  <script type="module">
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+    let applicants = [];
+    const rowsEl = document.getElementById("rows");
+    const emptyEl = document.getElementById("emptyState");
+    const provinceSelect = document.getElementById("provinceSelect");
+    const searchInput = document.getElementById("searchInput");
+
+    async function loadRegionalData() {
+      try {
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const usersMap = {};
+        usersSnapshot.forEach(uDoc => {
+          const uData = uDoc.data();
+          usersMap[uDoc.id] = {
+            name: `${uData.firstName || ''} ${uData.lastName || ''}`.trim() || uData.email,
+            municipality: uData.municipality || 'N/A',
+            province: uData.province || 'UNKNOWN' 
+          };
+        });
+
+        const snapshot = await getDocs(collection(db, 'licensePermits'));
+        applicants = [];
+        let acc = 0, rej = 0, pen = 0;
+
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const info = usersMap[data.userId] || { name: 'Unknown', municipality: 'N/A', province: 'UNKNOWN' };
+          
+          let sKey = 'pending';
+          if (data.status === 'approved') { sKey = 'accepted'; acc++; }
+          else if (data.status === 'rejected') { sKey = 'rejected'; rej++; }
+          else { pen++; }
+
+          applicants.push({
+            id: docSnap.id,
+            name: info.name,
+            municipality: info.municipality,
+            province: info.province.toUpperCase(),
+            reference: `REG-${docSnap.id.substring(0, 6).toUpperCase()}`,
+            category: data.permitType || 'General Permit',
+            statusKey: sKey
+          });
+        });
+
+        document.getElementById("statAccepted").textContent = acc;
+        document.getElementById("statRejected").textContent = rej;
+        document.getElementById("statPending").textContent = pen;
+        applyFilters();
+      } catch (e) { console.error(e); }
+    }
+
+    function rowTemplate(a) {
+      const colors = { accepted: 'text-teal-600 bg-teal-50 border-teal-200', rejected: 'text-rose-600 bg-rose-50 border-rose-200', pending: 'text-amber-600 bg-amber-50 border-amber-200' };
+      return `
+        <div class="grid grid-cols-12 items-center gap-3 border border-gov-border bg-white px-5 py-4 hover:border-gov-primary transition-all shadow-sm">
+          <div class="col-span-12 md:col-span-4">
+            <p class="text-sm font-black text-slate-900 uppercase m-0">${a.name}</p>
+            <p class="text-[9px] font-bold text-gov-primary m-0 tracking-tighter">${a.reference}</p>
+          </div>
+          <div class="col-span-12 md:col-span-2">
+            <p class="text-[10px] font-black text-slate-700 uppercase m-0">${a.municipality}</p>
+            <p class="text-[8px] font-bold text-slate-400 m-0">${a.province}</p>
+          </div>
+          <div class="col-span-12 md:col-span-3">
+            <span class="text-[10px] font-black uppercase text-slate-600 tracking-tight">${a.category}</span>
+          </div>
+          <div class="col-span-12 md:col-span-2 text-center">
+            <span class="px-3 py-1 border text-[9px] font-black uppercase tracking-tighter ${colors[a.statusKey]}">${a.statusKey}</span>
+          </div>
+          <div class="col-span-12 md:col-span-1 text-right">
+             <button class="text-gov-primary hover:scale-125 transition-transform"><span class="material-icons-round">visibility</span></button>
+          </div>
+        </div>`;
+    }
+
+    function applyFilters() {
+      const q = searchInput.value.toLowerCase();
+      const prov = provinceSelect.value;
+      const filtered = applicants.filter(a => {
+        const mProv = !prov || a.province === prov;
+        const mSearch = !q || a.name.toLowerCase().includes(q) || a.reference.toLowerCase().includes(q) || a.municipality.toLowerCase().includes(q);
+        return mProv && mSearch;
+      });
+      rowsEl.innerHTML = filtered.map(rowTemplate).join("");
+      emptyEl.classList.toggle("hidden", filtered.length > 0);
+    }
+
+    onAuthStateChanged(auth, (user) => { user ? loadRegionalData() : window.location.href = '/login'; });
+    searchInput.addEventListener("input", applyFilters);
+    provinceSelect.addEventListener("change", applyFilters);
+    document.getElementById("btnClear").addEventListener("click", () => { searchInput.value = ""; provinceSelect.value = ""; applyFilters(); });
+  </script>
+</body>
+</html>

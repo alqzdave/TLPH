@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" x-data="regionalAppMaster()">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Regional Masterlist | DENR Oversight</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        /* OFFICIAL ARIAL FORCE */
+        * { font-family: Arial, Helvetica, sans-serif !important; }
+        body { background-color: #f1f5f9; color: #1e293b; margin: 0; }
+        .material-icons-round { font-family: 'Material Icons Round' !important; display: inline-flex; vertical-align: middle; }
+        .main-wrapper { padding-left: 300px; min-height: 100vh; padding-top: 20px; transition: all 0.3s ease; }
+        .gov-card { background: #ffffff; border: 1px solid #cbd5e1; border-top: 4px solid #1e3a8a; border-radius: 0; }
+
+        @media (max-width: 1024px) { .main-wrapper { padding-left: 0; } }
+
+        /* SOLID PRINT CSS */
+        @media print {
+            .no-print, #regional-sidenav, .btn-gov, .input-group, .form-select, button, .reset-btn { display: none !important; }
+            .main-wrapper { padding: 0 !important; margin: 0 !important; width: 100% !important; display: block !important; }
+            .gov-card { border: none !important; }
+            .table-responsive { overflow: visible !important; display: block !important; width: 100% !important; }
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; }
+            th, td { border: 1px solid #000 !important; color: #000 !important; padding: 6px !important; font-size: 10px !important; opacity: 1 !important; visibility: visible !important; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+            tr { page-break-inside: avoid !important; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+
+<body>
+    {% include 'regional/sidenav.html' %}
+
+    <div class="main-wrapper">
+        <div class="container-fluid p-4 lg:p-5">
+            
+            <div class="print-header">
+                <h4 class="font-bold uppercase m-0">Republic of the Philippines</h4>
+                <h3 class="font-black uppercase m-0">Department of Environment and Natural Resources</h3>
+                <p class="text-[10px] uppercase font-bold">Region IV-A (CALABARZON) Regional Office</p>
+                <hr style="border: 1px solid #000; margin: 15px 0;">
+                <h5 class="font-black uppercase tracking-widest mt-4">Regional Application Masterlist Report</h5>
+                <p class="text-[9px] italic">Generated on: February 12, 2026</p>
+            </div>
+
+            <div class="mb-6 d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-4 no-print">
+                <div>
+                    <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 m-0">Regional Application Masterlist</h1>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Region IV-A Unified Monitoring System</p>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button @click="printReport()" class="btn btn-dark rounded-0 font-bold uppercase text-[10px] d-flex align-items-center gap-2 px-4 shadow-sm">
+                        <span class="material-icons-round text-sm">print</span> Print Report
+                    </button>
+                    <button @click="alert('Exporting...')" class="btn btn-primary bg-blue-900 border-0 rounded-0 font-bold uppercase text-[10px] d-flex align-items-center gap-2 px-4 shadow-sm">
+                        <span class="material-icons-round text-sm">save_alt</span> Export Excel
+                    </button>
+                </div>
+            </div>
+
+            <div class="gov-card shadow-sm mb-4 no-print">
+                <div class="p-3 bg-slate-50">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="input-group input-group-sm flex-grow-1">
+                            <span class="input-group-text bg-white border-end-0 text-slate-400">
+                                <span class="material-icons-round text-sm">search</span>
+                            </span>
+                            <input type="text" x-model="searchQuery" class="form-control border-start-0 text-xs font-bold" placeholder="Search Reference, Applicant, or Municipality...">
+                        </div>
+                        
+                        <div style="width: 200px;">
+                            <select x-model="filterProvince" class="form-select form-select-sm text-[10px] font-black uppercase">
+                                <option value="ALL">All Provinces</option>
+                                <option value="CAVITE">CAVITE</option>
+                                <option value="LAGUNA">LAGUNA</option>
+                                <option value="BATANGAS">BATANGAS</option>
+                                <option value="RIZAL">RIZAL</option>
+                                <option value="QUEZON">QUEZON</option>
+                            </select>
+                        </div>
+
+                        <div style="width: 200px;">
+                            <select x-model="filterStatus" class="form-select form-select-sm text-[10px] font-black uppercase">
+                                <option value="ALL">All Status</option>
+                                <option value="PENDING">PENDING</option>
+                                <option value="APPROVED">APPROVED</option>
+                                <option value="REJECTED">REJECTED</option>
+                            </select>
+                        </div>
+                        
+                        <button @click="resetFilters()" class="btn btn-sm btn-outline-secondary rounded-0 text-[9px] font-black uppercase px-4 border-slate-300 whitespace-nowrap">
+                            Reset Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0 text-[11px]">
+                        <thead class="bg-slate-50 font-black uppercase tracking-widest text-slate-600">
+                            <tr style="border-bottom: 2px solid #1e3a8a;">
+                                <th class="ps-3 py-3">Reference No.</th>
+                                <th class="py-3">Lugar (Prov)</th>
+                                <th class="py-3">Municipality / City</th>
+                                <th class="py-3">Applicant Name</th>
+                                <th class="py-3">Permit Type</th>
+                                <th class="py-3 text-center">Status</th>
+                                <th class="py-3 text-center no-print">Review</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="app in filteredApps" :key="app.id">
+                                <tr class="hover:bg-slate-50 transition-all">
+                                    <td class="ps-3 py-3 font-bold text-blue-900 uppercase" x-text="app.ref"></td>
+                                    <td class="py-3 font-black text-[9px] uppercase text-slate-400" x-text="app.province"></td>
+                                    <td class="py-3 font-bold uppercase text-slate-700" x-text="app.municipality"></td>
+                                    <td class="py-3 font-black uppercase text-slate-900" x-text="app.applicant"></td>
+                                    <td class="py-3 text-slate-500 font-bold uppercase" x-text="app.category"></td>
+                                    <td class="py-3 text-center">
+                                        <span class="px-2 py-1 border font-black text-[8px] uppercase" 
+                                              :class="getStatusClass(app.status)" x-text="app.status"></span>
+                                    </td>
+                                    <td class="py-3 text-center no-print">
+                                        <a href="/regional/application-view" class="btn btn-sm btn-dark rounded-0 font-black text-[9px] uppercase px-3 py-1 text-decoration-none d-inline-block">Open</a>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template x-if="filteredApps.length === 0">
+                                <tr>
+                                    <td colspan="7" class="py-5 text-center bg-white">
+                                        <div class="d-flex flex-column align-items-center py-5 opacity-40">
+                                            <span class="material-icons-round text-5xl">folder_off</span>
+                                            <p class="font-black uppercase text-[10px] tracking-widest mt-2">No Records Found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mt-10 no-print italic uppercase">DENR Region IV-A Regional Management Oversight • 2026</p>
+        </div>
+    </div>
+
+    <script>
+        function regionalAppMaster() {
+            return {
+                searchQuery: '',
+                filterProvince: 'ALL',
+                filterStatus: 'ALL',
+                apps: [
+                    { id: 1, ref: 'REG-2026-001', province: 'LAGUNA', municipality: 'CALAMBA', applicant: 'JUAN DELA CRUZ', category: 'TREE CUTTING', status: 'PENDING' },
+                    { id: 2, ref: 'REG-2026-002', province: 'CAVITE', municipality: 'DASMARIÑAS', applicant: 'MARIA CLARA', category: 'WILDLIFE', status: 'APPROVED' },
+                    { id: 3, ref: 'REG-2026-003', province: 'BATANGAS', municipality: 'LIPA CITY', applicant: 'JOSE RIZAL', category: 'FISHERIES', status: 'PENDING' },
+                    { id: 4, ref: 'REG-2026-004', province: 'RIZAL', municipality: 'ANTIPOLO', applicant: 'ANDRES BONIFACIO', category: 'LANDS', status: 'REJECTED' },
+                    { id: 5, ref: 'REG-2026-005', province: 'QUEZON', municipality: 'LUCENA', applicant: 'EMILIO AGUINALDO', category: 'WASTE MGMT', status: 'PENDING' }
+                ],
+                get filteredApps() {
+                    return this.apps.filter(i => {
+                        const s = this.searchQuery.toLowerCase();
+                        const matchesSearch = i.ref.toLowerCase().includes(s) || i.applicant.toLowerCase().includes(s) || i.municipality.toLowerCase().includes(s);
+                        const matchesProv = this.filterProvince === 'ALL' || i.province === this.filterProvince;
+                        const matchesStat = this.filterStatus === 'ALL' || i.status === this.filterStatus;
+                        return matchesSearch && matchesProv && matchesStat;
+                    });
+                },
+                getStatusClass(status) {
+                    const colors = {
+                        'PENDING': 'bg-amber-50 text-amber-700 border-amber-200',
+                        'APPROVED': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'REJECTED': 'bg-rose-50 text-rose-700 border-rose-200'
+                    };
+                    return colors[status] || 'bg-slate-50 text-slate-600 border-slate-200';
+                },
+                resetFilters() {
+                    this.searchQuery = '';
+                    this.filterProvince = 'ALL';
+                    this.filterStatus = 'ALL';
+                },
+                printReport() {
+                    setTimeout(() => { window.print(); }, 150);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

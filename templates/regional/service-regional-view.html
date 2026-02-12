@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Applicant Profile | Complete Regional Oversight</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { gov: ['Arial', 'Verdana', 'sans-serif'], },
+                    colors: { gov: { text: '#1e293b', border: '#cbd5e1', bg: '#f1f5f9', panel: '#ffffff', primary: '#1e3a8a' } }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ARIAL FORCE & ICON PROTECTION */
+        *:not(.material-icons-round) { font-family: Arial, Helvetica, sans-serif !important; }
+        .material-icons-round { font-family: 'Material Icons Round' !important; font-size: 18px; }
+        
+        .main-wrapper { 
+            margin-left: 300px; /* Sidenav Offset */
+            min-height: 100vh;
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center; /* Vertical Center */
+            justify-content: center; /* Horizontal Center */
+            padding: 15px;
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 1150px; /* Eksaktong lapad para sa desktop oversight */
+        }
+
+        .gov-card { background: #ffffff; border: 1px solid #cbd5e1; border-top: 3px solid #1e3a8a; border-radius: 0; }
+        .label-text { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+        .data-text { font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+
+        @media (max-width: 1024px) { .main-wrapper { margin-left: 0; } }
+    </style>
+</head>
+
+<body class="bg-gov-bg">
+
+    {% include 'regional/sidenav.html' %}
+
+    <div class="main-wrapper">
+        <div class="content-container">
+            
+            <div class="mb-3 flex items-center justify-between border-b border-slate-300 pb-2">
+                <div class="flex items-center gap-3">
+                    <span class="material-icons-round text-gov-primary">account_circle</span>
+                    <div>
+                        <h1 class="text-[11px] font-black uppercase tracking-widest text-gov-primary m-0">Regional Applicant Oversight</h1>
+                        <p class="text-[9px] font-bold text-slate-500 m-0 uppercase tracking-tighter">Official Personnel & Farm Record • Region IV-A</p>
+                    </div>
+                </div>
+                <a href="/regional/service-list" class="inline-flex items-center gap-1 border border-slate-300 bg-white px-3 py-1 text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all text-decoration-none text-slate-600">
+                    <span class="material-icons-round text-[14px]">arrow_back</span> Back to list
+                </a>
+            </div>
+
+            <div class="grid gap-3 lg:grid-cols-12">
+                
+                <aside class="lg:col-span-4 space-y-3">
+                    <section class="gov-card p-3 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="h-16 w-16 flex-none border-2 border-gov-primary p-0.5 bg-white">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200" class="h-full w-full object-cover" />
+                            </div>
+                            <div class="min-w-0">
+                                <h2 class="text-base font-black uppercase text-slate-900 leading-tight">Paolo Dave Alqzd</h2>
+                                <p class="text-[9px] font-bold text-gov-primary uppercase tracking-tighter m-0">REF: DENR-2026-0042</p>
+                                <span class="inline-block mt-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest">Pending Review</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="gov-card p-3 shadow-sm">
+                        <h3 class="label-text border-b pb-1 mb-2 flex items-center gap-2">
+                            <span class="material-icons-round text-[14px]">contact_page</span> Personal Details (Complete)
+                        </h3>
+                        <div class="space-y-2.5">
+                            <div>
+                                <p class="label-text">Email Address</p>
+                                <p class="data-text text-blue-800 underline lowercase italic">paolodave.alqzd@gmail.com</p>
+                            </div>
+                            <div>
+                                <p class="label-text">Contact Number</p>
+                                <p class="data-text">+63 912 345 6789</p>
+                            </div>
+                            <div>
+                                <p class="label-text">Farm/Land Address</p>
+                                <p class="data-text uppercase">Brgy. Mabuhay, Carmona, Cavite</p>
+                            </div>
+                            <div>
+                                <p class="label-text">Total Declared Area</p>
+                                <p class="text-sm font-black text-slate-900">15.50 Hectares</p>
+                            </div>
+                        </div>
+                    </section>
+                </aside>
+
+                <section class="lg:col-span-8 space-y-3">
+                    
+                    <div class="grid gap-3 grid-cols-2">
+                        <div class="gov-card p-3 border-l-4 border-l-emerald-600 shadow-sm">
+                            <p class="label-text">Total Crop Species</p>
+                            <p class="text-xl font-black text-slate-900">12 <span class="text-[10px] text-slate-400">Varieties</span></p>
+                        </div>
+                        <div class="gov-card p-3 border-l-4 border-l-amber-600 shadow-sm">
+                            <p class="label-text">Max Harvest Quantity</p>
+                            <p class="text-xl font-black text-slate-900">4.5 <span class="text-[10px] text-slate-400">Tons / Yr</span></p>
+                        </div>
+                    </div>
+
+                    <section class="gov-card p-3 shadow-sm">
+                        <div class="flex items-center justify-between border-b pb-1 mb-2">
+                            <h3 class="label-text">Documentary Verification (5 Files Attached)</h3>
+                            <span class="material-icons-round text-slate-400 text-sm">inventory</span>
+                        </div>
+                        <div class="grid gap-2 md:grid-cols-2">
+                            <a href="#" class="flex items-center justify-between border border-slate-100 bg-slate-50 p-2 hover:bg-white transition-all text-decoration-none">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-icons-round text-blue-900 text-[16px]">architecture</span>
+                                    <span class="text-[9px] font-black uppercase text-slate-700">Blueprint Approved Plan</span>
+                                </div>
+                                <span class="material-icons-round text-slate-300 text-xs">open_in_new</span>
+                            </a>
+                            <a href="#" class="flex items-center justify-between border border-slate-100 bg-slate-50 p-2 hover:bg-white transition-all text-decoration-none">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-icons-round text-blue-900 text-[16px]">assignment</span>
+                                    <span class="text-[9px] font-black uppercase text-slate-700">Farm Business Plan</span>
+                                </div>
+                                <span class="material-icons-round text-slate-300 text-xs">open_in_new</span>
+                            </a>
+                            <a href="#" class="flex items-center justify-between border border-slate-100 bg-slate-50 p-2 hover:bg-white transition-all text-decoration-none">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-icons-round text-blue-900 text-[16px]">terrain</span>
+                                    <span class="text-[9px] font-black uppercase text-slate-700">Picture of Land</span>
+                                </div>
+                                <span class="material-icons-round text-slate-300 text-xs">open_in_new</span>
+                            </a>
+                            <a href="#" class="flex items-center justify-between border border-slate-100 bg-slate-50 p-2 hover:bg-white transition-all text-decoration-none">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-icons-round text-blue-900 text-[16px]">grass</span>
+                                    <span class="text-[9px] font-black uppercase text-slate-700">Crop Image Records</span>
+                                </div>
+                                <span class="material-icons-round text-slate-300 text-xs">open_in_new</span>
+                            </a>
+                            <a href="#" class="md:col-span-2 flex items-center justify-between border border-slate-100 bg-slate-50 p-2 hover:bg-white transition-all text-decoration-none">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-icons-round text-blue-900 text-[16px]">storefront</span>
+                                    <span class="text-[9px] font-black uppercase text-slate-700">Official Barangay Farm Registration</span>
+                                </div>
+                                <span class="material-icons-round text-slate-300 text-xs">open_in_new</span>
+                            </a>
+                        </div>
+                    </section>
+
+                    <section class="gov-card p-3 bg-slate-50 border-t-4 border-t-gov-primary shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="label-text flex items-center gap-2"><span class="material-icons-round text-sm">gavel</span> Administrative Disposition</h3>
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">National Audit Enabled</p>
+                        </div>
+                        <div class="grid gap-2 grid-cols-3">
+                            <button class="bg-white border border-rose-200 text-rose-700 font-black text-[9px] py-2 uppercase hover:bg-rose-600 hover:text-white transition-all shadow-sm">Reject</button>
+                            <button class="bg-white border border-amber-300 text-amber-700 font-black text-[9px] py-2 uppercase hover:bg-amber-500 hover:text-white transition-all shadow-sm">Return</button>
+                            <button class="bg-gov-primary text-white font-black text-[9px] py-2 uppercase hover:brightness-110 shadow-md">Approve Permit</button>
+                        </div>
+                    </section>
+                </section>
+            </div>
+
+            <p class="text-center text-[8px] text-slate-400 font-black uppercase tracking-[0.5em] mt-4 italic">Department of Environment and Natural Resources • Region IV-A Portal</p>
+        </div>
+    </div>
+
+</body>
+</html>
