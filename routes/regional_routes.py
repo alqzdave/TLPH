@@ -37,3 +37,7 @@ def municipal_account_management_view():
 @bp.route('/audit-logs-view')
 def audit_logs_view():
     return render_template('regional/audit-logs-regional-view.html')
+
+@bp.route('/application-view')
+def application_view():
+    return render_template('regional/application-regional-view.html')
