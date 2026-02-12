@@ -14,7 +14,6 @@
         background-color: #f8fafc;
     }
 
-    /* FIXED & STICKY FULL-WIDTH HEADER */
     .header-main {
         background-color: #ffffff;
         border-bottom: 2px solid #f1f5f9;
@@ -100,7 +99,6 @@
         min-height: 100vh;
     }
 
-    /* Responsive: Kapag nakatago ang sidebar o nasa mobile */
     @media (max-width: 992px) {
         .header-main {
             left: 0;
@@ -110,37 +108,35 @@
             margin-left: 0;
         }
         .search-group {
-            display: none; /* Tinatago sa mobile para iwas siksikan */
+            display: none; 
         }
     }
 
     :root{
-  --sidebar-width: 300px;  /* your sidebar width */
-  --header-height: 100px;  /* your header height */
+  --sidebar-width: 300px;  
+  --header-height: 100px;  
 }
 
-/* SIDEBAR: go all the way to the top */
+
 .sidebar-container{
   top: 0 !important;
   height: 100vh !important;
   z-index: 1000;
 }
 
-/* HEADER: start beside the sidebar */
 .header-main{
   left: var(--sidebar-width) !important;
   right: 0 !important;
   top: 0 !important;
-  z-index: 2000; /* keep above content */
+  z-index: 2000; 
 }
 
-/* CONTENT: keep content below header and beside sidebar */
 body{
   padding-left: var(--sidebar-width) !important;
   padding-top: var(--header-height) !important;
 }
 
-/* Mobile behavior (keep your current logic) */
+
 @media (max-width: 1024px){
   .header-main{ left: 0 !important; }
   body{ padding-left: 0 !important; }
