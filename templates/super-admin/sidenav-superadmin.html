@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    #sidebar.collapsed { width: 80px; }
+    #sidebar.collapsed .nav-text { display: none; }
+    #sidebar.collapsed .badge-count { 
+        right: 10px; top: 10px; font-size: 0; padding: 4px; min-width: 8px; height: 8px; 
+    }
+    .nav-item.active { border-left: 4px solid #006400; background-color: #f0fdf4; color: #006400; }
+  </style>
+</head>
+<body>
+
+  <aside id="sidebar" class="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-slate-200 bg-white transition-all duration-300 ease-in-out">
+    
+    <div onclick="toggleSidebar()" class="flex cursor-pointer items-center gap-3 border-b border-slate-100 p-5 overflow-hidden">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Seal_of_the_Department_of_Environment_and_Natural_Resources.png" class="h-10 w-10 flex-shrink-0 shadow-sm" alt="DENR">
+      <div class="nav-text">
+        <h1 class="text-base font-black leading-none text-slate-800">DENR</h1>
+        <p class="mt-1 text-[9px] font-bold tracking-widest text-green-700 uppercase">Super Admin</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4">
+      
+      <div onclick="switchTab('home')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">grid_view</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Home</span>
+      </div>
+
+      <div onclick="switchTab('applications')" class="nav-item active relative flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">description</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Applications</span>
+        <span class="badge-count absolute right-4 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">12</span>
+      </div>
+
+      <div onclick="switchTab('requests')" class="nav-item relative flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">settings_suggest</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Service Requests</span>
+        <span class="badge-count absolute right-4 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">5</span>
+      </div>
+
+      <div onclick="switchTab('inventory')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">inventory_2</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Inventory</span>
+      </div>
+
+      <div onclick="switchTab('userInventory')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">devices</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">User Inventory</span>
+      </div>
+
+      <div onclick="switchTab('permits')" class="nav-item relative flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">verified_user</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Licensing/Permits</span>
+        <span class="badge-count absolute right-4 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">8</span>
+      </div>
+
+      <div onclick="switchTab('transactions')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">payments</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Transactions</span>
+      </div>
+
+      <div onclick="switchTab('users')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">manage_accounts</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Manage Accounts</span>
+      </div>
+
+      <div class="mx-5 my-4 h-px bg-slate-100"></div>
+
+      <div class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+        <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">analytics</span>
+        <span class="nav-text text-sm font-semibold whitespace-nowrap">Audit Logs</span>
+      </div>
+    </nav>
+
+    <div class="border-t border-slate-100 bg-slate-50 p-4">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-green-800 font-bold text-white text-xs">AD</div>
+        <div class="nav-text">
+          <p class="text-xs font-black text-slate-800">Alqz Dave</p>
+          <button class="text-[10px] font-bold text-red-600 uppercase hover:underline">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+    
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+  </script>
+</body>
+</html>
