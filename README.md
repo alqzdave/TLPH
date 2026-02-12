@@ -142,7 +142,7 @@ This project is made possible by the dedicated efforts of the following contribu
 | John Cedric Acapulco | Developer | acapulcojohncedric66@gmail.com | [@Cheezzyy1](https://github.com/Cheezzyy1) |
 | Jhon Carlo Jimenez | Developer | jimenez.jhoncarlo@minsu.edu.ph | [@kly-njz](https://github.com/kly-njz) | masarap |
 | John Mark Pagaduan | Developer | pagaduanjohnmark29@gmail.com | [@johnmark009](https://github.com/johnmark009) |
-| Huriecane Ivan Ganio | Team Member & Contributor | N/A | [@Huriecane](https://github.com/Huriecane) |
+| Huriecane Ivan Ganio | Team Member & Contributor | hurieganio@gmail.com | [@Huriecane](https://github.com/Huriecane) |
 
 ### Special Thanks
 
