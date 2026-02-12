@@ -252,9 +252,7 @@
   </main>
 
   <script>
-    // -----------------------------
-    // Helpers
-    // -----------------------------
+
     const normalize = (s) => (s ?? "").toString().toLowerCase().trim();
     const pad2 = (n) => String(n).padStart(2, "0");
     const fmtDateISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
@@ -265,9 +263,6 @@
     document.getElementById("todayLabel").textContent =
       TODAY.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 
-    // -----------------------------
-    // Domain Model
-    // -----------------------------
     class Product {
       constructor({ id, name, category, owner, initialQty, currentQty, addedDate, removedDate }) {
         this.id = String(id);
@@ -281,17 +276,12 @@
       }
     }
 
-    // -----------------------------
-    // Repository Interface (pattern)
-    // - swap the implementation to Firebase later
-    // -----------------------------
     class ProductRepository {
       async getAll() { throw new Error("Not implemented"); }
     }
 
     class MockProductRepository extends ProductRepository {
       async getAll() {
-        // Keep this list ONLY here; later you will replace this repo with Firebase repo.
         const raw = [
           { id:"P-0001", name:"Hybrid Rice Seed Pack", category:"Crop & Plant", owner:"Farm Coop A", initialQty:120, currentQty:95,  addedDate:TODAY_ISO,    removedDate:null },
           { id:"P-0002", name:"Organic Fertilizer Bags", category:"Agriculture", owner:"GreenGrow Supply", initialQty:300, currentQty:210, addedDate:"2026-02-08", removedDate:null },
@@ -313,11 +303,6 @@
       }
     }
 
-    /**
-     * Firebase version (skeleton)
-     * - Add Firebase SDK scripts OR bundle via your build tool.
-     * - Implement getAll() to read from a collection.
-     */
     class FirebaseProductRepository extends ProductRepository {
       constructor({ db, collectionName = "products" }) {
         super();
@@ -326,17 +311,11 @@
       }
 
       async getAll() {
-        // Example (Firestore modular SDK):
-        // const colRef = collection(this.db, this.collectionName);
-        // const snap = await getDocs(colRef);
-        // return snap.docs.map(d => new Product({ id: d.id, ...d.data() }));
+
         throw new Error("Firebase repository not wired yet.");
       }
     }
 
-    // -----------------------------
-    // Charts setup
-    // -----------------------------
     let chartTotal = null;
     let chartCategories = null;
 
@@ -357,7 +336,6 @@
     ];
 
     function buildCharts(filteredList) {
-      // Trend
       const labels = dailyTotals.map(d => d.date);
       const totals = dailyTotals.map(d => d.totalQty);
 
@@ -387,7 +365,6 @@
         }
       });
 
-      // Categories
       const map = new Map();
       for (const p of filteredList) {
         map.set(p.category, (map.get(p.category) || 0) + Number(p.currentQty || 0));
@@ -427,9 +404,6 @@
       });
     }
 
-    // -----------------------------
-    // UI / State
-    // -----------------------------
     const els = {
       kpiTotalProducts: document.getElementById("kpiTotalProducts"),
       kpiTotalQty: document.getElementById("kpiTotalQty"),
@@ -510,19 +484,14 @@
       buildCharts(filtered);
     }
 
-    // -----------------------------
-    // Init
-    // -----------------------------
     async function initDashboard() {
-      // Swap repo here later:
-      // const repo = new FirebaseProductRepository({ db, collectionName: "products" });
+
       const repo = new MockProductRepository();
 
       allProducts = await repo.getAll();
       refresh();
     }
 
-    // Events
     els.filterCategory.addEventListener("change", refresh);
 
     let debounce;
@@ -538,7 +507,6 @@
 
     els.btnPrint.addEventListener("click", () => window.print());
 
-    // Go
     initDashboard().catch((err) => {
       console.error(err);
       els.itemsTbody.innerHTML = `
