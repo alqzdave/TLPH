@@ -221,7 +221,12 @@
           let filedDate = 'N/A';
           let dateObj = new Date();
           if (data.createdAt) {
-            dateObj = data.createdAt.toDate();
+            // Handle both Firebase Timestamp and ISO string dates
+            if (typeof data.createdAt.toDate === 'function') {
+              dateObj = data.createdAt.toDate();
+            } else if (typeof data.createdAt === 'string') {
+              dateObj = new Date(data.createdAt);
+            }
             filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
           }
           
@@ -250,7 +255,7 @@
             filedDate: filedDate,
             status: statusText,
             statusKey: statusKey,
-            timestamp: data.createdAt ? data.createdAt.toDate() : new Date()
+            timestamp: data.createdAt ? (typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : new Date(data.createdAt)) : new Date()
           });
         });
         applicants.sort((a, b) => b.timestamp - a.timestamp);
