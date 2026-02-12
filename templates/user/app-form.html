@@ -23,11 +23,17 @@
         </div>
 
         <div class="max-w-6xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-10">
-            <form id="generalAppForm" action="/user/application/submit" method="POST" enctype="multipart/form-data">
+            <form id="generalAppForm">
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
                     
                     <div class="space-y-5">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Product Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="productName" required placeholder="Enter name of plant, crop, or project" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none text-xs font-medium text-gray-700 bg-white transition-all">
+                        </div>
+
                         <div>
                             <label class="block text-[10px] font-black text-gray-700 uppercase mb-1">Select Category <span class="text-red-500">*</span></label>
                             <select id="category" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-600 outline-none bg-white text-xs font-medium">
@@ -64,6 +70,7 @@
 
                     <div>
                         <label class="block text-[10px] font-black text-green-800 uppercase mb-3 tracking-widest"><i class="fa-solid fa-file-shield"></i> Technical & Standard Documents</label>
+                        
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             
                             <div class="flex flex-col space-y-1 group">
@@ -135,9 +142,9 @@
                     </div>
                     
                     <div class="flex gap-2 w-full md:w-auto">
-                        <a href="/user/service/service" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase tracking-widest hover:bg-gray-50 no-underline text-center text-[10px]">Back</a>
+                        <a href="/user/application" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase tracking-widest hover:bg-gray-50 no-underline text-center text-[10px]">Back</a>
                         <button type="reset" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-bold uppercase tracking-widest hover:bg-gray-50 text-[10px]">Clear</button>
-                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase tracking-widest text-[10px] cursor-not-allowed">Apply Now</button>
+                        <button type="submit" id="submitBtn" disabled class="flex-1 md:flex-none bg-gray-200 text-gray-400 font-black py-2.5 px-10 rounded-lg shadow-sm transition-all uppercase tracking-widest text-[10px] cursor-not-allowed"><span id="btnText">Apply Now</span></button>
                     </div>
                 </div>
             </form>
@@ -145,12 +152,22 @@
         <p class="text-center text-[9px] text-gray-400 uppercase tracking-[0.4em] mb-10">DENR Agricultural Certification Division 2026</p>
     </div>
 
-    
+    <script type="module">
+        import { auth, db } from '/static/js/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { collection, addDoc, doc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-    <script>
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('generalAppForm');
             const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            
+            // Elements to validate
+            const productNameInput = document.getElementById('productName');
+            const categorySelect = document.getElementById('category');
+            const investmentInput = document.getElementById('investmentQty');
+            const harvestInput = document.getElementById('harvestQty');
+
             const fileConfigs = [
                 { id: 'titleFile', name: 'titleName' },
                 { id: 'taxFile', name: 'taxName' },
@@ -161,13 +178,16 @@
                 { id: 'brgyFile', name: 'brgyName' }
             ];
 
+            // Real-time Validation Function
             function checkValidation() {
-                const category = document.getElementById('category').value;
-                const inv = document.getElementById('investmentQty').value;
-                const har = document.getElementById('harvestQty').value;
+                const prodName = productNameInput.value.trim();
+                const category = categorySelect.value;
+                const inv = investmentInput.value;
+                const har = harvestInput.value;
                 const filesDone = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-                if (category && inv && har && filesDone) {
+                // Button Enable/Disable Logic
+                if (prodName && category && inv && har && filesDone) {
                     submitBtn.disabled = false;
                     submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
                     submitBtn.classList.replace('text-gray-400', 'text-white');
@@ -182,6 +202,7 @@
                 }
             }
 
+            // File Upload UI Listeners
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
                 input.addEventListener('change', (e) => {
@@ -195,16 +216,109 @@
                 });
             });
 
+            // Input Event Listeners
             form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
                 el.addEventListener('change', checkValidation);
             });
 
+            // Reset Listener
             form.addEventListener('reset', () => {
                 setTimeout(() => {
                     fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
                     checkValidation();
                 }, 10);
+            });
+
+            // Form Submission Logic
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                try {
+                    btnText.textContent = 'Processing Payment...';
+                    submitBtn.disabled = true;
+
+                    const currentUser = auth.currentUser;
+                    if (!currentUser) {
+                        alert('Please login to submit application');
+                        window.location.href = '/login';
+                        return;
+                    }
+
+                    // Fetch user info for location tagging
+                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                    const userData = userDoc.data() || {};
+                    
+                    // Prepare invoice data for Xendit payment
+                    const amount = parseInt(document.getElementById('xendit_raw_amount').value) || 2450;
+                    const productName = productNameInput.value.trim();
+                    const category = categorySelect.value;
+                    
+                    // Create invoice via Xendit API
+                    const invoiceResponse = await fetch('/api/payments/create-invoice', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            amount: amount,
+                            email: currentUser.email,
+                            external_id: `app-${currentUser.uid}-${Date.now()}`,
+                            description: `Application for ${productName} - ${category}`,
+                            item_name: productName,
+                            first_name: userData.firstName || '',
+                            last_name: userData.lastName || '',
+                            phone: userData.phone || '',
+                            success_url: `${window.location.origin}/user/application`,
+                            failure_url: `${window.location.origin}/user/application/apply?payment=failed`
+                        })
+                    });
+
+                    const invoiceData = await invoiceResponse.json();
+
+                    if (invoiceData.status !== 'success') {
+                        throw new Error(invoiceData.message || 'Failed to create invoice');
+                    }
+
+                    // Store application data temporarily in localStorage before redirecting to payment
+                    const applicationData = {
+                        userId: currentUser.uid,
+                        userEmail: currentUser.email,
+                        userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+                        municipality: userData.municipality || 'Unknown',
+                        province: userData.province || 'Oriental Mindoro',
+                        productName: productName,
+                        category: category,
+                        investmentQty: parseFloat(investmentInput.value) || 0,
+                        harvestQty: parseFloat(harvestInput.value) || 0,
+                        status: 'pending',
+                        invoiceId: invoiceData.invoice_id,
+                        externalId: invoiceData.external_id,
+                        fileReferences: {
+                            barangayCert: document.getElementById('brgyFile').files[0].name,
+                            landTitle: document.getElementById('titleFile').files[0].name,
+                            taxReceipt: document.getElementById('taxFile').files[0].name,
+                            blueprint: document.getElementById('blueprintFile').files[0].name,
+                            landPhoto: document.getElementById('landFile').files[0].name,
+                            cropPhoto: document.getElementById('cropFile').files[0].name,
+                            businessPlan: document.getElementById('planFile').files[0].name
+                        }
+                    };
+                    
+                    localStorage.setItem('pendingApplication', JSON.stringify(applicationData));
+                    
+                    console.log('Invoice created:', invoiceData);
+                    console.log('Redirecting to payment URL:', invoiceData.invoice_url);
+                    
+                    // Redirect to Xendit payment page
+                    window.location.href = invoiceData.invoice_url;
+
+                } catch (error) {
+                    console.error('Error processing payment:', error);
+                    alert('Error: ' + error.message);
+                    btnText.textContent = 'Apply Now';
+                    submitBtn.disabled = false;
+                }
             });
         });
     </script>

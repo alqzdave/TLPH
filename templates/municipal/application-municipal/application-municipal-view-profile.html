@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Applicant Profile | Official View</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-  <!-- Optional: make the “gov” look easy to reuse via Tailwind theme tokens -->
   <script>
     tailwind.config = {
       theme: {
@@ -39,7 +37,6 @@
   </script>
 
   <style>
-    /* keep print behavior in plain CSS (Tailwind can’t target print-only “hide this one link” as neatly without plugins) */
     @media print{
       .print\\:hidden { display: none !important; }
       body{ background:#fff !important; }
@@ -49,7 +46,6 @@
 </head>
 
 <body class="min-h-screen bg-gov-bg font-gov text-gov-text">
-  <!-- Watermark (Tailwind-only approach instead of body::before) -->
   <div
     class="pointer-events-none fixed inset-0 -z-10 bg-no-repeat opacity-[0.035]"
     style="background-image:url('/static/images/denr.jpg'); background-position:center 28%; background-size:520px;"
@@ -60,7 +56,6 @@
   {% include 'municipal/sidenav.html' %}
 
   <main class="px-6 py-8 md:px-10">
-    <!-- Top bar -->
     <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-[12px] font-bold uppercase tracking-gov3 text-gov-primary">Applicant Profile</p>
@@ -79,9 +74,7 @@
     </div>
 
     <div class="grid gap-4 lg:grid-cols-12">
-      <!-- LEFT -->
       <aside class="lg:col-span-4 space-y-4">
-        <!-- Identity -->
         <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
           <div class="flex items-start gap-4">
             <div class="h-20 w-20 overflow-hidden rounded-md border border-gray-300 bg-gray-50">
@@ -99,7 +92,6 @@
                 Ref Code: <span class="text-slate-900">DENR-2026-0042</span>
               </p>
 
-              <!-- Status pill -->
               <div class="mt-3 inline-flex items-center gap-2 rounded-full border border-gov-border bg-slate-50 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-gov text-amber-700">
                 <span class="h-[10px] w-[10px] rounded-full bg-amber-500"></span>
                 Pending Review
@@ -108,7 +100,6 @@
           </div>
         </section>
 
-        <!-- Personal details -->
         <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
           <div class="flex items-center justify-between">
             <h3 class="text-[12px] font-bold uppercase tracking-gov2 text-gov-primary">Personal Details</h3>
@@ -141,9 +132,7 @@
         </section>
       </aside>
 
-      <!-- RIGHT -->
       <section class="lg:col-span-8 space-y-4">
-        <!-- Metrics -->
         <div class="grid gap-3 md:grid-cols-2">
           <div class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
             <p class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Total Crop Species</p>
@@ -162,7 +151,6 @@
           </div>
         </div>
 
-        <!-- Documentary Requirements -->
         <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-[12px] font-bold uppercase tracking-gov2 text-gov-primary">Documentary Requirements</h3>
@@ -173,7 +161,6 @@
           </div>
 
           <div class="mt-4 grid gap-2 md:grid-cols-2">
-            <!-- Doc item (reusable pattern) -->
             <a
               href="#"
               class="group flex items-center justify-between rounded-[6px] border border-gov-border bg-white px-3.5 py-3 text-decoration-none hover:bg-slate-50 focus:outline-none focus:ring-4"
@@ -243,7 +230,6 @@
           </div>
         </section>
 
-        <!-- Actions -->
         <section class="rounded-[6px] border border-gov-border bg-gov-panel p-4 shadow-none print:border">
           <h3 class="text-[12px] font-bold uppercase tracking-gov2 text-gov-primary">Actions</h3>
           <p class="mt-2 text-sm text-slate-600">
