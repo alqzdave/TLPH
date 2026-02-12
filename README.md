@@ -135,29 +135,14 @@ This project is made possible by the dedicated efforts of the following contribu
 
 ### Development Team
 
-- **Mark Dave Alquiza** - Lead Developer  
-  📧 markdavemarasiganalquiza@gmail.com  
-  🔗 GitHub: [@alqzdave](https://github.com/alqzdave)
-
-- **Aerone John Grefalda**  
-  📧 grefaldaaeronejohn01@gmail.com  
-  🔗 GitHub: [@Aerone01](https://github.com/Aerone01)
-
-- **John Cedric Acapulco**  
-  📧 acapulcojohncedric66@gmail.com  
-  🔗 GitHub: [@Cheezzyy1](https://github.com/Cheezzyy1)
-
-- **Jhon Carlo Jimenez**  
-  📧 jimenez.jhoncarlo@minsu.edu.ph  
-  🔗 GitHub: [@kly-njz](https://github.com/kly-njz)
-
-- **John Mark Pagaduan**  
-  📧 pagaduanjohnmark29@gmail.com  
-  🔗 GitHub: [@johnmark009](https://github.com/johnmark009)
-
-- **Huriecane Ivan Ganio**  
-  🔗 GitHub: [@Huriecane](https://github.com/Huriecane)  
-  📝 Team Member & Contributor
+| Name | Role | Email | GitHub | Remarks |
+|------|------|-------|--------|--------|
+| Mark Dave Alquiza | Team Lead | markdavemarasiganalquiza@gmail.com | [@alqzdave](https://github.com/alqzdave) |
+| Aerone John Grefalda | Frontend Developer | grefaldaaeronejohn01@gmail.com | [@Aerone01](https://github.com/Aerone01) |
+| John Cedric Acapulco | Frontend Developer | acapulcojohncedric66@gmail.com | [@Cheezzyy1](https://github.com/Cheezzyy1) |
+| Jhon Carlo Jimenez | Backend Developer | jimenez.jhoncarlo@minsu.edu.ph | [@kly-njz](https://github.com/kly-njz) | masarap |
+| John Mark Pagaduan | Fullcharge Developer | pagaduanjohnmark29@gmail.com | [@johnmark009](https://github.com/johnmark009) |
+| Huriecane Ivan Ganio | Q/A, Developer | hurieganio@gmail.com | [@Huriecane](https://github.com/Huriecane) |
 
 ### Special Thanks
 

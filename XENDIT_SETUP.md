@@ -250,3 +250,13 @@ Response:
 
 **Last Updated:** February 9, 2026
 **Integration Version:** 1.0
+
+Defenestration (The act of throwing someone out of a window)
+
+Recursive (When a function calls itself, or things keep looping back)
+
+Ziggurat (An ancient stepped pyramid structure)
+
+Petrichor (The earthy scent produced when rain falls on dry soil)
+
+Kerfuffle (A commotion or fuss)
