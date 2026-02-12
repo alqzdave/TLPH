@@ -220,312 +220,351 @@
   </div>
 
   <script>
-    /******************************************************************
-     * SUB-ADMIN MUNICIPALITY SCOPE
-     * Production: set from session/user claims, and ENFORCE on backend.
-     ******************************************************************/
-    const SUBADMIN_MUNICIPALITY = "San Juan"; // <-- replace with logged-in sub-admin municipality
+  /******************************************************************
+   * SUB-ADMIN MUNICIPALITY SCOPE
+   * Production: set from session/user claims, and ENFORCE on backend.
+   ******************************************************************/
+  const SUBADMIN_MUNICIPALITY = "San Juan"; // <-- replace with logged-in sub-admin municipality
 
-    /******************************************************************
-     * DEMO DATA (replace with backend/Firestore)
-     ******************************************************************/
-    const ALL_USERS = [
-      { id:"U-0001", name:"Juan Dela Cruz", email:"juan.delacruz@email.com", municipality:"San Juan", status:"Active" },
-      { id:"U-0002", name:"Maria Santos",   email:"maria.santos@email.com", municipality:"San Juan", status:"Disabled" },
-      { id:"U-0003", name:"Andrea Reyes",   email:"andrea.reyes@email.com", municipality:"San Juan", status:"Active" },
+  /******************************************************************
+   * REPOSITORY / STORE (Mock now, Firebase later)
+   ******************************************************************/
+  class UsersRepository {
+    constructor({ municipality }) {
+      this.municipality = municipality;
 
-      { id:"U-0101", name:"Leo Cruz",       email:"leo.cruz@email.com", municipality:"Bacoor", status:"Active" },
-      { id:"U-0102", name:"Ana Lim",        email:"ana.lim@email.com",  municipality:"Bacoor", status:"Active" },
+      // mock data lives inside the class
+      this._users = [
+        { id:"U-0001", name:"Juan Dela Cruz", email:"juan.delacruz@email.com", municipality:"San Juan", status:"Active" },
+        { id:"U-0002", name:"Maria Santos",   email:"maria.santos@email.com", municipality:"San Juan", status:"Disabled" },
+        { id:"U-0003", name:"Andrea Reyes",   email:"andrea.reyes@email.com", municipality:"San Juan", status:"Active" },
 
-      { id:"U-0201", name:"Carlo Tan",      email:"carlo.tan@email.com", municipality:"Makati", status:"Disabled" },
-    ];
+        { id:"U-0101", name:"Leo Cruz",       email:"leo.cruz@email.com", municipality:"Bacoor", status:"Active" },
+        { id:"U-0102", name:"Ana Lim",        email:"ana.lim@email.com",  municipality:"Bacoor", status:"Active" },
 
-    // Working set (simulate updates/deletes for this session)
-    let workingUsers = [...ALL_USERS];
-    let actionCount = 0;
+        { id:"U-0201", name:"Carlo Tan",      email:"carlo.tan@email.com", municipality:"Makati", status:"Disabled" },
+      ];
 
-    // DOM
-    const scopeChip = document.getElementById("scopeChip");
-    const resultsChip = document.getElementById("resultsChip");
-
-    const kpiTotal = document.getElementById("kpiTotal");
-    const kpiActive = document.getElementById("kpiActive");
-    const kpiDisabled = document.getElementById("kpiDisabled");
-    const kpiActions = document.getElementById("kpiActions");
-
-    const searchInput = document.getElementById("searchInput");
-    const statusSelect = document.getElementById("statusSelect");
-    const btnClear = document.getElementById("btnClear");
-    const btnRefresh = document.getElementById("btnRefresh");
-
-    const usersTbody = document.getElementById("usersTbody");
-
-    // View modal DOM
-    const viewModal = document.getElementById("viewModal");
-    const btnCloseModal = document.getElementById("btnCloseModal");
-    const viewName = document.getElementById("viewName");
-    const viewEmail = document.getElementById("viewEmail");
-    const viewId = document.getElementById("viewId");
-    const viewMunicipality = document.getElementById("viewMunicipality");
-    const viewStatus = document.getElementById("viewStatus");
-
-    function normalize(s){ return (s || "").toString().toLowerCase().trim(); }
-
-    function scopedBase(){
-      return workingUsers.filter(u => u.municipality === SUBADMIN_MUNICIPALITY);
+      // session-only counter (UI KPI)
+      this._actionCount = 0;
     }
 
-    function applyFilters(data){
-      const q = normalize(searchInput.value);
-      const status = statusSelect.value;
-
-      const filtered = data.filter(u => {
-        const matchQ = !q || normalize(u.name).includes(q) || normalize(u.email).includes(q);
-        const matchStatus = status === "all" || u.status === status;
-        return matchQ && matchStatus;
-      });
-
-      resultsChip.textContent = `Showing ${filtered.length} of ${data.length}`;
-      return filtered;
+    // ---- Read ----
+    async getAll() {
+      return [...this._users];
     }
 
-    function statusPill(status){
-      const base = "inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]";
-      if (status === "Active") return `<span class="${base} text-emerald-800">Active</span>`;
-      return `<span class="${base} text-slate-700">Disabled</span>`;
+    async getScoped() {
+      const all = await this.getAll();
+      return all.filter(u => u.municipality === this.municipality);
     }
 
-    function rowHtml(u){
-      const isDisabled = u.status === "Disabled";
+    async getById(id) {
+      const all = await this.getAll();
+      return all.find(u => u.id === id) || null;
+    }
 
-      const viewBtn = `
+    // ---- Write (mock) ----
+    async setStatus(id, nextStatus) {
+      const idx = this._users.findIndex(u => u.id === id);
+      if (idx === -1) return false;
+
+      this._users[idx] = { ...this._users[idx], status: nextStatus };
+      this._actionCount += 1;
+      return true;
+    }
+
+    async remove(id) {
+      const before = this._users.length;
+      this._users = this._users.filter(u => u.id !== id);
+      const changed = this._users.length !== before;
+      if (changed) this._actionCount += 1;
+      return changed;
+    }
+
+    get actionCount() {
+      return this._actionCount;
+    }
+  }
+
+  const repo = new UsersRepository({ municipality: SUBADMIN_MUNICIPALITY });
+
+  /******************************************************************
+   * HELPERS
+   ******************************************************************/
+  const $ = (id) => document.getElementById(id);
+  const normalize = (s) => (s || "").toString().toLowerCase().trim();
+
+  function inScope(user) {
+    return !!user && user.municipality === SUBADMIN_MUNICIPALITY;
+  }
+
+  function statusPill(status){
+    const base = "inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]";
+    if (status === "Active") return `<span class="${base} text-emerald-800">Active</span>`;
+    return `<span class="${base} text-slate-700">Disabled</span>`;
+  }
+
+  function applyFilters(list, { query, status }) {
+    const q = normalize(query);
+    return list.filter(u => {
+      const matchQ = !q || normalize(u.name).includes(q) || normalize(u.email).includes(q);
+      const matchStatus = status === "all" || u.status === status;
+      return matchQ && matchStatus;
+    });
+  }
+
+  /******************************************************************
+   * DOM
+   ******************************************************************/
+  const scopeChip    = $("scopeChip");
+  const resultsChip  = $("resultsChip");
+
+  const kpiTotal     = $("kpiTotal");
+  const kpiActive    = $("kpiActive");
+  const kpiDisabled  = $("kpiDisabled");
+  const kpiActions   = $("kpiActions");
+
+  const searchInput  = $("searchInput");
+  const statusSelect = $("statusSelect");
+  const btnClear     = $("btnClear");
+  const btnRefresh   = $("btnRefresh");
+  const usersTbody   = $("usersTbody");
+
+  // Modal DOM
+  const viewModal         = $("viewModal");
+  const btnCloseModal     = $("btnCloseModal");
+  const viewName          = $("viewName");
+  const viewEmail         = $("viewEmail");
+  const viewId            = $("viewId");
+  const viewMunicipality  = $("viewMunicipality");
+  const viewStatus        = $("viewStatus");
+
+  /******************************************************************
+   * MODAL
+   ******************************************************************/
+  function openViewModal(user){
+    viewName.textContent = user.name || "—";
+    viewEmail.textContent = user.email || "—";
+    viewId.textContent = user.id || "—";
+    viewMunicipality.textContent = user.municipality || "—";
+    viewStatus.textContent = user.status || "—";
+    viewModal.classList.remove("hidden");
+  }
+
+  function closeViewModal(){
+    viewModal.classList.add("hidden");
+  }
+
+  /******************************************************************
+   * RENDER
+   ******************************************************************/
+  function rowHtml(u){
+    const isDisabled = u.status === "Disabled";
+
+    const viewBtn = `
+      <button
+        class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-800 hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 whitespace-nowrap"
+        type="button"
+        data-action="view"
+        data-id="${u.id}">
+        <span class="material-icons-round text-[18px]">visibility</span>
+        View
+      </button>
+    `;
+
+    const toggleBtn = isDisabled
+      ? `
         <button
-          class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-800 hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 whitespace-nowrap"
+          class="inline-flex items-center justify-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-900 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 whitespace-nowrap"
           type="button"
-          data-action="view"
+          data-action="enable"
           data-id="${u.id}">
-          <span class="material-icons-round text-[18px]">visibility</span>
-          View
+          <span class="material-icons-round text-[18px]">person_add</span>
+          Enable
+        </button>
+      `
+      : `
+        <button
+          class="inline-flex items-center justify-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-4 focus:ring-amber-100 whitespace-nowrap"
+          type="button"
+          data-action="disable"
+          data-id="${u.id}">
+          <span class="material-icons-round text-[18px]">person_off</span>
+          Disable
         </button>
       `;
 
-      const disableBtn = isDisabled
-        ? `
-          <button
-            class="inline-flex items-center justify-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-900 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 whitespace-nowrap"
-            type="button"
-            data-action="enable"
-            data-id="${u.id}">
-            <span class="material-icons-round text-[18px]">person_add</span>
-            Enable
-          </button>
-        `
-        : `
-          <button
-            class="inline-flex items-center justify-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-4 focus:ring-amber-100 whitespace-nowrap"
-            type="button"
-            data-action="disable"
-            data-id="${u.id}">
-            <span class="material-icons-round text-[18px]">person_off</span>
-            Disable
-          </button>
-        `;
+    const removeBtn = `
+      <button
+        class="inline-flex items-center justify-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100 whitespace-nowrap"
+        type="button"
+        data-action="remove"
+        data-id="${u.id}">
+        <span class="material-icons-round text-[18px]">person_remove</span>
+        Remove
+      </button>
+    `;
 
-      const removeBtn = `
-        <button
-          class="inline-flex items-center justify-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 hover:bg-rose-100 focus:outline-none focus:ring-4 focus:ring-rose-100 whitespace-nowrap"
-          type="button"
-          data-action="remove"
-          data-id="${u.id}">
-          <span class="material-icons-round text-[18px]">person_remove</span>
-          Remove
-        </button>
-      `;
+    return `
+      <tr class="border-b border-gray-200">
+        <td class="px-3 py-3 text-sm text-slate-900" title="${u.name}">
+          <div class="font-bold">${u.name}</div>
+          <div class="text-xs text-slate-600">ID: ${u.id}</div>
+        </td>
+        <td class="px-3 py-3 text-sm text-slate-900" title="${u.email}">${u.email}</td>
+        <td class="px-3 py-3 text-sm text-slate-900" title="${u.municipality}">${u.municipality}</td>
+        <td class="px-3 py-3 text-sm">${statusPill(u.status)}</td>
+        <td class="px-3 py-3">
+          <div class="flex flex-nowrap items-center gap-2 whitespace-nowrap">
+            ${viewBtn}
+            ${toggleBtn}
+            ${removeBtn}
+          </div>
+        </td>
+      </tr>
+    `;
+  }
 
-      return `
-        <tr class="border-b border-gray-200">
-          <td class="px-3 py-3 text-sm text-slate-900" title="${u.name}">
-            <div class="font-bold">${u.name}</div>
-            <div class="text-xs text-slate-600">ID: ${u.id}</div>
-          </td>
-          <td class="px-3 py-3 text-sm text-slate-900" title="${u.email}">${u.email}</td>
-          <td class="px-3 py-3 text-sm text-slate-900" title="${u.municipality}">${u.municipality}</td>
-          <td class="px-3 py-3 text-sm">${statusPill(u.status)}</td>
-          <td class="px-3 py-3">
-            <div class="flex flex-nowrap items-center gap-2 whitespace-nowrap">
-              ${viewBtn}
-              ${disableBtn}
-              ${removeBtn}
-            </div>
+  function renderTable(list){
+    usersTbody.innerHTML = "";
+
+    if (list.length === 0){
+      usersTbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-3 py-5 text-sm text-slate-600">
+            No users found for the selected filters.
           </td>
         </tr>
       `;
+      return;
     }
 
-    function renderTable(list){
-      usersTbody.innerHTML = "";
+    usersTbody.innerHTML = list.map(rowHtml).join("");
+  }
 
-      if (list.length === 0){
-        usersTbody.innerHTML = `
-          <tr>
-            <td colspan="5" class="px-3 py-5 text-sm text-slate-600">
-              No users found for the selected filters.
-            </td>
-          </tr>
-        `;
-        return;
-      }
+  function renderKpis(scopedList){
+    const total = scopedList.length;
+    const active = scopedList.filter(u => u.status === "Active").length;
+    const disabled = scopedList.filter(u => u.status === "Disabled").length;
 
-      usersTbody.innerHTML = list.map(rowHtml).join("");
-    }
+    kpiTotal.textContent = total;
+    kpiActive.textContent = active;
+    kpiDisabled.textContent = disabled;
+    kpiActions.textContent = repo.actionCount;
+  }
 
-    function renderKpis(scopedList){
-      const total = scopedList.length;
-      const active = scopedList.filter(u => u.status === "Active").length;
-      const disabled = scopedList.filter(u => u.status === "Disabled").length;
+  async function renderAll(){
+    scopeChip.textContent = `Municipality: ${SUBADMIN_MUNICIPALITY}`;
 
-      kpiTotal.textContent = total;
-      kpiActive.textContent = active;
-      kpiDisabled.textContent = disabled;
-      kpiActions.textContent = actionCount;
-    }
+    const scoped = await repo.getScoped();
 
-    function renderAll(){
-      scopeChip.textContent = `Municipality: ${SUBADMIN_MUNICIPALITY}`;
-
-      const base = scopedBase();
-      const filtered = applyFilters(base);
-
-      renderKpis(base);
-      renderTable(filtered);
-    }
-
-    function mustBeInScope(user){
-      if (!user) return false;
-      return user.municipality === SUBADMIN_MUNICIPALITY;
-    }
-
-    // Modal helpers
-    function openViewModal(user){
-      viewName.textContent = user.name || "—";
-      viewEmail.textContent = user.email || "—";
-      viewId.textContent = user.id || "—";
-      viewMunicipality.textContent = user.municipality || "—";
-      viewStatus.textContent = user.status || "—";
-
-      viewModal.classList.remove("hidden");
-    }
-
-    function closeViewModal(){
-      viewModal.classList.add("hidden");
-    }
-
-    async function disableUser(userId){
-      const user = workingUsers.find(u => u.id === userId);
-      if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
-
-      if (user.status === "Disabled"){
-        alert("User is already disabled.");
-        return;
-      }
-
-      const ok = confirm(
-        `Disable user?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
-        `In production, do this server-side (e.g., set a disabled flag / Firebase Auth disable).`
-      );
-      if (!ok) return;
-
-      user.status = "Disabled";
-      actionCount += 1;
-      renderAll();
-    }
-
-    async function enableUser(userId){
-      const user = workingUsers.find(u => u.id === userId);
-      if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
-
-      if (user.status === "Active"){
-        alert("User is already active.");
-        return;
-      }
-
-      const ok = confirm(
-        `Enable user?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}`
-      );
-      if (!ok) return;
-
-      user.status = "Active";
-      actionCount += 1;
-      renderAll();
-    }
-
-    async function removeUser(userId){
-      const user = workingUsers.find(u => u.id === userId);
-      if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
-
-      const ok = confirm(
-        `Remove user account?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
-        `In production, delete/disable server-side with strict scope checks.`
-      );
-      if (!ok) return;
-
-      workingUsers = workingUsers.filter(u => u.id !== userId);
-      actionCount += 1;
-      renderAll();
-    }
-
-    // Events
-    usersTbody.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-action]");
-      if (!btn) return;
-
-      const action = btn.getAttribute("data-action");
-      const id = btn.getAttribute("data-id");
-
-      if (action === "view") {
-        const user = workingUsers.find(u => u.id === id);
-        if (!mustBeInScope(user)) return alert("Access denied: out of scope.");
-        openViewModal(user);
-      }
-
-      if (action === "disable") disableUser(id);
-      if (action === "enable") enableUser(id);
-      if (action === "remove") removeUser(id);
+    const filtered = applyFilters(scoped, {
+      query: searchInput.value,
+      status: statusSelect.value
     });
 
-    let debounce;
-    searchInput.addEventListener("input", () => {
-      clearTimeout(debounce);
-      debounce = setTimeout(renderAll, 150);
-    });
+    resultsChip.textContent = `Showing ${filtered.length} of ${scoped.length}`;
 
-    statusSelect.addEventListener("change", renderAll);
+    renderKpis(scoped);
+    renderTable(filtered);
+  }
 
-    btnClear.addEventListener("click", () => {
-      searchInput.value = "";
-      statusSelect.value = "all";
-      renderAll();
-    });
+  /******************************************************************
+   * ACTIONS
+   ******************************************************************/
+  async function handleView(id){
+    const user = await repo.getById(id);
+    if (!inScope(user)) return alert("Access denied: out of scope.");
+    openViewModal(user);
+  }
 
-    btnRefresh.addEventListener("click", () => {
-      renderAll();
-    });
+  async function handleDisable(id){
+    const user = await repo.getById(id);
+    if (!inScope(user)) return alert("Access denied: out of scope.");
+    if (user.status === "Disabled") return alert("User is already disabled.");
 
-    // Modal close events
-    btnCloseModal.addEventListener("click", closeViewModal);
+    const ok = confirm(
+      `Disable user?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
+      `In production, do this server-side (e.g., set a disabled flag / Firebase Auth disable).`
+    );
+    if (!ok) return;
 
-    // click outside the card closes modal (overlay is the first child)
-    viewModal.addEventListener("click", (e) => {
-      if (e.target === viewModal.firstElementChild) closeViewModal();
-    });
-
-    // Esc closes modal
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeViewModal();
-    });
-
-    // Init
+    await repo.setStatus(id, "Disabled");
     renderAll();
-  </script>
-</body>
-</html>
+  }
+
+  async function handleEnable(id){
+    const user = await repo.getById(id);
+    if (!inScope(user)) return alert("Access denied: out of scope.");
+    if (user.status === "Active") return alert("User is already active.");
+
+    const ok = confirm(
+      `Enable user?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}`
+    );
+    if (!ok) return;
+
+    await repo.setStatus(id, "Active");
+    renderAll();
+  }
+
+  async function handleRemove(id){
+    const user = await repo.getById(id);
+    if (!inScope(user)) return alert("Access denied: out of scope.");
+
+    const ok = confirm(
+      `Remove user account?\n\nName: ${user.name}\nEmail: ${user.email}\nMunicipality: ${user.municipality}\n\n` +
+      `In production, delete/disable server-side with strict scope checks.`
+    );
+    if (!ok) return;
+
+    await repo.remove(id);
+    renderAll();
+  }
+
+  /******************************************************************
+   * EVENTS
+   ******************************************************************/
+  usersTbody.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+
+    const action = btn.getAttribute("data-action");
+    const id = btn.getAttribute("data-id");
+
+    if (action === "view") return handleView(id);
+    if (action === "disable") return handleDisable(id);
+    if (action === "enable") return handleEnable(id);
+    if (action === "remove") return handleRemove(id);
+  });
+
+  let debounce;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => renderAll(), 150);
+  });
+
+  statusSelect.addEventListener("change", () => renderAll());
+
+  btnClear.addEventListener("click", () => {
+    searchInput.value = "";
+    statusSelect.value = "all";
+    renderAll();
+  });
+
+  btnRefresh.addEventListener("click", () => renderAll());
+
+  // Modal close events
+  btnCloseModal.addEventListener("click", closeViewModal);
+
+  viewModal.addEventListener("click", (e) => {
+    if (e.target === viewModal.firstElementChild) closeViewModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeViewModal();
+  });
+
+  // Init
+  renderAll();
+</script>
