@@ -41,3 +41,11 @@ def transactions():
 @bp.route('/users')
 def users():
     return render_template('municipal/user-management-municipal/user-management-municipal.html')
+
+@bp.route('/profile')
+def profile():
+    return render_template('municipal/municipal-profile.html')
+
+@bp.route('/notification')
+def notification():
+    return render_template('municipal/notification.html')

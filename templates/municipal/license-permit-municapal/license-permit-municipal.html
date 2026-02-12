@@ -74,7 +74,7 @@
             </div>
             <div>
               <p class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Accepted Today</p>
-              <p class="mt-0.5 text-2xl font-bold text-slate-900" id="statAccepted">24</p>
+              <p class="mt-0.5 text-2xl font-bold text-slate-900" id="statAccepted">0</p>
             </div>
           </div>
           <span class="material-icons-round text-slate-400 transition group-hover:text-slate-700">chevron_right</span>
@@ -93,7 +93,7 @@
             </div>
             <div>
               <p class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Rejected Today</p>
-              <p class="mt-0.5 text-2xl font-bold text-slate-900" id="statRejected">08</p>
+              <p class="mt-0.5 text-2xl font-bold text-slate-900" id="statRejected">0</p>
             </div>
           </div>
           <span class="material-icons-round text-slate-400 transition group-hover:text-slate-700">chevron_right</span>
@@ -112,7 +112,7 @@
             </div>
             <div>
               <p class="text-[12px] font-bold uppercase tracking-gov text-slate-600">Pending Review</p>
-              <p class="mt-0.5 text-2xl font-bold text-slate-900" id="statPending">156</p>
+              <p class="mt-0.5 text-2xl font-bold text-slate-900" id="statPending">0</p>
             </div>
           </div>
           <span class="material-icons-round text-slate-400 transition group-hover:text-slate-700">chevron_right</span>
@@ -232,27 +232,13 @@
   </main>
 
   
-  <script>
-    const applicants = [
-      {
-        name: "Paolo Dave Alqzd",
-        reference: "DENR-2026-0042",
-        categoryLabel: "Certificate of Tree Plantation Ownership (CTPO)",
-        categoryValue: "Certificate of Tree Plantation Ownership (CTPO)",
-        filedDate: "Feb 07, 2026",
-        status: "Pending Review",
-        statusKey: "pending"
-      },
-      {
-        name: "Andrea Mae Santos",
-        reference: "DENR-2026-0061",
-        categoryLabel: "Poultry Farm Registration",
-        categoryValue: "Poultry Farm Registration",
-        filedDate: "Feb 09, 2026",
-        status: "Accepted",
-        statusKey: "accepted"
-      }
-    ];
+  <script type="module">
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+    let applicants = [];
+    let currentAdminMunicipality = null;
 
     const rowsEl = document.getElementById("rows");
     const emptyEl = document.getElementById("emptyState");
@@ -262,6 +248,117 @@
     const btnSearch = document.getElementById("btnSearch");
     const btnAll = document.getElementById("btnAllTypes");
     const btnClear = document.getElementById("btnClear");
+    const statAccepted = document.getElementById("statAccepted");
+    const statRejected = document.getElementById("statRejected");
+    const statPending = document.getElementById("statPending");
+
+    async function loadLicensePermits() {
+      try {
+        console.log('Loading license/permit applications...');
+        
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.error('No user logged in');
+          return;
+        }
+        
+        // Get admin's municipality
+        const adminDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
+          currentAdminMunicipality = adminData.municipality;
+          console.log('Current admin municipality:', currentAdminMunicipality);
+        }
+        
+        // Create a map of users with their municipalities
+        const usersRef = collection(db, 'users');
+        const usersSnapshot = await getDocs(usersRef);
+        const usersMap = {};
+        
+        usersSnapshot.forEach(userDoc => {
+          const userData = userDoc.data();
+          usersMap[userDoc.id] = {
+            name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || 'Unknown User',
+            municipality: userData.municipality || null
+          };
+        });
+        
+        console.log('Users loaded:', Object.keys(usersMap).length);
+        
+        // Fetch license permits from applications collection (assuming they have a type field)
+        const applicationsRef = collection(db, 'licensePermits');
+        const applicationsSnapshot = await getDocs(applicationsRef);
+        
+        console.log('Total license/permit applications found:', applicationsSnapshot.size);
+        
+        applicants = [];
+        let acceptedCount = 0;
+        let rejectedCount = 0;
+        let pendingCount = 0;
+        const today = new Date().toDateString();
+        
+        applicationsSnapshot.forEach(docSnapshot => {
+          const data = docSnapshot.data();
+          const userInfo = usersMap[data.userId];
+          const userName = userInfo?.name || 'Unknown User';
+          const userMunicipality = userInfo?.municipality;
+          
+          // Filter by municipality
+          console.log(`License/Permit ${docSnapshot.id}: User municipality="${userMunicipality}", Admin municipality="${currentAdminMunicipality}"`);
+          if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
+            console.log(`⛔ SKIPPED: License/Permit ${docSnapshot.id} - municipality mismatch`);
+            return;
+          }
+          
+          console.log(`✅ INCLUDED: License/Permit ${docSnapshot.id}`);
+          
+          let filedDate = 'N/A';
+          let dateObj = new Date();
+          if (data.createdAt) {
+            dateObj = data.createdAt.toDate();
+            filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+          }
+          
+          let statusKey = 'pending';
+          let statusText = 'Pending Review';
+          if (data.status === 'approved' || data.status === 'accepted') {
+            statusKey = 'accepted';
+            statusText = 'Accepted';
+            if (dateObj.toDateString() === today) acceptedCount++;
+          } else if (data.status === 'rejected') {
+            statusKey = 'rejected';
+            statusText = 'Rejected';
+            if (dateObj.toDateString() === today) rejectedCount++;
+          } else {
+            pendingCount++;
+          }
+          
+          applicants.push({
+            id: docSnapshot.id,
+            name: userName,
+            reference: `DENR-${dateObj.getFullYear()}-${docSnapshot.id.substring(0, 4).toUpperCase()}`,
+            categoryLabel: data.permitType || data.category || 'N/A',
+            categoryValue: data.permitType || data.category || '',
+            filedDate: filedDate,
+            status: statusText,
+            statusKey: statusKey
+          });
+        });
+        
+        console.log('Filtered license/permit applications:', applicants.length);
+        console.log('Stats - Accepted:', acceptedCount, 'Rejected:', rejectedCount, 'Pending:', pendingCount);
+        
+        // Update stats
+        statAccepted.textContent = acceptedCount;
+        statRejected.textContent = rejectedCount;
+        statPending.textContent = pendingCount;
+        
+        render(applicants);
+        
+      } catch (error) {
+        console.error('Error loading license/permit applications:', error);
+      }
+    }
 
     function normalize(str) {
       return (str || "").toString().toLowerCase().trim();
@@ -367,7 +464,16 @@
     btnAll.addEventListener("click", resetFilters);
     btnClear.addEventListener("click", resetFilters);
 
-    render(applicants);
+    // Authentication check and data loading
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        console.log('No user authenticated, redirecting to login...');
+        window.location.href = '/login';
+      } else {
+        console.log('User authenticated:', user.email);
+        loadLicensePermits();
+      }
+    });
   </script>
 </body>
 </html>

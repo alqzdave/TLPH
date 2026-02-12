@@ -1219,12 +1219,12 @@
         const result = await response.json();
 
         if (result.status === 'success' && result.transactions) {
-          // Filter only approved applications - check both display_status and status fields
-          const approvedApps = result.transactions.filter(t => 
+          // Filter only approved applications and exclude service requests
+          const approvedApps = result.transactions.filter(t => (
             t.display_status === 'approved' || 
             t.status === 'approved' ||
             t.approval_status === 'approved'
-          );
+          ) && !isServiceTransaction(t));
 
           console.log('Total transactions:', result.transactions.length);
           console.log('Approved apps:', approvedApps.length);
@@ -1302,6 +1302,25 @@
       if (name.includes('license')) return 'License';
       
       return 'License/Permit';
+    }
+
+    // Helper to detect service-related transactions from payment logs
+    function isServiceTransaction(transaction) {
+      const name = (transaction.transaction_name || '').toLowerCase();
+      const description = (transaction.description || '').toLowerCase();
+      const externalId = (transaction.external_id || transaction.reference || '').toLowerCase();
+
+      if (externalId.startsWith('service-')) return true;
+
+      const serviceKeywords = [
+        'service', 'compensation', 'pest', 'typhoon',
+        'compliance', 'disease', 'visit', 'farm',
+        'fertilizer', 'financial', 'seminar'
+      ];
+
+      return serviceKeywords.some(keyword =>
+        name.includes(keyword) || description.includes(keyword)
+      );
     }
 
     window.viewReceipt = function(reference, permitType, date, amount, description, invoiceId, method, updated) {

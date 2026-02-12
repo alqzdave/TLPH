@@ -34,6 +34,9 @@ export async function submitServiceRequest(config) {
     return;
   }
 
+  // Mark as handled to avoid auto-binding on the same form
+  form.dataset.serviceHandler = 'manual';
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -65,21 +68,25 @@ export async function submitServiceRequest(config) {
         createdAt: new Date().toISOString()
       };
 
-      // Add form fields to serviceData
-      for (const [fieldId, fieldName] of Object.entries(config.formData)) {
-        const element = document.getElementById(fieldId);
-        if (element) {
-          if (element.type === 'file') {
-            // For file inputs, store file names and count
-            const files = element.files;
-            if (files.length > 0) {
-              serviceData[fieldName] = Array.from(files).map(f => f.name);
-              serviceData[`${fieldName}Count`] = files.length;
+      // Add form fields to serviceData (auto-capture if formData not provided)
+      if (config.formData && Object.keys(config.formData).length > 0) {
+        for (const [fieldId, fieldName] of Object.entries(config.formData)) {
+          const element = document.getElementById(fieldId);
+          if (element) {
+            if (element.type === 'file') {
+              // For file inputs, store file names and count
+              const files = element.files;
+              if (files.length > 0) {
+                serviceData[fieldName] = Array.from(files).map(f => f.name);
+                serviceData[`${fieldName}Count`] = files.length;
+              }
+            } else if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+              serviceData[fieldName] = element.value;
             }
-          } else if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT' || element.tagName === 'SELECT') {
-            serviceData[fieldName] = element.value;
           }
         }
+      } else {
+        captureAllFields(form, serviceData);
       }
 
       // Create Xendit invoice
@@ -162,6 +169,9 @@ export async function submitFreeServiceRequest(config) {
     return;
   }
 
+  // Mark as handled to avoid auto-binding on the same form
+  form.dataset.serviceHandler = 'manual';
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -193,20 +203,24 @@ export async function submitFreeServiceRequest(config) {
         createdAt: new Date().toISOString()
       };
 
-      // Add form fields to serviceData
-      for (const [fieldId, fieldName] of Object.entries(config.formData)) {
-        const element = document.getElementById(fieldId);
-        if (element) {
-          if (element.type === 'file') {
-            const files = element.files;
-            if (files.length > 0) {
-              serviceData[fieldName] = Array.from(files).map(f => f.name);
-              serviceData[`${fieldName}Count`] = files.length;
+      // Add form fields to serviceData (auto-capture if formData not provided)
+      if (config.formData && Object.keys(config.formData).length > 0) {
+        for (const [fieldId, fieldName] of Object.entries(config.formData)) {
+          const element = document.getElementById(fieldId);
+          if (element) {
+            if (element.type === 'file') {
+              const files = element.files;
+              if (files.length > 0) {
+                serviceData[fieldName] = Array.from(files).map(f => f.name);
+                serviceData[`${fieldName}Count`] = files.length;
+              }
+            } else if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+              serviceData[fieldName] = element.value;
             }
-          } else if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT' || element.tagName === 'SELECT') {
-            serviceData[fieldName] = element.value;
           }
         }
+      } else {
+        captureAllFields(form, serviceData);
       }
 
       // Store service request in Firebase
@@ -238,5 +252,36 @@ export async function submitFreeServiceRequest(config) {
       btnText.textContent = originalText;
       submitBtn.disabled = false;
     }
+  });
+}
+
+function captureAllFields(form, target) {
+  const elements = form.querySelectorAll('input, textarea, select');
+  elements.forEach((element) => {
+    const key = element.name || element.id;
+    if (!key || element.disabled) return;
+
+    if (element.type === 'file') {
+      const files = element.files;
+      if (files && files.length > 0) {
+        target[key] = Array.from(files).map(f => f.name);
+        target[`${key}Count`] = files.length;
+      }
+      return;
+    }
+
+    if (element.type === 'checkbox') {
+      target[key] = element.checked;
+      return;
+    }
+
+    if (element.type === 'radio') {
+      if (element.checked) {
+        target[key] = element.value;
+      }
+      return;
+    }
+
+    target[key] = element.value;
   });
 }

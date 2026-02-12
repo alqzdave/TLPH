@@ -1,11 +1,405 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TLPH | Super Admin Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <style>
+    :root{
+      --gov-font: Verdana, Arial, Tahoma, sans-serif;
+      --gov-text: #111827;
+      --gov-muted: #4b5563;
+      --gov-border: #d1d5db;
+      --gov-bg: #f3f4f6;
+      --gov-panel: #ffffff;
+      --gov-primary: #0f172a;
+      --gov-focus: rgba(15, 23, 42, 0.1);
+    }
+    html, body{ font-family: var(--gov-font); color: var(--gov-text); }
+    body{ background: var(--gov-bg); }
+
+    /* subtle watermark */
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      background-image: url('/static/images/denr.jpg');
+      background-repeat: no-repeat;
+      background-position: center 30%;
+      background-size: 520px;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .panel{ background: var(--gov-panel); border: 1px solid var(--gov-border); border-radius: 16px; }
+    .chip{ border: 1px solid var(--gov-border); background: white; border-radius: 999px; }
+    .btn{ border: 1px solid var(--gov-border); background: white; border-radius: 12px; transition: all 0.2s; }
+    .btn:hover{ background: #f9fafb; border-color: #9ca3af; }
+    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
+    .tab-active{ background: #0f172a; color: white; border-color: #0f172a; }
+    .tab-inactive{ background: white; color: #111827; }
+    
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
 </head>
-<body>
-    <h1>Welcome Super Admin</h1>
+
+<body class="min-h-screen">
+  <div class="max-w-[1550px] mx-auto px-4 lg:px-6 py-6 space-y-6">
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <section class="panel p-5 lg:col-span-2 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b pb-4">
+          <div>
+            <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span class="material-icons-round text-slate-800">analytics</span>
+              TLPH Super Admin Console
+            </h1>
+            <p class="text-xs text-emerald-700 uppercase tracking-wider font-bold">
+              Department of Environment and Natural Resources
+            </p>
+          </div>
+          <span class="chip px-3 py-1.5 text-xs font-bold text-gray-500 flex items-center gap-2" id="todayText">—</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold uppercase text-gray-500 ml-1">Geographic Scope</label>
+            <select id="scopeSelect" class="w-full focus-ring border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white font-medium">
+              <option value="national">Nationwide</option>
+              <option value="regional">Regional</option>
+              <option value="municipal">Municipal</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold uppercase text-gray-500 ml-1">Specific Category</label>
+            <select id="categorySelect" class="w-full focus-ring border border-blue-200 rounded-xl px-3 py-2 text-sm bg-blue-50 font-bold text-blue-800">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold uppercase text-gray-500 ml-1">Search Keywords</label>
+            <div class="relative">
+              <span class="material-icons-round absolute left-3 top-2 text-gray-400 text-[18px]">search</span>
+              <input id="searchInput" class="w-full focus-ring border border-gray-300 rounded-xl pl-9 pr-3 py-2 text-sm" placeholder="Ref #, Name, Item..."/>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-2xl">
+            <div class="text-center md:text-left">
+                <div class="text-[10px] font-bold uppercase text-slate-400">Filtered Total</div>
+                <div class="text-xl font-bold text-slate-900" id="summaryTotal">0</div>
+            </div>
+            <div class="text-center md:text-left">
+                <div class="text-[10px] font-bold uppercase text-slate-400">Success Rate</div>
+                <div class="text-xl font-bold text-emerald-600" id="summaryRate">0%</div>
+            </div>
+            <div class="text-center md:text-left lg:col-span-2">
+                <div class="text-[10px] font-bold uppercase text-slate-400">Active Geographic Focus</div>
+                <div class="text-sm font-bold text-slate-700 truncate" id="summaryFocus">Nationwide Control</div>
+            </div>
+        </div>
+      </section>
+
+      <section class="panel p-5 flex flex-col items-center justify-center">
+        <h3 class="text-[10px] font-bold uppercase text-slate-400 mb-4 tracking-widest">Category Distribution</h3>
+        <div class="w-full h-[180px]">
+          <canvas id="mainChart"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div class="panel p-4 border-l-4 border-l-slate-800">
+        <div class="text-[10px] font-bold uppercase text-gray-400">Applications</div>
+        <div class="mt-1 text-2xl font-bold" data-kpi="applications">0</div>
+      </div>
+      <div class="panel p-4 border-l-4 border-l-blue-500">
+        <div class="text-[10px] font-bold uppercase text-gray-400">Service Requests</div>
+        <div class="mt-1 text-2xl font-bold" data-kpi="requests">0</div>
+      </div>
+      <div class="panel p-4 border-l-4 border-l-emerald-500">
+        <div class="text-[10px] font-bold uppercase text-gray-400">Active Permits</div>
+        <div class="mt-1 text-2xl font-bold" data-kpi="permits">0</div>
+      </div>
+      <div class="panel p-4 border-l-4 border-l-amber-500">
+        <div class="text-[10px] font-bold uppercase text-gray-400">Inventory Status</div>
+        <div class="mt-1 text-2xl font-bold" data-kpi="invAlerts">0</div>
+      </div>
+      <div class="panel p-4 border-l-4 border-l-purple-500">
+        <div class="text-[10px] font-bold uppercase text-gray-400">User Assets</div>
+        <div class="mt-1 text-2xl font-bold" data-kpi="userInv">0</div>
+      </div>
+      <div class="panel p-4 border-l-4 border-l-green-600">
+        <div class="text-[10px] font-bold uppercase text-gray-400">Revenue Flow</div>
+        <div class="mt-1 text-lg font-bold" data-kpi="txnAmount">₱0</div>
+      </div>
+    </div>
+
+    <section class="panel overflow-hidden">
+      <div class="flex flex-wrap gap-1 p-3 bg-slate-50 border-b">
+        <button class="btn px-4 py-2 text-xs font-bold uppercase tracking-tight tab-active" data-tab="applications">Applications</button>
+        <button class="btn px-4 py-2 text-xs font-bold uppercase tracking-tight tab-inactive" data-tab="requests">Service Requests</button>
+        <button class="btn px-4 py-2 text-xs font-bold uppercase tracking-tight tab-inactive" data-tab="inventory">Inventory</button>
+        <button class="btn px-4 py-2 text-xs font-bold uppercase tracking-tight tab-inactive" data-tab="userInventory">User Inventory</button>
+        <button class="btn px-4 py-2 text-xs font-bold uppercase tracking-tight tab-inactive" data-tab="permits">Licensing/Permit</button>
+        <button class="btn px-4 py-2 text-xs font-bold uppercase tracking-tight tab-inactive" data-tab="transactions">Transactions</button>
+        <button class="btn px-4 py-2 text-xs font-bold uppercase tracking-tight tab-inactive" data-tab="users">User Types</button>
+      </div>
+
+      <div class="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b">
+        <div class="text-sm text-gray-500">
+          Viewing <span class="font-bold text-slate-900" id="resultCount">0</span> records in <span class="capitalize font-semibold underline decoration-blue-400" id="activeTabLabel">...</span>
+        </div>
+        <div class="flex gap-2">
+            <button id="btnClear" class="btn px-3 py-2 text-xs font-bold flex items-center gap-1"><span class="material-icons-round text-sm">refresh</span> Reset Filters</button>
+            <button class="btn px-3 py-2 text-xs font-bold bg-slate-900 text-white border-slate-900 flex items-center gap-1 hover:bg-slate-800 transition-colors"><span class="material-icons-round text-sm">file_download</span> Export Table</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr id="tableHeadRow" class="bg-slate-50/50"></tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest py-4">
+      Official TLPH System &copy; 2026 • Secure Super Admin Environment
+    </footer>
+  </div>
+
+  <script>
+    // ---- CONFIGURATION & CATEGORIES ----
+    const CATEGORIES = {
+      applications: ["Crop & Plant", "Livestock & Poultry", "Fisheries & Aquaculture", "Agribusiness & Agro-Processing", "Agricultural Trade", "Land Use", "Research & Tech", "Farmer Support", "Food Safety", "Extension Services", "Climate Risk", "Digital Agriculture", "Compliance", "Cooperative Development"],
+      requests: ["Initial Farm Visit", "Compliance Inspection", "Disease Investigation", "Agribusiness Support", "Soil Evaluation", "Follow-up", "GAP Training", "Pest Management", "Safe Pesticide Training", "Nursery Seminar", "Input Usage", "Chemical Registration", "Subsidy Application", "Crop Insurance"],
+      inventory: ["Chemical Inventory", "Natural Resources", "Protected Area", "Biodiversity Inventory"],
+      userInventory: ["Field Equipment", "Vehicles", "IT Assets", "Office Supplies"],
+      permits: ["Import Permit", "Wildlife Trade", "Transport Local", "Harvest Permit", "Slaughterhouse Accreditation", "Poultry Registration", "Animal Health Clearance", "ECC", "Waste Management", "Nursery Accreditation", "Tree Cutting", "Wildlife Collection", "Wastewater Discharge (WWDP)"],
+      transactions: ["Application Fee", "Permit Fee", "Inspection Fee", "Violation Fine", "Registration Fee"],
+      users: ["National Admin", "Regional Admin", "Municipal Admin", "Field Officer"]
+    };
+
+    const DATA = {
+      applications: [
+        { date: "2026-02-12", ref: "APP-2026-001", applicant: "Alqz Dave", category: "Fisheries & Aquaculture", region: "IV-B", municipality: "Calapan", status: "Pending" },
+        { date: "2026-02-11", ref: "APP-2026-042", applicant: "Juan Dela Cruz", category: "Crop & Plant", region: "IV-B", municipality: "Naujan", status: "Approved" },
+        { date: "2026-02-10", ref: "APP-2026-088", applicant: "Green Agri", category: "Agribusiness & Agro-Processing", region: "NCR", municipality: "", status: "Reject" }
+      ],
+      requests: [{ date: "2026-02-12", ref: "SR-990", applicant: "Maria Clara", category: "GAP Training", region: "IV-B", municipality: "Victoria", status: "Pending" }],
+      inventory: [{ category: "Natural Resources", description: "Mangrove Propagules", quantity: 500, region: "IV-B", municipality: "Calapan" }],
+      userInventory: [{ product: "Rugged Tablet", category: "IT Assets", owner: "Cedric Admin", initialQty: 10, currentQty: 5, region: "IV-B", municipality: "Calapan" }],
+      permits: [{ date: "2026-02-11", ref: "PMT-88", applicant: "Oriental Wood Ltd", category: "Tree Cutting", region: "IV-B", municipality: "Naujan", status: "Approved" }],
+      transactions: [{ ref: "TXN-112", name: "Alqz Dave", type: "Application Fee", date: "2026-02-12", region: "IV-B", municipality: "Calapan", status: "Paid", amount: 1500 }],
+      users: [{ name: "Super Admin", email: "root@tlph.gov.ph", userType: "National Admin", region: "", municipality: "", status: "Active" }]
+    };
+
+    const HEADERS = {
+      applications: ["Date", "Reference & Applicant", "Category", "Region", "Municipality", "Status"],
+      requests: ["Date", "Reference & Applicant", "Category", "Region", "Municipality", "Status"],
+      inventory: ["Category", "Description", "Quantity", "Region", "Municipality"],
+      userInventory: ["Product", "Category", "Owner", "Inital Qty", "Current Qty", "Region", "Municipality"],
+      permits: ["Date", "Reference & Applicant", "Category", "Region", "Municipality", "Status"],
+      transactions: ["Ref #", "Name", "Type", "Date", "Region", "Municipality", "Status", "Amount"],
+      users: ["Name", "Email", "User Type", "Region", "Municipality", "Status"]
+    };
+
+    let activeTab = "applications";
+    let chartInstance = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    // ---- LOGIC ----
+    function populateCategoryDropdown() {
+      const select = $("categorySelect");
+      select.innerHTML = '<option value="all">All Categories</option>';
+      (CATEGORIES[activeTab] || []).forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    }
+
+    function updateSummary(filteredRows) {
+        $("summaryTotal").textContent = filteredRows.length;
+        
+        // Success Rate (Approved/Paid/Active vs Total)
+        const successCount = filteredRows.filter(r => 
+            ['Approved', 'Paid', 'Active'].includes(r.status)
+        ).length;
+        const rate = filteredRows.length > 0 ? Math.round((successCount / filteredRows.length) * 100) : 0;
+        $("summaryRate").textContent = rate + "%";
+        
+        // Scope Focus Text
+        const scope = $("scopeSelect").value;
+        $("summaryFocus").textContent = scope === 'national' ? 'Nationwide Control' : 
+                                       scope === 'regional' ? 'Regional Focus: IV-B' : 'Municipal Control: Calapan';
+    }
+
+    function updateChart(filteredRows) {
+      const counts = {};
+      filteredRows.forEach(r => {
+        const cat = r.category || r.type || r.userType || "Uncategorized";
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+
+      const ctx = $('mainChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(counts),
+          datasets: [{
+            data: Object.values(counts),
+            backgroundColor: ['#0f172a', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+            borderWidth: 0,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          cutout: '75%'
+        }
+      });
+    }
+
+    function formatMoneyPHP(n) {
+      return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n);
+    }
+
+    function renderTable() {
+      const head = $("tableHeadRow");
+      const body = $("tableBody");
+      const catFilter = $("categorySelect").value;
+      const search = $("searchInput").value.toLowerCase();
+      
+      head.innerHTML = "";
+      body.innerHTML = "";
+
+      HEADERS[activeTab].forEach(text => {
+        const th = document.createElement("th");
+        th.className = "px-4 py-3 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-200 tracking-wider";
+        th.textContent = text;
+        head.appendChild(th);
+      });
+      head.innerHTML += '<th class="px-4 py-3 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-200">Actions</th>';
+
+      const filtered = (DATA[activeTab] || []).filter(r => {
+        const matchesCat = catFilter === "all" || (r.category === catFilter || r.type === catFilter || r.userType === catFilter);
+        const matchesSearch = Object.values(r).join(" ").toLowerCase().includes(search);
+        return matchesCat && matchesSearch;
+      });
+
+      $("resultCount").textContent = filtered.length;
+      updateSummary(filtered);
+      updateChart(filtered);
+
+      if (filtered.length === 0) {
+        body.innerHTML = `<tr><td colspan="10" class="p-10 text-center text-slate-300 font-bold italic">No data matching your current filters.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition-colors group";
+
+        Object.keys(r).forEach(k => {
+            const td = document.createElement("td");
+            td.className = "px-4 py-4 text-sm font-medium text-slate-600";
+            
+            if (k === "ref") {
+                td.innerHTML = `<div class="font-bold text-slate-900 leading-tight">${r.ref}</div>
+                                <div class="text-[10px] text-slate-400 font-bold">${r.applicant || r.name || ''}</div>`;
+            } else if (k === "applicant" || (k === "name" && activeTab !== "users")) {
+                return; // Merged into ref column
+            } else if (k === "status") {
+                const s = r.status.toLowerCase();
+                let color = ['approved', 'paid', 'active'].includes(s) ? 'bg-emerald-100 text-emerald-700' : 
+                            s === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700';
+                td.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${color}">${r.status}</span>`;
+            } else if (k === "amount") {
+                td.className += " text-slate-900 font-bold";
+                td.textContent = formatMoneyPHP(r[k]);
+            } else {
+                td.textContent = r[k];
+            }
+            tr.appendChild(td);
+        });
+
+        const actions = document.createElement("td");
+        actions.className = "px-4 py-3";
+        actions.innerHTML = `
+            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="text-blue-600 font-bold text-[10px] uppercase hover:underline">View</button>
+                <button class="text-red-400 font-bold text-[10px] uppercase hover:underline">Manage</button>
+            </div>`;
+        tr.appendChild(actions);
+        body.appendChild(tr);
+      });
+    }
+
+    function renderKPIs() {
+      $("activeTabLabel").textContent = activeTab;
+      document.querySelector('[data-kpi="applications"]').textContent = DATA.applications.length;
+      document.querySelector('[data-kpi="requests"]').textContent = DATA.requests.length;
+      document.querySelector('[data-kpi="permits"]').textContent = DATA.permits.filter(p => p.status === 'Approved').length;
+      document.querySelector('[data-kpi="invAlerts"]').textContent = DATA.inventory.length;
+      document.querySelector('[data-kpi="userInv"]').textContent = DATA.userInventory.length;
+      
+      const txns = DATA.transactions;
+      const total = txns.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+      document.querySelector('[data-kpi="txnAmount"]').textContent = formatMoneyPHP(total);
+    }
+
+    // ---- INITIALIZE ----
+    document.querySelectorAll("[data-tab]").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        document.querySelectorAll("[data-tab]").forEach(b => {
+            b.classList.remove("tab-active");
+            b.classList.add("tab-inactive");
+        });
+        e.target.classList.add("tab-active");
+        activeTab = e.target.getAttribute("data-tab");
+        populateCategoryDropdown();
+        renderTable();
+        renderKPIs();
+      });
+    });
+
+    $("categorySelect").addEventListener("change", renderTable);
+    $("searchInput").addEventListener("input", renderTable);
+    $("scopeSelect").addEventListener("change", renderTable);
+    $("btnClear").addEventListener("click", () => {
+        $("scopeSelect").value = "national";
+        $("categorySelect").value = "all";
+        $("searchInput").value = "";
+        renderTable();
+    });
+
+    window.onload = () => {
+      $("todayText").textContent = new Date().toLocaleDateString('en-PH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+      renderKPIs();
+      populateCategoryDropdown();
+      renderTable();
+    };
+  </script>
 </body>
 </html>
