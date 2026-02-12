@@ -3,294 +3,187 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory Dashboard | Agriculture (Gov Style)</title>
+  <title>Inventory Dashboard | Agriculture (Tailwind)</title>
 
-  <!-- Tailwind + Bootstrap + Icons -->
+  <!-- Tailwind + Icons + Chart.js -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-  <!-- Charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <script>
+    // Tailwind theme (optional)
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            govbg: "#f3f4f6",
+            govpanel: "#ffffff",
+            govborder: "#d1d5db",
+            govtext: "#0f172a",
+            govmuted: "#475569",
+            g900: "#064e3b",
+            g800: "#065f46",
+            g700: "#047857",
+            g600: "#059669",
+            g500: "#10b981",
+            g200: "#a7f3d0",
+            g100: "#d1fae5",
+          },
+          fontFamily: {
+            gov: ["Verdana", "Arial", "Tahoma", "sans-serif"],
+          },
+          boxShadow: {
+            focus: "0 0 0 4px rgba(16,185,129,0.22)",
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
-    :root{
-      --gov-font: Verdana, Arial, Tahoma, sans-serif;
-      --gov-text: #0f172a;
-      --gov-muted: #475569;
-      --gov-border: #d1d5db;
-      --gov-bg: #f3f4f6;
-      --gov-panel: #ffffff;
-
-      /* GREEN PALETTE */
-      --g-900: #064e3b;
-      --g-800: #065f46;
-      --g-700: #047857;
-      --g-600: #059669;
-      --g-500: #10b981;
-      --g-200: #a7f3d0;
-      --g-100: #d1fae5;
-
-      --gov-focus: rgba(16, 185, 129, 0.22);
-    }
-
-    html, body{
-      font-family: var(--gov-font);
-      font-size: 16px;
-      color: var(--gov-text);
-      background: var(--gov-bg);
-    }
-
-    .page-wrap{ padding: 16px; }
-
-    .panel, .card-kpi, .notice{
-      background: var(--gov-panel);
-      border: 1px solid var(--gov-border);
-      border-radius: 10px;
-      box-shadow: none;
-    }
-
-    .gov-h1{ font-weight: 800; letter-spacing: 0.2px; color: var(--gov-text); }
-    .gov-subtitle{ font-weight: 400; color: var(--gov-muted); }
-
-    .pill{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--gov-border);
-      background: #f9fafb;
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.10em;
-      color: #334155;
-      white-space: nowrap;
-    }
-
-    .card-kpi .icon{
-      height: 44px;
-      width: 44px;
-      border: 1px solid var(--gov-border);
-      background: var(--g-100);
-      border-radius: 10px;
-      display: grid;
-      place-items: center;
-      color: var(--g-900);
-    }
-    .card-kpi .icon .material-icons-round{ font-size: 22px; }
-
-    .gov-label{
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--gov-muted);
-      margin-bottom: 6px;
-      display:block;
-    }
-
-    .form-select{
-      border-radius: 10px !important;
-      border-color: var(--gov-border) !important;
-      background-color: #f9fafb !important;
-      font-family: var(--gov-font);
-      font-weight: 700;
-      color: var(--gov-text);
-    }
-    .form-select:focus{
-      border-color: var(--g-500) !important;
-      box-shadow: 0 0 0 4px var(--gov-focus) !important;
-      background-color: #fff !important;
-    }
-
-    .search-wrap{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      border:1px solid var(--gov-border);
-      background:#f9fafb;
-      border-radius:10px;
-      padding: 10px 12px;
-    }
-    .search-wrap:focus-within{
-      border-color: var(--g-500);
-      box-shadow: 0 0 0 4px var(--gov-focus);
-      background:#fff;
-    }
-    .search-input{
-      border:none;
-      outline:none;
-      background:transparent;
-      width: 100%;
-      font-family: var(--gov-font);
-      font-size: 14px;
-      color: var(--gov-text);
-    }
-
-    .table{
-      font-family: var(--gov-font);
-      font-size: 15px;
-    }
-    .table thead th{
-      background: #f9fafb;
-      font-weight: 800;
-      border-bottom: 1px solid var(--gov-border) !important;
-      text-transform: uppercase;
-      letter-spacing: 0.10em;
-      font-size: 12px;
-      color: #334155;
-      white-space: nowrap;
-    }
-    .table tbody td{
-      border-bottom: 1px solid var(--gov-border) !important;
-      vertical-align: middle;
-    }
-
-    .mini-note{
-      font-size: 12px;
-      color: var(--gov-muted);
-    }
-
-    /* CHART AREA: smaller + responsive */
-    .chart-box{ height: 240px; }
-    @media (max-width: 640px){
-      .page-wrap{ padding: 12px; }
-      .chart-box{ height: 200px; }
-      .table{ font-size: 14px; }
-      .pill{ font-size: 11px; }
-    }
-
-    /* Make long labels wrap nicely on mobile */
-    .wrap-anywhere{ overflow-wrap: anywhere; }
-
-    /* Print */
-    @media print{
-      .no-print{ display:none !important; }
-      body{ background:#fff; }
-      .panel, .card-kpi, .notice{ border: 1px solid #999; }
-    }
+    html, body { font-family: Verdana, Arial, Tahoma, sans-serif; background: #f3f4f6; color: #0f172a; }
+    @media print { .no-print { display: none !important; } body { background: #fff !important; } }
   </style>
 </head>
 
-<body>
+<body class="bg-govbg text-govtext">
   <!-- If you have templates, keep these. If not, remove them. -->
   {% include 'municipal/sidenav.html' %}
   {% include 'municipal/header.html' %}
 
-  <div class="page-wrap">
+  <main class="p-4 sm:p-6">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+    <header class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
       <div>
-        <h1 class="text-2xl md:text-3xl gov-h1 m-0">Inventory Dashboard</h1>
-        <p class="gov-subtitle mt-1 mb-0">Agriculture inventory overview with charts, daily activity, and live filtering.</p>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-[0.2px]">Inventory Dashboard</h1>
+        <p class="text-govmuted mt-1">Agriculture inventory overview with charts, daily activity, and live filtering.</p>
       </div>
 
-      <div class="pill no-print w-fit">
-        <span class="material-icons-round" style="font-size:18px;color:var(--g-800);">today</span>
+      <div class="no-print inline-flex items-center gap-2 rounded-full border border-govborder bg-white/60 px-3 py-2 text-[12px] font-extrabold uppercase tracking-[0.10em] text-slate-700 w-fit">
+        <span class="material-icons-round text-g800" style="font-size:18px;">today</span>
         <span id="todayLabel"></span>
       </div>
-    </div>
+    </header>
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-      <div class="card-kpi p-4">
-        <div class="flex items-start justify-between">
+    <!-- KPI -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+      <!-- Card -->
+      <div class="rounded-xl border border-govborder bg-govpanel p-4">
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Total Products</div>
-            <div class="text-3xl font-bold mt-2" id="kpiTotalProducts">0</div>
-            <div class="text-slate-600 text-sm mt-1">Unique product records</div>
+            <div class="text-govmuted font-extrabold uppercase text-[12px] tracking-[0.12em]">Total Products</div>
+            <div class="text-3xl font-extrabold mt-2" id="kpiTotalProducts">0</div>
+            <div class="text-govmuted text-sm mt-1">Unique product records</div>
           </div>
-          <div class="icon"><span class="material-icons-round">inventory_2</span></div>
+          <div class="h-11 w-11 grid place-items-center rounded-xl border border-govborder bg-g100 text-g900">
+            <span class="material-icons-round" style="font-size:22px;">inventory_2</span>
+          </div>
         </div>
       </div>
 
-      <div class="card-kpi p-4">
-        <div class="flex items-start justify-between">
+      <div class="rounded-xl border border-govborder bg-govpanel p-4">
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Total Quantity</div>
-            <div class="text-3xl font-bold mt-2" id="kpiTotalQty">0</div>
-            <div class="text-slate-600 text-sm mt-1">Sum of current quantity</div>
+            <div class="text-govmuted font-extrabold uppercase text-[12px] tracking-[0.12em]">Total Quantity</div>
+            <div class="text-3xl font-extrabold mt-2" id="kpiTotalQty">0</div>
+            <div class="text-govmuted text-sm mt-1">Sum of current quantity</div>
           </div>
-          <div class="icon"><span class="material-icons-round">stacked_bar_chart</span></div>
+          <div class="h-11 w-11 grid place-items-center rounded-xl border border-govborder bg-g100 text-g900">
+            <span class="material-icons-round" style="font-size:22px;">stacked_bar_chart</span>
+          </div>
         </div>
       </div>
 
-      <div class="card-kpi p-4">
-        <div class="flex items-start justify-between">
+      <div class="rounded-xl border border-govborder bg-govpanel p-4">
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Added Today</div>
-            <div class="text-3xl font-bold mt-2" id="kpiAddedToday">0</div>
-            <div class="text-slate-600 text-sm mt-1">Created today</div>
+            <div class="text-govmuted font-extrabold uppercase text-[12px] tracking-[0.12em]">Added Today</div>
+            <div class="text-3xl font-extrabold mt-2" id="kpiAddedToday">0</div>
+            <div class="text-govmuted text-sm mt-1">Created today</div>
           </div>
-          <div class="icon"><span class="material-icons-round">add_circle</span></div>
+          <div class="h-11 w-11 grid place-items-center rounded-xl border border-govborder bg-g100 text-g900">
+            <span class="material-icons-round" style="font-size:22px;">add_circle</span>
+          </div>
         </div>
       </div>
 
-      <div class="card-kpi p-4">
-        <div class="flex items-start justify-between">
+      <div class="rounded-xl border border-govborder bg-govpanel p-4">
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <div class="text-slate-600 font-bold uppercase text-[12px] tracking-wide">Removed Today</div>
-            <div class="text-3xl font-bold mt-2" id="kpiRemovedToday">0</div>
-            <div class="text-slate-600 text-sm mt-1">Removed today</div>
+            <div class="text-govmuted font-extrabold uppercase text-[12px] tracking-[0.12em]">Removed Today</div>
+            <div class="text-3xl font-extrabold mt-2" id="kpiRemovedToday">0</div>
+            <div class="text-govmuted text-sm mt-1">Removed today</div>
           </div>
-          <div class="icon"><span class="material-icons-round">remove_circle</span></div>
+          <div class="h-11 w-11 grid place-items-center rounded-xl border border-govborder bg-g100 text-g900">
+            <span class="material-icons-round" style="font-size:22px;">remove_circle</span>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Charts -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
-      <div class="panel p-4">
+    <section class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+      <div class="rounded-xl border border-govborder bg-govpanel p-4">
         <div class="flex items-start justify-between gap-3 mb-2">
           <div>
-            <h2 class="text-xl font-bold text-slate-900 m-0">Total Quantity Trend</h2>
-            <p class="gov-subtitle mt-1 mb-0">Last 7 days (demo trend)</p>
+            <h2 class="text-xl font-extrabold">Total Quantity Trend</h2>
+            <p class="text-govmuted mt-1">Last 7 days (demo trend)</p>
           </div>
-          <span class="pill hidden sm:inline-flex">
-            <span class="material-icons-round" style="font-size:18px;color:var(--g-800);">show_chart</span>
+          <span class="hidden sm:inline-flex items-center gap-2 rounded-full border border-govborder bg-white/60 px-3 py-2 text-[12px] font-extrabold uppercase tracking-[0.10em] text-slate-700">
+            <span class="material-icons-round text-g800" style="font-size:18px;">show_chart</span>
             Trend
           </span>
         </div>
-        <div class="mini-note mb-2">This is mock daily totals to demonstrate the graph.</div>
-        <div class="relative chart-box">
+
+        <p class="text-xs text-govmuted mb-2">This is mock daily totals to demonstrate the graph.</p>
+
+        <div class="relative h-[240px] sm:h-[240px] max-sm:h-[200px]">
           <canvas id="chartTotal"></canvas>
         </div>
       </div>
 
-      <div class="panel p-4">
+      <div class="rounded-xl border border-govborder bg-govpanel p-4">
         <div class="flex items-start justify-between gap-3 mb-2">
           <div>
-            <h2 class="text-xl font-bold text-slate-900 m-0">Category Distribution</h2>
-            <p class="gov-subtitle mt-1 mb-0">Based on current quantity</p>
+            <h2 class="text-xl font-extrabold">Category Distribution</h2>
+            <p class="text-govmuted mt-1">Based on current quantity</p>
           </div>
-          <span class="pill hidden sm:inline-flex">
-            <span class="material-icons-round" style="font-size:18px;color:var(--g-800);">donut_large</span>
+          <span class="hidden sm:inline-flex items-center gap-2 rounded-full border border-govborder bg-white/60 px-3 py-2 text-[12px] font-extrabold uppercase tracking-[0.10em] text-slate-700">
+            <span class="material-icons-round text-g800" style="font-size:18px;">donut_large</span>
             Categories
           </span>
         </div>
-        <div class="mini-note mb-2">Shows how current quantity is split across categories.</div>
-        <div class="relative chart-box">
+
+        <p class="text-xs text-govmuted mb-2">Shows how current quantity is split across categories.</p>
+
+        <div class="relative h-[240px] sm:h-[240px] max-sm:h-[200px]">
           <canvas id="chartCategories"></canvas>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Filters -->
-    <div class="panel p-4 mb-6 no-print">
-      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
+    <section class="no-print rounded-xl border border-govborder bg-govpanel p-4 mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div class="w-full lg:max-w-[520px]">
-          <label class="gov-label">Search</label>
-          <div class="search-wrap">
+          <label class="block text-[12px] font-extrabold uppercase tracking-[0.12em] text-govmuted mb-2">Search</label>
+          <div id="searchWrap" class="flex items-center gap-2 rounded-xl border border-govborder bg-slate-50 px-3 py-2 focus-within:border-g500 focus-within:shadow-focus focus-within:bg-white">
             <span class="material-icons-round text-slate-500" style="font-size:20px;">search</span>
-            <input id="searchInput" class="search-input" type="text"
-                   placeholder="Type to filter (product name, category, owner)..." />
+            <input
+              id="searchInput"
+              class="w-full bg-transparent outline-none text-[14px] text-govtext"
+              type="text"
+              placeholder="Type to filter (product name, category, owner)..."
+            />
           </div>
         </div>
 
         <div class="w-full lg:max-w-[620px]">
-          <label class="gov-label">Category</label>
-          <select class="form-select py-2" id="filterCategory">
+          <label class="block text-[12px] font-extrabold uppercase tracking-[0.12em] text-govmuted mb-2">Category</label>
+          <select
+            id="filterCategory"
+            class="w-full rounded-xl border border-govborder bg-slate-50 px-3 py-2 font-bold text-govtext outline-none focus:border-g500 focus:shadow-focus focus:bg-white"
+          >
             <option value="All" selected>All</option>
             <option value="Agriculture">Agriculture</option>
             <option value="Crop & Plant">Crop & Plant</option>
@@ -312,77 +205,147 @@
       </div>
 
       <div class="mt-4 flex flex-wrap items-center gap-2">
-        <span class="pill">
-          <span class="material-icons-round" style="font-size:18px;color:var(--g-800);">filter_alt</span>
+        <span class="inline-flex items-center gap-2 rounded-full border border-govborder bg-white/60 px-3 py-2 text-[12px] font-extrabold uppercase tracking-[0.10em] text-slate-700">
+          <span class="material-icons-round text-g800" style="font-size:18px;">filter_alt</span>
           Active Filters
         </span>
-        <span class="pill" id="pillCategory">Category: All</span>
-        <span class="pill wrap-anywhere" id="pillSearch">Search: —</span>
-        <span class="ms-auto text-slate-600 fw-bold" id="resultsCount">Showing 0 items</span>
+        <span class="inline-flex items-center rounded-full border border-govborder bg-white/60 px-3 py-2 text-[12px] font-extrabold uppercase tracking-[0.10em] text-slate-700" id="pillCategory">Category: All</span>
+        <span class="inline-flex items-center rounded-full border border-govborder bg-white/60 px-3 py-2 text-[12px] font-extrabold uppercase tracking-[0.10em] text-slate-700 break-all" id="pillSearch">Search: —</span>
+
+        <div class="lg:ml-auto text-govmuted font-bold" id="resultsCount">Showing 0 items</div>
       </div>
-    </div>
+    </section>
 
     <!-- Table -->
-    <div class="panel p-4">
+    <section class="rounded-xl border border-govborder bg-govpanel p-4">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
         <div>
-          <h2 class="text-xl font-bold text-slate-900 m-0">Products</h2>
-          <p class="gov-subtitle mt-1 mb-0">Name, category, owner, and quantities. (Demo data)</p>
+          <h2 class="text-xl font-extrabold">Products</h2>
+          <p class="text-govmuted mt-1">Name, category, owner, and quantities.</p>
         </div>
-        <button class="btn btn-outline-success btn-sm fw-bold no-print" id="btnPrint" type="button"
-                style="border-radius:10px;">
-          <span class="material-icons-round align-middle" style="font-size:16px;">print</span>
+
+        <button
+          id="btnPrint"
+          type="button"
+          class="no-print inline-flex items-center gap-2 rounded-xl border border-g600 px-3 py-2 text-g700 font-extrabold hover:bg-g100"
+        >
+          <span class="material-icons-round" style="font-size:18px;">print</span>
           Print
         </button>
       </div>
 
-      <div class="table-responsive">
-        <table class="table align-middle mb-0">
+      <div class="overflow-x-auto">
+        <table class="w-full text-[15px]">
           <thead>
-            <tr>
-              <th style="min-width: 220px;">Product Name</th>
-              <th style="min-width: 280px;">Category</th>
-              <th style="min-width: 200px;">Owner</th>
-              <th style="min-width: 140px;">Initial Qty</th>
-              <th style="min-width: 140px;">Current Qty</th>
+            <tr class="bg-slate-50">
+              <th class="text-left px-3 py-3 border-b border-govborder uppercase tracking-[0.10em] text-[12px] font-extrabold text-slate-700 whitespace-nowrap min-w-[220px]">Product Name</th>
+              <th class="text-left px-3 py-3 border-b border-govborder uppercase tracking-[0.10em] text-[12px] font-extrabold text-slate-700 whitespace-nowrap min-w-[280px]">Category</th>
+              <th class="text-left px-3 py-3 border-b border-govborder uppercase tracking-[0.10em] text-[12px] font-extrabold text-slate-700 whitespace-nowrap min-w-[200px]">Owner</th>
+              <th class="text-left px-3 py-3 border-b border-govborder uppercase tracking-[0.10em] text-[12px] font-extrabold text-slate-700 whitespace-nowrap min-w-[140px]">Initial Qty</th>
+              <th class="text-left px-3 py-3 border-b border-govborder uppercase tracking-[0.10em] text-[12px] font-extrabold text-slate-700 whitespace-nowrap min-w-[140px]">Current Qty</th>
             </tr>
           </thead>
           <tbody id="itemsTbody"></tbody>
         </table>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <script>
-    // ---------- Helpers ----------
-    function normalize(s){ return (s || "").toString().toLowerCase().trim(); }
-    function pad2(n){ return String(n).padStart(2, "0"); }
-    function fmtDateISO(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    const normalize = (s) => (s ?? "").toString().toLowerCase().trim();
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const fmtDateISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
     const TODAY = new Date();
     const TODAY_ISO = fmtDateISO(TODAY);
-    document.getElementById("todayLabel").textContent = TODAY.toLocaleDateString(undefined, { year:"numeric", month:"long", day:"numeric" });
 
-    // ---------- Mock Data ----------
-    const products = [
-      { id:"P-0001", name:"Hybrid Rice Seed Pack", category:"Crop & Plant", owner:"Farm Coop A", initialQty: 120, currentQty: 95,  addedDate: TODAY_ISO, removedDate: null },
-      { id:"P-0002", name:"Organic Fertilizer Bags", category:"Agriculture", owner:"GreenGrow Supply", initialQty: 300, currentQty: 210, addedDate: "2026-02-08", removedDate: null },
-      { id:"P-0003", name:"Layer Chicken Feed", category:"Livestock & Poultry", owner:"Poultry Assoc QC", initialQty: 180, currentQty: 45,  addedDate: "2026-02-09", removedDate: null },
-      { id:"P-0004", name:"Tilapia Fingerlings", category:"Fisheries & Aquaculture", owner:"Aqua Hub NCR", initialQty: 500, currentQty: 320, addedDate: "2026-02-07", removedDate: null },
-      { id:"P-0005", name:"Coconut Oil Bottles", category:"Agribusiness & Agro-Processing", owner:"Island Pressers", initialQty: 90, currentQty: 88, addedDate: TODAY_ISO, removedDate: null },
-      { id:"P-0006", name:"Cold Storage Rental Slots", category:"Agricultural Trade (Import & Export)", owner:"Logistics Partner X", initialQty: 40, currentQty: 22, addedDate: "2026-02-06", removedDate: null },
-      { id:"P-0007", name:"Farm-to-Market Road Gravel", category:"Land Use & Farm Development infrastracture", owner:"Municipal Works", initialQty: 1000, currentQty: 760, addedDate: "2026-02-05", removedDate: null },
-      { id:"P-0008", name:"Soil Sensor Kits", category:"Research, Technology & Innovation", owner:"AgriTech Lab", initialQty: 60, currentQty: 55, addedDate: "2026-02-10", removedDate: null },
-      { id:"P-0009", name:"Crop Insurance Vouchers", category:"Farmer Support, Subsidies & Insurance", owner:"DA Office", initialQty: 200, currentQty: 150, addedDate: "2026-02-10", removedDate: null },
-      { id:"P-0010", name:"Meat Inspection Tags", category:"Compliance, Inspection & Enforcement", owner:"Regulatory Unit", initialQty: 500, currentQty: 0, addedDate: "2026-02-04", removedDate: TODAY_ISO },
-      { id:"P-0011", name:"Food Safety Test Strips", category:"Food Safety & Quality Regulation", owner:"QA Team", initialQty: 150, currentQty: 110, addedDate: "2026-02-08", removedDate: null },
-      { id:"P-0012", name:"Farmer Training Seats", category:"Extension Services & Capacity Building", owner:"Extension Office", initialQty: 80, currentQty: 62, addedDate: "2026-02-06", removedDate: null },
-      { id:"P-0013", name:"Emergency Seed Reserves", category:"Climate Change, Disaster & Risk Management", owner:"DRRM Desk", initialQty: 250, currentQty: 240, addedDate: "2026-02-07", removedDate: null },
-      { id:"P-0014", name:"Digital Farm Registry Tokens", category:"Data, Monitoring & Digital Agriculture", owner:"ICT Unit", initialQty: 1000, currentQty: 980, addedDate: "2026-02-09", removedDate: null },
-      { id:"P-0015", name:"Cooperative Ledger Forms", category:"Institutional & Cooperative Development", owner:"Coop Dev Office", initialQty: 300, currentQty: 289, addedDate: "2026-02-08", removedDate: null },
+    document.getElementById("todayLabel").textContent =
+      TODAY.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+
+    // -----------------------------
+    // Domain Model
+    // -----------------------------
+    class Product {
+      constructor({ id, name, category, owner, initialQty, currentQty, addedDate, removedDate }) {
+        this.id = String(id);
+        this.name = String(name);
+        this.category = String(category);
+        this.owner = String(owner);
+        this.initialQty = Number(initialQty ?? 0);
+        this.currentQty = Number(currentQty ?? 0);
+        this.addedDate = String(addedDate ?? "");
+        this.removedDate = removedDate ? String(removedDate) : null;
+      }
+    }
+
+    // -----------------------------
+    // Repository Interface (pattern)
+    // - swap the implementation to Firebase later
+    // -----------------------------
+    class ProductRepository {
+      async getAll() { throw new Error("Not implemented"); }
+    }
+
+    class MockProductRepository extends ProductRepository {
+      async getAll() {
+        // Keep this list ONLY here; later you will replace this repo with Firebase repo.
+        const raw = [
+          { id:"P-0001", name:"Hybrid Rice Seed Pack", category:"Crop & Plant", owner:"Farm Coop A", initialQty:120, currentQty:95,  addedDate:TODAY_ISO,    removedDate:null },
+          { id:"P-0002", name:"Organic Fertilizer Bags", category:"Agriculture", owner:"GreenGrow Supply", initialQty:300, currentQty:210, addedDate:"2026-02-08", removedDate:null },
+          { id:"P-0003", name:"Layer Chicken Feed", category:"Livestock & Poultry", owner:"Poultry Assoc QC", initialQty:180, currentQty:45,  addedDate:"2026-02-09", removedDate:null },
+          { id:"P-0004", name:"Tilapia Fingerlings", category:"Fisheries & Aquaculture", owner:"Aqua Hub NCR", initialQty:500, currentQty:320, addedDate:"2026-02-07", removedDate:null },
+          { id:"P-0005", name:"Coconut Oil Bottles", category:"Agribusiness & Agro-Processing", owner:"Island Pressers", initialQty:90,  currentQty:88,  addedDate:TODAY_ISO,    removedDate:null },
+          { id:"P-0006", name:"Cold Storage Rental Slots", category:"Agricultural Trade (Import & Export)", owner:"Logistics Partner X", initialQty:40, currentQty:22, addedDate:"2026-02-06", removedDate:null },
+          { id:"P-0007", name:"Farm-to-Market Road Gravel", category:"Land Use & Farm Development infrastracture", owner:"Municipal Works", initialQty:1000, currentQty:760, addedDate:"2026-02-05", removedDate:null },
+          { id:"P-0008", name:"Soil Sensor Kits", category:"Research, Technology & Innovation", owner:"AgriTech Lab", initialQty:60,  currentQty:55,  addedDate:"2026-02-10", removedDate:null },
+          { id:"P-0009", name:"Crop Insurance Vouchers", category:"Farmer Support, Subsidies & Insurance", owner:"DA Office", initialQty:200, currentQty:150, addedDate:"2026-02-10", removedDate:null },
+          { id:"P-0010", name:"Meat Inspection Tags", category:"Compliance, Inspection & Enforcement", owner:"Regulatory Unit", initialQty:500, currentQty:0,   addedDate:"2026-02-04", removedDate:TODAY_ISO },
+          { id:"P-0011", name:"Food Safety Test Strips", category:"Food Safety & Quality Regulation", owner:"QA Team", initialQty:150, currentQty:110, addedDate:"2026-02-08", removedDate:null },
+          { id:"P-0012", name:"Farmer Training Seats", category:"Extension Services & Capacity Building", owner:"Extension Office", initialQty:80,  currentQty:62,  addedDate:"2026-02-06", removedDate:null },
+          { id:"P-0013", name:"Emergency Seed Reserves", category:"Climate Change, Disaster & Risk Management", owner:"DRRM Desk", initialQty:250, currentQty:240, addedDate:"2026-02-07", removedDate:null },
+          { id:"P-0014", name:"Digital Farm Registry Tokens", category:"Data, Monitoring & Digital Agriculture", owner:"ICT Unit", initialQty:1000, currentQty:980, addedDate:"2026-02-09", removedDate:null },
+          { id:"P-0015", name:"Cooperative Ledger Forms", category:"Institutional & Cooperative Development", owner:"Coop Dev Office", initialQty:300, currentQty:289, addedDate:"2026-02-08", removedDate:null },
+        ];
+        return raw.map((r) => new Product(r));
+      }
+    }
+
+    /**
+     * Firebase version (skeleton)
+     * - Add Firebase SDK scripts OR bundle via your build tool.
+     * - Implement getAll() to read from a collection.
+     */
+    class FirebaseProductRepository extends ProductRepository {
+      constructor({ db, collectionName = "products" }) {
+        super();
+        this.db = db;
+        this.collectionName = collectionName;
+      }
+
+      async getAll() {
+        // Example (Firestore modular SDK):
+        // const colRef = collection(this.db, this.collectionName);
+        // const snap = await getDocs(colRef);
+        // return snap.docs.map(d => new Product({ id: d.id, ...d.data() }));
+        throw new Error("Firebase repository not wired yet.");
+      }
+    }
+
+    // -----------------------------
+    // Charts setup
+    // -----------------------------
+    let chartTotal = null;
+    let chartCategories = null;
+
+    const GREEN_SERIES = [
+      "#064e3b", "#065f46", "#047857", "#059669", "#10b981",
+      "#34d399", "#6ee7b7", "#a7f3d0", "#d1fae5", "#0f766e",
+      "#14532d", "#166534", "#22c55e", "#16a34a", "#4ade80"
     ];
 
-    // Demo trend
     const dailyTotals = [
       { date: "2026-02-05", totalQty: 2400 },
       { date: "2026-02-06", totalQty: 2525 },
@@ -393,91 +356,8 @@
       { date: TODAY_ISO,   totalQty: 3120 },
     ];
 
-    // ---------- DOM ----------
-    const els = {
-      kpiTotalProducts: document.getElementById("kpiTotalProducts"),
-      kpiTotalQty: document.getElementById("kpiTotalQty"),
-      kpiAddedToday: document.getElementById("kpiAddedToday"),
-      kpiRemovedToday: document.getElementById("kpiRemovedToday"),
-
-      searchInput: document.getElementById("searchInput"),
-      filterCategory: document.getElementById("filterCategory"),
-      pillCategory: document.getElementById("pillCategory"),
-      pillSearch: document.getElementById("pillSearch"),
-      resultsCount: document.getElementById("resultsCount"),
-
-      itemsTbody: document.getElementById("itemsTbody"),
-      btnPrint: document.getElementById("btnPrint"),
-    };
-
-    // ---------- Filtering ----------
-    function matchesFilters(p){
-      const selectedCategory = els.filterCategory.value;
-      const categoryOk = (selectedCategory === "All") || (p.category === selectedCategory);
-
-      const q = normalize(els.searchInput.value);
-      const haystack = normalize(`${p.name} ${p.category} ${p.owner} ${p.initialQty} ${p.currentQty}`);
-      const searchOk = !q || haystack.includes(q);
-
-      return categoryOk && searchOk;
-    }
-
-    // ---------- KPIs ----------
-    function computeKpis(list){
-      const totalProducts = list.length;
-      const totalQty = list.reduce((sum, p) => sum + Number(p.currentQty || 0), 0);
-      const addedToday = list.filter(p => p.addedDate === TODAY_ISO).length;
-      const removedToday = list.filter(p => p.removedDate === TODAY_ISO).length;
-
-      els.kpiTotalProducts.textContent = totalProducts;
-      els.kpiTotalQty.textContent = totalQty;
-      els.kpiAddedToday.textContent = addedToday;
-      els.kpiRemovedToday.textContent = removedToday;
-    }
-
-    // ---------- Table ----------
-    function renderTable(list){
-      els.itemsTbody.innerHTML = "";
-
-      if (list.length === 0){
-        els.itemsTbody.innerHTML = `
-          <tr>
-            <td colspan="5" class="text-center text-slate-600 fw-bold py-4">
-              No products found for the selected filters.
-            </td>
-          </tr>
-        `;
-        els.resultsCount.textContent = "Showing 0 items";
-        return;
-      }
-
-      for (const p of list){
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="fw-bold text-slate-900">${p.name}</td>
-          <td class="text-slate-700">${p.category}</td>
-          <td class="text-slate-700">${p.owner}</td>
-          <td class="fw-bold text-slate-900">${p.initialQty}</td>
-          <td class="fw-bold text-slate-900">${p.currentQty}</td>
-        `;
-        els.itemsTbody.appendChild(tr);
-      }
-
-      els.resultsCount.textContent = `Showing ${list.length} item${list.length === 1 ? "" : "s"}`;
-    }
-
-    // ---------- Charts ----------
-    let chartTotal, chartCategories;
-
-    // Green palette for charts (no custom colors in chart itself requested by user? user requested green palette -> OK)
-    const GREEN_SERIES = [
-      "#064e3b", "#065f46", "#047857", "#059669", "#10b981",
-      "#34d399", "#6ee7b7", "#a7f3d0", "#d1fae5", "#0f766e",
-      "#14532d", "#166534", "#22c55e", "#16a34a", "#4ade80"
-    ];
-
-    function buildCharts(filteredList){
-      // Total trend chart
+    function buildCharts(filteredList) {
+      // Trend
       const labels = dailyTotals.map(d => d.date);
       const totals = dailyTotals.map(d => d.totalQty);
 
@@ -499,9 +379,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: true, labels: { boxWidth: 12 } }
-          },
+          plugins: { legend: { display: true, labels: { boxWidth: 12 } } },
           scales: {
             x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true } },
             y: { beginAtZero: true, ticks: { maxTicksLimit: 5 } }
@@ -509,11 +387,10 @@
         }
       });
 
-      // Category distribution chart
+      // Categories
       const map = new Map();
-      for (const p of filteredList){
-        const prev = map.get(p.category) || 0;
-        map.set(p.category, prev + Number(p.currentQty || 0));
+      for (const p of filteredList) {
+        map.set(p.category, (map.get(p.category) || 0) + Number(p.currentQty || 0));
       }
       const catLabels = Array.from(map.keys());
       const catValues = Array.from(map.values());
@@ -550,9 +427,80 @@
       });
     }
 
-    // ---------- Refresh ----------
-    function refresh(){
-      const filtered = products.filter(matchesFilters);
+    // -----------------------------
+    // UI / State
+    // -----------------------------
+    const els = {
+      kpiTotalProducts: document.getElementById("kpiTotalProducts"),
+      kpiTotalQty: document.getElementById("kpiTotalQty"),
+      kpiAddedToday: document.getElementById("kpiAddedToday"),
+      kpiRemovedToday: document.getElementById("kpiRemovedToday"),
+      searchInput: document.getElementById("searchInput"),
+      filterCategory: document.getElementById("filterCategory"),
+      pillCategory: document.getElementById("pillCategory"),
+      pillSearch: document.getElementById("pillSearch"),
+      resultsCount: document.getElementById("resultsCount"),
+      itemsTbody: document.getElementById("itemsTbody"),
+      btnPrint: document.getElementById("btnPrint"),
+    };
+
+    let allProducts = [];
+
+    function matchesFilters(p) {
+      const selectedCategory = els.filterCategory.value;
+      const categoryOk = (selectedCategory === "All") || (p.category === selectedCategory);
+
+      const q = normalize(els.searchInput.value);
+      const haystack = normalize(`${p.name} ${p.category} ${p.owner} ${p.initialQty} ${p.currentQty}`);
+      const searchOk = !q || haystack.includes(q);
+
+      return categoryOk && searchOk;
+    }
+
+    function computeKpis(list) {
+      const totalProducts = list.length;
+      const totalQty = list.reduce((sum, p) => sum + Number(p.currentQty || 0), 0);
+      const addedToday = list.filter(p => p.addedDate === TODAY_ISO).length;
+      const removedToday = list.filter(p => p.removedDate === TODAY_ISO).length;
+
+      els.kpiTotalProducts.textContent = totalProducts;
+      els.kpiTotalQty.textContent = totalQty;
+      els.kpiAddedToday.textContent = addedToday;
+      els.kpiRemovedToday.textContent = removedToday;
+    }
+
+    function renderTable(list) {
+      els.itemsTbody.innerHTML = "";
+
+      if (list.length === 0) {
+        els.itemsTbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-3 py-6 text-center text-govmuted font-bold">
+              No products found for the selected filters.
+            </td>
+          </tr>
+        `;
+        els.resultsCount.textContent = "Showing 0 items";
+        return;
+      }
+
+      for (const p of list) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-3 py-3 border-b border-govborder font-extrabold text-slate-900">${p.name}</td>
+          <td class="px-3 py-3 border-b border-govborder text-slate-700">${p.category}</td>
+          <td class="px-3 py-3 border-b border-govborder text-slate-700">${p.owner}</td>
+          <td class="px-3 py-3 border-b border-govborder font-extrabold text-slate-900">${p.initialQty}</td>
+          <td class="px-3 py-3 border-b border-govborder font-extrabold text-slate-900">${p.currentQty}</td>
+        `;
+        els.itemsTbody.appendChild(tr);
+      }
+
+      els.resultsCount.textContent = `Showing ${list.length} item${list.length === 1 ? "" : "s"}`;
+    }
+
+    function refresh() {
+      const filtered = allProducts.filter(matchesFilters);
 
       els.pillCategory.textContent = `Category: ${els.filterCategory.value}`;
       els.pillSearch.textContent = `Search: ${els.searchInput.value.trim() ? els.searchInput.value.trim() : "—"}`;
@@ -562,7 +510,19 @@
       buildCharts(filtered);
     }
 
-    // ---------- Events (auto-filter while typing) ----------
+    // -----------------------------
+    // Init
+    // -----------------------------
+    async function initDashboard() {
+      // Swap repo here later:
+      // const repo = new FirebaseProductRepository({ db, collectionName: "products" });
+      const repo = new MockProductRepository();
+
+      allProducts = await repo.getAll();
+      refresh();
+    }
+
+    // Events
     els.filterCategory.addEventListener("change", refresh);
 
     let debounce;
@@ -571,7 +531,6 @@
       debounce = setTimeout(refresh, 120);
     });
 
-    // Rebuild charts on resize to keep legend font correct on mobile
     window.addEventListener("resize", () => {
       clearTimeout(debounce);
       debounce = setTimeout(refresh, 200);
@@ -579,8 +538,15 @@
 
     els.btnPrint.addEventListener("click", () => window.print());
 
-    // Init
-    refresh();
+    // Go
+    initDashboard().catch((err) => {
+      console.error(err);
+      els.itemsTbody.innerHTML = `
+        <tr><td colspan="5" class="px-3 py-6 text-center text-red-700 font-bold">
+          Failed to load products. Check console for details.
+        </td></tr>
+      `;
+    });
   </script>
 </body>
 </html>
