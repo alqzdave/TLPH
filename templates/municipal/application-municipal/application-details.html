@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Details | DENR Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* OFFICIAL ARIAL FORCE BOI */
+        * { font-family: Arial, Helvetica, sans-serif !important; }
+        body { background-color: #f1f5f9; color: #1e293b; margin: 0; padding-bottom: 50px; }
+
+        .gov-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-top: 4px solid #1e3a8a;
+            border-radius: 0;
+        }
+
+        .info-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.1em;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .doc-box {
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .doc-box:hover {
+            border-color: #1e3a8a;
+            background: #f1f5f9;
+        }
+
+        .btn-action {
+            border-radius: 0;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+            padding: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid py-5">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="mb-6 flex justify-between items-end border-b-2 border-slate-300 pb-4">
+                <div>
+                    <h1 class="text-3xl font-black uppercase tracking-tighter text-slate-900 m-0">Application Review</h1>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">Ref No: <span class="text-blue-800">APP-2026-0212-001</span></p>
+                </div>
+                <div class="bg-amber-100 text-amber-800 px-4 py-2 font-black text-[11px] uppercase tracking-widest border border-amber-200">
+                    Status: Pending Review
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="gov-card p-6 shadow-sm mb-4">
+                        <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-blue-900"><i class="fa-solid fa-folder-open me-2"></i> Application Details</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="info-label">Product/Project Name</p>
+                                <p class="info-value">Mango Plantation & Agro-Processing</p>
+
+                                <p class="info-label">Select Category</p>
+                                <p class="info-value">Crop & Plant</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="info-label">Initial Investment</p>
+                                <p class="info-value text-green-700">₱ 2,450,000.00</p>
+
+                                <p class="info-label">Max Harvest Qty</p>
+                                <p class="info-value">5,000 UNITS / KG</p>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 opacity-10">
+
+                        <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-emerald-800"><i class="fa-solid fa-file-shield me-2"></i> Technical & Standard Documents</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="doc-box">
+                                <i class="fa-solid fa-building-circle-check text-emerald-600 text-xl"></i>
+                                <div class="flex-grow">
+                                    <p class="text-[9px] font-black uppercase m-0">LGU Barangay Registration</p>
+                                    <p class="text-[10px] font-bold text-slate-700 m-0">barangay_clearance_2026.pdf</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</button>
+                            </div>
+
+                            <div class="doc-box">
+                                <i class="fa-solid fa-file-contract text-blue-600 text-xl"></i>
+                                <div class="flex-grow">
+                                    <p class="text-[9px] font-black uppercase m-0">Title / Tax Declaration</p>
+                                    <p class="text-[10px] font-bold text-slate-700 m-0">TCT-12345-ORIENTAL-MINDORO.pdf</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</button>
+                            </div>
+
+                            <div class="doc-box">
+                                <i class="fa-solid fa-receipt text-orange-600 text-xl"></i>
+                                <div class="flex-grow">
+                                    <p class="text-[9px] font-black uppercase m-0">Real Property Tax Receipt</p>
+                                    <p class="text-[10px] font-bold text-slate-700 m-0">tax_receipt_2025_q4.jpg</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</button>
+                            </div>
+
+                            <div class="doc-box">
+                                <i class="fa-solid fa-map text-purple-600 text-xl"></i>
+                                <div class="flex-grow">
+                                    <p class="text-[9px] font-black uppercase m-0">Blueprint / Sketch Plan</p>
+                                    <p class="text-[10px] font-bold text-slate-700 m-0">site_layout_plan.dwg</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</button>
+                            </div>
+
+                            <div class="doc-box">
+                                <i class="fa-solid fa-image text-blue-400 text-xl"></i>
+                                <div class="flex-grow">
+                                    <p class="text-[9px] font-black uppercase m-0">Site / Land Photo</p>
+                                    <p class="text-[10px] font-bold text-slate-700 m-0">land_aerial_view.jpg</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</button>
+                            </div>
+
+                            <div class="doc-box">
+                                <i class="fa-solid fa-seedling text-green-500 text-xl"></i>
+                                <div class="flex-grow">
+                                    <p class="text-[9px] font-black uppercase m-0">Product / Crop Photo</p>
+                                    <p class="text-[10px] font-bold text-slate-700 m-0">sample_crop_mango.png</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</button>
+                            </div>
+
+                            <div class="doc-box md:col-span-2">
+                                <i class="fa-solid fa-briefcase text-slate-600 text-xl"></i>
+                                <div class="flex-grow">
+                                    <p class="text-[9px] font-black uppercase m-0">Agro-Processing Business Plan</p>
+                                    <p class="text-[10px] font-bold text-slate-700 m-0">business_plan_final_revised.pdf</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="gov-card p-6 shadow-sm border-t-slate-800 mb-4">
+                        <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-slate-800">Applicant Profile</h3>
+                        <p class="info-label">Full Name</p>
+                        <p class="info-value">JUAN DELA CRUZ</p>
+
+                        <p class="info-label">Address</p>
+                        <p class="info-value text-xs">Poblacion, Calamba City, Laguna</p>
+
+                        <p class="info-label">Email</p>
+                        <p class="info-value text-xs lowercase text-blue-700 font-bold">juan.delacruz@email.ph</p>
+                    </div>
+
+                    <div class="gov-card p-6 shadow-sm border-t-blue-900 bg-slate-50">
+                        <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-blue-900 text-center">Admin Actions</h3>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success bg-green-700 border-0 btn-action shadow-sm">
+                                <i class="fa-solid fa-circle-check me-2"></i> Approve Application
+                            </button>
+                            
+                            <button class="btn btn-warning bg-amber-500 border-0 btn-action text-white shadow-sm">
+                                <i class="fa-solid fa-magnifying-glass me-2"></i> Mark To Review
+                            </button>
+                            
+                            <button class="btn btn-danger bg-red-600 border-0 btn-action shadow-sm">
+                                <i class="fa-solid fa-circle-xmark me-2"></i> Reject Application
+                            </button>
+                        </div>
+
+                        <p class="text-[9px] text-slate-400 mt-4 text-center italic uppercase font-bold">Decisions are final and logged in Audit Logs</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 text-center">
+                <p class="text-[9px] text-slate-400 uppercase tracking-[0.4em]">DENR Regional Office IV-A Administrative Portal 2026</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
