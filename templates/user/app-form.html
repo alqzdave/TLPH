@@ -308,10 +308,35 @@
                     localStorage.setItem('pendingApplication', JSON.stringify(applicationData));
                     
                     console.log('Invoice created:', invoiceData);
-                    console.log('Redirecting to payment URL:', invoiceData.invoice_url);
                     
-                    // Redirect to Xendit payment page
-                    window.location.href = invoiceData.invoice_url;
+                    // Check if development mode - skip payment and save directly
+                    if (invoiceData.development_mode === true) {
+                        console.log('⚠️ DEVELOPMENT MODE: Saving application directly without payment');
+                        
+                        try {
+                            // Save application directly to Firestore
+                            const docRef = await addDoc(collection(db, 'applications'), {
+                                ...applicationData,
+                                createdAt: new Date().toISOString(),
+                                paymentStatus: 'paid_dev_mode',
+                                paymentMethod: 'Development Mode'
+                            });
+                            
+                            console.log('✅ Application saved successfully (Dev Mode):', docRef.id);
+                            localStorage.removeItem('pendingApplication');
+                            
+                            // Redirect to success page
+                            alert('Application submitted successfully (Development Mode)');
+                            window.location.href = '/user/application';
+                        } catch (saveError) {
+                            console.error('Error saving application:', saveError);
+                            throw new Error('Failed to save application: ' + saveError.message);
+                        }
+                    } else {
+                        console.log('Redirecting to payment URL:', invoiceData.invoice_url);
+                        // Redirect to Xendit payment page
+                        window.location.href = invoiceData.invoice_url;
+                    }
 
                 } catch (error) {
                     console.error('Error processing payment:', error);

@@ -196,8 +196,17 @@
                         })
                     });
                     const result = await response.json();
-                    if (result.status === 'success' && result.invoice_url) {
-                        window.location.href = result.invoice_url;
+                    if (result.status === 'success') {
+                        if (result.development_mode === true) {
+                            alert('Application submitted successfully (Development Mode - No payment required)');
+                            window.location.href = '/user/dashboard';
+                        } else if (result.invoice_url) {
+                            window.location.href = result.invoice_url;
+                        } else {
+                            alert('Payment Error: No invoice URL');
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Apply & Pay';
+                        }
                     } else {
                         alert('Payment Error');
                         submitBtn.disabled = false;
