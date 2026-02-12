@@ -389,16 +389,13 @@
       const querySnapshot = await getDocs(q);
 
       let count = 0;
-      let totalQty = 0;
 
       querySnapshot.forEach((doc) => {
         const item = doc.data();
         count += 1;
-        const qty = item.harvestQty ?? item.formData?.harvestQty ?? item.harvest_qty ?? 0;
-        totalQty += Number(qty || 0);
       });
 
-      inventoryStats = { count, totalQty };
+      inventoryStats = { count, totalQty: count };
       computeCards();
     } catch (error) {
       console.error('Error loading inventory stats:', error);
