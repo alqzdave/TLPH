@@ -241,7 +241,12 @@
     </section>
   </main>
 
-  <script>
+  <script type="module">
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+    let currentAdminMunicipality = null;
 
     const normalize = (s) => (s ?? "").toString().toLowerCase().trim();
     const pad2 = (n) => String(n).padStart(2, "0");
@@ -254,7 +259,7 @@
       TODAY.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 
     class Product {
-      constructor({ id, name, category, owner, initialQty, currentQty, addedDate, removedDate }) {
+      constructor({ id, name, category, owner, initialQty, currentQty, addedDate, removedDate, userId, municipality }) {
         this.id = String(id);
         this.name = String(name);
         this.category = String(category);
@@ -263,46 +268,85 @@
         this.currentQty = Number(currentQty ?? 0);
         this.addedDate = String(addedDate ?? "");
         this.removedDate = removedDate ? String(removedDate) : null;
+        this.userId = String(userId || "");
+        this.municipality = String(municipality || "");
       }
     }
 
-    class ProductRepository {
-      async getAll() { throw new Error("Not implemented"); }
-    }
-
-    class MockProductRepository extends ProductRepository {
-      async getAll() {
-        const raw = [
-          { id:"P-0001", name:"Hybrid Rice Seed Pack", category:"Crop & Plant", owner:"Farm Coop A", initialQty:120, currentQty:95,  addedDate:TODAY_ISO,    removedDate:null },
-          { id:"P-0002", name:"Organic Fertilizer Bags", category:"Agriculture", owner:"GreenGrow Supply", initialQty:300, currentQty:210, addedDate:"2026-02-08", removedDate:null },
-          { id:"P-0003", name:"Layer Chicken Feed", category:"Livestock & Poultry", owner:"Poultry Assoc QC", initialQty:180, currentQty:45,  addedDate:"2026-02-09", removedDate:null },
-          { id:"P-0004", name:"Tilapia Fingerlings", category:"Fisheries & Aquaculture", owner:"Aqua Hub NCR", initialQty:500, currentQty:320, addedDate:"2026-02-07", removedDate:null },
-          { id:"P-0005", name:"Coconut Oil Bottles", category:"Agribusiness & Agro-Processing", owner:"Island Pressers", initialQty:90,  currentQty:88,  addedDate:TODAY_ISO,    removedDate:null },
-          { id:"P-0006", name:"Cold Storage Rental Slots", category:"Agricultural Trade (Import & Export)", owner:"Logistics Partner X", initialQty:40, currentQty:22, addedDate:"2026-02-06", removedDate:null },
-          { id:"P-0007", name:"Farm-to-Market Road Gravel", category:"Land Use & Farm Development infrastracture", owner:"Municipal Works", initialQty:1000, currentQty:760, addedDate:"2026-02-05", removedDate:null },
-          { id:"P-0008", name:"Soil Sensor Kits", category:"Research, Technology & Innovation", owner:"AgriTech Lab", initialQty:60,  currentQty:55,  addedDate:"2026-02-10", removedDate:null },
-          { id:"P-0009", name:"Crop Insurance Vouchers", category:"Farmer Support, Subsidies & Insurance", owner:"DA Office", initialQty:200, currentQty:150, addedDate:"2026-02-10", removedDate:null },
-          { id:"P-0010", name:"Meat Inspection Tags", category:"Compliance, Inspection & Enforcement", owner:"Regulatory Unit", initialQty:500, currentQty:0,   addedDate:"2026-02-04", removedDate:TODAY_ISO },
-          { id:"P-0011", name:"Food Safety Test Strips", category:"Food Safety & Quality Regulation", owner:"QA Team", initialQty:150, currentQty:110, addedDate:"2026-02-08", removedDate:null },
-          { id:"P-0012", name:"Farmer Training Seats", category:"Extension Services & Capacity Building", owner:"Extension Office", initialQty:80,  currentQty:62,  addedDate:"2026-02-06", removedDate:null },
-          { id:"P-0013", name:"Emergency Seed Reserves", category:"Climate Change, Disaster & Risk Management", owner:"DRRM Desk", initialQty:250, currentQty:240, addedDate:"2026-02-07", removedDate:null },
-          { id:"P-0014", name:"Digital Farm Registry Tokens", category:"Data, Monitoring & Digital Agriculture", owner:"ICT Unit", initialQty:1000, currentQty:980, addedDate:"2026-02-09", removedDate:null },
-          { id:"P-0015", name:"Cooperative Ledger Forms", category:"Institutional & Cooperative Development", owner:"Coop Dev Office", initialQty:300, currentQty:289, addedDate:"2026-02-08", removedDate:null },
-        ];
-        return raw.map((r) => new Product(r));
-      }
-    }
-
-    class FirebaseProductRepository extends ProductRepository {
-      constructor({ db, collectionName = "products" }) {
-        super();
+    class FirebaseProductRepository {
+      constructor({ db, collectionName = "userInventory" }) {
         this.db = db;
         this.collectionName = collectionName;
       }
 
       async getAll() {
-
-        throw new Error("Firebase repository not wired yet.");
+        try {
+          console.log('Fetching user inventory from Firestore...');
+          const productsRef = collection(this.db, this.collectionName);
+          const snapshot = await getDocs(productsRef);
+          
+          console.log('Total inventory items found:', snapshot.size);
+          
+          // Get users map for municipality and names
+          const usersRef = collection(this.db, 'users');
+          const usersSnapshot = await getDocs(usersRef);
+          const usersMap = {};
+          
+          usersSnapshot.forEach(userDoc => {
+            const userData = userDoc.data();
+            usersMap[userDoc.id] = {
+              name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || 'Unknown User',
+              municipality: userData.municipality || null
+            };
+          });
+          
+          const products = [];
+          snapshot.forEach(docSnapshot => {
+            const data = docSnapshot.data();
+            const userInfo = usersMap[data.userId];
+            const userMunicipality = userInfo?.municipality;
+            
+            // Filter by municipality
+            console.log(`Inventory ${docSnapshot.id}: User municipality="${userMunicipality}", Admin municipality="${currentAdminMunicipality}"`);
+            if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
+              console.log(`⛔ SKIPPED: Inventory ${docSnapshot.id} - municipality mismatch`);
+              return;
+            }
+            
+            console.log(`✅ INCLUDED: Inventory ${docSnapshot.id}`);
+            
+            let addedDate = '';
+            if (data.createdAt) {
+              const dateObj = data.createdAt.toDate();
+              addedDate = fmtDateISO(dateObj);
+            }
+            
+            let removedDate = null;
+            if (data.removedAt) {
+              const dateObj = data.removedAt.toDate();
+              removedDate = fmtDateISO(dateObj);
+            }
+            
+            products.push(new Product({
+              id: docSnapshot.id,
+              name: data.productName || data.name || 'Unnamed Product',
+              category: data.category || 'Uncategorized',
+              owner: userInfo?.name || 'Unknown',
+              initialQty: data.initialQuantity || data.initialQty || 0,
+              currentQty: data.currentQuantity || data.currentQty || 0,
+              addedDate: addedDate,
+              removedDate: removedDate,
+              userId: data.userId || '',
+              municipality: userMunicipality || ''
+            }));
+          });
+          
+          console.log('Filtered inventory items:', products.length);
+          return products;
+        } catch (error) {
+          console.error('Error fetching user inventory:', error);
+          return [];
+        }
       }
     }
 
@@ -475,11 +519,34 @@
     }
 
     async function initDashboard() {
+      try {
+        console.log('Initializing user inventory dashboard...');
+        
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.error('No user logged in');
+          window.location.href = '/login';
+          return;
+        }
+        
+        // Get admin's municipality
+        const adminDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
+          currentAdminMunicipality = adminData.municipality;
+          console.log('Current admin municipality:', currentAdminMunicipality);
+        }
 
-      const repo = new MockProductRepository();
+        const repo = new FirebaseProductRepository({ db });
 
-      allProducts = await repo.getAll();
-      refresh();
+        allProducts = await repo.getAll();
+        console.log('All products loaded:', allProducts.length);
+        
+        refresh();
+      } catch (error) {
+        console.error('Error initializing dashboard:', error);
+        throw error;
+      }
     }
 
     els.filterCategory.addEventListener("change", refresh);
@@ -497,13 +564,22 @@
 
     els.btnPrint.addEventListener("click", () => window.print());
 
-    initDashboard().catch((err) => {
-      console.error(err);
-      els.itemsTbody.innerHTML = `
-        <tr><td colspan="5" class="px-3 py-6 text-center text-red-700 font-bold">
-          Failed to load products. Check console for details.
-        </td></tr>
-      `;
+    // Initialize with authentication
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('User authenticated:', user.email);
+        initDashboard().catch((err) => {
+          console.error(err);
+          els.itemsTbody.innerHTML = `
+            <tr><td colspan="5" class="px-3 py-6 text-center text-red-700 font-bold">
+              Failed to load products. Check console for details.
+            </td></tr>
+          `;
+        });
+      } else {
+        console.log('No user authenticated, redirecting...');
+        window.location.href = '/login';
+      }
     });
   </script>
 </body>
