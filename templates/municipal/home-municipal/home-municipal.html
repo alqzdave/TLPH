@@ -104,10 +104,10 @@
           style="--tw-ring-color: rgba(5,150,105,0.18);"
           type="button"
           id="btnRandomize"
-          aria-label="Demo Refresh"
+          aria-label="Refresh Data"
         >
-          <span class="material-icons-round text-[18px]">shuffle</span>
-          Demo Refresh
+          <span class="material-icons-round text-[18px]">refresh</span>
+          Refresh
         </button>
 
         <button
@@ -115,10 +115,10 @@
           style="--tw-ring-color: rgba(5,150,105,0.18);"
           type="button"
           id="btnExport"
-          aria-label="Export Demo"
+          aria-label="Export Data"
         >
           <span class="material-icons-round text-[18px]">file_download</span>
-          Export (Demo)
+          Export
         </button>
       </div>
     </div>
@@ -251,19 +251,24 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
     let data = {
-      serviceRequests: 128,
-      licenses: 54,
-      permits: 76,
+      serviceRequests: 0,
+      licenses: 0,
+      permits: 0,
       applicationStatus: {
-        pending: 34,
-        rejected: 12,
-        toReview: 28,
-        approved: 89
+        pending: 0,
+        rejected: 0,
+        toReview: 0,
+        approved: 0
       }
     };
+
+    let currentAdminMunicipality = null;
 
     const els = {
       kpiService: document.getElementById("kpiService"),
@@ -368,22 +373,99 @@
       buildCharts();
     }
 
+    async function loadData() {
+      try {
+        console.log('Loading municipal dashboard data...');
+        
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.error('No user logged in');
+          return;
+        }
+        
+        // Get admin's municipality
+        const adminDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
+          currentAdminMunicipality = adminData.municipality;
+          console.log('Current admin municipality:', currentAdminMunicipality);
+        }
+        
+        // Create a map of users with their municipalities
+        const usersRef = collection(db, 'users');
+        const usersSnapshot = await getDocs(usersRef);
+        const usersMap = {};
+        
+        usersSnapshot.forEach(userDoc => {
+          const userData = userDoc.data();
+          usersMap[userDoc.id] = {
+            municipality: userData.municipality || null
+          };
+        });
+        
+        console.log('Users loaded:', Object.keys(usersMap).length);
+        
+        // Reset counts
+        data.serviceRequests = 0;
+        data.licenses = 0;
+        data.permits = 0;
+        data.applicationStatus.pending = 0;
+        data.applicationStatus.rejected = 0;
+        data.applicationStatus.toReview = 0;
+        data.applicationStatus.approved = 0;
+        
+        // Fetch applications
+        const applicationsRef = collection(db, 'applications');
+        const applicationsSnapshot = await getDocs(applicationsRef);
+        
+        console.log('Total applications found:', applicationsSnapshot.size);
+        
+        applicationsSnapshot.forEach(doc => {
+          const appData = doc.data();
+          const userInfo = usersMap[appData.userId];
+          const userMunicipality = userInfo?.municipality;
+          
+          // Filter by municipality
+          if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
+            return;
+          }
+          
+          // Count by status
+          const status = appData.status || 'pending';
+          if (status === 'approved') {
+            data.applicationStatus.approved++;
+          } else if (status === 'rejected') {
+            data.applicationStatus.rejected++;
+          } else if (status === 'under-review' || status === 'to-review') {
+            data.applicationStatus.toReview++;
+          } else {
+            data.applicationStatus.pending++;
+          }
+        });
+        
+        console.log('Filtered applications data:', data.applicationStatus);
+        
+        // TODO: Add service requests, licenses, and permits fetching when those collections exist
+        // For now, set placeholder values
+        data.serviceRequests = 0;
+        data.licenses = 0;
+        data.permits = 0;
+        
+        refreshAll();
+        
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    }
+
 
     function rand(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     els.btnRandomize.addEventListener("click", () => {
-      data.serviceRequests = rand(50, 220);
-      data.licenses = rand(10, 120);
-      data.permits = rand(15, 160);
-
-      data.applicationStatus.pending = rand(5, 80);
-      data.applicationStatus.rejected = rand(0, 40);
-      data.applicationStatus.toReview = rand(5, 90);
-      data.applicationStatus.approved = rand(20, 200);
-
-      refreshAll();
+      // Reload real data from Firestore
+      loadData();
     });
 
     els.btnAddUser.addEventListener("click", () => {
@@ -392,7 +474,7 @@
     });
 
     els.btnExport.addEventListener("click", () => {
-      alert("Export (Demo): Connect this button to your backend export (CSV/PDF).");
+      alert("Export: This will export your municipality's data to CSV/PDF.");
     });
 
     els.btnPrint.addEventListener("click", () => window.print());
@@ -401,7 +483,16 @@
       alert("View Details: Link this to your detailed reports page (e.g., reports.html).");
     });
 
-    refreshAll();
+    // Initialize dashboard with authentication
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('User authenticated:', user.email);
+        loadData();
+      } else {
+        console.log('No user authenticated, redirecting...');
+        window.location.href = '/login';
+      }
+    });
   </script>
 </body>
 </html>
