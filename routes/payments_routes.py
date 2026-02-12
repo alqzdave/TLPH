@@ -31,11 +31,35 @@ def create_invoice():
         data = request.get_json(silent=True) or {}
         auth_header = get_xendit_auth_header()
         
+        # Development mode: If Xendit API key is not configured, return mock success
         if not auth_header:
+            print('⚠️  WARNING: Xendit API key not configured - running in DEVELOPMENT MODE')
+            print('⚠️  Applications will be submitted without real payment processing')
+            
+            # Generate a mock invoice response for development
+            external_id = f"{data.get('external_id', 'invoice')}-{int(datetime.now().timestamp())}"
+            mock_invoice_id = f"dev-invoice-{int(datetime.now().timestamp())}"
+            
+            # Save mock transaction record
+            transaction_storage.add_transaction(
+                user_email=data.get('email', 'dev@test.com'),
+                external_id=external_id,
+                invoice_id=mock_invoice_id,
+                amount=data.get('amount', 0),
+                item_name=data.get('item_name', 'License/Permit'),
+                description=data.get('description', 'DENR License/Permit Payment'),
+                status='Paid (Development Mode)'
+            )
+            
             return jsonify({
-                'status': 'error',
-                'message': 'Xendit API key not configured'
-            }), 400
+                'status': 'success',
+                'invoice_id': mock_invoice_id,
+                'invoice_url': '#',
+                'amount': data.get('amount', 0),
+                'external_id': external_id,
+                'development_mode': True,
+                'message': 'Running in development mode - no actual payment required'
+            }), 201
         
         # Basic payload validation before calling Xendit
         raw_amount = data.get('amount')
@@ -157,10 +181,23 @@ def check_invoice_status(invoice_id):
         auth_header = get_xendit_auth_header()
         
         if not auth_header:
-            return jsonify({
-                'status': 'error',
-                'message': 'Xendit API key not configured'
-            }), 400
+            # DEVELOPMENT MODE: Return mock status for dev invoices
+            print('⚠️  WARNING: Checking invoice in DEVELOPMENT MODE')
+            if invoice_id.startswith('dev-invoice-'):
+                return jsonify({
+                    'status': 'success',
+                    'development_mode': True,
+                    'invoice_id': invoice_id,
+                    'payment_status': 'PAID',
+                    'paid_at': datetime.now().isoformat(),
+                    'payment_method': 'Development Mode',
+                    'message': 'Development mode - mock payment status'
+                }), 200
+            else:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Xendit API key not configured'
+                }), 400
         
         headers = {
             'Authorization': auth_header,
