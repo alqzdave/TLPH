@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DENR | Application Management Bureau</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            denr: '#006400',
+            'denr-light': '#f0fdf4',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+
+  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    
+    <header class="bg-white border border-slate-300 border-t-4 border-t-denr rounded-lg p-4 flex items-center gap-6 shadow-sm">
+      <div class="bg-denr-light p-2 rounded-lg border border-denr/10">
+        <span class="material-icons-round text-denr text-3xl">assignment_turned_in</span>
+      </div>
+      <div class="flex-1">
+        <h1 class="font-serif text-xl font-black uppercase tracking-tight">Application Master Registry</h1>
+        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">2026 National Resource & Agricultural Compliance</p>
+      </div>
+      <div class="flex gap-2">
+          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Global Export</button>
+          <button class="bg-denr text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
+            <span class="material-icons-round text-xs">sync</span> Force Sync
+          </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Active Apps</p>
+          <h3 class="text-2xl font-black" id="kpi-total">2,840</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-amber-500">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Pending Processing</p>
+          <h3 class="text-2xl font-black text-amber-600" id="kpi-pending">142</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-blue-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Under Review</p>
+          <h3 class="text-2xl font-black text-blue-600" id="kpi-review">89</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-green-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Approved MTD</p>
+          <h3 class="text-2xl font-black text-green-700" id="kpi-approved">567</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-red-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Rejections</p>
+          <h3 class="text-2xl font-black text-red-600" id="kpi-rejected">31</h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">7-Day Application Submission Volume</h4>
+            <div class="h-[250px]">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">Status Distribution</h4>
+            <div class="h-[200px]">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="mt-6 grid grid-cols-2 gap-2">
+                <div class="bg-slate-50 p-2 rounded text-center">
+                    <p class="text-[8px] font-black text-slate-400 uppercase">Avg Response</p>
+                    <p class="text-xs font-black">3.2 Days</p>
+                </div>
+                <div class="bg-slate-50 p-2 rounded text-center">
+                    <p class="text-[8px] font-black text-slate-400 uppercase">Completion</p>
+                    <p class="text-xs font-black">94.1%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
+        
+        <div class="p-4 bg-slate-50 border-b space-y-4">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-[300px] relative">
+                  <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+                  <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-denr outline-none shadow-sm" placeholder="Search Reference ID, Applicant Name...">
+                </div>
+                <div class="flex gap-2">
+                    <button id="resetFilters" class="px-3 py-2 text-[10px] font-black text-red-600 uppercase border border-red-200 rounded hover:bg-red-50 transition-colors">Reset</button>
+                    <button class="bg-slate-800 text-white px-4 py-2 text-[10px] font-black rounded shadow-sm uppercase tracking-wider">Apply Filters</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Category</label>
+                <select id="catFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Categories</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region</label>
+                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Regions</option>
+                  <option value="NCR">NCR</option>
+                  <option value="III">Region III</option>
+                  <option value="IV-A">Region IV-A</option>
+                  <option value="IV-B">Region IV-B</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Municipality</label>
+                <select id="munFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white disabled:opacity-50" disabled>
+                  <option value="all">All Municipalities</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Status</label>
+                <select id="statusFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Status</option>
+                  <option>Approved</option>
+                  <option>Pending</option>
+                  <option>To Review</option>
+                  <option>Reject</option>
+                </select>
+              </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
+                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">Reference & Applicant</th>
+                    <th class="px-6 py-4">Applicant Category</th>
+                    <th class="px-6 py-4">Region</th>
+                    <th class="px-6 py-4">Municipality</th>
+                    <th class="px-6 py-4 text-center">Status</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="appTableBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
+            </table>
+        </div>
+        
+        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+            <div>Result Count: <span id="resCount" class="text-denr">0</span> Entries</div>
+            <div class="flex items-center gap-4">
+              <span>Page 1 of 12</span>
+              <div class="flex gap-1">
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const APP_CATEGORIES = [
+      "Crop & Plant", "Livestock & Poultry", "Fisheries & Aquaculture", 
+      "Agribusiness & Agro-Processing", "Agricultural Trade (Import & Export)", 
+      "Land Use & Farm Development infrastructure", "Research, Technology & Innovation", 
+      "Farmer Support, Subsidies & Insurance", "Food Safety & Quality Regulation", 
+      "Extension Services & Capacity Building", "Climate Change, Disaster & Risk Management", 
+      "Data, Monitoring & Digital Agriculture", "Compliance, Inspection & Enforcement", 
+      "Institutional & Cooperative Development"
+    ];
+
+    // Regional Municipality Mapping
+    const MUN_DATA = {
+        "IV-B": ["Calapan", "Naujan", "Victoria", "Pola", "Pinamalayan", "Baco"],
+        "III": ["Tarlac City", "Concepcion", "Capas"],
+        "NCR": ["Quezon City", "Manila", "Makati"],
+        "IV-A": ["Lipa", "Batangas City", "Tanauan"]
+    };
+
+    const MOCK_DATA = [
+      { date: "2026-02-12", ref: "APP-99812", name: "Alqz Dave", cat: "Fisheries & Aquaculture", reg: "IV-B", mun: "Calapan", status: "Pending" },
+      { date: "2026-02-11", ref: "APP-99811", name: "Sarah Jimenez", cat: "Crop & Plant", reg: "IV-B", mun: "Naujan", status: "Approved" },
+      { date: "2026-02-11", ref: "APP-99810", name: "EcoFarm Corp", cat: "Land Use & Farm Development infrastructure", reg: "III", mun: "Tarlac City", status: "To Review" },
+      { date: "2026-02-10", ref: "APP-99809", name: "Juan Dela Cruz", cat: "Livestock & Poultry", reg: "IV-A", mun: "Lipa", status: "Reject" },
+      { date: "2026-02-10", ref: "APP-99808", name: "TechGrow Inc", cat: "Research, Technology & Innovation", reg: "NCR", mun: "Quezon City", status: "Approved" }
+    ];
+
+    function initTable() {
+      const catFilter = document.getElementById('catFilter');
+      APP_CATEGORIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c; catFilter.appendChild(opt);
+      });
+
+      // Handle Region Change to update Municipality Filter
+      document.getElementById('regFilter').addEventListener('change', function(e) {
+        const munFilter = document.getElementById('munFilter');
+        const region = e.target.value;
+        
+        munFilter.innerHTML = '<option value="all">All Municipalities</option>';
+        
+        if(region !== 'all' && MUN_DATA[region]) {
+            munFilter.disabled = false;
+            MUN_DATA[region].forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m; munFilter.appendChild(opt);
+            });
+        } else {
+            munFilter.disabled = true;
+        }
+        applyFilters();
+      });
+
+      // Add listeners to other filters
+      ['tableSearch', 'catFilter', 'munFilter', 'statusFilter'].forEach(id => {
+          document.getElementById(id).addEventListener('input', applyFilters);
+      });
+
+      renderTable(MOCK_DATA);
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('tableSearch').value.toLowerCase();
+        const cat = document.getElementById('catFilter').value;
+        const reg = document.getElementById('regFilter').value;
+        const mun = document.getElementById('munFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        const filtered = MOCK_DATA.filter(item => {
+            const matchSearch = item.ref.toLowerCase().includes(search) || item.name.toLowerCase().includes(search);
+            const matchCat = cat === 'all' || item.cat === cat;
+            const matchReg = reg === 'all' || item.reg === reg;
+            const matchMun = mun === 'all' || item.mun === mun;
+            const matchStatus = status === 'all' || item.status === status;
+            return matchSearch && matchCat && matchReg && matchMun && matchStatus;
+        });
+
+        renderTable(filtered);
+    }
+
+    function renderTable(data) {
+      const body = document.getElementById('appTableBody');
+      body.innerHTML = '';
+      document.getElementById('resCount').textContent = data.length;
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-denr-light/20 transition-colors group";
+        
+        let statusClass = "bg-slate-100 text-slate-600 border-slate-200";
+        if(row.status === 'Approved') statusClass = "bg-green-100 text-green-700 border-green-200";
+        if(row.status === 'Pending') statusClass = "bg-amber-100 text-amber-700 border-amber-200";
+        if(row.status === 'To Review') statusClass = "bg-blue-100 text-blue-700 border-blue-200";
+        if(row.status === 'Reject') statusClass = "bg-red-100 text-red-700 border-red-200";
+
+        tr.innerHTML = `
+          <td class="px-6 py-4 font-bold text-slate-400 whitespace-nowrap">${row.date}</td>
+          <td class="px-6 py-4">
+            <div class="font-black text-denr uppercase tracking-tighter">${row.ref}</div>
+            <div class="text-[10px] text-slate-500 font-bold">${row.name}</div>
+          </td>
+          <td class="px-6 py-4 uppercase font-black text-[10px] text-slate-400 max-w-[180px] leading-tight">${row.cat}</td>
+          <td class="px-6 py-4 font-bold text-slate-700">${row.reg}</td>
+          <td class="px-6 py-4 font-bold text-slate-700">${row.mun}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded border text-[9px] font-black uppercase ${statusClass}">${row.status}</span>
+          </td>
+          <td class="px-6 py-4 text-right whitespace-nowrap">
+            <div class="flex gap-1 justify-end">
+              <button class="p-1.5 hover:bg-slate-200 rounded text-slate-500"><span class="material-icons-round text-sm">visibility</span></button>
+              <button class="p-1.5 hover:bg-green-100 rounded text-green-600"><span class="material-icons-round text-sm">check_circle</span></button>
+              <button class="p-1.5 hover:bg-red-100 rounded text-red-600"><span class="material-icons-round text-sm">cancel</span></button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function initCharts() {
+      new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+          labels: ['Feb 06', 'Feb 07', 'Feb 08', 'Feb 09', 'Feb 10', 'Feb 11', 'Feb 12'],
+          datasets: [{
+            label: 'Total Submissions',
+            data: [42, 38, 55, 60, 45, 82, 95],
+            borderColor: '#006400',
+            backgroundColor: 'rgba(0, 100, 0, 0.05)',
+            fill: true, tension: 0.4, borderWidth: 3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } }
+      });
+
+      new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Approved', 'Pending', 'To Review', 'Reject'],
+          datasets: [{
+            data: [567, 142, 89, 31],
+            backgroundColor: ['#15803d', '#d97706', '#2563eb', '#dc2626'],
+            borderWidth: 0
+          }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            cutout: '75%', 
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9, weight: 'bold' }, padding: 15 } } 
+            } 
+        }
+      });
+    }
+
+    window.onload = () => {
+      initTable();
+      initCharts();
+    };
+  </script>
+</body>
+</html>

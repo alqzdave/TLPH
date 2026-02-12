@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DENR | Transaction Ledger</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            denr: '#006400',
+            'fin-emerald': '#059669',
+            'fin-slate': '#1e293b',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+
+  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    
+    <header class="bg-white border border-slate-300 border-t-4 border-t-fin-slate rounded-lg p-4 flex items-center gap-6 shadow-sm">
+      <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+        <span class="material-icons-round text-fin-slate text-3xl">payments</span>
+      </div>
+      <div class="flex-1">
+        <h1 class="font-serif text-xl font-black uppercase tracking-tight text-slate-800">Financial Transaction Ledger</h1>
+        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">National Revenue Tracking & Fee Management</p>
+      </div>
+      <div class="flex gap-2">
+          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Financial Export</button>
+          <button class="bg-fin-emerald text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
+            <span class="material-icons-round text-xs">account_balance_wallet</span> Reconcile
+          </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-fin-slate">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Gross Revenue (MTD)</p>
+          <h3 class="text-2xl font-black text-fin-slate">₱1.24M</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-fin-emerald">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Paid Transactions</p>
+          <h3 class="text-2xl font-black text-fin-emerald">842</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-amber-500">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Refunded</p>
+          <h3 class="text-2xl font-black text-amber-600">12</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-blue-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Avg. Transaction</p>
+          <h3 class="text-2xl font-black text-blue-600">₱1,450</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-rose-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Failed Attempts</p>
+          <h3 class="text-2xl font-black text-rose-600">08</h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Daily Revenue Stream</h4>
+            <div class="h-[250px]">
+                <canvas id="revenueTrendChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Revenue by Module</h4>
+            <div class="h-[250px]">
+                <canvas id="typeDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
+        
+        <div class="p-4 bg-slate-50 border-b space-y-4">
+            <div class="relative">
+              <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+              <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-fin-slate outline-none shadow-sm" placeholder="Reference Number or Payer Name...">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Transaction Type</label>
+                <select id="typeFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                    <option value="all">All Types</option>
+                    <option>Application Fee</option>
+                    <option>Service Request</option>
+                    <option>Licensing/Permit</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region</label>
+                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Regions</option>
+                  <option value="IV-B">Region IV-B</option>
+                  <option value="NCR">NCR</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Municipality</label>
+                <select id="munFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white disabled:opacity-50" disabled>
+                  <option value="all">All Municipalities</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Payment Status</label>
+                <select id="statusFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Status</option>
+                  <option>Paid</option>
+                  <option>Refunded</option>
+                </select>
+              </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
+                    <th class="px-6 py-4">Reference Number</th>
+                    <th class="px-6 py-4">Name & Type</th>
+                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">Region</th>
+                    <th class="px-6 py-4">Municipality</th>
+                    <th class="px-6 py-4 text-center">Status</th>
+                    <th class="px-6 py-4 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="txnTableBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
+            </table>
+        </div>
+        
+        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+            <div>Ledger Count: <span id="resCount" class="text-fin-slate">0</span> Transactions</div>
+            <div class="flex items-center gap-4">
+              <span>Page 1 of 12</span>
+              <div class="flex gap-1">
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const MUN_DATA = {
+        "IV-B": ["CALAPAN", "NAUJAN", "VICTORIA", "BACO"],
+        "NCR": ["QUEZON CITY", "MANILA"]
+    };
+
+    const MOCK_DATA = [
+      { ref: "TXN-88201", name: "Alqz Dave", type: "Licensing/Permit", date: "2026-02-12", reg: "IV-B", mun: "CALAPAN", status: "Paid", amount: 2500.00 },
+      { ref: "TXN-88202", name: "Maria Santos", type: "Application Fee", date: "2026-02-12", reg: "IV-B", mun: "NAUJAN", status: "Paid", amount: 1200.00 },
+      { ref: "TXN-88203", name: "Green Corp", type: "Service Request", date: "2026-02-11", reg: "NCR", mun: "MANILA", status: "Refunded", amount: 5000.00 },
+      { ref: "TXN-88204", name: "Juan Luna", type: "Application Fee", date: "2026-02-10", reg: "IV-B", mun: "VICTORIA", status: "Paid", amount: 750.00 }
+    ];
+
+    function initTable() {
+      // Dynamic Municipality Logic
+      document.getElementById('regFilter').addEventListener('change', function(e) {
+        const munFilter = document.getElementById('munFilter');
+        const region = e.target.value;
+        munFilter.innerHTML = '<option value="all">All Municipalities</option>';
+        if(region !== 'all' && MUN_DATA[region]) {
+            munFilter.disabled = false;
+            MUN_DATA[region].forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m; munFilter.appendChild(opt);
+            });
+        } else { munFilter.disabled = true; }
+        applyFilters();
+      });
+
+      ['tableSearch', 'typeFilter', 'munFilter', 'statusFilter'].forEach(id => {
+          document.getElementById(id).addEventListener('input', applyFilters);
+      });
+
+      renderTable(MOCK_DATA);
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('tableSearch').value.toLowerCase();
+        const type = document.getElementById('typeFilter').value;
+        const reg = document.getElementById('regFilter').value;
+        const mun = document.getElementById('munFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        const filtered = MOCK_DATA.filter(item => {
+            const matchSearch = item.ref.toLowerCase().includes(search) || item.name.toLowerCase().includes(search);
+            const matchType = type === 'all' || item.type === type;
+            const matchReg = reg === 'all' || item.reg === reg;
+            const matchMun = mun === 'all' || item.mun === mun;
+            const matchStatus = status === 'all' || item.status === status;
+            return matchSearch && matchType && matchReg && matchMun && matchStatus;
+        });
+        renderTable(filtered);
+    }
+
+    function renderTable(data) {
+      const body = document.getElementById('txnTableBody');
+      body.innerHTML = '';
+      document.getElementById('resCount').textContent = data.length;
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition-colors";
+        
+        let sClass = row.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+
+        tr.innerHTML = `
+          <td class="px-6 py-4 font-black text-fin-slate uppercase tracking-tighter">${row.ref}</td>
+          <td class="px-6 py-4">
+            <div class="font-bold text-slate-800">${row.name}</div>
+            <div class="text-[9px] text-slate-400 font-black uppercase tracking-tight">${row.type}</div>
+          </td>
+          <td class="px-6 py-4 text-slate-500 font-bold">${row.date}</td>
+          <td class="px-6 py-4 font-bold text-slate-500">${row.reg}</td>
+          <td class="px-6 py-4 font-bold text-slate-500">${row.mun}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${sClass}">${row.status}</span>
+          </td>
+          <td class="px-6 py-4 text-right font-black text-slate-800">₱${row.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function initCharts() {
+      new Chart(document.getElementById('revenueTrendChart'), {
+        type: 'line',
+        data: {
+          labels: ['Feb 06', 'Feb 07', 'Feb 08', 'Feb 09', 'Feb 10', 'Feb 11', 'Feb 12'],
+          datasets: [{
+            label: 'Revenue',
+            data: [12000, 19000, 3000, 5000, 15000, 18000, 22000],
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+            fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } }
+      });
+
+      new Chart(document.getElementById('typeDistributionChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Applications', 'Services', 'Permits'],
+          datasets: [{
+            data: [450000, 320000, 480000],
+            backgroundColor: ['#1e293b', '#059669', '#d97706'],
+            borderRadius: 4
+          }]
+        },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { font: { size: 10, weight: 'bold' } } } } }
+      });
+    }
+
+    window.onload = () => { initTable(); initCharts(); };
+  </script>
+</body>
+</html>

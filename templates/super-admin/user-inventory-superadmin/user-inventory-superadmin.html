@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DENR | User Inventory Registry</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            denr: '#006400',
+            'asset-indigo': '#4f46e5',
+            'asset-light': '#f5f3ff',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+
+  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    
+    <header class="bg-white border border-slate-300 border-t-4 border-t-asset-indigo rounded-lg p-4 flex items-center gap-6 shadow-sm">
+      <div class="bg-asset-light p-2 rounded-lg border border-asset-indigo/10">
+        <span class="material-icons-round text-asset-indigo text-3xl">badge</span>
+      </div>
+      <div class="flex-1">
+        <h1 class="font-serif text-xl font-black uppercase tracking-tight text-slate-800">User Inventory & Equipment Registry</h1>
+        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Personnel Asset Allocation & Field Resource Tracking</p>
+      </div>
+      <div class="flex gap-2">
+          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Inventory Audit</button>
+          <button class="bg-asset-indigo text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
+            <span class="material-icons-round text-xs">add_business</span> New Asset Issuance
+          </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-slate-300">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Issued Items</p>
+          <h3 class="text-2xl font-black">2,105</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-asset-indigo">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Active Personnel</p>
+          <h3 class="text-2xl font-black text-asset-indigo">482</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-amber-500">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Stock Low/Damaged</p>
+          <h3 class="text-2xl font-black text-amber-600">24</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-emerald-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Fully Deployed</p>
+          <h3 class="text-2xl font-black text-emerald-600">1,840</h3>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-t-4 border-t-red-600">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Lost/Unaccounted</p>
+          <h3 class="text-2xl font-black text-red-600">12</h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">Asset Deployment Trend (Monthly)</h4>
+            <div class="h-[250px]">
+                <canvas id="deploymentTrendChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Top Sector Allocation</h4>
+            <div class="h-[250px]">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
+        
+        <div class="p-4 bg-slate-50 border-b space-y-4">
+            <div class="relative">
+              <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+              <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-asset-indigo outline-none shadow-sm" placeholder="Search Product, Owner, or Region...">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Inventory Category</label>
+                <select id="catFilter" class="w-full px-2 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Product Categories</option>
+                  </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region</label>
+                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
+                  <option value="all">All Regions</option>
+                  <option value="IV-B">Region IV-B</option>
+                  <option value="NCR">NCR</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Municipality</label>
+                <select id="munFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white disabled:opacity-50" disabled>
+                  <option value="all">All Municipalities</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <button id="resetView" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-black uppercase bg-white hover:bg-slate-50 transition-colors">Clear All</button>
+              </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
+                    <th class="px-6 py-4">Product Name</th>
+                    <th class="px-6 py-4">Category</th>
+                    <th class="px-6 py-4">Owner</th>
+                    <th class="px-6 py-4 text-center">Init. Qty</th>
+                    <th class="px-6 py-4 text-center">Curr. Qty</th>
+                    <th class="px-6 py-4">Region</th>
+                    <th class="px-6 py-4">Municipality</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="userInvBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
+            </table>
+        </div>
+        
+        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+            <div>Asset Entry Count: <span id="resCount" class="text-asset-indigo">0</span> Records</div>
+            <div class="flex items-center gap-4">
+              <span>Page 1 of 4</span>
+              <div class="flex gap-1">
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
+                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const CATEGORIES = [
+      "Crop & Plant", "Livestock & Poultry", "Fisheries & Aquaculture", 
+      "Agribusiness & Agro-Processing", "Agricultural Trade (Import & Export)", 
+      "Land Use & Farm Development infrastructure", "Research, Technology & Innovation", 
+      "Farmer Support, Subsidies & Insurance", "Food Safety & Quality Regulation", 
+      "Extension Services & Capacity Building", "Climate Change, Disaster & Risk Management", 
+      "Data, Monitoring & Digital Agriculture", "Compliance, Inspection & Enforcement", 
+      "Institutional & Cooperative Development"
+    ];
+
+    const MUN_DATA = {
+        "IV-B": ["Calapan", "Naujan", "Victoria", "Baco"],
+        "NCR": ["Quezon City", "Manila"]
+    };
+
+    const USER_INV_DATA = [
+      { product: "Soil Moisture Sensors", cat: "Crop & Plant", owner: "Elena Cruz", init: 50, curr: 42, reg: "IV-B", mun: "Naujan" },
+      { product: "Water Quality Kits", cat: "Fisheries & Aquaculture", owner: "Cedric Admin", init: 10, curr: 7, reg: "IV-B", mun: "Calapan" },
+      { product: "Surveying Tablet Pro", cat: "Land Use & Farm Development infrastructure", owner: "Roberto San Jose", init: 5, curr: 4, reg: "IV-B", mun: "Victoria" },
+      { product: "Field Inspection Suit", cat: "Compliance, Inspection & Enforcement", owner: "Regional Field Div", init: 20, curr: 20, reg: "NCR", mun: "Quezon City" },
+      { product: "Hybrid Seed Kit", cat: "Farmer Support, Subsidies & Insurance", owner: "Agri Team Alpha", init: 100, curr: 85, reg: "IV-B", mun: "Calapan" }
+    ];
+
+    function initTable() {
+      const catFilter = document.getElementById('catFilter');
+      CATEGORIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c.toUpperCase(); catFilter.appendChild(opt);
+      });
+
+      document.getElementById('regFilter').addEventListener('change', function(e) {
+        const munFilter = document.getElementById('munFilter');
+        const region = e.target.value;
+        munFilter.innerHTML = '<option value="all">All Municipalities</option>';
+        if(region !== 'all' && MUN_DATA[region]) {
+            munFilter.disabled = false;
+            MUN_DATA[region].forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m.toUpperCase(); munFilter.appendChild(opt);
+            });
+        } else { munFilter.disabled = true; }
+        applyFilters();
+      });
+
+      ['tableSearch', 'catFilter', 'munFilter'].forEach(id => {
+          document.getElementById(id).addEventListener('input', applyFilters);
+      });
+
+      renderTable(USER_INV_DATA);
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('tableSearch').value.toLowerCase();
+        const cat = document.getElementById('catFilter').value;
+        const reg = document.getElementById('regFilter').value;
+        const mun = document.getElementById('munFilter').value;
+
+        const filtered = USER_INV_DATA.filter(item => {
+            const matchSearch = item.product.toLowerCase().includes(search) || item.owner.toLowerCase().includes(search);
+            const matchCat = cat === 'all' || item.cat === cat;
+            const matchReg = reg === 'all' || item.reg === reg;
+            const matchMun = mun === 'all' || item.mun === mun;
+            return matchSearch && matchCat && matchReg && matchMun;
+        });
+        renderTable(filtered);
+    }
+
+    function renderTable(data) {
+      const body = document.getElementById('userInvBody');
+      body.innerHTML = '';
+      document.getElementById('resCount').textContent = data.length;
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-indigo-50 transition-colors group";
+        
+        // Dynamic stock coloring
+        const stockStatus = row.curr < (row.init * 0.5) ? 'text-red-600 font-black' : 'text-slate-800';
+
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-black text-slate-800 uppercase tracking-tight">${row.product}</div>
+            <div class="text-[9px] text-slate-400 font-bold uppercase">Asset ID: DN-INV-${Math.floor(Math.random()*1000)}</div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="px-2 py-0.5 rounded border border-indigo-100 bg-indigo-50 text-indigo-700 text-[9px] font-black uppercase max-w-[150px] inline-block truncate">${row.cat}</span>
+          </td>
+          <td class="px-6 py-4 font-bold text-slate-700 uppercase">${row.owner}</td>
+          <td class="px-6 py-4 text-center font-bold text-slate-400">${row.init}</td>
+          <td class="px-6 py-4 text-center ${stockStatus}">${row.curr}</td>
+          <td class="px-6 py-4 font-bold text-slate-500 uppercase">${row.reg}</td>
+          <td class="px-6 py-4 font-bold text-slate-500 uppercase">${row.mun}</td>
+          <td class="px-6 py-4 text-right whitespace-nowrap">
+            <div class="flex gap-1 justify-end">
+              <button title="Edit" class="p-1.5 hover:bg-indigo-100 rounded text-asset-indigo transition-colors"><span class="material-icons-round text-sm">edit_note</span></button>
+              <button title="Remove" class="p-1.5 hover:bg-red-100 rounded text-red-600 transition-colors"><span class="material-icons-round text-sm">delete</span></button>
+              <button title="View" class="p-1.5 hover:bg-slate-200 rounded text-slate-500 transition-colors"><span class="material-icons-round text-sm">visibility</span></button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function initCharts() {
+      new Chart(document.getElementById('deploymentTrendChart'), {
+        type: 'line',
+        data: {
+          labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+          datasets: [{
+            label: 'Equipment Deployed',
+            data: [1200, 1400, 1650, 1900, 2105],
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.05)',
+            fill: true, tension: 0.4, borderWidth: 3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
+      });
+
+      new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Crop', 'Fisheries', 'Compliance', 'Subsidy'],
+          datasets: [{
+            data: [450, 320, 280, 150],
+            backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#dc2626'],
+            borderWidth: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9, weight: 'bold' }, padding: 15 } } } }
+      });
+    }
+
+    window.onload = () => {
+      initTable();
+      initCharts();
+    };
+  </script>
+</body>
+</html>
