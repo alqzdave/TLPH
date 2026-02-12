@@ -299,14 +299,21 @@
                 console.log('Product/Project name:', applicationData.productName || applicationData.projectName);
                 console.log('Category:', applicationData.category);
                 console.log('Municipality:', applicationData.municipality);
-                console.log('Investment:', applicationData.initialInvestment);
-                console.log('Harvest qty:', applicationData.maxHarvestQty || applicationData.harvestQuantity);
+                console.log('Investment:', applicationData.investmentQty || applicationData.initialInvestment);
+                console.log('Harvest qty:', applicationData.harvestQty || applicationData.maxHarvestQty || applicationData.harvestQuantity);
                 
                 document.getElementById('productName').textContent = applicationData.productName || applicationData.projectName || 'N/A';
                 document.getElementById('category').textContent = applicationData.category || 'N/A';
                 document.getElementById('municipality').textContent = applicationData.municipality || 'N/A';
-                document.getElementById('investment').textContent = applicationData.initialInvestment ? `₱ ${Number(applicationData.initialInvestment).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 'N/A';
-                document.getElementById('harvestQty').textContent = applicationData.maxHarvestQty || applicationData.harvestQuantity || 'N/A';
+                
+                // Handle investment - check multiple possible field names
+                const investment = applicationData.investmentQty || applicationData.initialInvestment;
+                document.getElementById('investment').textContent = investment ? `₱ ${Number(investment).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 'N/A';
+                
+                // Handle harvest quantity - check multiple possible field names
+                const harvest = applicationData.harvestQty || applicationData.maxHarvestQty || applicationData.harvestQuantity;
+                document.getElementById('harvestQty').textContent = harvest || 'N/A';
+                
                 document.getElementById('dateFiled').textContent = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
                 
                 console.log('Application details set successfully');
