@@ -114,7 +114,6 @@
     </a>
 
     <button id="downloadReportBtn" 
-       onclick="downloadDashboardReport()"
        class="bg-white border border-green-700 text-green-800 py-2 sm:py-3 px-1 rounded-xl shadow-sm hover:bg-green-50 transition-all transform active:scale-95 text-center flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
       <i class="fa-solid fa-file-pdf text-[14px] sm:text-base lg:text-lg"></i>
       <span class="text-[8px] sm:text-xs lg:text-sm font-black uppercase tracking-tighter sm:tracking-normal">
@@ -609,25 +608,27 @@
     }
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("searchInput").addEventListener("input", applyFilters);
-    document.getElementById("typeFilter").addEventListener("change", applyFilters);
-    document.getElementById("btnClear").addEventListener("click", () => { document.getElementById("searchInput").value = ""; applyFilters(); });
-    document.getElementById("btnReset").addEventListener("click", () => { document.getElementById("searchInput").value = ""; document.getElementById("typeFilter").value = "ALL"; applyFilters(); });
-  });
-
-  window.applyFilters = applyFilters;
-
-  /* DOWNLOAD REPORT FUNCTION - ALL ORIGINAL LOGIC INCLUDED */
+  /* DOWNLOAD REPORT FUNCTION */
   window.downloadDashboardReport = async function() {
     const downloadBtn = document.getElementById('downloadReportBtn');
     const isMobile = window.innerWidth < 640;
     
     try {
+      // Check if html2pdf is loaded
+      if (typeof html2pdf === 'undefined') {
+        alert('PDF library not loaded. Please refresh the page and try again.');
+        return;
+      }
+
       downloadBtn.disabled = true;
       downloadBtn.innerHTML = isMobile 
         ? '<i class="fa-solid fa-spinner fa-spin"></i>' 
         : '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating...';
+
+      if (allTransactions.length === 0) {
+        alert('No data available to generate report.');
+        return;
+      }
 
       const pdfContainer = document.createElement('div');
       pdfContainer.style.padding = '20px';
@@ -687,22 +688,23 @@
       breakdown.style.marginBottom = '12px';
       breakdown.innerHTML = `
         <h2 style="color: #1b330d; font-size: 14px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 4px; margin-bottom: 8px;">Breakdown</h2>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
             <div style="background: #f0fdf4; border: 1px solid #10b981; padding: 10px; border-radius: 6px;">
               <div style="font-size: 10px; color: #6b7280; font-weight: 700;">LICENSE/PERMIT</div>
               <div style="font-size: 24px; color: #10b981; font-weight: 800;">${licenseReq}</div>
             </div>
             <div style="background: #eff6ff; border: 1px solid #3b82f6; padding: 10px; border-radius: 6px;">
-              <div style="font-size: 10px; color: #6b7280; font-weight: 700;">PRODUCT APP</div>
-              <div style="font-size: 24px; color: #3b82f6; font-weight: 800;">${appReq}</div>
-            </div>
-            <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 10px; border-radius: 6px;">
-              <div style="font-size: 10px; color: #6b7280; font-weight: 700;">SERVICE REQ</div>
-              <div style="font-size: 24px; color: #f59e0b; font-weight: 800;">${serviceReq}</div>
+              <div style="font-size: 10px; color: #6b7280; font-weight: 700;">SERVICE REQUEST</div>
+              <div style="font-size: 24px; color: #3b82f6; font-weight: 800;">${serviceReq}</div>
             </div>
         </div>
       `;
       pdfContainer.appendChild(breakdown);
+
+      // SECTION 2: Application Type Breakdown
+      const typeBreakdown = document.createElement('div');
+      typeBreakdown.style.marginBottom = '12px';
+      typeBreakdown.style.pageBreakInside = 'avoid';
 
       const typeTitle = document.createElement('h2');
       typeTitle.innerHTML = 'Application Type Breakdown';
@@ -716,7 +718,7 @@
 
       const typeGrid = document.createElement('div');
       typeGrid.style.display = 'grid';
-      typeGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      typeGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
       typeGrid.style.gap = '8px';
 
       const types = [
@@ -855,7 +857,8 @@
       await html2pdf().set(opt).from(pdfContainer).save();
 
     } catch (e) { 
-      console.error(e); 
+      console.error('Error generating PDF:', e);
+      alert('Failed to generate PDF report: ' + (e.message || 'Unknown error'));
     } finally {
       downloadBtn.disabled = false;
       downloadBtn.innerHTML = isMobile
@@ -863,6 +866,33 @@
         : '<i class="fa-solid fa-file-pdf mr-2"></i> Report';
     }
   };
+
+  // DOM event listeners
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("typeFilter").addEventListener("change", applyFilters);
+
+    document.getElementById("btnClear").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      applyFilters();
+    });
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("typeFilter").value = "ALL";
+      applyFilters();
+    });
+
+    // Add event listener for download report button
+    const reportBtn = document.getElementById("downloadReportBtn");
+    if (reportBtn) {
+      reportBtn.addEventListener("click", () => {
+        window.downloadDashboardReport();
+      });
+    }
+  });
+
+  window.applyFilters = applyFilters;
 </script>
 
 </body>
