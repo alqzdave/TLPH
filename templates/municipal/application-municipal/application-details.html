@@ -266,15 +266,30 @@
             try {
                 // Generate reference number
                 // Handle both Firebase Timestamp and ISO string dates
-                let date = new Date();
+                let date = null;
+                console.log('Raw createdAt value:', applicationData.createdAt);
+                console.log('createdAt type:', typeof applicationData.createdAt);
+                
                 if (applicationData.createdAt) {
                     if (typeof applicationData.createdAt.toDate === 'function') {
                         date = applicationData.createdAt.toDate();
+                        console.log('✅ Parsed as Firebase Timestamp:', date);
                     } else if (typeof applicationData.createdAt === 'string') {
                         date = new Date(applicationData.createdAt);
+                        console.log('✅ Parsed as ISO string:', date);
+                    } else if (applicationData.createdAt.seconds) {
+                        // Handle Firestore Timestamp object
+                        date = new Date(applicationData.createdAt.seconds * 1000);
+                        console.log('✅ Parsed as Firestore Timestamp object:', date);
                     }
+                } else {
+                    console.warn('⚠️ No createdAt field found in application data');
                 }
-                const refNumber = `APP-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}-${currentApplicationId.substring(0, 6).toUpperCase()}`;
+                
+                // Only generate reference if we have a valid date
+                const refNumber = date 
+                    ? `APP-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}-${currentApplicationId.substring(0, 6).toUpperCase()}`
+                    : `APP-${new Date().getFullYear()}-${currentApplicationId.substring(0, 6).toUpperCase()}`;
                 console.log('Reference number:', refNumber);
                 document.getElementById('refNumber').textContent = refNumber;
 
@@ -314,7 +329,14 @@
                 const harvest = applicationData.harvestQty || applicationData.maxHarvestQty || applicationData.harvestQuantity;
                 document.getElementById('harvestQty').textContent = harvest || 'N/A';
                 
-                document.getElementById('dateFiled').textContent = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+                // Handle filed date - show N/A if no valid date
+                if (date) {
+                    document.getElementById('dateFiled').textContent = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+                    console.log('Filed date set:', date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }));
+                } else {
+                    document.getElementById('dateFiled').textContent = 'N/A';
+                    console.warn('⚠️ Filed date not available - showing N/A');
+                }
                 
                 console.log('Application details set successfully');
 
