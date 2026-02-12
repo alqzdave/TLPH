@@ -204,200 +204,224 @@
   </div>
 
   <script>
-    /******************************************************************
-     * MUNICIPALITY-ONLY VIEW
-     * (Demo: client filter. Production: enforce on backend too.)
-     ******************************************************************/
-    const CURRENT_MUNICIPALITY = "San Juan";
+  /******************************************************************
+   * MUNICIPALITY-ONLY VIEW
+   * (Demo: client filter. Production: enforce on backend too.)
+   ******************************************************************/
+  const CURRENT_MUNICIPALITY = "San Juan";
 
-    const ALL_TRANSACTIONS = [
-      { id:"TX-1001", municipality:"San Juan", payer:"Juan Dela Cruz", type:"Import Permit",  date:"2026-02-01", status:"Paid",    amount:1250.00 },
-      { id:"TX-1002", municipality:"San Juan", payer:"Maria Santos",   type:"Licensing Fee", date:"2026-02-03", status:"Pending", amount:0.00 },
-      { id:"TX-1003", municipality:"San Juan", payer:"Andrea Reyes",   type:"Service Fee",   date:"2026-02-05", status:"Paid",    amount:499.99 },
-      { id:"TX-1004", municipality:"San Juan", payer:"",              type:"Other",         date:"2026-02-06", status:"Failed",  amount:0.00 },
+  class TransactionsRepository {
+    constructor({ municipality }) {
+      this.municipality = municipality;
 
-      { id:"TX-2001", municipality:"Bacoor",   payer:"Leo Cruz",       type:"Import Permit", date:"2026-01-28", status:"Paid",    amount:900.00 },
-      { id:"TX-2002", municipality:"Bacoor",   payer:"Ana Lim",        type:"Service Fee",   date:"2026-02-02", status:"Pending", amount:0.00 },
+      // Mock data lives inside the class now
+      this._mock = [
+        { id:"TX-1001", municipality:"San Juan", payer:"Juan Dela Cruz", type:"Import Permit",  date:"2026-02-01", status:"Paid",    amount:1250.00 },
+        { id:"TX-1002", municipality:"San Juan", payer:"Maria Santos",   type:"Licensing Fee", date:"2026-02-03", status:"Pending", amount:0.00 },
+        { id:"TX-1003", municipality:"San Juan", payer:"Andrea Reyes",   type:"Service Fee",   date:"2026-02-05", status:"Paid",    amount:499.99 },
+        { id:"TX-1004", municipality:"San Juan", payer:"",              type:"Other",         date:"2026-02-06", status:"Failed",  amount:0.00 },
 
-      { id:"TX-3001", municipality:"Makati",   payer:"Carlo Tan",      type:"Licensing Fee", date:"2026-01-30", status:"Paid",    amount:1500.00 },
-      { id:"TX-3002", municipality:"Makati",   payer:"Mika Bautista",  type:"Other",         date:"2026-02-04", status:"Paid",    amount:300.00 },
-    ];
+        { id:"TX-2001", municipality:"Bacoor",   payer:"Leo Cruz",       type:"Import Permit", date:"2026-01-28", status:"Paid",    amount:900.00 },
+        { id:"TX-2002", municipality:"Bacoor",   payer:"Ana Lim",        type:"Service Fee",   date:"2026-02-02", status:"Pending", amount:0.00 },
 
-    const peso = new Intl.NumberFormat("en-PH", {
-      style: "currency", currency: "PHP", minimumFractionDigits: 2
+        { id:"TX-3001", municipality:"Makati",   payer:"Carlo Tan",      type:"Licensing Fee", date:"2026-01-30", status:"Paid",    amount:1500.00 },
+        { id:"TX-3002", municipality:"Mika Bautista",  type:"Other",     date:"2026-02-04", status:"Paid",    amount:300.00, municipality:"Makati" },
+      ];
+    }
+
+    // ✅ Use this today (mock), later swap implementation to Firebase
+    async getAll() {
+      // In Firebase version: fetch from Firestore/Realtime DB here
+      return [...this._mock]; // return a copy (avoid accidental mutation)
+    }
+
+    // Optional helper: municipality-scoped fetch
+    async getByMunicipality() {
+      const all = await this.getAll();
+      return all.filter(t => t.municipality === this.municipality);
+    }
+
+    // Demo helper
+    async shuffleMock() {
+      this._mock = [...this._mock].sort(() => Math.random() - 0.5);
+      return this.getAll();
+    }
+  }
+
+  const repo = new TransactionsRepository({ municipality: CURRENT_MUNICIPALITY });
+
+  const peso = new Intl.NumberFormat("en-PH", {
+    style: "currency", currency: "PHP", minimumFractionDigits: 2
+  });
+
+  const dateFmt = new Intl.DateTimeFormat("en-PH", {
+    year: "numeric", month: "short", day: "2-digit"
+  });
+
+  function formatDate(iso){
+    const d = new Date(iso + "T00:00:00");
+    return isNaN(d.getTime()) ? iso : dateFmt.format(d);
+  }
+
+  // DOM
+  const scopeChip = document.getElementById("scopeChip");
+  const resultsChip = document.getElementById("resultsChip");
+
+  const searchInput = document.getElementById("searchInput");
+  const statusSelect = document.getElementById("statusSelect");
+  const searchBtn = document.getElementById("searchBtn");
+
+  const kpiTotalTx = document.getElementById("kpiTotalTx");
+  const kpiPaid = document.getElementById("kpiPaid");
+  const kpiPending = document.getElementById("kpiPending");
+  const kpiAmount = document.getElementById("kpiAmount");
+
+  const txBody = document.getElementById("txBody");
+
+  let barChart, donutChart;
+
+  function applySearchAndStatus(data){
+    const q = searchInput.value.trim().toLowerCase();
+    const status = statusSelect.value;
+
+    const filtered = data.filter(t => {
+      const matchQuery =
+        q === "" ||
+        (t.id || "").toLowerCase().includes(q) ||
+        (t.payer || "").toLowerCase().includes(q) ||
+        (t.type || "").toLowerCase().includes(q);
+
+      const matchStatus = status === "all" || t.status === status;
+      return matchQuery && matchStatus;
     });
 
-    const dateFmt = new Intl.DateTimeFormat("en-PH", {
-      year: "numeric", month: "short", day: "2-digit"
-    });
+    resultsChip.textContent = `Showing ${filtered.length} of ${data.length}`;
+    return filtered;
+  }
 
-    function formatDate(iso){
-      const d = new Date(iso + "T00:00:00");
-      return isNaN(d.getTime()) ? iso : dateFmt.format(d);
+  function computeStats(data){
+    const totalTx = data.length;
+    const paid = data.filter(x => x.status === "Paid").length;
+    const pending = data.filter(x => x.status === "Pending").length;
+    const failed = data.filter(x => x.status === "Failed").length;
+
+    const amountPaid = data
+      .filter(x => x.status === "Paid")
+      .reduce((sum, x) => sum + (Number(x.amount) || 0), 0);
+
+    const byType = {};
+    for (const t of data){
+      byType[t.type] = (byType[t.type] || 0) + 1;
     }
 
-    // DOM
-    const scopeChip = document.getElementById("scopeChip");
-    const resultsChip = document.getElementById("resultsChip");
+    return { totalTx, paid, pending, failed, amountPaid, byType };
+  }
 
-    const searchInput = document.getElementById("searchInput");
-    const statusSelect = document.getElementById("statusSelect");
-    const searchBtn = document.getElementById("searchBtn");
+  function renderKpis(stats){
+    kpiTotalTx.textContent = stats.totalTx;
+    kpiPaid.textContent = stats.paid;
+    kpiPending.textContent = stats.pending;
+    kpiAmount.textContent = peso.format(stats.amountPaid);
+  }
 
-    const kpiTotalTx = document.getElementById("kpiTotalTx");
-    const kpiPaid = document.getElementById("kpiPaid");
-    const kpiPending = document.getElementById("kpiPending");
-    const kpiAmount = document.getElementById("kpiAmount");
+  function renderCharts(stats){
+    const typeLabels = Object.keys(stats.byType);
+    const typeValues = Object.values(stats.byType);
 
-    const txBody = document.getElementById("txBody");
-
-    let barChart, donutChart;
-
-    function scopedBaseData(){
-      return ALL_TRANSACTIONS.filter(t => t.municipality === CURRENT_MUNICIPALITY);
-    }
-
-    function applySearchAndStatus(data){
-      const q = searchInput.value.trim().toLowerCase();
-      const status = statusSelect.value;
-
-      const filtered = data.filter(t => {
-        const matchQuery =
-          q === "" ||
-          (t.id || "").toLowerCase().includes(q) ||
-          (t.payer || "").toLowerCase().includes(q) ||
-          (t.type || "").toLowerCase().includes(q);
-
-        const matchStatus = status === "all" || t.status === status;
-        return matchQuery && matchStatus;
-      });
-
-      resultsChip.textContent = `Showing ${filtered.length} of ${data.length}`;
-      return filtered;
-    }
-
-    function computeStats(data){
-      const totalTx = data.length;
-      const paid = data.filter(x => x.status === "Paid").length;
-      const pending = data.filter(x => x.status === "Pending").length;
-      const failed = data.filter(x => x.status === "Failed").length;
-
-      const amountPaid = data
-        .filter(x => x.status === "Paid")
-        .reduce((sum, x) => sum + (Number(x.amount) || 0), 0);
-
-      const byType = {};
-      for (const t of data){
-        byType[t.type] = (byType[t.type] || 0) + 1;
+    if (barChart) barChart.destroy();
+    barChart = new Chart(document.getElementById("typeBar"), {
+      type: "bar",
+      data: { labels: typeLabels, datasets: [{ label: "Transactions", data: typeValues }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
       }
-
-      return { totalTx, paid, pending, failed, amountPaid, byType };
-    }
-
-    function renderKpis(stats){
-      kpiTotalTx.textContent = stats.totalTx;
-      kpiPaid.textContent = stats.paid;
-      kpiPending.textContent = stats.pending;
-      kpiAmount.textContent = peso.format(stats.amountPaid);
-    }
-
-    function renderCharts(stats){
-      const typeLabels = Object.keys(stats.byType);
-      const typeValues = Object.values(stats.byType);
-
-      if (barChart) barChart.destroy();
-      barChart = new Chart(document.getElementById("typeBar"), {
-        type: "bar",
-        data: { labels: typeLabels, datasets: [{ label: "Transactions", data: typeValues }] },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }
-        }
-      });
-
-      if (donutChart) donutChart.destroy();
-      donutChart = new Chart(document.getElementById("statusDonut"), {
-        type: "doughnut",
-        data: {
-          labels: ["Paid","Pending","Failed"],
-          datasets: [{ data: [stats.paid, stats.pending, stats.failed], cutout: "60%" }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
-      });
-    }
-
-    function statusBadge(status) {
-      const base = "inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]";
-      if (status === "Paid") return `<span class="${base} text-emerald-800">Paid</span>`;
-      if (status === "Pending") return `<span class="${base} text-amber-800">Pending</span>`;
-      return `<span class="${base} text-rose-800">Failed</span>`;
-    }
-
-    function renderTransactionsTable(data){
-      const sorted = [...data].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
-      txBody.innerHTML = "";
-
-      for (const t of sorted){
-        txBody.innerHTML += `
-          <tr class="border-b border-gray-200">
-            <td class="px-3 py-3 text-sm text-slate-900" title="${t.id}">${t.id}</td>
-            <td class="px-3 py-3 text-sm text-slate-900" title="${t.payer || ""}">${t.payer ? t.payer : "—"}</td>
-            <td class="px-3 py-3 text-sm text-slate-900" title="${t.type}">${t.type}</td>
-            <td class="px-3 py-3 text-sm text-slate-900" title="${t.date}">${formatDate(t.date)}</td>
-            <td class="px-3 py-3 text-sm">${statusBadge(t.status)}</td>
-            <td class="px-3 py-3 text-sm text-right text-slate-900">${peso.format(Number(t.amount) || 0)}</td>
-          </tr>
-        `;
-      }
-
-      if (txBody.innerHTML.trim() === "") {
-        txBody.innerHTML = `
-          <tr>
-            <td colspan="6" class="px-3 py-4 text-sm text-slate-600">
-              No transactions found for the selected search/filter.
-            </td>
-          </tr>
-        `;
-      }
-    }
-
-    function renderAll(){
-      scopeChip.textContent = `Municipality: ${CURRENT_MUNICIPALITY}`;
-
-      const base = scopedBaseData();
-      const filtered = applySearchAndStatus(base);
-
-      const stats = computeStats(filtered);
-      renderKpis(stats);
-      renderCharts(stats);
-      renderTransactionsTable(filtered);
-    }
-
-    document.getElementById("demoRefreshBtn").addEventListener("click", () => {
-      ALL_TRANSACTIONS.sort(() => Math.random() - 0.5);
-      renderAll();
     });
 
-    document.getElementById("exportBtn").addEventListener("click", () => {
-      alert("Demo export. In production, export only municipality-scoped & filtered data.");
+    if (donutChart) donutChart.destroy();
+    donutChart = new Chart(document.getElementById("statusDonut"), {
+      type: "doughnut",
+      data: {
+        labels: ["Paid","Pending","Failed"],
+        datasets: [{ data: [stats.paid, stats.pending, stats.failed], cutout: "60%" }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
     });
+  }
 
-    let debounce;
-    searchInput.addEventListener("input", () => {
-      clearTimeout(debounce);
-      debounce = setTimeout(renderAll, 150);
-    });
+  function statusBadge(status) {
+    const base = "inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]";
+    if (status === "Paid") return `<span class="${base} text-emerald-800">Paid</span>`;
+    if (status === "Pending") return `<span class="${base} text-amber-800">Pending</span>`;
+    return `<span class="${base} text-rose-800">Failed</span>`;
+  }
 
-    statusSelect.addEventListener("change", renderAll);
-    searchBtn.addEventListener("click", renderAll);
+  function renderTransactionsTable(data){
+    const sorted = [...data].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+    txBody.innerHTML = "";
 
-    searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") renderAll();
-    });
+    for (const t of sorted){
+      txBody.innerHTML += `
+        <tr class="border-b border-gray-200">
+          <td class="px-3 py-3 text-sm text-slate-900" title="${t.id}">${t.id}</td>
+          <td class="px-3 py-3 text-sm text-slate-900" title="${t.payer || ""}">${t.payer ? t.payer : "—"}</td>
+          <td class="px-3 py-3 text-sm text-slate-900" title="${t.type}">${t.type}</td>
+          <td class="px-3 py-3 text-sm text-slate-900" title="${t.date}">${formatDate(t.date)}</td>
+          <td class="px-3 py-3 text-sm">${statusBadge(t.status)}</td>
+          <td class="px-3 py-3 text-sm text-right text-slate-900">${peso.format(Number(t.amount) || 0)}</td>
+        </tr>
+      `;
+    }
 
-    renderAll();
-  </script>
-</body>
-</html>
+    if (txBody.innerHTML.trim() === "") {
+      txBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="px-3 py-4 text-sm text-slate-600">
+            No transactions found for the selected search/filter.
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+  // ✅ Now async because it can fetch from Firebase later
+  async function renderAll(){
+    scopeChip.textContent = `Municipality: ${CURRENT_MUNICIPALITY}`;
+
+    // scoped fetch from repo
+    const base = await repo.getByMunicipality();
+
+    const filtered = applySearchAndStatus(base);
+
+    const stats = computeStats(filtered);
+    renderKpis(stats);
+    renderCharts(stats);
+    renderTransactionsTable(filtered);
+  }
+
+  document.getElementById("demoRefreshBtn").addEventListener("click", async () => {
+    await repo.shuffleMock();
+    await renderAll();
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", () => {
+    alert("Demo export. In production, export only municipality-scoped & filtered data.");
+  });
+
+  let debounce;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => renderAll(), 150);
+  });
+
+  statusSelect.addEventListener("change", () => renderAll());
+  searchBtn.addEventListener("click", () => renderAll());
+
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") renderAll();
+  });
+
+  renderAll();
+</script>
