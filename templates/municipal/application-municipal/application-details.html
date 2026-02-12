@@ -190,9 +190,11 @@
 
     <script type="module">
         import { auth, db } from '/static/js/firebase-config.js';
-        import { doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
+        console.log('Application details script loaded');
+        
         let currentApplicationId = null;
         let applicationData = null;
         let userData = null;
@@ -200,64 +202,89 @@
         // Get application ID from URL
         const pathParts = window.location.pathname.split('/');
         currentApplicationId = pathParts[pathParts.length - 1];
+        console.log('Application ID from URL:', currentApplicationId);
+        console.log('Full URL path:', window.location.pathname);
 
         async function loadApplicationDetails() {
             try {
-                console.log('Loading application details for ID:', currentApplicationId);
+                console.log('Starting loadApplicationDetails for ID:', currentApplicationId);
                 
-                if (!currentApplicationId) {
+                if (!currentApplicationId || currentApplicationId === 'details') {
+                    console.error('Invalid application ID:', currentApplicationId);
                     alert('No application ID provided');
                     window.history.back();
                     return;
                 }
 
                 // Fetch application data
+                console.log('Fetching from Firestore: applications/', currentApplicationId);
                 const appDoc = await getDoc(doc(db, 'applications', currentApplicationId));
                 
                 if (!appDoc.exists()) {
+                    console.error('Application not found:', currentApplicationId);
                     alert('Application not found');
                     window.history.back();
                     return;
                 }
 
                 applicationData = { id: appDoc.id, ...appDoc.data() };
-                console.log('Application data:', applicationData);
+                console.log('Application data loaded:', applicationData);
 
                 // Fetch user data
                 if (applicationData.userId) {
+                    console.log('Fetching user data for userId:', applicationData.userId);
                     const userDoc = await getDoc(doc(db, 'users', applicationData.userId));
                     if (userDoc.exists()) {
                         userData = userDoc.data();
+                        console.log('User data loaded:', userData);
+                    } else {
+                        console.warn('User not found for userId:', applicationData.userId);
                     }
                 }
 
                 displayApplicationDetails();
                 
             } catch (error) {
-                console.error('Error loading application:', error);
+                console.error('Error in loadApplicationDetails:', error);
+                console.error('Error stack:', error.stack);
                 alert('Error loading application details: ' + error.message);
+                document.getElementById('loadingContainer').innerHTML = `
+                    <div class="text-center py-20">
+                        <p class="text-red-600 font-bold">Error loading application</p>
+                        <p class="text-slate-600 text-sm mt-2">${error.message}</p>
+                        <button onclick="window.history.back()" class="mt-4 bg-slate-600 text-white px-4 py-2">Go Back</button>
+                    </div>
+                `;
             }
         }
 
         function displayApplicationDetails() {
-            // Generate reference number
-            const date = applicationData.createdAt ? applicationData.createdAt.toDate() : new Date();
-            const refNumber = `APP-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}-${currentApplicationId.substring(0, 6).toUpperCase()}`;
-            document.getElementById('refNumber').textContent = refNumber;
+            console.log('Starting displayApplicationDetails');
+            console.log('Application data:', applicationData);
+            console.log('User data:', userData);
+            
+            try {
+                // Generate reference number
+                const date = applicationData.createdAt ? applicationData.createdAt.toDate() : new Date();
+                const refNumber = `APP-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}-${currentApplicationId.substring(0, 6).toUpperCase()}`;
+                console.log('Reference number:', refNumber);
+                document.getElementById('refNumber').textContent = refNumber;
 
-            // Status badge
-            const statusBadge = document.getElementById('statusBadge');
-            const status = applicationData.status || 'pending';
-            if (status === 'accepted' || status === 'approved') {
-                statusBadge.className = 'bg-green-100 text-green-800 px-4 py-2 font-black text-[11px] uppercase tracking-widest border border-green-200';
-                statusBadge.textContent = 'Status: Approved';
-            } else if (status === 'rejected') {
-                statusBadge.className = 'bg-red-100 text-red-800 px-4 py-2 font-black text-[11px] uppercase tracking-widest border border-red-200';
-                statusBadge.textContent = 'Status: Rejected';
-            } else {
-                statusBadge.className = 'bg-amber-100 text-amber-800 px-4 py-2 font-black text-[11px] uppercase tracking-widest border border-amber-200';
-                statusBadge.textContent = 'Status: Pending Review';
-            }
+                // Status badge
+                const statusBadge = document.getElementById('statusBadge');
+                const status = applicationData.status || 'pending';
+                console.log('Application status:', status);
+                
+                if (status === 'accepted' || status === 'approved') {
+                    statusBadge.className = 'bg-green-100 text-green-800 px-4 py-2 font-black text-[11px] uppercase tracking-widest border border-green-200';
+                    statusBadge.textContent = 'Status: Approved';
+                } else if (status === 'rejected') {
+                    statusBadge.className = 'bg-red-100 text-red-800 px-4 py-2 font-black text-[11px] uppercase tracking-widest border border-red-200';
+                    statusBadge.textContent = 'Status: Rejected';
+                } else {
+                    statusBadge.className = 'bg-amber-100 text-amber-800 px-4 py-2 font-black text-[11px] uppercase tracking-widest border border-amber-200';
+                    statusBadge.textContent = 'Status: Pending Review';
+                }
 
             // Application details
             document.getElementById('productName').textContent = applicationData.productName || applicationData.projectName || 'N/A';
@@ -292,9 +319,16 @@
                 documentsContainer.innerHTML = '<p class="text-slate-600 text-sm col-span-2">No documents uploaded.</p>';
             }
 
+            console.log('All data populated, showing content');
             // Show content, hide loading
             document.getElementById('loadingContainer').style.display = 'none';
             document.getElementById('contentContainer').style.display = 'block';
+            console.log('Display complete');
+            
+            } catch (error) {
+                console.error('Error in displayApplicationDetails:', error);
+                alert('Error displaying application details: ' + error.message);
+            }
         }
 
         window.updateApplicationStatus = async function(newStatus) {
@@ -318,12 +352,15 @@
         };
 
         // Authentication check and load data
+        console.log('Setting up auth state observer...');
         onAuthStateChanged(auth, (user) => {
+            console.log('Auth state changed, user:', user);
             if (!user) {
                 console.log('No user authenticated, redirecting to login...');
                 window.location.href = '/login';
             } else {
                 console.log('User authenticated:', user.email);
+                console.log('Calling loadApplicationDetails...');
                 loadApplicationDetails();
             }
         });
