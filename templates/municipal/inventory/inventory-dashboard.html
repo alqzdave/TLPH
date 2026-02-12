@@ -4,10 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DENR | Inventory Dashboard (Municipality View)</title>
-
-  <!-- Tailwind + Icons (no Bootstrap) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  
 
   <script>
     tailwind.config = {
@@ -43,7 +42,6 @@
   {% include 'municipal/header.html' %}
 
   <main class="p-4 sm:p-6">
-    <!-- Header -->
     <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-4">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Inventory Dashboard</h1>
@@ -51,7 +49,6 @@
       </div>
     </header>
 
-    <!-- Restriction Notice -->
     <section class="mb-6 rounded-md border border-govborder bg-govpanel p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
       <div class="flex items-center gap-2 font-bold text-slate-800">
         <span class="material-icons-round text-g900">lock</span>
@@ -61,15 +58,15 @@
         </span>
       </div>
 
+
       <span class="inline-flex items-center gap-2 rounded-full border border-govborder bg-slate-50 px-3 py-2 text-[12px] font-bold uppercase tracking-[0.10em] text-slate-700 w-fit">
         <span class="material-icons-round" style="font-size:18px;">location_city</span>
         <span id="myMunicipalityPill"></span>
       </span>
     </section>
 
-    <!-- KPI Cards -->
+
     <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-      <!-- KPI card template used 4x -->
       <div class="rounded-md border border-govborder bg-govpanel p-4">
         <div class="flex items-start justify-between gap-3">
           <div>
@@ -122,8 +119,7 @@
         </div>
       </div>
     </section>
-
-    <!-- Filters -->
+    
     <section id="filterPanel" class="no-print rounded-md border border-govborder bg-govpanel p-4 mb-6">
       <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div class="w-full lg:max-w-[520px]">
@@ -161,7 +157,6 @@
       </div>
     </section>
 
-    <!-- Table -->
     <section class="rounded-md border border-govborder bg-govpanel p-4">
       <div class="mb-3">
         <h2 class="text-xl font-bold">Inventory Items</h2>
@@ -186,16 +181,12 @@
     </section>
   </main>
 
+
   <script>
-    // -----------------------------
-    // Session scope (replace from login/session)
-    // -----------------------------
+
     const MY_REGION = "NCR";
     const MY_MUNICIPALITY = "Quezon City";
 
-    // -----------------------------
-    // Domain model + repositories (swap to Firebase later)
-    // -----------------------------
     class InventoryItem {
       constructor({ id, category, description, quantity, region, municipality }) {
         this.id = Number(id);
@@ -223,7 +214,6 @@
     class MockInventoryRepository extends InventoryRepository {
       async getAll() {
         const raw = [
-          // In-scope (NCR / Quezon City)
           { id: 1, category:"Chemical Inventory", description:"Laboratory solvents (ethanol, acetone)", quantity:24, region:"NCR", municipality:"Quezon City" },
           { id: 2, category:"Chemical Inventory", description:"Water test reagent kits (pH, nitrates)", quantity:60, region:"NCR", municipality:"Quezon City" },
           { id: 3, category:"Chemical Inventory", description:"Spill containment pads and neutralizer", quantity:15, region:"NCR", municipality:"Quezon City" },
@@ -233,13 +223,12 @@
           { id: 7, category:"Protected Area", description:"Boundary marker paint and signage materials", quantity:35, region:"NCR", municipality:"Quezon City" },
           { id: 8, category:"Biodiversity Inventory", description:"Wildlife monitoring tags (RFID) and bands", quantity:80, region:"NCR", municipality:"Quezon City" },
           { id: 9, category:"Biodiversity Inventory", description:"Camera trap batteries and SD cards", quantity:50, region:"NCR", municipality:"Quezon City" },
-
-          // Out-of-scope (won't appear)
           { id: 10, category:"Biodiversity Inventory", description:"Wildlife monitoring equipment tags", quantity:80, region:"NCR", municipality:"Manila" },
           { id: 11, category:"Natural Resources", description:"Seedling stock for reforestation", quantity:450, region:"Region IV-A", municipality:"Calamba" },
           { id: 12, category:"Protected Area", description:"Ranger uniform patches", quantity:20, region:"Region V", municipality:"Legazpi" },
           { id: 13, category:"Chemical Inventory", description:"Hazard label stickers and containers", quantity:120, region:"Region III", municipality:"San Fernando" },
         ];
+
         return raw.map(r => new InventoryItem(r));
       }
     }
@@ -251,17 +240,10 @@
         this.collectionName = collectionName;
       }
       async getAll() {
-        // Firestore modular example:
-        // const colRef = collection(this.db, this.collectionName);
-        // const snap = await getDocs(colRef);
-        // return snap.docs.map(d => new InventoryItem({ id: d.id, ...d.data() }));
         throw new Error("Firebase repository not wired yet.");
       }
     }
 
-    // -----------------------------
-    // UI
-    // -----------------------------
     const $ = (id) => document.getElementById(id);
     const els = {
       myMunicipalityLabel: $("myMunicipalityLabel"),
@@ -352,9 +334,9 @@
 
       const id = Number(btn.dataset.id);
       const item = allItems.find(x => x.id === id);
+
       if (!item) return;
 
-      // extra safety
       if (!item.inScope(MY_REGION, MY_MUNICIPALITY)) {
         alert("Access denied: This item is outside your assigned region/municipality.");
         return;
@@ -370,22 +352,16 @@
       );
     }
 
-    // -----------------------------
-    // Init
-    // -----------------------------
     async function init() {
       els.myMunicipalityLabel.textContent = MY_MUNICIPALITY;
       els.myMunicipalityPill.textContent = MY_MUNICIPALITY;
 
-      // Swap to Firebase repo later:
-      // const repo = new FirebaseInventoryRepository({ db, collectionName: "inventory" });
       const repo = new MockInventoryRepository();
 
       allItems = await repo.getAll();
       refresh();
     }
 
-    // Events
     els.filterCategory.addEventListener("change", refresh);
 
     let t;
