@@ -107,11 +107,11 @@
 
         <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
           <div class="flex items-center justify-between">
-            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Application Req</div>
+            <div class="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Requests</div>
             <i class="fa-solid fa-file-circle-plus text-green-700 text-sm sm:text-base"></i>
           </div>
           <div id="cardAppReq" class="text-2xl sm:text-3xl font-black mt-1">0</div>
-          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">Product application</div>
+          <div class="text-[10px] sm:text-xs text-gray-400 mt-1">All applications</div>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border p-3 sm:p-4">
@@ -194,9 +194,8 @@
             </label>
             <select id="typeFilter" class="form-select">
               <option value="ALL" selected>All Types</option>
-              <option value="Product Application">Product Application</option>
-              <option value="Service Request">Service Request</option>
               <option value="License/Permit Request">License/Permit Request</option>
+              <option value="Service Request">Service Request</option>
             </select>
           </div>
 
@@ -242,38 +241,75 @@
 </main>
 
 <script type="module">
-  import { auth, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+  import { auth, onAuthStateChanged, db } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+  import { query, where, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   let allTransactions = [];
   const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-  // Fetch real transaction data from API
-  async function loadTransactions(userEmail) {
+  // Fetch real transaction data from API and Firebase
+  async function loadTransactions(userEmail, userId) {
     try {
+      // Fetch payment transactions from API
       const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
       const result = await response.json();
       
+      let paymentTransactions = [];
       if (result.status === 'success') {
-        allTransactions = result.transactions.map(t => ({
+        paymentTransactions = result.transactions.map(t => ({
           reference_num: t.external_id || t.reference || t.id,
           name_of_application: t.transaction_name || 'Unknown',
-          type_of_application: mapApplicationType(t.transaction_name || ''),
+          type_of_application: mapApplicationType(t.transaction_name || '', 'payment'),
           payment_status: mapPaymentStatus(t.display_status || ''),
           status: mapApplicationStatus(t.display_status || ''),
           amount: t.amount || 0,
           created_at: t.created_at || '',
           invoice_id: t.invoice_id,
-          description: t.description || ''
+          description: t.description || '',
+          source: 'payment'
         }));
-        
-        // Sort by date descending
-        allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        
-        computeCards();
-        initCharts();
-        renderTable(allTransactions);
-        updateTableMeta(allTransactions.length, allTransactions.length);
       }
+
+      // Fetch service requests from Firebase
+      let serviceTransactions = [];
+      if (userId) {
+        try {
+          const q = query(
+            collection(db, 'service_requests'),
+            where('userId', '==', userId)
+          );
+          const querySnapshot = await getDocs(q);
+          
+          querySnapshot.forEach((doc) => {
+            const service = doc.data();
+            serviceTransactions.push({
+              reference_num: service.externalId || doc.id,
+              name_of_application: service.serviceType || 'Service Request',
+              type_of_application: 'Service Request',
+              payment_status: service.paymentStatus === 'free' ? 'N/A' : mapPaymentStatus(service.paymentStatus || 'pending'),
+              status: mapApplicationStatus(service.status || 'pending'),
+              amount: service.amount || 0,
+              created_at: service.createdAt || new Date().toISOString(),
+              invoice_id: service.invoiceId || 'N/A',
+              description: service.serviceType || '',
+              source: 'service'
+            });
+          });
+        } catch (err) {
+          console.error('Error fetching service requests:', err);
+        }
+      }
+
+      // Combine all transactions
+      allTransactions = [...paymentTransactions, ...serviceTransactions];
+      
+      // Sort by date descending
+      allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      computeCards();
+      initCharts();
+      renderTable(allTransactions);
+      updateTableMeta(allTransactions.length, allTransactions.length);
     } catch (error) {
       console.error('Error loading transactions:', error);
     }
@@ -297,41 +333,70 @@
     return 'Unknown';
   }
 
-  // Map application name to type
-  function mapApplicationType(name) {
+  // Map application name to type based on actual template structure
+  function mapApplicationType(name, source = '') {
     const n = (name || '').toLowerCase();
-    if (n.includes('environment') || n.includes('clearance') || n.includes('hazardous') || 
-        n.includes('waste') || n.includes('water') || n.includes('air') || n.includes('pcl') || 
-        n.includes('piccs') || n.includes('cco')) {
+    
+    // Service requests are always categorized as Service Request
+    if (source === 'service' || n.includes('service request')) {
+      return 'Service Request';
+    }
+    
+    // Environment licenses (templates/user/license/environment/)
+    if (n.includes('cco') || n.includes('environment') || n.includes('clearance') || 
+        n.includes('hazardous') || n.includes('waste') || n.includes('water') || 
+        n.includes('air') || n.includes('pcl') || n.includes('piccs')) {
       return 'License/Permit Request';
     }
-    if (n.includes('fisheries') || n.includes('fish') || n.includes('aqua') || n.includes('harvest') || 
-        n.includes('dealer') || n.includes('process') || n.includes('transport')) {
+    
+    // Fisheries licenses (templates/user/license/fisheries/)
+    if (n.includes('fisheries') || n.includes('fish') || n.includes('aqua') || 
+        n.includes('harvest') || n.includes('dealer') || n.includes('process')) {
       return 'License/Permit Request';
     }
-    if (n.includes('forest') || n.includes('timber') || n.includes('tree') || n.includes('plantation') || 
-        n.includes('reforestation') || n.includes('nursery') || n.includes('non-timber')) {
+    
+    // Forest licenses (templates/user/license/forest/)
+    if (n.includes('forest') || n.includes('timber') || n.includes('tree') || 
+        n.includes('plantation') || n.includes('reforestation') || n.includes('nursery')) {
       return 'License/Permit Request';
     }
-    if (n.includes('livestock') || n.includes('farm') || n.includes('animal') || n.includes('poultry') || 
+    
+    // Livestock licenses (templates/user/license/livestock/)
+    if (n.includes('livestock') || n.includes('animal') || n.includes('poultry') || 
         n.includes('slaughter') || n.includes('meat')) {
       return 'License/Permit Request';
     }
-    if (n.includes('wildlife') || n.includes('collection') || n.includes('ownership') || n.includes('wildfarm')) {
+    
+    // Wildlife licenses (templates/user/license/wildlife/)
+    if (n.includes('wildlife') || n.includes('collection') || n.includes('ownership') || 
+        n.includes('wildfarm')) {
       return 'License/Permit Request';
     }
-    if (n.includes('permit') || n.includes('export') || n.includes('import') || n.includes('operation') || 
-        n.includes('local-transport')) {
+    
+    // General permits (templates/user/license/permits/)
+    if (n.includes('export') || n.includes('import') || n.includes('operation') || 
+        n.includes('local-transport') || n.includes('permit')) {
       return 'License/Permit Request';
     }
-    if (n.includes('service') || n.includes('compensation') || n.includes('soil') || n.includes('pest') || 
-        n.includes('typhoon') || n.includes('disease') || n.includes('compliance') || n.includes('visit')) {
+    
+    // Service requests (templates/user/service/)
+    // - compensation/ (pest, typhoon)
+    // - farm/ (compliance, disease, initial_visit, etc.)
+    // - fertilizer/
+    // - financial/
+    // - Seminar/
+    if (n.includes('compensation') || n.includes('pest') || n.includes('typhoon') || 
+        n.includes('compliance') || n.includes('disease') || n.includes('visit') || 
+        n.includes('fertilizer') || n.includes('financial') || n.includes('seminar') || 
+        n.includes('farm service')) {
       return 'Service Request';
     }
-    if (n.includes('fertilizer') || n.includes('chemical') || n.includes('registration') || 
-        n.includes('emergency') || n.includes('pesticide')) {
-      return 'Product Application';
+    
+    // Default to License/Permit for license-related items
+    if (n.includes('license')) {
+      return 'License/Permit Request';
     }
+    
     return 'License/Permit Request';
   }
 
@@ -419,15 +484,14 @@
   /* Cards + Charts */
   function computeCards() {
     const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
-    const appReq = allTransactions.filter(r => r.type_of_application === "Product Application").length;
     const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
 
-    const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && normalize(r.payment_status) === "paid").length;
+    const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && (normalize(r.payment_status) === "paid" || normalize(r.payment_status) === "n/a")).length;
 
     // For inventory data, use placeholder for now (can be connected to inventory API later)
     document.getElementById("cardNumProducts").textContent = "0";
     document.getElementById("cardTotalQty").textContent = "0";
-    document.getElementById("cardAppReq").textContent = appReq;
+    document.getElementById("cardAppReq").textContent = licenseReq + serviceReq; // Total applications
     document.getElementById("cardServiceReq").textContent = serviceReq;
     document.getElementById("cardLicenseReq").textContent = licenseReq;
     document.getElementById("cardSuccessTxn").textContent = successTxn;
@@ -469,7 +533,7 @@
         labels: Array.from(appTypeCounts.keys()), 
         datasets: [{ 
           data: Array.from(appTypeCounts.values()),
-          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b']
+          backgroundColor: ['#10b981', '#3b82f6']
         }] 
       },
       options: {
@@ -501,14 +565,17 @@
   // Initialize on auth state change
   onAuthStateChanged(auth, (user) => {
     let userEmail = '';
+    let userId = '';
+    
     if (user && user.email) {
       userEmail = user.email;
+      userId = user.uid;
     } else {
       userEmail = localStorage.getItem('denr_user_email') || '';
     }
 
     if (userEmail) {
-      loadTransactions(userEmail);
+      loadTransactions(userEmail, userId);
     }
   });
 
@@ -563,7 +630,6 @@
       // Calculate all statistics
       const totalTransactions = allTransactions.length;
       const licenseReq = allTransactions.filter(r => r.type_of_application === "License/Permit Request").length;
-      const appReq = allTransactions.filter(r => r.type_of_application === "Product Application").length;
       const serviceReq = allTransactions.filter(r => r.type_of_application === "Service Request").length;
       const approvedTxns = allTransactions.filter(r => normalize(r.status) === "approved").length;
       const pendingTxns = allTransactions.filter(r => normalize(r.status) === "pending").length;
@@ -571,7 +637,7 @@
       const paidTxns = allTransactions.filter(r => normalize(r.payment_status) === "paid").length;
       const refundedTxns = allTransactions.filter(r => normalize(r.payment_status) === "refunded").length;
       const unpaidTxns = allTransactions.filter(r => normalize(r.payment_status) === "unpaid").length;
-      const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && normalize(r.payment_status) === "paid").length;
+      const successTxn = allTransactions.filter(r => normalize(r.status) === "approved" && (normalize(r.payment_status) === "paid" || normalize(r.payment_status) === "n/a")).length;
       const totalAmount = allTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
       const approvedAmount = allTransactions.filter(r => normalize(r.status) === "approved").reduce((sum, t) => sum + (t.amount || 0), 0);
       const pendingAmount = allTransactions.filter(r => normalize(r.status) === "pending").reduce((sum, t) => sum + (t.amount || 0), 0);
@@ -635,8 +701,7 @@
 
       const types = [
         { name: 'License/Permit', count: licenseReq, color: '#10b981', bgColor: '#f0fdf4' },
-        { name: 'Product App', count: appReq, color: '#3b82f6', bgColor: '#eff6ff' },
-        { name: 'Service Request', count: serviceReq, color: '#f59e0b', bgColor: '#fef3c7' }
+        { name: 'Service Request', count: serviceReq, color: '#3b82f6', bgColor: '#eff6ff' }
       ];
 
       types.forEach(type => {
