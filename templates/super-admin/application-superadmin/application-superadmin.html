@@ -184,7 +184,6 @@
       "Institutional & Cooperative Development"
     ];
 
-    // Regional Municipality Mapping
     const MUN_DATA = {
         "IV-B": ["Calapan", "Naujan", "Victoria", "Pola", "Pinamalayan", "Baco"],
         "III": ["Tarlac City", "Concepcion", "Capas"],
@@ -225,8 +224,7 @@
         }
         applyFilters();
       });
-
-      // Add listeners to other filters
+      
       ['tableSearch', 'catFilter', 'munFilter', 'statusFilter'].forEach(id => {
           document.getElementById(id).addEventListener('input', applyFilters);
       });
