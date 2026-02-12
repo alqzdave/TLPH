@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DENR | Regional Audit Masterlist</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { govblue: "#1e3a8a", govteal: "#059669", govamber: "#d97706", govbg: "#f1f5f9" }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ARIAL FORCE & ICON PROTECTION */
+    *:not(.material-icons-round) { font-family: Arial, Helvetica, sans-serif !important; }
+    .material-icons-round { font-family: 'Material Icons Round' !important; }
+
+    .main-wrapper { 
+      margin-left: 300px; 
+      transition: all 0.3s ease; 
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+    .gov-card { background: #ffffff; border: 1px solid #cbd5e1; border-top: 3px solid #1e3a8a; border-radius: 0; }
+    
+    @media (max-width: 1024px) { .main-wrapper { margin-left: 0; padding: 15px; } }
+    
+    /* PRINT ENGINE FIX - Selyado ang Table visibility */
+    @media print {
+      .no-print { display: none !important; }
+      .main-wrapper { margin-left: 0 !important; padding: 0 !important; display: block !important; }
+      .gov-card { border: 1px solid #000 !important; break-inside: avoid; }
+      body::before { display: none; }
+      .overflow-x-auto { overflow: visible !important; }
+      table { width: 100% !important; border-collapse: collapse !important; display: table !important; }
+      th, td { border: 1px solid #ddd !important; padding: 8px !important; font-size: 10px !important; }
+    }
+    
+    body::before {
+      content:""; position: fixed; inset: 0;
+      background-image: url('/static/images/denr.jpg'); background-repeat: no-repeat;
+      background-position: center 30%; background-size: 520px;
+      opacity: 0.03; pointer-events: none; z-index: -1;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-900">
+  <div class="no-print">
+    {% include 'regional/sidenav.html' %}
+  </div>
+
+  <main class="main-wrapper px-4 py-6 md:px-10">
+    
+    <header class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-6 border-b border-slate-300 pb-5">
+      <div>
+        <h1 class="text-[10px] font-black uppercase tracking-[0.2em] text-govblue">Regional Audit Oversight</h1>
+        <p class="mt-1 text-2xl font-black text-slate-900 uppercase">System Accountability Trail</p>
+        <p class="text-[10px] font-bold text-slate-500 uppercase italic">Region IV-A CALABARZON • Secure Logs</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2 no-print">
+        <button onclick="window.print()" class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
+          <span class="material-icons-round text-sm">print</span> Print PDF
+        </button>
+        <button id="exportBtn" class="bg-govteal text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:brightness-110 flex items-center gap-2 shadow-sm">
+          <span class="material-icons-round text-sm">file_download</span> Export Excel
+        </button>
+        <button id="refreshBtn" class="bg-govblue text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:brightness-110 flex items-center gap-2 shadow-sm">
+          <span class="material-icons-round text-sm">refresh</span> Refresh
+        </button>
+      </div>
+    </header>
+
+    <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div class="gov-card p-4 shadow-sm"><p class="text-[9px] font-black uppercase text-slate-400">Total Activities</p><p class="mt-1 text-2xl font-black text-slate-900" id="kpiTotal">0</p></div>
+      <div class="gov-card p-4 shadow-sm border-t-govteal"><p class="text-[9px] font-black uppercase text-slate-400">Update Actions</p><p class="mt-1 text-2xl font-black text-govteal" id="kpiUpdates">0</p></div>
+      <div class="gov-card p-4 shadow-sm border-t-rose-600"><p class="text-[9px] font-black uppercase text-slate-400">Delete Actions</p><p class="mt-1 text-2xl font-black text-rose-600" id="kpiDeletes">0</p></div>
+      <div class="gov-card p-4 shadow-sm border-t-govamber"><p class="text-[9px] font-black uppercase text-slate-400">System Access</p><p class="mt-1 text-2xl font-black text-govamber" id="kpiLogins">0</p></div>
+    </section>
+
+    <section class="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-6 no-print">
+      <div class="gov-card p-5 shadow-sm border-t-blue-900">
+        <h2 class="text-[10px] font-black uppercase tracking-widest text-govblue mb-4">Activity by Action Type</h2>
+        <div class="relative h-[250px]"><canvas id="actionChart"></canvas></div>
+      </div>
+      <div class="gov-card p-5 shadow-sm border-t-blue-900">
+        <h2 class="text-[10px] font-black uppercase tracking-widest text-govblue mb-4">Activity by Province</h2>
+        <div class="relative h-[250px]"><canvas id="provChart"></canvas></div>
+      </div>
+    </section>
+
+    <section class="gov-card p-5 mb-6 shadow-sm border-t-slate-500 no-print">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Province Source</label>
+          <select id="provinceFilter" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-[11px] font-black uppercase outline-none focus:border-govblue">
+            <option value="all">All Provinces</option>
+            <option value="CAVITE">CAVITE</option>
+            <option value="LAGUNA">LAGUNA</option>
+            <option value="BATANGAS">BATANGAS</option>
+            <option value="RIZAL">RIZAL</option>
+            <option value="QUEZON">QUEZON</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Municipality</label>
+          <select id="municipalityFilter" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-[11px] font-black uppercase outline-none focus:border-govblue">
+            <option value="all">All Municipalities</option>
+          </select>
+        </div>
+        <div class="lg:col-span-2">
+          <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Search Actor or Detail</label>
+          <div class="flex items-center gap-2 border border-slate-300 bg-slate-50 px-3 py-2 focus-within:bg-white focus-within:border-govblue transition-all">
+            <span class="material-icons-round text-slate-400 text-sm">search</span>
+            <input id="searchInput" type="text" placeholder="Search name, email, or action..." class="w-full bg-transparent text-[11px] font-bold uppercase outline-none" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="overflow-x-auto gov-card border-t-slate-400 shadow-sm bg-white">
+      <table id="auditTable" class="min-w-full text-left">
+        <thead class="bg-slate-50 border-b border-slate-300">
+          <tr class="text-[9px] font-black uppercase tracking-widest text-slate-500">
+            <th class="px-5 py-4">Timestamp</th>
+            <th class="px-5 py-4">Actor (Admin)</th>
+            <th class="px-5 py-4">Origin (Lugar)</th>
+            <th class="px-5 py-4">Action Taken</th>
+            <th class="px-5 py-4 text-right">Target ID</th>
+          </tr>
+        </thead>
+        <tbody id="auditTbody" class="divide-y divide-slate-200 text-[11px] font-bold">
+          </tbody>
+      </table>
+    </div>
+
+    <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.5em] mt-12 no-print italic">System Accountability Ledger • CALABARZON Oversight</p>
+  </main>
+
+  <script type="module">
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+    let allLogs = [];
+    let barChart, donutChart;
+
+    // DUMMY LOGS FOR IMMEDIATE PREVIEW ROPA
+    const dummyLogs = [
+        { timestamp: "Feb 12, 2026, 4:00 PM", actor: "Dave Alqzd", mun: "REGIONAL", prov: "CAVITE", action: "UPDATE", detail: "Approved Permit Status", target: "REG-9901" },
+        { timestamp: "Feb 12, 2026, 2:15 PM", actor: "Juan Dela Cruz", mun: "CALAMBA", prov: "LAGUNA", action: "DELETE", detail: "Removed User Account", target: "U-0042" },
+        { timestamp: "Feb 12, 2026, 9:00 AM", actor: "Maria Clara", mun: "CARMONA", prov: "CAVITE", action: "LOGIN", detail: "Authorized Access", target: "SYSTEM" }
+    ];
+
+    async function loadLogs() {
+      try {
+        const uSnap = await getDocs(collection(db, 'users'));
+        const munSet = new Set();
+        uSnap.forEach(doc => { if(doc.data().municipality) munSet.add(doc.data().municipality.toUpperCase()); });
+        
+        const mFilter = document.getElementById("municipalityFilter");
+        mFilter.innerHTML = '<option value="all">All Municipalities</option>';
+        Array.from(munSet).sort().forEach(m => mFilter.innerHTML += `<option value="${m}">${m}</option>`);
+
+        const snap = await getDocs(query(collection(db, 'auditLogs'), orderBy('timestamp', 'desc')));
+        allLogs = [];
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          if (['user', 'municipal_admin', 'regional_admin'].includes(d.actorRole)) {
+            allLogs.push({
+              timestamp: d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A',
+              actor: d.actorName || 'Unknown',
+              mun: (d.municipality || 'N/A').toUpperCase(),
+              prov: (d.province || 'N/A').toUpperCase(),
+              action: d.action || 'N/A',
+              detail: d.detail || 'N/A',
+              target: d.targetId || 'N/A'
+            });
+          }
+        });
+
+        if (allLogs.length === 0) allLogs = [...dummyLogs];
+        render();
+      } catch (e) { 
+        allLogs = [...dummyLogs]; 
+        render(); 
+      }
+    }
+
+    function render() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      const pF = document.getElementById("provinceFilter").value;
+      const mF = document.getElementById("municipalityFilter").value;
+
+      const filtered = allLogs.filter(l => {
+        const mP = pF === 'all' || l.prov === pF;
+        const mM = mF === 'all' || l.mun === mF;
+        const mS = !q || l.actor.toLowerCase().includes(q) || l.detail.toLowerCase().includes(q) || l.target.toLowerCase().includes(q);
+        return mP && mM && mS;
+      });
+
+      const tbody = document.getElementById("auditTbody");
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-20 text-center opacity-30"><span class="material-icons-round text-5xl">manage_search</span><p class="mt-2 text-[11px] font-black uppercase">No Logs Found</p></td></tr>`;
+      } else {
+        tbody.innerHTML = filtered.map(l => `
+          <tr class="hover:bg-slate-50 transition-all">
+            <td class="px-5 py-4 text-slate-400 font-normal italic">${l.timestamp}</td>
+            <td class="px-5 py-4 text-govblue font-black uppercase">${l.actor}</td>
+            <td class="px-5 py-4 uppercase"><span class="text-slate-800">${l.mun}</span><br/><span class="text-slate-400 text-[9px] font-normal">${l.prov}</span></td>
+            <td class="px-5 py-4"><span class="px-2 py-0.5 border text-[9px] uppercase ${l.action === 'DELETE' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-blue-50 text-blue-700 border-blue-200'}">${l.action}</span><br/><span class="text-[9px] text-slate-500 font-normal lowercase italic">${l.detail}</span></td>
+            <td class="px-5 py-4 text-right text-slate-900 font-black">#${l.target}</td>
+          </tr>
+        `).join("");
+      }
+
+      document.getElementById("kpiTotal").textContent = filtered.length;
+      document.getElementById("kpiUpdates").textContent = filtered.filter(x => x.action === 'UPDATE').length;
+      document.getElementById("kpiDeletes").textContent = filtered.filter(x => x.action === 'DELETE').length;
+      document.getElementById("kpiLogins").textContent = filtered.filter(x => x.action === 'LOGIN').length;
+
+      updateCharts(filtered);
+    }
+
+    function updateCharts(data) {
+      const actionMap = {}; data.forEach(d => actionMap[d.action] = (actionMap[d.action] || 0) + 1);
+      if (barChart) barChart.destroy();
+      barChart = new Chart(document.getElementById("actionChart"), { type: 'bar', data: { labels: Object.keys(actionMap), datasets: [{ data: Object.values(actionMap), backgroundColor: '#1e3a8a' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+
+      const provMap = {}; data.forEach(d => provMap[d.prov] = (provMap[d.prov] || 0) + 1);
+      if (donutChart) donutChart.destroy();
+      donutChart = new Chart(document.getElementById("provChart"), { type: 'doughnut', data: { labels: Object.keys(provMap), datasets: [{ data: Object.values(provMap), backgroundColor: ['#1e3a8a', '#059669', '#d97706', '#be123c', '#4338ca'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+    }
+
+    document.getElementById("exportBtn").onclick = () => {
+      const ws = XLSX.utils.json_to_sheet(allLogs);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "AuditLogs");
+      XLSX.writeFile(wb, `DENR_Regional_Audit_${new Date().toISOString().slice(0,10)}.xlsx`);
+    };
+
+    document.getElementById("refreshBtn").onclick = loadLogs;
+    document.getElementById("provinceFilter").onchange = render;
+    document.getElementById("municipalityFilter").onchange = render;
+    document.getElementById("searchInput").oninput = render;
+
+    onAuthStateChanged(auth, (user) => { if(user) loadLogs(); else window.location.href='/login'; });
+  </script>
+</body>
+</html>

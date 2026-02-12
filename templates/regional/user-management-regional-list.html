@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DENR | Regional User Oversight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { govblue: "#1e3a8a", govbg: "#f8fafc", govborder: "#cbd5e1" }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* PROTECT ICONS & FORCE ARIAL */
+    *:not(.material-icons-round) { font-family: Arial, Helvetica, sans-serif !important; }
+    .material-icons-round { font-family: 'Material Icons Round' !important; }
+
+    .main-wrapper { 
+      margin-left: 300px; 
+      transition: all 0.3s ease; 
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+    @media (max-width: 1024px) { .main-wrapper { margin-left: 0; padding: 15px; } }
+    
+    body::before {
+      content:""; position: fixed; inset: 0;
+      background-image: url('/static/images/denr.jpg'); background-repeat: no-repeat;
+      background-position: center 30%; background-size: 520px;
+      opacity: 0.03; pointer-events: none; z-index: -1;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-900">
+  <div class="no-print">
+    {% include 'regional/sidenav.html' %}
+  </div>
+
+  <main class="main-wrapper px-6 py-8 md:px-10">
+
+    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-6 border-b border-slate-300 pb-5">
+      <div>
+        <h1 class="text-2xl font-black uppercase tracking-tight text-govblue">Regional User Oversight</h1>
+        <p class="mt-1 text-sm font-bold text-slate-500 uppercase italic tracking-tighter">Region IV-A (CALABARZON) • Local & Regional Accounts Only</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <div class="inline-flex items-center gap-2 border border-blue-200 bg-blue-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-blue-900">
+          <span class="material-icons-round text-sm">security</span> Restricted Access
+        </div>
+        <button id="btnRefresh" class="bg-govblue text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-md">
+          Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div class="bg-white border border-slate-300 p-5 border-t-4 border-t-govblue">
+        <p class="text-[9px] font-black uppercase text-slate-400">Regional Reach</p>
+        <p class="mt-1 text-3xl font-black" id="kpiTotal">0</p>
+      </div>
+      <div class="bg-white border border-slate-300 p-5 border-t-4 border-t-emerald-600">
+        <p class="text-[9px] font-black uppercase text-slate-400">Active Items</p>
+        <p class="mt-1 text-3xl font-black text-emerald-600" id="kpiActive">0</p>
+      </div>
+      <div class="bg-white border border-slate-300 p-5 border-t-4 border-t-rose-600">
+        <p class="text-[9px] font-black uppercase text-slate-400">Disabled Items</p>
+        <p class="mt-1 text-3xl font-black text-rose-600" id="kpiDisabled">0</p>
+      </div>
+      <div class="bg-white border border-slate-300 p-5 border-t-4 border-t-amber-500">
+        <p class="text-[9px] font-black uppercase text-slate-400">Admins Count</p>
+        <p class="mt-1 text-3xl font-black text-amber-600" id="kpiAdmins">0</p>
+      </div>
+    </section>
+
+    <section class="bg-white border border-slate-300 p-5 mb-6 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Province</label>
+          <select id="provinceSelect" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-[11px] font-black uppercase outline-none focus:border-govblue">
+            <option value="all">All Provinces</option>
+            <option value="CAVITE">CAVITE</option>
+            <option value="LAGUNA">LAGUNA</option>
+            <option value="BATANGAS">BATANGAS</option>
+            <option value="RIZAL">RIZAL</option>
+            <option value="QUEZON">QUEZON</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Municipality</label>
+          <select id="municipalitySelect" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-[11px] font-black uppercase outline-none focus:border-govblue">
+            <option value="all">All Municipalities</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Search Account</label>
+          <div class="flex items-center gap-2 border border-slate-300 bg-slate-50 px-3 py-2 focus-within:bg-white focus-within:border-govblue transition-all">
+            <span class="material-icons-round text-slate-400 text-sm">search</span>
+            <input id="searchInput" type="text" placeholder="Search by name or email..." class="w-full bg-transparent text-[11px] font-bold uppercase outline-none" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="overflow-x-auto border border-slate-300 bg-white shadow-sm">
+      <table class="min-w-full text-left">
+        <thead class="bg-slate-50 border-b border-slate-300">
+          <tr class="text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <th class="px-5 py-4">Name & Access Level</th>
+            <th class="px-5 py-4">Email Address</th>
+            <th class="px-5 py-4">Assigned Location</th>
+            <th class="px-5 py-4 text-center">Status</th>
+            <th class="px-5 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTbody" class="divide-y divide-slate-200 text-[11px] font-bold uppercase"></tbody>
+      </table>
+    </div>
+
+    <div id="emptyState" class="hidden py-20 text-center border border-dashed border-slate-300 bg-white">
+      <p class="text-[11px] font-black uppercase tracking-widest text-slate-400">No matching accounts found in the Regional Scope</p>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+    let allUsers = [];
+
+    async function loadRegionalUsers() {
+      try {
+        const uSnap = await getDocs(collection(db, 'users'));
+        allUsers = [];
+        const munSet = new Set();
+        
+        // ALLOWED ROLES ONLY - Selyadong restricted dito, boi.
+        const allowedRoles = ['user', 'municipal_admin', 'regional_admin'];
+
+        uSnap.forEach(dSnapshot => {
+          const d = dSnapshot.data();
+          const userRole = d.role || 'user';
+
+          // FUCK SHIT PROTECTOR: Huwag isama ang National at Superadmin
+          if (allowedRoles.includes(userRole)) {
+            const user = {
+              id: dSnapshot.id,
+              name: `${d.firstName || ''} ${d.lastName || ''}`.trim() || d.email || 'Unknown User',
+              email: d.email || 'N/A',
+              municipality: (d.municipality || '').toUpperCase(),
+              province: (d.province || '').toUpperCase(),
+              status: d.status || 'Active',
+              role: userRole
+            };
+            allUsers.push(user);
+            if (d.municipality) munSet.add(d.municipality.toUpperCase());
+          }
+        });
+
+        const munSelect = document.getElementById("municipalitySelect");
+        munSelect.innerHTML = '<option value="all">All Municipalities</option>';
+        Array.from(munSet).sort().forEach(m => { munSelect.innerHTML += `<option value="${m}">${m}</option>`; });
+
+        render();
+      } catch (e) { console.error(e); }
+    }
+
+    function render() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      const pF = document.getElementById("provinceSelect").value;
+      const mF = document.getElementById("municipalitySelect").value;
+
+      const filtered = allUsers.filter(u => {
+        const matchP = pF === 'all' || u.province === pF;
+        const matchM = mF === 'all' || u.municipality === mF;
+        const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+        return matchP && matchM && matchQ;
+      });
+
+      document.getElementById("kpiTotal").textContent = filtered.length;
+      document.getElementById("kpiActive").textContent = filtered.filter(u => u.status === 'Active').length;
+      document.getElementById("kpiDisabled").textContent = filtered.filter(u => u.status === 'Disabled').length;
+      document.getElementById("kpiAdmins").textContent = filtered.filter(u => u.role.includes('admin')).length;
+
+      const tbody = document.getElementById("usersTbody");
+      tbody.innerHTML = filtered.map(u => `
+        <tr class="hover:bg-slate-50 transition-all">
+          <td class="px-5 py-4">
+            <span class="text-govblue font-black">${u.name}</span><br/>
+            <span class="text-slate-400 text-[9px] font-normal tracking-widest">${u.role}</span>
+          </td>
+          <td class="px-5 py-4 lowercase font-normal text-slate-600 italic">${u.email}</td>
+          <td class="px-5 py-4">
+            <span class="text-slate-800">${u.municipality || 'N/A'}</span><br/>
+            <span class="text-slate-400 text-[9px] font-normal">${u.province || 'N/A'}</span>
+          </td>
+          <td class="px-5 py-4 text-center">
+            <span class="px-3 py-1 border text-[9px] font-black ${u.status === 'Active' ? 'bg-emerald-50 text-teal-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}">${u.status}</span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="flex justify-end gap-2">
+              <button onclick="handleAction('toggle', '${u.id}')" class="p-1 border border-amber-200 text-amber-600 hover:bg-amber-50" title="Disable/Enable"><span class="material-icons-round text-sm">do_not_disturb_on</span></button>
+              <button onclick="handleAction('delete', '${u.id}')" class="p-1 border border-rose-200 text-rose-600 hover:bg-rose-50" title="Remove Account"><span class="material-icons-round text-sm">delete_forever</span></button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      document.getElementById("emptyState").classList.toggle("hidden", filtered.length > 0);
+    }
+
+    // GLOBAL ACTIONS (Selyadong protected din dito)
+    window.handleAction = async (type, id) => {
+      const user = allUsers.find(u => u.id === id);
+      if(!user) return;
+
+      if(type === 'toggle') {
+        const next = user.status === 'Active' ? 'Disabled' : 'Active';
+        if(confirm(`Set status of ${user.name} to ${next}?`)) {
+          await updateDoc(doc(db, 'users', id), { status: next });
+          loadRegionalUsers();
+        }
+      }
+
+      if(type === 'delete') {
+        if(confirm(`PERMANENTLY DELETE ${user.name}? This cannot be undone.`)) {
+          await deleteDoc(doc(db, 'users', id));
+          loadRegionalUsers();
+        }
+      }
+    };
+
+    document.getElementById("btnRefresh").onclick = loadRegionalUsers;
+    document.getElementById("provinceSelect").onchange = render;
+    document.getElementById("municipalitySelect").onchange = render;
+    document.getElementById("searchInput").oninput = render;
+
+    onAuthStateChanged(auth, (user) => { user ? loadRegionalUsers() : window.location.href = '/login'; });
+  </script>
+</body>
+</html>
