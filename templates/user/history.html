@@ -2174,11 +2174,6 @@
       }
     };
 
-<<<<<<< HEAD
-    window.retryPayment = function(serviceId) {
-      alert('Payment retry functionality coming soon. Service ID: ' + serviceId);
-=======
-    // Retry/Complete Service Payment
     window.retryPayment = async function(serviceId, amount, serviceType, userEmail) {
       try {
         const paymentBtn = document.getElementById(`payment-btn-${serviceId}`);
@@ -2193,7 +2188,6 @@
           return;
         }
 
-        // Prepare payment data
         const paymentData = {
           serviceId: serviceId,
           amount: parseFloat(amount) || 0,
@@ -2203,7 +2197,6 @@
           timestamp: new Date().toISOString()
         };
 
-        // Call API to initiate payment
         const response = await fetch('/api/payments/service-payment', {
           method: 'POST',
           headers: {
@@ -2215,14 +2208,12 @@
         const result = await response.json();
 
         if (result.status === 'success') {
-          // If payment URL is provided, redirect to it
           if (result.paymentUrl) {
             window.location.href = result.paymentUrl;
           } else if (result.invoiceUrl) {
             window.location.href = result.invoiceUrl;
           } else {
             alert('Payment initiated successfully. Please wait for confirmation.');
-            // Reload the service list to show updated status
             setTimeout(() => {
               loadServiceRequests();
             }, 2000);
@@ -2244,7 +2235,6 @@
           paymentBtn.innerHTML = '<i class="fa-solid fa-credit-card mr-1"></i> Complete Payment';
         }
       }
->>>>>>> dfd5a3f8a2cbe4449df9ba61e09e86e1a8a15195
     };
 
     loadApplications();
