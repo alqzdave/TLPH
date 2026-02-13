@@ -4,14 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TLPH | National Dashboard - User Inventory</title>
-
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
@@ -38,7 +32,6 @@
     <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
       <div class="w-full max-w-[1700px] space-y-6">
 
-        <!-- Header + Add -->
         <section class="card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div class="text-lg font-bold">User Inventory</div>
@@ -61,7 +54,6 @@
           </div>
         </section>
 
-        <!-- Filters -->
         <section class="card p-4">
           <div class="flex flex-wrap items-center gap-2">
             <select id="filterCategory" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
@@ -102,7 +94,6 @@
           </div>
         </section>
 
-        <!-- KPI Cards -->
         <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <div class="card p-4">
             <div class="text-xs text-gray-600">Total User Inventory Items</div>
@@ -129,9 +120,7 @@
           </div>
         </section>
 
-        <!-- Charts -->
         <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <!-- Qty by Category -->
           <div class="card p-4 xl:col-span-1">
             <div class="font-bold">Current Quantity by Category</div>
             <div class="text-xs text-gray-600">Distribution (sample, auto-updates)</div>
@@ -140,7 +129,6 @@
             </div>
           </div>
 
-          <!-- Qty by Region -->
           <div class="card p-4 xl:col-span-1">
             <div class="font-bold">Current Quantity by Region</div>
             <div class="text-xs text-gray-600">Where user stock is concentrated</div>
@@ -149,7 +137,6 @@
             </div>
           </div>
 
-          <!-- Top Owners -->
           <div class="card p-4 xl:col-span-1">
             <div class="font-bold">Top Owners (Current Quantity)</div>
             <div class="text-xs text-gray-600">Top 6 owners by current stock</div>
@@ -159,7 +146,6 @@
           </div>
         </section>
 
-        <!-- Table -->
         <section class="card overflow-hidden">
           <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div>
@@ -268,7 +254,6 @@
     </main>
   </div>
 
-  <!-- ADD/EDIT MODAL -->
   <div id="userInvModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
     <div class="bg-white rounded-2xl w-[560px] max-w-[92vw] p-6 space-y-4">
       <div class="flex items-center justify-between">
@@ -335,7 +320,6 @@
     </div>
   </div>
 
-  <!-- VIEW MODAL -->
   <div id="userInvViewModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
     <div class="bg-white rounded-2xl w-[560px] max-w-[92vw] p-6 space-y-4">
       <div class="flex items-center justify-between">
@@ -346,7 +330,6 @@
       </div>
 
       <div id="viewContent" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-        <!-- Filled by JS -->
       </div>
 
       <div class="flex justify-end">
@@ -358,19 +341,16 @@
   </div>
 
   <script>
-    // ---------------------------
-    // Helpers + State
-    // ---------------------------
+
     const tbody = document.getElementById('userInvTbody');
 
     const filterCategory = document.getElementById('filterCategory');
     const filterRegion = document.getElementById('filterRegion');
     const filterSearch = document.getElementById('filterSearch');
 
-    let editingRow = null;      // <tr> being edited
-    let charts = {};            // Chart instances
+    let editingRow = null;
+    let charts = {};
 
-    // Form fields
     const fProduct = document.getElementById('fProduct');
     const fCategory = document.getElementById('fCategory');
     const fOwner = document.getElementById('fOwner');
@@ -448,7 +428,6 @@
       viewModal.classList.remove('flex');
     }
 
-    // Remove
     function removeUserInvRow(btn){
       if(confirm("Remove this user inventory item?")){
         btn.closest('tr').remove();
@@ -456,7 +435,6 @@
       }
     }
 
-    // Add/Edit submit
     document.getElementById('userInvForm').addEventListener('submit', function(e){
       e.preventDefault();
 
@@ -502,9 +480,6 @@
       updateAllUserInvAnalytics();
     });
 
-    // ---------------------------
-    // Filters (UI-only)
-    // ---------------------------
     function applyUserInvFilters(){
       const cat = filterCategory.value;
       const reg = filterRegion.value;
@@ -534,9 +509,6 @@
       updateAllUserInvAnalytics();
     }
 
-    // ---------------------------
-    // KPI + Charts (auto-updates)
-    // ---------------------------
     function getVisibleRows(){
       return [...tbody.querySelectorAll('tr')].filter(tr => tr.style.display !== "none");
     }
@@ -593,7 +565,7 @@
     }
 
     function updateCharts(agg){
-      // Category doughnut
+
       const catEntries = Object.entries(agg.byCategory);
       const catLabels = catEntries.map(x => x[0]);
       const catData = catEntries.map(x => x[1]);
@@ -604,7 +576,6 @@
         options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
       });
 
-      // Region bar
       const regEntries = Object.entries(agg.byRegion);
       const regLabels = regEntries.map(x => x[0]);
       const regData = regEntries.map(x => x[1]);
@@ -620,7 +591,6 @@
         }
       });
 
-      // Owners (top 6)
       const ownerEntries = Object.entries(agg.byOwner).sort((a,b)=>b[1]-a[1]).slice(0,6);
       const oLabels = ownerEntries.map(x=>x[0]);
       const oData = ownerEntries.map(x=>x[1]);
