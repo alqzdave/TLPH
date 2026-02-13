@@ -12,54 +12,115 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .font-black { font-weight: 900; }
-        .card-compact { border-radius: 1rem; }
-        /* Para sa saktong truncation */
-        .line-clamp-1 { display: -webkit-box; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+        }
+        .font-black { font-weight: 800; }
+        .line-clamp-1 { 
+            display: -webkit-box; 
+            line-clamp: 1; 
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+        }
+        .line-clamp-2 { 
+            display: -webkit-box; 
+            line-clamp: 2; 
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+        }
+        .tab-btn { 
+            transition: all 0.3s ease; 
+            position: relative;
+        }
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: #059669;
+            transition: width 0.3s ease;
+        }
+        .tab-btn.active::after { width: 100%; }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+        }
     </style>
 </head>
 
 <body class="bg-slate-50 pb-20">
     {% include 'user/header.html' %}
 
-    <header class="bg-emerald-950 text-white py-4 md:py-6 px-4 shadow-sm mb-4">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div class="w-1 h-6 bg-emerald-500 rounded-full"></div>
-                <h1 class="text-xl md:text-2xl font-black uppercase tracking-tighter italic mb-0">Inventory Stocks</h1>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <p class="hidden md:block text-emerald-300 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mb-0">
-                    Resource Monitoring & Logistics
-                </p>
-                <a href="/user/inventory/stock-form" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg transition-all no-underline shadow-lg border border-emerald-400/20">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                    <span class="text-[10px] font-black uppercase tracking-wider">Add New Stock</span>
-                </a>
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-1.5 h-8 bg-gradient-to-b from-emerald-600 to-emerald-400 rounded-full"></div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-0">Inventory & Applications</h1>
+                        <p class="text-xs text-gray-500 mt-0.5">Resource Monitoring & Logistics</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <a href="/user/application/apply" class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-4 py-2.5 rounded-lg transition-all no-underline shadow-sm hover:shadow-md">
+                        <i class="fa-solid fa-file-alt text-sm"></i>
+                        <span class="text-xs font-semibold">New Application</span>
+                    </a>
+                    <a href="/user/inventory/add" class="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-2.5 rounded-lg transition-all no-underline shadow-sm hover:shadow-md">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span class="text-xs font-semibold">Add Stock</span>
+                    </a>
+                </div>
             </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4">
-        <div id="loadingState" class="text-center py-16">
-            <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-700"></i>
-            <p class="text-gray-400 mt-4 font-bold uppercase tracking-wider text-xs">Loading inventory...</p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex gap-1 mb-8 bg-gray-100 p-1 rounded-xl w-fit">
+            <button onclick="switchTab('inventory')" id="inventoryTab" class="tab-btn px-6 py-2.5 font-semibold text-sm rounded-lg bg-white text-emerald-700 shadow-sm">
+                <i class="fa-solid fa-box mr-2"></i> Inventory
+            </button>
+            <button onclick="switchTab('applications')" id="applicationsTab" class="tab-btn px-6 py-2.5 font-semibold text-sm rounded-lg text-gray-600 hover:text-gray-900 hover:bg-white/50">
+                <i class="fa-solid fa-file-alt mr-2"></i> Applications
+            </button>
         </div>
 
-        <div id="emptyState" class="hidden text-center py-16">
-            <i class="fa-solid fa-box-open text-6xl text-gray-200 mb-4"></i>
-            <p class="text-gray-500 font-bold uppercase tracking-wider text-sm mb-2">No inventory items yet</p>
-            <p class="text-gray-400 text-xs">Submit an application to add items to inventory</p>
-            <a href="/user/application/apply" class="inline-block mt-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-6 rounded-lg text-xs uppercase no-underline">
-                <i class="fa-solid fa-plus mr-2"></i> New Application
-            </a>
-        </div>
-
-        <div id="inventoryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 hidden">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-20">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-50 rounded-full mb-4">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-600"></i>
             </div>
+            <p class="text-gray-500 font-medium text-sm">Loading your data...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-50 rounded-full mb-4">
+                <i class="fa-solid fa-box-open text-4xl text-gray-300"></i>
+            </div>
+            <p class="text-gray-700 font-semibold text-base mb-1">No items yet</p>
+            <p class="text-gray-500 text-sm" id="emptyMessage">Start by adding items to your inventory</p>
+        </div>
+
+        <!-- Inventory Grid -->
+        <div id="inventoryContent" class="tab-content">
+            <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5 hidden"></div>
+        </div>
+
+        <!-- Applications Grid -->
+        <div id="applicationsContent" class="tab-content hidden">
+            <div id="applicationsGrid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5 hidden"></div>
+        </div>
     </main>
 
     <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
@@ -116,48 +177,198 @@
             return Number(num || 0).toLocaleString();
         }
 
-        function createInventoryCard(app) {
-            const categoryLabel = categoryLabels[app.category] || app.category;
-            const imageUrl = (app.files?.crop || app.files?.land) || categoryImages[app.category] || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop';
-            
-            // Use correct field names from inventory collection
-            const investment = app.investment || 0;
-            const harvestQuantity = app.harvestQuantity || 0;
-            
-            // Calculate estimated price per unit (investment / harvest quantity)
-            const pricePerUnit = harvestQuantity > 0 ? (investment / harvestQuantity).toFixed(2) : '0.00';
+        function getStatusBadge(status) {
+            const baseClass = "px-2.5 py-1 rounded-lg text-[9px] md:text-[10px] font-black uppercase flex items-center gap-1.5 w-fit";
+            const badges = {
+                'pending': `<span class="${baseClass} bg-yellow-50 text-yellow-700 border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending</span>`,
+                'approved': `<span class="${baseClass} bg-green-50 text-green-700 border border-green-200"><i class="fa-solid fa-check-double"></i> Approved</span>`,
+                'rejected': `<span class="${baseClass} bg-red-50 text-red-700 border border-red-200"><i class="fa-solid fa-ban"></i> Rejected</span>`,
+                'under-review': `<span class="${baseClass} bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-magnifying-glass"></i> Reviewing</span>`,
+                'cancelled': `<span class="${baseClass} bg-gray-50 text-gray-700 border border-gray-200"><i class="fa-solid fa-ban"></i> Cancelled</span>`,
+                'pending_payment': `<span class="${baseClass} bg-orange-50 text-orange-700 border border-orange-200"><i class="fa-solid fa-credit-card"></i> Payment Pending</span>`
+            };
+            return badges[status] || badges['pending'];
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '---';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // Tab switching
+        window.switchTab = function(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-emerald-600', 'text-emerald-600');
+                btn.classList.add('border-transparent', 'text-gray-400');
+            });
+
+            if (tab === 'inventory') {
+                document.getElementById('inventoryTab').classList.remove('border-transparent', 'text-gray-400');
+                document.getElementById('inventoryTab').classList.add('border-emerald-600', 'text-emerald-600');
+                document.getElementById('inventoryContent').classList.remove('hidden');
+                document.getElementById('applicationsContent').classList.add('hidden');
+            } else {
+                document.getElementById('applicationsTab').classList.remove('border-transparent', 'text-gray-400');
+                document.getElementById('applicationsTab').classList.add('border-emerald-600', 'text-emerald-600');
+                document.getElementById('inventoryContent').classList.add('hidden');
+                document.getElementById('applicationsContent').classList.remove('hidden');
+            }
+        };
+
+        function createInventoryCard(item) {
+            const imageUrl = item.imageUrl || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop';
+            const resourceName = item.resourceName || 'Resource';
+            const stockAvailable = item.stockAvailable || 0;
+            const unitOfMeasure = item.unitOfMeasure || 'pcs';
+            const sector = item.sector || 'general';
+            const propertyNumber = item.propertyNumber || 'N/A';
+            const sourceLocation = item.sourceLocation || 'N/A';
+            const createdDate = formatDate(item.createdAt);
 
             return `
-                <a href="/user/inventory/stock-info?id=${app.id}" class="group flex flex-col bg-white border border-slate-200 card-compact overflow-hidden transition-all hover:border-emerald-600 no-underline shadow-sm hover:shadow-md">
-                    <div class="h-28 md:h-36 overflow-hidden relative">
+                <div onclick="window.location.href='/user/inventory/info/${item.id}'" class="group cursor-pointer bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all hover:border-emerald-600 hover:shadow-xl shadow-sm">
+                    <!-- Image Section -->
+                    <div class="h-48 md:h-56 overflow-hidden relative bg-gradient-to-br from-emerald-50 to-blue-50">
                         <img src="${imageUrl}" 
                              class="w-full h-full object-cover transition-transform group-hover:scale-110"
                              onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
-                        ${app.status === 'active' ? '<div class="absolute top-2 right-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-[7px] font-black uppercase"><i class="fa-solid fa-check"></i> Active</div>' : ''}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        
+                        <!-- Status Badges -->
+                        <div class="absolute top-3 right-3 flex gap-2">
+                            ${item.status === 'approved' ? '<div class="bg-green-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-lg"><i class="fa-solid fa-check mr-1"></i> Approved</div>' : ''}
+                            ${item.status === 'pending_payment' ? '<div class="bg-orange-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-lg"><i class="fa-solid fa-credit-card mr-1"></i> Pending Payment</div>' : ''}
+                        </div>
+                        ${item.isProtected ? '<div class="absolute top-3 left-3 bg-purple-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-lg"><i class="fa-solid fa-shield mr-1"></i> Protected Species</div>' : ''}
+                        
+                        <!-- Sector Badge -->
+                        <div class="absolute bottom-3 left-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-emerald-800 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg">
+                                ${sector.replace('_', ' ')}
+                            </span>
+                        </div>
                     </div>
                     
-                    <div class="p-3 flex flex-col flex-grow">
-                        <div class="flex flex-col mb-2">
-                            <span class="text-[7px] font-black text-emerald-600 uppercase mb-0.5">${categoryLabel}</span>
-                            <h3 class="text-sm font-black text-emerald-950 mb-0 line-clamp-1">${app.productName || app.id?.substring(0, 12) || 'Product'}</h3>
+                    <!-- Content Section -->
+                    <div class="p-4 md:p-5">
+                        <!-- Title -->
+                        <h3 class="text-base md:text-lg font-black text-emerald-950 mb-3 leading-tight line-clamp-2">
+                            ${resourceName}
+                        </h3>
+                        
+                        <!-- Info Grid -->
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stock Available</span>
+                                <span class="text-sm font-black text-slate-900">${formatNumber(stockAvailable)} <span class="text-[9px] text-slate-500">${unitOfMeasure.toUpperCase()}</span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Property No.</span>
+                                <span class="text-xs font-black text-emerald-700">${propertyNumber}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Source</span>
+                                <span class="text-[10px] font-bold text-slate-700 text-right line-clamp-1">${sourceLocation}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Registered</span>
+                                <span class="text-[10px] font-bold text-slate-600">${createdDate}</span>
+                            </div>
                         </div>
                         
-                        <div class="mt-auto pt-2 border-t border-slate-50 grid grid-cols-1 gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[7px] font-bold text-slate-400 uppercase">Harvest Qty</label>
-                                <span class="text-[11px] font-black text-slate-900">${formatNumber(harvestQuantity)} <small class="text-[7px]">UNITS</small></span>
+                        <!-- Action Button -->
+                        <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md group-hover:shadow-lg flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-eye"></i>
+                            View Full Details
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createApplicationCard(app) {
+            const categoryLabel = categoryLabels[app.category] || app.category;
+            // Get uploaded images from files object
+            const imageUrl = app.files?.crop || app.files?.land || app.files?.livestock || app.files?.product || categoryImages[app.category] || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop';
+            const submittedDate = formatDate(app.submittedAt);
+            
+            return `
+                <div onclick="viewApplicationDetails('${app.id}')" class="group cursor-pointer bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-green-600 transition-all shadow-sm hover:shadow-xl">
+                    <div class="grid md:grid-cols-5 gap-0">
+                        <!-- Image Section (Left side on desktop, top on mobile) -->
+                        <div class="md:col-span-2 h-48 md:h-full min-h-[200px] overflow-hidden relative bg-gradient-to-br from-blue-50 to-green-50">
+                            <img src="${imageUrl}" 
+                                 class="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                 onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                            
+                            <!-- Category Badge on Image -->
+                            <div class="absolute bottom-3 left-3">
+                                <span class="bg-white/90 backdrop-blur-sm text-green-800 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg">
+                                    ${categoryLabel}
+                                </span>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <label class="text-[7px] font-bold text-slate-400 uppercase">Investment</label>
-                                <span class="text-[11px] font-black text-emerald-700">₱${formatNumber(investment)}</span>
+                        </div>
+                        
+                        <!-- Content Section (Right side) -->
+                        <div class="md:col-span-3 p-4 md:p-6 flex flex-col">
+                            <!-- Header -->
+                            <div class="mb-4">
+                                <div class="flex items-start justify-between gap-3 mb-2">
+                                    <h3 class="text-lg md:text-xl font-black text-slate-800 uppercase tracking-tight leading-tight flex-1">
+                                        ${categoryLabel}
+                                    </h3>
+                                    ${getStatusBadge(app.status)}
+                                </div>
+                                <p class="text-[10px] md:text-[11px] text-gray-400 font-bold uppercase tracking-widest">
+                                    <i class="fa-solid fa-fingerprint mr-1"></i> ID: ${app.id?.substring(0, 12) || 'N/A'}
+                                </p>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <label class="text-[7px] font-bold text-slate-400 uppercase">Unit Price</label>
-                                <span class="text-[11px] font-black text-emerald-700">₱${pricePerUnit}</span>
+
+                            <!-- Stats Grid -->
+                            <div class="grid grid-cols-2 gap-4 mb-4 flex-grow">
+                                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                    <p class="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-wider mb-1">Investment</p>
+                                    <p class="text-lg md:text-xl font-black text-slate-900">₱${formatNumber(app.investmentQty || 0)}</p>
+                                </div>
+                                <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                                    <p class="text-[9px] md:text-[10px] text-emerald-600 font-black uppercase tracking-wider mb-1">Est. Harvest</p>
+                                    <p class="text-lg md:text-xl font-black text-emerald-900">${formatNumber(app.harvestQty || 0)} <span class="text-xs">QTY</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Meta Info -->
+                            <div class="space-y-2 mb-4 py-3 border-t border-slate-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase"><i class="fa-solid fa-calendar mr-1"></i> Submitted</span>
+                                    <span class="text-[10px] font-black text-slate-600">${submittedDate}</span>
+                                </div>
+                                ${app.landSize ? `
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase"><i class="fa-solid fa-map mr-1"></i> Land Size</span>
+                                    <span class="text-[10px] font-black text-slate-600">${formatNumber(app.landSize)} hectares</span>
+                                </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-2">
+                                <button onclick="event.stopPropagation(); viewApplicationDetails('${app.id}')" 
+                                        class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 shadow-md">
+                                    <i class="fa-solid fa-arrow-right-long"></i> View Details
+                                </button>
+                                ${app.status === 'pending' || app.status === 'under-review' ? `
+                                <button onclick="event.stopPropagation(); cancelApplication('${app.id}')" 
+                                        class="px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-[11px] font-bold uppercase tracking-wider transition border border-red-200">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
-                </a>
+                </div>
             `;
         }
 
@@ -165,21 +376,18 @@
             try {
                 console.log('Loading inventory for user:', userId);
                 
-                // Query inventory collection for the current user
+                // Query inventory_registrations collection for the current user
                 const q = query(
-                    collection(db, 'inventory'), 
+                    collection(db, 'inventory_registrations'), 
                     where('userId', '==', userId)
                 );
                 
                 const querySnapshot = await getDocs(q);
                 console.log('Inventory items found:', querySnapshot.size);
                 
-                loadingState.classList.add('hidden');
-
                 if (querySnapshot.empty) {
                     console.log('No inventory items found');
-                    emptyState.classList.remove('hidden');
-                    return;
+                    return [];
                 }
 
                 const items = [];
@@ -191,33 +399,170 @@
                 
                 // Sort by creation date (newest first)
                 items.sort((a, b) => {
-                    const aTime = a.createdAt?.toDate?.() || a.approvedAt?.toDate?.() || 0;
-                    const bTime = b.createdAt?.toDate?.() || b.approvedAt?.toDate?.() || 0;
+                    const aTime = a.createdAt?.toDate?.() || 0;
+                    const bTime = b.createdAt?.toDate?.() || 0;
                     return bTime - aTime;
                 });
 
-                inventoryGrid.innerHTML = items.map(item => createInventoryCard(item)).join('');
-                inventoryGrid.classList.remove('hidden');
-                console.log('✅ Inventory loaded successfully');
+                return items;
 
             } catch (error) {
                 console.error('Error loading inventory:', error);
+                return [];
+            }
+        }
+
+        async function loadApplications(userId) {
+            try {
+                console.log('Loading applications for user:', userId);
+                
+                const q = query(
+                    collection(db, 'applications'), 
+                    where('userId', '==', userId)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                console.log('Applications found:', querySnapshot.size);
+                
+                if (querySnapshot.empty) {
+                    console.log('No applications found');
+                    return [];
+                }
+
+                const apps = [];
+                querySnapshot.forEach(doc => {
+                    const data = { id: doc.id, ...doc.data() };
+                    console.log('Application:', data);
+                    apps.push(data);
+                });
+                
+                // Sort by submission date (newest first)
+                apps.sort((a, b) => {
+                    const aTime = a.submittedAt?.toDate?.() || 0;
+                    const bTime = b.submittedAt?.toDate?.() || 0;
+                    return bTime - aTime;
+                });
+
+                return apps;
+
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                return [];
+            }
+        }
+
+        async function loadAllData(userId) {
+            try {
+                loadingState.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+
+                // Load both inventory and applications
+                const [inventoryItems, applications] = await Promise.all([
+                    loadInventory(userId),
+                    loadApplications(userId)
+                ]);
+
+                loadingState.classList.add('hidden');
+
+                // Display inventory
+                const inventoryGrid = document.getElementById('inventoryGrid');
+                if (inventoryItems.length > 0) {
+                    inventoryGrid.innerHTML = inventoryItems.map(item => createInventoryCard(item)).join('');
+                    inventoryGrid.classList.remove('hidden');
+                } else {
+                    inventoryGrid.innerHTML = `
+                        <div class="col-span-full text-center py-16">
+                            <i class="fa-solid fa-box-open text-6xl text-gray-200 mb-4"></i>
+                            <p class="text-gray-500 font-bold uppercase tracking-wider text-sm mb-2">No inventory items yet</p>
+                            <p class="text-gray-400 text-xs">Register your first inventory item</p>
+                            <a href="/user/inventory/add" class="inline-block mt-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-6 rounded-lg text-xs uppercase no-underline">
+                                <i class="fa-solid fa-plus mr-2"></i> Add Stock
+                            </a>
+                        </div>
+                    `;
+                    inventoryGrid.classList.remove('hidden');
+                }
+
+                // Display applications
+                const applicationsGrid = document.getElementById('applicationsGrid');
+                if (applications.length > 0) {
+                    applicationsGrid.innerHTML = applications.map(app => createApplicationCard(app)).join('');
+                    applicationsGrid.classList.remove('hidden');
+                } else {
+                    applicationsGrid.innerHTML = `
+                        <div class="text-center py-16">
+                            <i class="fa-solid fa-folder-open text-6xl text-gray-200 mb-4"></i>
+                            <p class="text-gray-500 font-bold uppercase tracking-wider text-sm mb-2">No applications found</p>
+                            <p class="text-gray-400 text-xs">Start your first application</p>
+                            <a href="/user/application/apply" class="inline-block mt-4 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg text-xs uppercase no-underline">
+                                <i class="fa-solid fa-plus mr-2"></i> New Application
+                            </a>
+                        </div>
+                    `;
+                    applicationsGrid.classList.remove('hidden');
+                }
+
+                console.log('✅ All data loaded successfully');
+
+            } catch (error) {
+                console.error('Error loading data:', error);
                 loadingState.innerHTML = `
                     <div class="text-center py-16">
                         <i class="fa-solid fa-exclamation-triangle text-4xl text-red-500"></i>
-                        <p class="text-red-500 font-bold uppercase text-xs mt-4">Error loading inventory</p>
+                        <p class="text-red-500 font-bold uppercase text-xs mt-4">Error loading data</p>
                         <p class="text-gray-400 text-xs mt-2">${error.message}</p>
                     </div>
                 `;
             }
         }
 
+        window.viewApplicationDetails = function(applicationId) {
+            window.location.href = `/user/inventory/stock-info/${applicationId}`;
+        };
+
+        window.cancelApplication = async function(applicationId) {
+            if (!confirm('Are you sure you want to cancel this application?')) {
+                return;
+            }
+            
+            try {
+                const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+                
+                const applicationRef = doc(db, 'applications', applicationId);
+                await updateDoc(applicationRef, {
+                    status: 'cancelled',
+                    cancelledAt: new Date()
+                });
+                
+                alert('Application cancelled successfully');
+                const user = auth.currentUser;
+                if (user) {
+                    loadAllData(user.uid);
+                }
+            } catch (error) {
+                console.error('Error cancelling application:', error);
+                alert('Failed to cancel application: ' + error.message);
+            }
+        };
+
         // Auth state observer
         onAuthStateChanged(auth, user => {
             if (user) {
-                loadInventory(user.uid);
+                loadAllData(user.uid);
             } else {
                 window.location.href = '/login';
+            }
+        });
+
+        // Check for payment success
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentSuccess = urlParams.get('payment_success');
+            
+            if (paymentSuccess === 'true') {
+                alert('Payment successful! Your inventory registration has been submitted.');
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
     </script>
