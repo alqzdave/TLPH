@@ -167,8 +167,8 @@
                                     <i class="fa-solid fa-circle-check me-2"></i> Approve Application
                                 </button>
                                 
-                                <button onclick="updateApplicationStatus('pending')" class="btn btn-warning bg-amber-500 border-0 btn-action text-white shadow-sm">
-                                    <i class="fa-solid fa-magnifying-glass me-2"></i> Mark To Review
+                                <button onclick="updateApplicationStatus('to-review')" class="btn btn-warning bg-blue-600 border-0 btn-action text-white shadow-sm">
+                                    <i class="fa-solid fa-arrow-up-right-from-square me-2"></i> Send To Regional Review
                                 </button>
                                 
                                 <button onclick="updateApplicationStatus('rejected')" class="btn btn-danger bg-red-600 border-0 btn-action shadow-sm">
@@ -389,7 +389,10 @@
         }
 
         window.updateApplicationStatus = async function(newStatus) {
-            const statusText = newStatus === 'accepted' ? 'approve' : newStatus === 'rejected' ? 'reject' : 'mark as pending';
+            const statusText = newStatus === 'accepted' ? 'approve' : 
+                             newStatus === 'rejected' ? 'reject' : 
+                             newStatus === 'to-review' ? 'send to regional review' :
+                             'mark as pending';
             const confirmed = confirm(`Are you sure you want to ${statusText} this application?\n\nRef: ${document.getElementById('refNumber').textContent}\nApplicant: ${document.getElementById('applicantName').textContent}`);
             
             if (!confirmed) return;
