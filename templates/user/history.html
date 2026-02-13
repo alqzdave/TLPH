@@ -2092,9 +2092,12 @@
           html += `
             <div class="service-card" data-service-id="${serviceId}">
               <div class="service-header">
-                <div>
-                  <h3 class="service-title"><i class="fa-solid fa-hand-holding-heart mr-2"></i>${service.serviceType || 'Service Request'}</h3>
-                  <p class="service-date"><i class="fa-solid fa-clock mr-1"></i>${createdDate}</p>
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="background: #f3f4f6; color: #6b7280; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase;">${service.serviceType || 'Service'}</span>
+                    <span style="color: #d1d5db;">•</span>
+                    <span style="color: #6b7280; font-size: 12px;"><i class="fa-solid fa-clock mr-1"></i>${createdDate}</span>
+                  </div>
                 </div>
                 <span class="service-status-badge ${statusClass}">
                   <i class="fa-solid fa-${statusClass === 'approved' ? 'check-circle' : statusClass === 'processing' ? 'spinner fa-spin' : statusClass === 'rejected' ? 'times-circle' : 'clock'}"></i>
