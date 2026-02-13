@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Regional Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white p-8 rounded shadow">
+        <h1 class="text-2xl font-bold mb-4">Create Regional Account</h1>
+        <button onclick="createRegionalAccount()" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+            Create Region 4B Account
+        </button>
+        <div id="status" class="mt-4 text-sm"></div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from '/static/js/firebase-config.js';
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        window.createRegionalAccount = async function() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<p class="text-blue-600">Creating account...</p>';
+
+            try {
+                // Create Firebase Auth account
+                const userCredential = await createUserWithEmailAndPassword(
+                    auth, 
+                    'Region4b@gmail.com', 
+                    '123456'
+                );
+                
+                const user = userCredential.user;
+                console.log('Account created:', user.uid);
+
+                // Create Firestore user document
+                await setDoc(doc(db, 'users', user.uid), {
+                    email: 'Region4b@gmail.com',
+                    firstName: 'Region 4B',
+                    lastName: 'Administrator',
+                    phone: '09123456789',
+                    role: 'regional',
+                    applicationType: 'regional',
+                    region: '4B',
+                    regionName: 'MIMAROPA',
+                    provinces: ['MARINDUQUE', 'OCCIDENTAL MINDORO', 'ORIENTAL MINDORO', 'PALAWAN', 'ROMBLON'],
+                    status: 'active',
+                    createdAt: new Date().toISOString()
+                });
+
+                statusDiv.innerHTML = `
+                    <p class="text-green-600 font-bold">✓ Account created successfully!</p>
+                    <p class="mt-2">Email: Region4b@gmail.com</p>
+                    <p>Password: 123456</p>
+                    <p class="mt-4"><a href="/login" class="text-blue-600 underline">Go to Login</a></p>
+                `;
+
+            } catch (error) {
+                console.error('Error:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    statusDiv.innerHTML = '<p class="text-orange-600">Account already exists! Go to <a href="/login" class="underline">login page</a></p>';
+                } else {
+                    statusDiv.innerHTML = `<p class="text-red-600">Error: ${error.message}</p>`;
+                }
+            }
+        };
+    </script>
+</body>
+</html>
