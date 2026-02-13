@@ -87,11 +87,28 @@
         <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-green-800 font-bold text-white text-xs">AD</div>
         <div class="nav-text">
           <p class="text-xs font-black text-slate-800">Alqz Dave</p>
-          <button class="text-[10px] font-bold text-red-600 uppercase hover:underline">Sign Out</button>
+          <button onclick="handleLogout()" class="text-[10px] font-bold text-red-600 uppercase hover:underline">Sign Out</button>
         </div>
       </div>
     </div>
   </aside>
+
+  <script type="module">
+    import { auth } from '/static/js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    window.handleLogout = async function() {
+      try {
+        console.log('Logging out...');
+        await signOut(auth);
+        console.log('Successfully logged out');
+        window.location.href = '/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed: ' + error.message);
+      }
+    };
+  </script>
 
   <script>
     function toggleSidebar() {
