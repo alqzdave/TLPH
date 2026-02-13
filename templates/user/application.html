@@ -62,27 +62,20 @@
         const emptyState = document.getElementById('emptyState');
         const applicationsList = document.getElementById('applicationsList');
 
-        // Handle pending application after payment success
         async function processPendingApplication() {
             try {
                 const pendingAppData = localStorage.getItem('pendingApplication');
                 if (pendingAppData) {
                     const appData = JSON.parse(pendingAppData);
-                    
-                    // Add the application to Firestore with payment confirmation
                     const docRef = await addDoc(collection(db, 'applications'), {
                         ...appData,
-                        status: 'under-review', // Change status to under-review after payment
+                        status: 'under-review',
                         submittedAt: serverTimestamp(),
                         paymentStatus: 'completed'
                     });
                     
                     console.log('Application saved after payment with ID:', docRef.id);
-                    
-                    // Clear the pending application from localStorage
                     localStorage.removeItem('pendingApplication');
-                    
-                    // Show success message
                     alert('Payment successful! Your application has been submitted.');
                 }
             } catch (error) {
@@ -185,7 +178,6 @@
             }
         }
 
-        // Cancel application
         window.cancelApplication = async function(applicationId) {
             if (!confirm('Are you sure you want to cancel this application?')) {
                 return;
@@ -201,7 +193,6 @@
                 });
                 
                 alert('Application cancelled successfully');
-                // Reload applications
                 const user = auth.currentUser;
                 if (user) {
                     loadApplications(user.uid);
@@ -212,15 +203,12 @@
             }
         };
 
-        // View application details
         window.viewDetails = function(applicationId) {
-            // Redirect to the inventory stock info page to view full details
             window.location.href = `/user/inventory/stock-info?id=${applicationId}`;
         };
 
         onAuthStateChanged(auth, async user => {
             if (user) {
-                // Process any pending application from payment redirect
                 await processPendingApplication();
                 loadApplications(user.uid);
             }
