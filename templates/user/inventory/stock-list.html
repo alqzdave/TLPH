@@ -406,9 +406,15 @@
 
                 loadingState.classList.add('hidden');
 
-                // Filter only approved items
+                // Filter approved items
                 const approvedInventory = inventoryItems.filter(item => item.status === 'approved');
-                const approvedApplications = applications.filter(app => app.status === 'approved');
+                
+                // For applications: show those that are approved (including those pending payment or paid)
+                const approvedApplications = applications.filter(app => {
+                    // Show applications with status: approved, pending_payment, or PAID
+                    const status = (app.status || '').toLowerCase();
+                    return status === 'approved' || status === 'pending_payment' || status === 'paid';
+                });
 
                 // Combine and sort all approved items by date
                 const allItems = [];

@@ -1,8 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,79 +11,15 @@
   <title>History | DENR Portal</title>
 
   <style>
-    body {
-      font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f6f7fb;
-    }
-
-    .main-wrapper {
-      padding-top: 24px;
-      padding-bottom: 60px;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    h1 { 
-      font-size: 28px; 
-      font-weight: 800;
-      margin: 0 0 24px; 
-      color: #111827;
+    body { font-family: 'Poppins', system-ui, -apple-system, sans-serif; }
+    .history-card { padding: 0 !important; }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: -1px;
-    }
-
-    .card-custom {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .tabs-container {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 32px;
-      border-bottom: 2px solid #e5e7eb;
-      padding-bottom: 0;
-      overflow-x: auto;
-    }
-
-    .tab-btn {
-      padding: 14px 24px;
-      border: none;
-      background: transparent;
-      color: #6b7280;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-bottom: 3px solid transparent;
-      white-space: nowrap;
-    }
-
-    .tab-btn:hover {
-      color: #10b981;
-    }
-
-    .tab-btn.active {
-      color: #10b981;
-      border-bottom-color: #10b981;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-      animation: fadeIn 0.3s ease-out;
     }
 
     @keyframes fadeIn {
@@ -1036,131 +972,76 @@
   </style>
 </head>
 
-<body>
+<body class="bg-gray-50 min-h-screen">
   {% include 'user/header.html' %}
 
-  <main class="main-wrapper">
-    <div class="container">
-      <h1><i class="fa-solid fa-history"></i> History</h1>
-      
-      <div class="card-custom">
-        <div class="tabs-container">
-          <button class="tab-btn active" data-tab="applications">
-            <i class="fa-solid fa-file-lines mr-2"></i>Applications
-          </button>
-          <button class="tab-btn" data-tab="services">
-            <i class="fa-solid fa-hand-holding-heart mr-2"></i>Service Requests
-          </button>
-          <button class="tab-btn" data-tab="inventory">
-            <i class="fa-solid fa-boxes-stacked mr-2"></i>Inventory History
-          </button>
-        </div>
+  <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <div class="max-w-6xl mx-auto">
 
-        <!-- Applications Tab -->
-        <div id="applications" class="tab-content active">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              <i class="fa-solid fa-info-circle"></i> Your application records for licenses and permits.
-            </p>
-            <button id="downloadPdfBtn" onclick="downloadApplicationsPDF()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-              <i class="fa-solid fa-download"></i> Download PDF
-            </button>
-          </div>
-          <div id="applicationsList"></div>
-        </div>
-
-        <div id="services" class="tab-content">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              <i class="fa-solid fa-info-circle"></i> Your service requests and their current status.
-            </p>
-          </div>
-          <div id="servicesList"></div>
-        </div>
-
-        <div id="inventory" class="tab-content">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              <i class="fa-solid fa-info-circle"></i> Your inventory stock transaction history.
-            </p>
-            <button id="downloadInventoryPdfBtn" onclick="downloadInventoryHistoryPDF()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-              <i class="fa-solid fa-download"></i> Download PDF
-            </button>
-          </div>
-          <div id="inventoryList" style="min-height: 400px;"></div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <div class="receipt-modal" id="receiptModal">
-    <div class="receipt-content">
-      <div class="receipt-header">
-        <h2 class="receipt-title">Official Receipt</h2>
-        <p class="receipt-subtitle">Department of Environment and Natural Resources</p>
+      <!-- Header -->
+      <div class="mb-6 sm:mb-10">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-green-800 mb-2">
+          <i class="fa-solid fa-history mr-2"></i>History
+        </h1>
+        <p class="text-gray-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px]">
+          View your submitted applications, services, and inventory records
+        </p>
       </div>
 
-      <div class="receipt-section">
-        <div class="receipt-section-title">Transaction Information</div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Date:</span>
-          <span class="receipt-row-value" id="receiptDate">-</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Reference Number:</span>
-          <span class="receipt-row-value" id="receiptReference">-</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Invoice ID:</span>
-          <span class="receipt-row-value" id="receiptInvoiceId" style="font-size: 11px; word-break: break-all;">-</span>
-        </div>
-      </div>
-
-      <div class="receipt-section">
-        <div class="receipt-section-title">Application Details</div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">License/Permit Type:</span>
-          <span class="receipt-row-value" id="receiptPermitType">-</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Description:</span>
-          <span class="receipt-row-value" id="receiptDescription">-</span>
-        </div>
-      </div>
-
-      <div class="receipt-section">
-        <div class="receipt-section-title">Payment Details</div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Payment Method:</span>
-          <span class="receipt-row-value" id="receiptMethod">-</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Amount Paid:</span>
-          <span class="receipt-row-value" id="receiptAmount">-</span>
-        </div>
-        <div class="receipt-total">
-          <span>TOTAL:</span>
-          <span id="receiptTotal">₱0.00</span>
-        </div>
-      </div>
-
-      <div class="receipt-section">
-        <div class="receipt-section-title">Status</div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Application Status:</span>
-          <span class="receipt-row-value" id="receiptStatus">-</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-row-label">Last Updated:</span>
-          <span class="receipt-row-value" id="receiptUpdated">-</span>
-        </div>
-      </div>
-
-      <div class="receipt-actions">
-        <button class="print-btn" onclick="window.print()">
-          <i class="fa-solid fa-print mr-1"></i> Print Receipt
+      <!-- Download Buttons -->
+      <div class="flex flex-wrap gap-2 sm:gap-3 mb-6">
+        <button onclick="downloadApplicationsPDF()" class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] sm:text-xs rounded-lg transition-all transform active:scale-95 uppercase tracking-wider">
+          <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Applications</span>
         </button>
-        <button class="close-btn" onclick="closeReceipt()">
+        <button onclick="downloadServiceRequestsPDF()" class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-bold text-[10px] sm:text-xs rounded-lg transition-all transform active:scale-95 uppercase tracking-wider">
+          <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Services</span>
+        </button>
+        <button onclick="downloadInventoryHistoryPDF()" class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] sm:text-xs rounded-lg transition-all transform active:scale-95 uppercase tracking-wider">
+          <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Inventory</span>
+        </button>
+      </div>
+
+      <!-- History Records -->
+      <div id="historyContainer" class="space-y-3 sm:space-y-4"></div>
+
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="receipt-modal fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4" id="receiptModal">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="border-b border-gray-200 p-4 sm:p-6">
+        <h2 class="text-lg sm:text-xl font-black uppercase text-green-800">Receipt</h2>
+      </div>
+      
+      <div class="p-4 sm:p-6 space-y-4 text-sm">
+        <div>
+          <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Date</label>
+          <p id="receiptDate" class="text-gray-800 font-semibold">-</p>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Reference</label>
+          <p id="receiptReference" class="text-gray-800 font-semibold text-xs break-all">-</p>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Type</label>
+          <p id="receiptPermitType" class="text-gray-800 font-semibold">-</p>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Amount</label>
+          <p id="receiptAmount" class="text-lg font-bold text-green-700">₱0.00</p>
+        </div>
+        <div class="border-t border-gray-200 pt-4">
+          <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Status</label>
+          <p id="receiptStatus" class="text-green-700 font-bold">Approved</p>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-200 p-4 sm:p-6 flex gap-3">
+        <button onclick="window.print()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg text-xs transition-all">
+          <i class="fa-solid fa-print mr-1"></i> Print
+        </button>
+        <button onclick="closeReceipt()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg text-xs transition-all">
           <i class="fa-solid fa-xmark mr-1"></i> Close
         </button>
       </div>
@@ -1173,18 +1054,85 @@
 
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const tabName = this.dataset.tab;
+    // Tab switching removed - all sections displayed at once
+    
+    async function loadHistory() {
+      try {
+        const historyContainer = document.getElementById('historyContainer');
         
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        this.classList.add('active');
-        document.getElementById(tabName).classList.add('active');
-      });
-    });
+        // Show loading state
+        historyContainer.innerHTML = `
+          <div class="text-center py-12">
+            <i class="fa-solid fa-spinner fa-spin text-2xl sm:text-3xl text-green-700 mb-4" style="display: block;"></i>
+            <p class="text-gray-500 font-bold uppercase text-[10px] tracking-widest">Loading history...</p>
+          </div>
+        `;
 
-    async function loadApplications() {
+        const user = auth.currentUser;
+        console.log('Current user:', user);
+        
+        if (!user) {
+          historyContainer.innerHTML = `
+            <div class="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+              <i class="fa-solid fa-exclamation-circle text-3xl text-gray-300 mb-4" style="display: block;"></i>
+              <p class="text-gray-600 font-bold uppercase text-[10px] tracking-widest">Please sign in to view history</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Load all three data sources in parallel
+        console.log('Loading data from all sources...');
+        const [applicationsData, servicesData, inventoryData] = await Promise.all([
+          loadApplicationsData(user),
+          loadServiceRequestsData(user),
+          loadInventoryData(user)
+        ]);
+
+        console.log('Applications:', applicationsData.length);
+        console.log('Services:', servicesData.length);
+        console.log('Inventory:', inventoryData.length);
+
+        // Combine all items
+        const allItems = [...applicationsData, ...servicesData, ...inventoryData];
+        console.log('Total items:', allItems.length);
+        
+        if (allItems.length === 0) {
+          historyContainer.innerHTML = `
+            <div class="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+              <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-4" style="display: block;"></i>
+              <p class="text-gray-600 font-bold uppercase text-[10px] tracking-widest">No records found</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Sort by date (newest first)
+        allItems.sort((a, b) => {
+          const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+          const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+          return dateB - dateA;
+        });
+
+        // Render all items
+        let html = '';
+        allItems.forEach(item => {
+          html += item.html;
+        });
+
+        historyContainer.innerHTML = html;
+      } catch (error) {
+        console.error('Error loading history:', error);
+        document.getElementById('historyContainer').innerHTML = `
+          <div class="empty-message">
+            <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444;"></i>
+            <p style="color: #ef4444;">Error loading history: ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    async function loadApplicationsData(user) {
       try {
         let userEmail = null;
 
@@ -1202,83 +1150,305 @@
           userEmail = (localStorage.getItem('denr_user_email') || '').trim();
         }
 
+        console.log('Loading applications for email:', userEmail);
+
         if (!userEmail) {
-          document.getElementById('applicationsList').innerHTML = `
-            <div class="empty-message">
-              <i class="fa-solid fa-exclamation-circle" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
-              <p>Unable to load applications. Please sign in again.</p>
-            </div>
-          `;
-          return;
+          console.warn('No user email found');
+          return [];
         }
 
         const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
         const result = await response.json();
 
-        if (result.status === 'success' && result.transactions) {
-          const approvedApps = result.transactions.filter(t => (
-            t.display_status === 'approved' || 
-            t.status === 'approved' ||
-            t.approval_status === 'approved'
-          ) && !isServiceTransaction(t));
+        console.log('API Response:', result);
 
-          console.log('Total transactions:', result.transactions.length);
-          console.log('Approved apps:', approvedApps.length);
+        if (result.status === 'success' && result.transactions && Array.isArray(result.transactions)) {
           console.log('All transactions:', result.transactions);
+          
+          const approvedApps = result.transactions.filter(t => {
+            // Check for multiple status fields that might contain approval info
+            const displayStatus = (t.display_status || '').toLowerCase();
+            const status = (t.status || '').toLowerCase();
+            const approvalStatus = (t.approval_status || '').toLowerCase();
+            const combined = displayStatus || status || approvalStatus;
+            
+            // Include records that are: approved, paid, completed, or have paid_at timestamp
+            const isApproved = 
+              combined === 'approved' || 
+              combined === 'paid' || 
+              combined === 'completed' || 
+              combined === 'success' ||
+              combined === 'pending_payment' ||
+              combined === 'paid_at' ||
+              t.paid_at !== null || 
+              t.paid_at !== undefined ||
+              t.amount > 0; // Include any transaction with amount
+            
+            const isNotService = !isServiceTransaction(t);
+            console.log(`Transaction: ${t.transaction_name} | Status: ${combined} | Amount: ${t.amount} | Approved: ${isApproved} | NotService: ${isNotService}`);
+            return isApproved && isNotService;
+          });
 
-          if (approvedApps.length === 0) {
-            document.getElementById('applicationsList').innerHTML = `
-              <div class="empty-message">
-                <i class="fa-solid fa-folder-open" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
-                <p>No approved applications found.</p>
-              </div>
-            `;
-            return;
-          }
+          console.log('Filtered applications:', approvedApps.length);
 
-          let html = '';
-          approvedApps.forEach(t => {
+          return approvedApps.map(t => {
             const date = t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A';
             const updated = t.updated_at ? new Date(t.updated_at).toLocaleString() : 'N/A';
-            
             const appType = t.transaction_type || extractAppType(t.transaction_name) || 'License/Permit';
             const appDescription = t.transaction_name || 'Unknown Application';
             const appAmount = peso.format(t.amount || 0);
             
-            html += `
-              <div class="application-card">
-                <div class="application-header">
-                  <span class="application-type-badge">${appType}</span>
-                  <div>
-                    <p>${appDescription}</p>
-                    <div style="font-size: 12px; color: #9ca3af; margin-top: 6px;">
-                      <span style="margin-right: 16px;"><strong>Amount:</strong> ${appAmount}</span>
-                      <span><strong>Date:</strong> ${date}</span>
+            return {
+              date: t.created_at || new Date(),
+              html: `
+                <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-blue-500 transition-all">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 pb-3 border-b border-gray-100">
+                    <div class="flex items-center gap-2">
+                      <span class="status-badge bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded">${appType}</span>
+                      <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">${date}</span>
+                    </div>
+                    <button onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition">
+                      <i class="fa-solid fa-receipt mr-1"></i> Receipt
+                    </button>
+                  </div>
+                  <div class="space-y-2">
+                    <div>
+                      <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Description</p>
+                      <p class="text-sm font-bold text-gray-800">${appDescription}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Amount</p>
+                        <p class="text-sm font-bold text-blue-700">${appAmount}</p>
+                      </div>
+                      <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Reference</p>
+                        <p class="text-xs font-mono text-gray-700 break-all">${t.reference || t.external_id || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Status</p>
+                        <p class="text-xs font-bold text-green-700">APPROVED</p>
+                      </div>
+                      <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Method</p>
+                        <p class="text-xs font-semibold text-gray-700">${t.payment_method || 'Online'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
-                  <i class="fa-solid fa-file-pdf"></i> Receipt
-                </button>
-              </div>
-            `;
+              `
+            };
           });
-
-          document.getElementById('applicationsList').innerHTML = html;
-        } else {
-          document.getElementById('applicationsList').innerHTML = `
-            <div class="empty-message">
-              <p>${result.message || 'Unable to load applications.'}</p>
-            </div>
-          `;
         }
+        return [];
       } catch (error) {
         console.error('Error loading applications:', error);
-        document.getElementById('applicationsList').innerHTML = `
-          <div class="empty-message">
-            <p>An error occurred while loading applications.</p>
-          </div>
-        `;
+        return [];
+      }
+    }
+
+    async function loadServiceRequestsData(user) {
+      try {
+        console.log('Loading service requests for user:', user.uid);
+        
+        const q = query(
+          collection(db, 'service_requests'),
+          where('userId', '==', user.uid)
+        );
+
+        const querySnapshot = await getDocs(q);
+        console.log('Service requests found:', querySnapshot.size);
+        
+        const services = [];
+        
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          const status = (item.status || '').toLowerCase();
+          const paymentStatus = (item.paymentStatus || '').toLowerCase();
+          console.log(`Service: ${item.description || item.serviceType} | Status: ${status} | PaymentStatus: ${paymentStatus} | Full: ${JSON.stringify(Object.keys(item))}`);
+          
+          // Show services that are approved, have completed payment, or are submitted
+          // More lenient filtering to catch more records
+          const isApprovedOrCompleted = 
+            status === 'approved' || 
+            status === 'pending' ||
+            status === 'submitted' ||
+            paymentStatus === 'completed' || 
+            paymentStatus === 'paid' ||
+            paymentStatus === 'free' ||
+            item.createdAt !== null || 
+            item.createdAt !== undefined;
+          
+          if (isApprovedOrCompleted) {
+            services.push({
+              id: doc.id,
+              ...item
+            });
+          }
+        });
+
+        console.log('Approved services:', services.length);
+
+        services.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        return services.map(service => {
+          const date = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) : 'N/A';
+          
+          const serviceType = service.serviceType || 'Service Request';
+          const status = (service.status || 'Unknown').toUpperCase();
+          const description = service.description || 'No description provided';
+
+          return {
+            date: service.createdAt || new Date(),
+            html: `
+              <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-green-500 transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 pb-3 border-b border-gray-100">
+                  <div class="flex items-center gap-2">
+                    <span class="status-badge bg-gray-200 text-gray-700 text-xs font-bold px-2.5 py-1 rounded">${serviceType}</span>
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">${date}</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded">${status}</span>
+                </div>
+                <div class="space-y-2">
+                  <div>
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Description</p>
+                    <p class="text-sm font-bold text-gray-800">${description}</p>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3 sm:gap-4 text-xs">
+                    <div>
+                      <p class="text-gray-500 font-bold uppercase tracking-widest mb-0.5">Type</p>
+                      <p class="font-semibold text-gray-700">${serviceType}</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500 font-bold uppercase tracking-widest mb-0.5">Status</p>
+                      <p class="font-bold text-green-700">${status}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `
+          };
+        });
+      } catch (error) {
+        console.error('Error loading services:', error);
+        return [];
+      }
+    }
+
+    async function loadInventoryData(user) {
+      try {
+        console.log('Loading inventory for user:', user.uid);
+        
+        // Query ALL inventory items (not just approved) to see what's there
+        const q = query(
+          collection(db, 'inventory_registrations'), 
+          where('userId', '==', user.uid)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        console.log('Inventory items found:', querySnapshot.size);
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          console.log(`Inventory: ${item.category || 'Unknown'} | Status: ${item.status || 'No status'} | Full: ${JSON.stringify(Object.keys(item))}`);
+        });
+        
+        // Filter to approved items
+        const approvedQuery = query(
+          collection(db, 'inventory_registrations'), 
+          where('userId', '==', user.uid),
+          where('status', '==', 'approved')
+        );
+        
+        const approvedSnapshot = await getDocs(approvedQuery);
+        console.log('Approved inventory items:', approvedSnapshot.size);
+
+        const categoryLabels = {
+          'farming': 'Crop & Plant',
+          'livestock': 'Fisheries & Agriculture',
+          'agribusiness': 'Agribusiness & Agro-Processing',
+          'trade': 'Agricultural Trade',
+          'infrastructure': 'Infrastructure',
+          'research': 'Research & Innovation',
+          'support': 'Support & Insurance',
+          'safety': 'Food Safety',
+          'extension': 'Extension Services',
+          'climate': 'Climate & Risk',
+          'data': 'Digital Agriculture',
+          'compliance': 'Compliance & Enforcement',
+          'institutional': 'Cooperative Development'
+        };
+
+        const sortedDocs = [];
+        approvedSnapshot.forEach(doc => sortedDocs.push(doc));
+        sortedDocs.sort((a, b) => {
+          const aTime = a.data().submittedAt?.toDate?.() || new Date(0);
+          const bTime = b.data().submittedAt?.toDate?.() || new Date(0);
+          return bTime - aTime;
+        });
+
+        console.log('Sorted inventory:', sortedDocs.length);
+
+        return sortedDocs.map((doc, index) => {
+          const item = doc.data();
+          const categoryLabel = categoryLabels[item.category] || item.category || 'Product';
+          const submittedDate = item.submittedAt ? new Date(item.submittedAt.toDate()).toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) : 'N/A';
+
+          return {
+            date: item.submittedAt || new Date(),
+            html: `
+              <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-amber-500 transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 pb-3 border-b border-gray-100">
+                  <div class="flex items-center gap-2">
+                    <span class="status-badge bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded">Inventory</span>
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">${submittedDate}</span>
+                  </div>
+                  <a href="/user/inventory/stock-info?id=${doc.id}" class="text-[10px] font-bold text-amber-600 hover:text-amber-800 transition">
+                    <i class="fa-solid fa-eye mr-1"></i> View Details
+                  </a>
+                </div>
+                <div class="space-y-2">
+                  <div>
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Category</p>
+                    <p class="text-sm font-bold text-gray-800">${categoryLabel}</p>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3 sm:gap-4 text-xs">
+                    <div>
+                      <p class="text-gray-500 font-bold uppercase tracking-widest mb-0.5">Harvest Qty</p>
+                      <p class="font-bold text-amber-700">${Number(item.harvestQty || 0).toLocaleString()} units</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500 font-bold uppercase tracking-widest mb-0.5">Investment Value</p>
+                      <p class="font-bold text-amber-700">₱${Number(item.investmentQty || 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500 font-bold uppercase tracking-widest mb-0.5">Status</p>
+                      <p class="font-bold text-green-700">APPROVED</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500 font-bold uppercase tracking-widest mb-0.5">Unit Price</p>
+                      <p class="font-semibold text-gray-700">₱${item.harvestQty > 0 ? (Number(item.investmentQty || 0) / Number(item.harvestQty)).toFixed(2) : '0.00'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `
+          };
+        });
+      } catch (error) {
+        console.error('Error loading inventory:', error);
+        return [];
       }
     }
 
@@ -1322,17 +1492,15 @@
       document.getElementById('receiptPermitType').textContent = permitType;
       document.getElementById('receiptDate').textContent = date;
       document.getElementById('receiptAmount').textContent = amount;
-      document.getElementById('receiptTotal').textContent = amount;
       document.getElementById('receiptDescription').textContent = description || 'DENR License/Permit Payment';
-      document.getElementById('receiptInvoiceId').textContent = invoiceId;
-      document.getElementById('receiptMethod').textContent = method;
       document.getElementById('receiptStatus').textContent = 'Approved';
-      document.getElementById('receiptUpdated').textContent = updated ? new Date(updated).toLocaleString() : 'N/A';
-      document.getElementById('receiptModal').classList.add('active');
+      document.getElementById('receiptModal').classList.remove('hidden');
+      document.getElementById('receiptModal').classList.add('flex');
     };
 
     window.closeReceipt = function() {
-      document.getElementById('receiptModal').classList.remove('active');
+      document.getElementById('receiptModal').classList.add('hidden');
+      document.getElementById('receiptModal').classList.remove('flex');
     };
 
     document.getElementById('receiptModal').addEventListener('click', function(e) {
@@ -1343,73 +1511,11 @@
 
     window.downloadApplicationsPDF = async function() {
       try {
-        const applicationsList = document.getElementById('applicationsList');
-        
-        if (!applicationsList || applicationsList.children.length === 0) {
-          alert('No applications to download.');
-          return;
-        }
-
         const downloadBtn = document.getElementById('downloadPdfBtn');
         if (downloadBtn) {
           downloadBtn.disabled = true;
-          downloadBtn.textContent = 'Generating PDF...';
+          downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
         }
-
-        const pdfContainer = document.createElement('div');
-        pdfContainer.style.padding = '15px';
-        pdfContainer.style.backgroundColor = '#ffffff';
-        pdfContainer.style.fontFamily = 'Arial, sans-serif';
-        pdfContainer.style.lineHeight = '1.3';
-        
-        const header = document.createElement('div');
-        header.style.textAlign = 'center';
-        header.style.marginBottom = '12px';
-        header.style.borderBottom = '2px solid #10b981';
-        header.style.paddingBottom = '8px';
-        
-        header.innerHTML = `
-          <h1 style="color: #1b330d; font-size: 20px; margin: 0; font-weight: 800;">DENR License & Permit Applications</h1>
-          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
-          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 10px;">Generated: ${new Date().toLocaleString()}</p>
-        `;
-        pdfContainer.appendChild(header);
-
-        const stats = document.createElement('div');
-        stats.style.display = 'grid';
-        stats.style.gridTemplateColumns = 'repeat(3, 1fr)';
-        stats.style.gap = '8px';
-        stats.style.marginBottom = '12px';
-        
-        const appCount = applicationsList.children.length;
-        stats.innerHTML = `
-          <div style="background: #f0fdf4; padding: 10px; border-radius: 6px; border-left: 3px solid #10b981; text-align: center;">
-            <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total Apps</p>
-            <h3 style="color: #10b981; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">${appCount}</h3>
-          </div>
-          <div style="background: #eff6ff; padding: 10px; border-radius: 6px; border-left: 3px solid #3b82f6; text-align: center;">
-            <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Status</p>
-            <h3 style="color: #3b82f6; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">Approved</h3>
-          </div>
-          <div style="background: #fef3c7; padding: 10px; border-radius: 6px; border-left: 3px solid #f59e0b; text-align: center;">
-            <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Format</p>
-            <h3 style="color: #f59e0b; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">PDF</h3>
-          </div>
-        `;
-        pdfContainer.appendChild(stats);
-
-        const detailsSection = document.createElement('div');
-        detailsSection.style.marginTop = '12px';
-        
-        const detailsTitle = document.createElement('h2');
-        detailsTitle.innerHTML = 'Application Details';
-        detailsTitle.style.color = '#1b330d';
-        detailsTitle.style.fontSize = '14px';
-        detailsTitle.style.fontWeight = '800';
-        detailsTitle.style.borderBottom = '2px solid #10b981';
-        detailsTitle.style.paddingBottom = '6px';
-        detailsTitle.style.marginBottom = '10px';
-        detailsSection.appendChild(detailsTitle);
 
         let userEmail = localStorage.getItem('denr_user_email') || '';
         
@@ -1425,247 +1531,133 @@
           });
         }
 
-        try {
-          let firebaseApplications = [];
-          
-          if (userEmail) {
-            const q = query(
-              collection(db, 'transactions'),
-              where('userEmail', '==', userEmail),
-              where('transactionType', '==', 'license-application'),
-              orderBy('createdAt', 'desc')
-            );
-            
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-              const data = doc.data();
-              firebaseApplications.push({
-                id: doc.id,
-                ...data
-              });
-            });
+        const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+        const result = await response.json();
 
-            console.log('Fetched applications from transactions:', firebaseApplications.length);
+        const approvedApps = result.status === 'success' && result.transactions ? 
+          result.transactions.filter(t => {
+            const status = (t.display_status || t.status || t.approval_status || '').toLowerCase();
+            const isApproved = status === 'approved' || status === 'paid' || status === 'pending_payment';
+            const isNotService = !isServiceTransaction(t);
+            return isApproved && isNotService;
+          }) : [];
+
+        if (approvedApps.length === 0) {
+          alert('No applications to download.');
+          if (downloadBtn) {
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Applications Report';
           }
-
-          if (firebaseApplications.length > 0) {
-            firebaseApplications.forEach((app, idx) => {
-              const appCard = document.createElement('div');
-              appCard.style.marginBottom = '12px';
-              appCard.style.padding = '10px';
-              appCard.style.border = '1px solid #e5e7eb';
-              appCard.style.borderRadius = '6px';
-              appCard.style.backgroundColor = '#f9fafb';
-              appCard.style.pageBreakInside = 'avoid';
-              appCard.style.fontSize = '11px';
-
-              const appName = app.formData?.appType || app.applicationType || 'License Application';
-              const appType = app.formData?.applicationType || app.applicationType || 'license';
-              const amount = app.formData?.amount || app.amount || 0;
-              const formFields = app.formData?.formFields || {};
-
-              let formFieldsHTML = '';
-              const fieldKeys = Object.keys(formFields).filter(key => formFields[key] !== null && formFields[key] !== undefined && formFields[key] !== '');
-              
-              if (fieldKeys.length > 0) {
-                fieldKeys.forEach((key) => {
-                  const label = key
-                    .replace(/([A-Z])/g, ' $1')
-                    .replace(/^./, str => str.toUpperCase())
-                    .trim();
-                  const value = formFields[key];
-                  formFieldsHTML += `<p style="margin: 6px 0 0 0;"><strong>${label}:</strong> ${value}</p>`;
-                });
-              }
-
-              appCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
-                  <div>
-                    <span style="display: inline-block; padding: 4px 8px; background: #d1fae5; color: #047857; border-radius: 4px; font-weight: 700; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">${appType.toUpperCase().replace(/-/g, ' ')}</span>
-                    <h3 style="color: #1b330d; font-size: 12px; font-weight: 700; margin: 4px 0 0 0;">${appName}</h3>
-                  </div>
-                  <span style="color: #6b7280; font-weight: 600; font-size: 10px;">App #${idx + 1}</span>
-                </div>
-                
-                <div style="background: white; padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 10px;">
-                  <p style="color: #6b7280; margin: 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span></p>
-                  <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Amount:</strong> ₱${amount}</p>
-                  <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Date:</strong> ${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</p>
-                  
-                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #1b330d; font-size: 9px; font-weight: 700; text-transform: uppercase; margin: 0 0 6px 0;">Form</p>
-                    <div style="background: #f3f4f6; padding: 6px; border-radius: 3px; font-size: 9px; color: #4b5563;">
-                      <p style="margin: 0;"><strong>Type:</strong> ${appType}</p>
-                      <p style="margin: 2px 0 0 0;"><strong>Amount:</strong> ₱${amount}</p>
-                      <p style="margin: 2px 0 0 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
-                      ${formFieldsHTML ? `
-                        <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #e5e7eb;">
-                          <p style="margin: 0; font-weight: 700; font-size: 8px;">Fields:</p>
-                          <div style="font-size: 8px;">${formFieldsHTML}</div>
-                        </div>
-                      ` : '<p style="margin-top: 5px; color: #9ca3af; font-size: 8px;"><em>No fields</em></p>'}
-                    </div>
-                  </div>
-                </div>
-              `;
-              
-              detailsSection.appendChild(appCard);
-            });
-          } else {
-            const applicationsData = Array.from(applicationsList.children).map((card, idx) => {
-              const badge = card.querySelector('.application-type-badge');
-              const pElements = card.querySelectorAll('p');
-              const appType = badge ? badge.textContent : 'License/Permit';
-              const appName = pElements.length > 0 ? pElements[0].textContent : 'Unknown';
-              
-              return {
-                type: appType,
-                name: appName,
-                index: idx + 1
-              };
-            });
-
-            applicationsData.forEach((app, idx) => {
-              const appCard = document.createElement('div');
-              appCard.style.marginBottom = '12px';
-              appCard.style.padding = '10px';
-              appCard.style.border = '1px solid #e5e7eb';
-              appCard.style.borderRadius = '6px';
-              appCard.style.backgroundColor = '#f9fafb';
-              appCard.style.pageBreakInside = 'avoid';
-              appCard.style.fontSize = '11px';
-
-              appCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
-                  <div>
-                    <span style="display: inline-block; padding: 4px 8px; background: #d1fae5; color: #047857; border-radius: 4px; font-weight: 700; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">${app.type}</span>
-                    <h3 style="color: #1b330d; font-size: 12px; font-weight: 700; margin: 4px 0 0 0;">${app.name}</h3>
-                  </div>
-                  <span style="color: #6b7280; font-weight: 600; font-size: 10px;">App #${app.index}</span>
-                </div>
-                
-                <div style="background: white; padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 10px;">
-                  <p style="color: #6b7280; margin: 0;">
-                    <strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span>
-                  </p>
-                  <p style="color: #6b7280; margin: 3px 0 0 0;">
-                    <strong>Form Details</strong>
-                  </p>
-                  <div style="margin-top: 3px; padding-top: 3px; border-top: 1px solid #e5e7eb;">
-                    <div style="background: #f3f4f6; padding: 4px; border-radius: 3px; font-size: 9px; color: #4b5563;">
-                      <p style="margin: 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-              `;
-              
-              detailsSection.appendChild(appCard);
-            });
-          }
-        } catch (e) {
-          console.warn('Could not fetch detailed application data from Firebase:', e);
-          const applicationsData = Array.from(applicationsList.children).map((card, idx) => {
-            const badge = card.querySelector('.application-type-badge');
-            const pElements = card.querySelectorAll('p');
-            return {
-              type: badge ? badge.textContent : 'License/Permit',
-              name: pElements.length > 0 ? pElements[0].textContent : 'Unknown',
-              index: idx + 1
-            };
-          });
-
-          applicationsData.forEach((app) => {
-            const appCard = document.createElement('div');
-            appCard.style.marginBottom = '12px';
-            appCard.style.padding = '10px';
-            appCard.style.border = '1px solid #e5e7eb';
-            appCard.style.borderRadius = '6px';
-            appCard.style.backgroundColor = '#f9fafb';
-            appCard.style.pageBreakInside = 'avoid';
-
-            appCard.innerHTML = `
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
-                <div>
-                  <span style="display: inline-block; padding: 4px 8px; background: #d1fae5; color: #047857; border-radius: 4px; font-weight: 700; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">${app.type}</span>
-                  <h3 style="color: #1b330d; font-size: 12px; font-weight: 700; margin: 4px 0 0 0;">${app.name}</h3>
-                </div>
-                <span style="color: #6b7280; font-weight: 600; font-size: 10px;">App</span>
-              </div>
-              
-              <div style="background: white; padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 10px;">
-                <p style="color: #6b7280; margin: 0;">
-                  <strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span>
-                </p>
-                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #e5e7eb;">
-                  <div style="background: #f3f4f6; padding: 4px; border-radius: 3px; font-size: 9px; color: #4b5563;">
-                    <p style="margin: 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-            `;
-            
-            detailsSection.appendChild(appCard);
-          });
+          return;
         }
+
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.borderBottom = '3px solid #3b82f6';
+        header.style.paddingBottom = '15px';
+        
+        header.innerHTML = `
+          <h1 style="color: #1b330d; font-size: 22px; margin: 0; font-weight: 800;">DENR License & Permit Applications</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+
+        const detailsSection = document.createElement('div');
+        detailsSection.style.marginTop = '15px';
+
+        approvedApps.forEach((app, idx) => {
+          const date = app.created_at ? new Date(app.created_at).toISOString().split('T')[0] : 'N/A';
+          const appType = extractAppType(app.transaction_name) || 'License/Permit';
+          const appDescription = app.transaction_name || 'Unknown Application';
+          const appAmount = peso.format(app.amount || 0);
+          
+          const appCard = document.createElement('div');
+          appCard.style.marginBottom = '15px';
+          appCard.style.padding = '12px';
+          appCard.style.border = '1px solid #e5e7eb';
+          appCard.style.borderRadius = '6px';
+          appCard.style.backgroundColor = '#f9fafb';
+          appCard.style.pageBreakInside = 'avoid';
+
+          appCard.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #3b82f6;">
+              <div>
+                <span style="display: inline-block; padding: 4px 8px; background: #dbeafe; color: #1e40af; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">${appType}</span>
+                <h3 style="color: #1b330d; font-size: 13px; font-weight: 700; margin: 4px 0 0 0;">${appDescription}</h3>
+              </div>
+              <span style="color: #6b7280; font-weight: 600; font-size: 11px;">App #${idx + 1}</span>
+            </div>
+            
+            <div style="background: white; padding: 10px; border-radius: 4px; font-size: 11px;">
+              <p style="color: #6b7280; margin: 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span></p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Date:</strong> ${date}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Amount:</strong> ${appAmount}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
+            </div>
+          `;
+          
+          detailsSection.appendChild(appCard);
+        });
 
         pdfContainer.appendChild(detailsSection);
 
-        const footer = document.createElement('div');
-        footer.style.marginTop = '12px';
-        footer.style.paddingTop = '8px';
-        footer.style.borderTop = '1px solid #e5e7eb';
-        footer.style.textAlign = 'center';
-        footer.style.color = '#6b7280';
-        footer.style.fontSize = '10px';
-        footer.style.pageBreakInside = 'avoid';
-        footer.innerHTML = `
-          <p style="margin: 0; line-height: 1.2;">Official DENR Record | Apps: ${appCount} | Status: Approved</p>
-          <p style="margin: 2px 0 0 0; font-size: 9px; color: #9ca3af;">ID: ${Date.now()} | Generated: ${new Date().toLocaleString()}</p>
-        `;
-        pdfContainer.appendChild(footer);
+        const element = document.createElement('div');
+        element.appendChild(pdfContainer);
+        document.body.appendChild(element);
 
         const opt = {
-          margin: 5,
-          filename: `DENR_Applications_${new Date().getTime()}.pdf`,
+          margin: 10,
+          filename: 'denr-applications-report.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2 },
           jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
         };
 
-        html2pdf().set(opt).from(pdfContainer).save();
-
+        html2pdf().set(opt).from(element).save().finally(() => {
+          document.body.removeChild(element);
+          if (downloadBtn) {
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Applications Report';
+          }
+        });
       } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('Failed to generate PDF. Please try again.');
-      } finally {
+        alert('Error generating PDF. Please try again.');
         const downloadBtn = document.getElementById('downloadPdfBtn');
         if (downloadBtn) {
           downloadBtn.disabled = false;
-          downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download PDF';
+          downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Applications Report';
         }
       }
     };
 
+    // Inventory History Download PDF
     window.downloadInventoryHistoryPDF = async function() {
       try {
+        const downloadBtn = document.getElementById('downloadInventoryPdfBtn');
+        if (downloadBtn) {
+          downloadBtn.disabled = true;
+          downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        }
+
         const user = auth.currentUser;
         if (!user) {
           alert('Please sign in to download inventory history.');
           return;
         }
 
-        const downloadBtn = document.getElementById('downloadInventoryPdfBtn');
-        if (downloadBtn) {
-          downloadBtn.disabled = true;
-          downloadBtn.textContent = 'Generating PDF...';
-        }
-
         const q = query(
-          collection(db, 'applications'), 
+          collection(db, 'inventory_registrations'), 
           where('userId', '==', user.uid),
           where('status', '==', 'approved')
         );
-        
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -1860,277 +1852,6 @@
       }
     };
 
-    async function loadInventoryHistory() {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          document.getElementById('inventoryList').innerHTML = `
-            <div class="empty-message">
-              <i class="fa-solid fa-exclamation-circle"></i>
-              <p>Please sign in to view inventory history.</p>
-            </div>
-          `;
-          return;
-        }
-
-        document.getElementById('inventoryList').innerHTML = `
-          <div style="text-align: center; padding: 40px;">
-            <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #10b981;"></i>
-            <p style="color: #6b7280; margin-top: 16px; font-weight: 600;">Loading inventory history...</p>
-          </div>
-        `;
-
-        const q = query(
-          collection(db, 'applications'), 
-          where('userId', '==', user.uid),
-          where('status', '==', 'approved')
-        );
-        
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          document.getElementById('inventoryList').innerHTML = `
-            <div class="empty-message">
-              <i class="fa-solid fa-box-open"></i>
-              <p>No inventory items found. Submit an application to add items to your inventory.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const categoryLabels = {
-          'farming': 'Crop & Plant',
-          'livestock': 'Fisheries & Agriculture',
-          'agribusiness': 'Agribusiness & Agro-Processing',
-          'trade': 'Agricultural Trade',
-          'infrastructure': 'Infrastructure',
-          'research': 'Research & Innovation',
-          'support': 'Support & Insurance',
-          'safety': 'Food Safety',
-          'extension': 'Extension Services',
-          'climate': 'Climate & Risk',
-          'data': 'Digital Agriculture',
-          'compliance': 'Compliance & Enforcement',
-          'institutional': 'Cooperative Development'
-        };
-
-        const sortedDocs = [];
-        querySnapshot.forEach(doc => sortedDocs.push(doc));
-        sortedDocs.sort((a, b) => {
-          const aTime = a.data().submittedAt?.toDate?.() || new Date(0);
-          const bTime = b.data().submittedAt?.toDate?.() || new Date(0);
-          return bTime - aTime;
-        });
-
-        let html = '<main style="padding: 0 !important;">';
-        let itemIndex = 1;
-
-        sortedDocs.forEach(doc => {
-          const item = doc.data();
-          const categoryLabel = categoryLabels[item.category] || item.category || 'Product';
-          const unitPrice = item.harvestQty > 0 ? (item.investmentQty / item.harvestQty).toFixed(2) : '0.00';
-          const submittedDate = item.submittedAt ? new Date(item.submittedAt.toDate()).toLocaleDateString('en-PH', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          }) : 'N/A';
-
-          html += `
-            <article class="inventory-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; transition: all 0.3s ease;">
-              <div style="grid-column: 1; width: 100%;">
-                <strong style="font-size: 16px; font-weight: 800; color: #111827; display: block; margin-bottom: 12px;">
-                  ${categoryLabel}
-                </strong>
-                
-                <div class="item-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; margin-bottom: 0;">
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Harvest Qty</label>
-                    <div class="value" style="font-size: 14px; font-weight: 700; color: #111827;">${Number(item.harvestQty || 0).toLocaleString()} units</div>
-                  </div>
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Investment</label>
-                    <div class="amount" style="font-size: 16px; font-weight: 700; color: #10b981;">₱${Number(item.investmentQty || 0).toLocaleString()}</div>
-                  </div>
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Unit Price</label>
-                    <div class="value" style="font-size: 14px; font-weight: 700; color: #10b981;">₱${unitPrice}</div>
-                  </div>
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Date Added</label>
-                    <div class="value" style="font-size: 14px; font-weight: 700; color: #111827;">${submittedDate}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <code style="background: #f3f4f6; padding: 10px 14px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; color: #10b981; white-space: nowrap; border: 1px solid #e5e7eb; flex-shrink: 0; align-self: center;">
-                #INV-${String(itemIndex).padStart(3, '0')}
-              </code>
-              
-              <a href="/user/inventory/stock-info?id=${doc.id}" class="close" style="background: #10b981 !important; color: white !important; border: none !important; width: 36px !important; height: 36px !important; border-radius: 6px !important; font-size: 0 !important; text-decoration: none !important; cursor: pointer !important; transition: all 0.2s !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; white-space: nowrap !important; flex-shrink: 0 !important; position: relative !important;">
-                <span style="display: none !important;">View</span>
-              </a>
-            </article>
-          `;
-          itemIndex++;
-        });
-
-        html += '</main>';
-        document.getElementById('inventoryList').innerHTML = html;
-
-        document.querySelectorAll('#inventoryList .close').forEach(btn => {
-          btn.style.setProperty('font-size', '0', 'important');
-          btn.style.setProperty('background', '#10b981', 'important');
-          btn.style.setProperty('color', 'white', 'important');
-          const icon = document.createElement('i');
-          icon.className = 'fa-solid fa-eye';
-          icon.style.cssText = 'font-size: 14px !important; color: white !important; position: absolute !important;';
-          btn.innerHTML = '';
-          btn.appendChild(icon);
-          
-          btn.addEventListener('mouseenter', function() {
-            this.style.setProperty('background', '#059669', 'important');
-            this.style.setProperty('transform', 'translateY(-2px)', 'important');
-            this.style.setProperty('box-shadow', '0 4px 12px rgba(16, 185, 129, 0.3)', 'important');
-          });
-          
-          btn.addEventListener('mouseleave', function() {
-            this.style.setProperty('background', '#10b981', 'important');
-            this.style.setProperty('transform', 'translateY(0)', 'important');
-            this.style.setProperty('box-shadow', 'none', 'important');
-          });
-        });
-
-      } catch (error) {
-        console.error('Error loading inventory history:', error);
-        document.getElementById('inventoryList').innerHTML = `
-          <div class="empty-message">
-            <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444;"></i>
-            <p style="color: #ef4444;">Error loading inventory history: ${error.message}</p>
-          </div>
-        `;
-      }
-    }
-
-    
-
-    async function loadServiceRequests() {
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          document.getElementById('servicesList').innerHTML = `
-            <div class="empty-service-message">
-              <i class="fa-solid fa-exclamation-circle"></i>
-              <p>Please sign in to view your service requests.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const q = query(
-          collection(db, 'service_requests'),
-          where('userId', '==', currentUser.uid)
-        );
-
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          document.getElementById('servicesList').innerHTML = `
-            <div class="empty-service-message">
-              <i class="fa-solid fa-folder-open"></i>
-              <p>No service requests found.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const services = [];
-        querySnapshot.forEach((doc) => {
-          services.push({
-            id: doc.id,
-            ...doc.data()
-          });
-        });
-
-        services.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateB - dateA;
-        });
-
-        let html = '';
-        services.forEach((service) => {
-          const serviceId = service.id;
-          
-          const createdDate = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }) : 'N/A';
-
-          let statusClass = 'pending';
-          let statusText = 'Pending';
-          
-          if (service.status === 'approved') {
-            statusClass = 'approved';
-            statusText = 'Approved';
-          } else if (service.status === 'processing' || service.paymentStatus === 'completed') {
-            statusClass = 'processing';
-            statusText = 'Processing';
-          } else if (service.status === 'rejected') {
-            statusClass = 'rejected';
-            statusText = 'Rejected';
-          }
-
-          html += `
-            <div class="service-card" data-service-id="${serviceId}">
-              <div class="service-header">
-                <div>
-                  <h3 class="service-title"><i class="fa-solid fa-hand-holding-heart mr-2"></i>${service.serviceType || 'Service Request'}</h3>
-                  <p class="service-date"><i class="fa-solid fa-clock mr-1"></i>${createdDate}</p>
-                </div>
-                <span class="service-status-badge ${statusClass}">
-                  <i class="fa-solid fa-${statusClass === 'approved' ? 'check-circle' : statusClass === 'processing' ? 'spinner fa-spin' : statusClass === 'rejected' ? 'times-circle' : 'clock'}"></i>
-                  ${statusText}
-                </span>
-              </div>
-              
-              <div class="service-details" id="details-${serviceId}" style="display: none;">
-                ${generateServiceDetails(service)}
-              </div>
-              
-              <div class="service-actions">
-                <button class="service-btn service-btn-primary" onclick="toggleServiceDetails('${serviceId}')">
-                  <i class="fa-solid fa-eye mr-1"></i> View Details
-                </button>
-                ${service.paymentStatus === 'completed' || service.paymentStatus === 'free' ? `
-                  <span class="service-btn" style="background-color: #10b981; color: white; border: none; cursor: default; display: flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-check-circle mr-1"></i> PAID
-                  </span>
-                ` : service.amount ? `
-                  <button class="service-btn service-btn-secondary" onclick="retryPayment('${serviceId}', '${(service.amount || 0).toString().replace(/'/g, "\\'")}', '${(service.serviceType || 'Service').replace(/'/g, "\\'")}', '${(currentUser.email || '').replace(/'/g, "\\'")}')" id="payment-btn-${serviceId}" style="background: #f59e0b; color: white;">
-                    <i class="fa-solid fa-credit-card mr-1"></i> Pay Now
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        });
-
-        document.getElementById('servicesList').innerHTML = html;
-
-      } catch (error) {
-        console.error('Error loading service requests:', error);
-        document.getElementById('servicesList').innerHTML = `
-          <div class="empty-service-message">
-            <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444;"></i>
-            <p style="color: #ef4444;">Error loading service requests: ${error.message}</p>
-          </div>
-        `;
-      }
-    }
-
     function generateServiceDetails(service) {
       let detailsHtml = '';
       
@@ -2238,43 +1959,258 @@
       }
     };
 
-    loadApplications();
-    
-    window.addEventListener('DOMContentLoaded', () => {
-      const hash = window.location.hash.substring(1); // Remove the # symbol
-      
-      if (hash === 'services') {
-        const servicesTab = document.querySelector('.tab-btn[data-tab="services"]');
-        if (servicesTab) {
-          servicesTab.click();
-        }
-      } else if (hash === 'inventory') {
-        const inventoryTab = document.querySelector('.tab-btn[data-tab="inventory"]');
-        if (inventoryTab) {
-          inventoryTab.click();
-        }
+    // Wait for Firebase auth to be ready before loading history
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('User authenticated:', user.email);
+        loadHistory();
+      } else {
+        console.log('No user authenticated');
+        const historyContainer = document.getElementById('historyContainer');
+        historyContainer.innerHTML = `
+          <div class="empty-message">
+            <i class="fa-solid fa-exclamation-circle"></i>
+            <p>Please sign in to view your history.</p>
+          </div>
+        `;
       }
+      unsubscribe(); // Unsubscribe after first check
     });
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      if (btn.dataset.tab === 'inventory') {
-        btn.addEventListener('click', function() {
-          if (!document.getElementById('inventoryList').getAttribute('data-loaded')) {
-            loadInventoryHistory();
-            document.getElementById('inventoryList').setAttribute('data-loaded', 'true');
+
+    // Service Requests Download PDF
+    window.downloadServiceRequestsPDF = async function() {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please sign in to download service requests.');
+          return;
+        }
+
+        const q = query(
+          collection(db, 'service_requests'),
+          where('userId', '==', user.uid)
+        );
+        const querySnapshot = await getDocs(q);
+        
+        const services = [];
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          const status = (item.status || '').toLowerCase();
+          const paymentStatus = (item.paymentStatus || '').toLowerCase();
+          if (status === 'approved' || paymentStatus === 'completed') {
+            services.push({id: doc.id, ...item});
           }
         });
-      }
-      
-      if (btn.dataset.tab === 'services') {
-        btn.addEventListener('click', function() {
-          if (!document.getElementById('servicesList').getAttribute('data-loaded')) {
-            loadServiceRequests();
-            document.getElementById('servicesList').setAttribute('data-loaded', 'true');
-          }
+
+        if (services.length === 0) {
+          alert('No service requests to download.');
+          return;
+        }
+
+        services.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
         });
+
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.borderBottom = '3px solid #ec4899';
+        header.style.paddingBottom = '15px';
+        
+        header.innerHTML = `
+          <h1 style="color: #831843; font-size: 22px; margin: 0; font-weight: 800;">DENR Service Requests Report</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+
+        const detailsSection = document.createElement('div');
+        detailsSection.style.marginTop = '15px';
+
+        services.forEach((service, idx) => {
+          const date = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A';
+          const serviceType = service.serviceType || 'Service Request';
+          const status = (service.status || 'Unknown').toUpperCase();
+          const description = service.description || 'No description provided';
+
+          const card = document.createElement('div');
+          card.style.marginBottom = '15px';
+          card.style.padding = '12px';
+          card.style.border = '1px solid #e5e7eb';
+          card.style.borderRadius = '6px';
+          card.style.backgroundColor = '#f9fafb';
+          card.style.pageBreakInside = 'avoid';
+
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #ec4899;">
+              <div>
+                <span style="display: inline-block; padding: 4px 8px; background: #fbcfe8; color: #be123c; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">${serviceType}</span>
+                <h3 style="color: #1b330d; font-size: 13px; font-weight: 700; margin: 4px 0 0 0;">${description}</h3>
+              </div>
+              <span style="color: #6b7280; font-weight: 600; font-size: 11px;">Req #${idx + 1}</span>
+            </div>
+            
+            <div style="background: white; padding: 10px; border-radius: 4px; font-size: 11px;">
+              <p style="color: #6b7280; margin: 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">${status}</span></p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Service Type:</strong> ${serviceType}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Date:</strong> ${date}</p>
+            </div>
+          `;
+          
+          detailsSection.appendChild(card);
+        });
+
+        pdfContainer.appendChild(detailsSection);
+
+        const element = document.createElement('div');
+        element.appendChild(pdfContainer);
+        document.body.appendChild(element);
+
+        const opt = {
+          margin: 10,
+          filename: 'denr-service-requests-report.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+
+        html2pdf().set(opt).from(element).save().finally(() => {
+          document.body.removeChild(element);
+        });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
       }
-    });
+    };
+
+    // Inventory History Download PDF
+    window.downloadInventoryHistoryPDF = async function() {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please sign in to download inventory history.');
+          return;
+        }
+
+        const q = query(
+          collection(db, 'inventory_registrations'), 
+          where('userId', '==', user.uid),
+          where('status', '==', 'approved')
+        );
+        const querySnapshot = await getDocs(q);
+
+        const categoryLabels = {
+          'farming': 'Crop & Plant',
+          'livestock': 'Fisheries & Agriculture',
+          'agribusiness': 'Agribusiness & Agro-Processing',
+          'trade': 'Agricultural Trade',
+          'infrastructure': 'Infrastructure',
+          'research': 'Research & Innovation',
+          'support': 'Support & Insurance',
+          'safety': 'Food Safety',
+          'extension': 'Extension Services',
+          'climate': 'Climate & Risk',
+          'data': 'Digital Agriculture',
+          'compliance': 'Compliance & Enforcement',
+          'institutional': 'Cooperative Development'
+        };
+
+        const sortedDocs = [];
+        querySnapshot.forEach(doc => sortedDocs.push(doc));
+        sortedDocs.sort((a, b) => {
+          const aTime = a.data().submittedAt?.toDate?.() || new Date(0);
+          const bTime = b.data().submittedAt?.toDate?.() || new Date(0);
+          return bTime - aTime;
+        });
+
+        if (sortedDocs.length === 0) {
+          alert('No inventory items to download.');
+          return;
+        }
+
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.borderBottom = '3px solid #f59e0b';
+        header.style.paddingBottom = '15px';
+        
+        header.innerHTML = `
+          <h1 style="color: #78350f; font-size: 22px; margin: 0; font-weight: 800;">DENR Inventory Report</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+
+        const detailsSection = document.createElement('div');
+        detailsSection.style.marginTop = '15px';
+
+        sortedDocs.forEach((doc, idx) => {
+          const item = doc.data();
+          const categoryLabel = categoryLabels[item.category] || item.category || 'Product';
+          const date = item.submittedAt ? new Date(item.submittedAt.toDate()).toLocaleDateString('en-PH', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A';
+
+          const card = document.createElement('div');
+          card.style.marginBottom = '15px';
+          card.style.padding = '12px';
+          card.style.border = '1px solid #e5e7eb';
+          card.style.borderRadius = '6px';
+          card.style.backgroundColor = '#f9fafb';
+          card.style.pageBreakInside = 'avoid';
+
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f59e0b;">
+              <div>
+                <span style="display: inline-block; padding: 4px 8px; background: #fef3c7; color: #92400e; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Inventory</span>
+                <h3 style="color: #1b330d; font-size: 13px; font-weight: 700; margin: 4px 0 0 0;">${categoryLabel}</h3>
+              </div>
+              <span style="color: #6b7280; font-weight: 600; font-size: 11px;">Item #${idx + 1}</span>
+            </div>
+            
+            <div style="background: white; padding: 10px; border-radius: 4px; font-size: 11px;">
+              <p style="color: #6b7280; margin: 0;"><strong>Date Submitted:</strong> ${date}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Harvest Qty:</strong> ${Number(item.harvestQty || 0).toLocaleString()} units</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Investment:</strong> ₱${Number(item.investmentQty || 0).toLocaleString()}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span></p>
+            </div>
+          `;
+          
+          detailsSection.appendChild(card);
+        });
+
+        pdfContainer.appendChild(detailsSection);
+
+        const element = document.createElement('div');
+        element.appendChild(pdfContainer);
+        document.body.appendChild(element);
+
+        const opt = {
+          margin: 10,
+          filename: 'denr-inventory-report.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+
+        html2pdf().set(opt).from(element).save().finally(() => {
+          document.body.removeChild(element);
+        });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
+      }
+    };
   </script>
 </body>
 </html>
