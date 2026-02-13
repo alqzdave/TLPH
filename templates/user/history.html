@@ -1055,37 +1055,25 @@
     <div class="container">
       <h1><i class="fa-solid fa-history"></i> History</h1>
       
-      <!-- Applications Section -->
-      <div class="card-custom" style="margin-bottom: 32px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px;">
-          <h2 style="font-size: 16px; font-weight: 800; color: #111827; margin: 0; text-transform: uppercase; flex: 1;"><i class="fa-solid fa-file-lines mr-2" style="color: #3b82f6;"></i>Applications</h2>
-          <button id="downloadPdfBtn" onclick="downloadApplicationsPDF()" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap;">
-            <i class="fa-solid fa-download"></i> PDF
+      <!-- Download Buttons Row -->
+      <div class="card-custom" style="margin-bottom: 24px; padding: 16px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+          <button id="downloadPdfBtn" onclick="downloadApplicationsPDF()" style="padding: 8px 14px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; transition: all 0.2s;">
+            <i class="fa-solid fa-download"></i> Applications Report
+          </button>
+          <button onclick="downloadServiceRequestsPDF()" style="padding: 8px 14px; background: #ec4899; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; transition: all 0.2s;">
+            <i class="fa-solid fa-download"></i> Services Report
+          </button>
+          <button id="downloadInventoryPdfBtn" onclick="downloadInventoryHistoryPDF()" style="padding: 8px 14px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; transition: all 0.2s;">
+            <i class="fa-solid fa-download"></i> Inventory Report
           </button>
         </div>
-        <div id="applicationsList"></div>
       </div>
 
-      <!-- Services Section -->
-      <div class="card-custom" style="margin-bottom: 32px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px;">
-          <h2 style="font-size: 16px; font-weight: 800; color: #111827; margin: 0; text-transform: uppercase; flex: 1;"><i class="fa-solid fa-hand-holding-heart mr-2" style="color: #ec4899;"></i>Service Requests</h2>
-          <button onclick="downloadServiceRequestsPDF()" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap;">
-            <i class="fa-solid fa-download"></i> PDF
-          </button>
-        </div>
-        <div id="servicesList"></div>
-      </div>
-
-      <!-- Inventory Section -->
+      <!-- Combined History Section -->
       <div class="card-custom">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px;">
-          <h2 style="font-size: 16px; font-weight: 800; color: #111827; margin: 0; text-transform: uppercase; flex: 1;"><i class="fa-solid fa-boxes-stacked mr-2" style="color: #f59e0b;"></i>Inventory History</h2>
-          <button id="downloadInventoryPdfBtn" onclick="downloadInventoryHistoryPDF()" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap;">
-            <i class="fa-solid fa-download"></i> PDF
-          </button>
-        </div>
-        <div id="inventoryList" style="min-height: 400px;"></div>
+        <h2 style="font-size: 16px; font-weight: 800; color: #111827; margin: 0 0 20px 0; text-transform: uppercase;"><i class="fa-solid fa-list mr-2" style="color: #10b981;"></i>All Records</h2>
+        <div id="historyContainer" style="min-height: 400px;"></div>
       </div>
     </div>
   </main>
@@ -1172,7 +1160,83 @@
 
     // Tab switching removed - all sections displayed at once
     
-    async function loadApplications() {
+    async function loadHistory() {
+      try {
+        const historyContainer = document.getElementById('historyContainer');
+        
+        // Show loading state
+        historyContainer.innerHTML = `
+          <div style="text-align: center; padding: 40px;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #10b981;"></i>
+            <p style="color: #6b7280; margin-top: 16px; font-weight: 600;">Loading history...</p>
+          </div>
+        `;
+
+        const user = auth.currentUser;
+        console.log('Current user:', user);
+        
+        if (!user) {
+          historyContainer.innerHTML = `
+            <div class="empty-message">
+              <i class="fa-solid fa-exclamation-circle"></i>
+              <p>Please sign in to view your history.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Load all three data sources in parallel
+        console.log('Loading data from all sources...');
+        const [applicationsData, servicesData, inventoryData] = await Promise.all([
+          loadApplicationsData(user),
+          loadServiceRequestsData(user),
+          loadInventoryData(user)
+        ]);
+
+        console.log('Applications:', applicationsData.length);
+        console.log('Services:', servicesData.length);
+        console.log('Inventory:', inventoryData.length);
+
+        // Combine all items
+        const allItems = [...applicationsData, ...servicesData, ...inventoryData];
+        console.log('Total items:', allItems.length);
+        
+        if (allItems.length === 0) {
+          historyContainer.innerHTML = `
+            <div class="empty-message">
+              <i class="fa-solid fa-box-open"></i>
+              <p>No records found. Submit an application or service request to see them here.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Sort by date (newest first)
+        allItems.sort((a, b) => {
+          const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+          const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+          return dateB - dateA;
+        });
+
+        // Render all items
+        let html = '';
+        allItems.forEach(item => {
+          html += item.html;
+        });
+
+        historyContainer.innerHTML = html;
+      } catch (error) {
+        console.error('Error loading history:', error);
+        document.getElementById('historyContainer').innerHTML = `
+          <div class="empty-message">
+            <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444;"></i>
+            <p style="color: #ef4444;">Error loading history: ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    async function loadApplicationsData(user) {
       try {
         let userEmail = null;
 
@@ -1190,88 +1254,211 @@
           userEmail = (localStorage.getItem('denr_user_email') || '').trim();
         }
 
+        console.log('Loading applications for email:', userEmail);
+
         if (!userEmail) {
-          document.getElementById('applicationsList').innerHTML = `
-            <div class="empty-message">
-              <i class="fa-solid fa-exclamation-circle" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
-              <p>Unable to load applications. Please sign in again.</p>
-            </div>
-          `;
-          return;
+          console.warn('No user email found');
+          return [];
         }
 
         const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
         const result = await response.json();
 
-        if (result.status === 'success' && result.transactions) {
+        console.log('API Response:', result);
+
+        if (result.status === 'success' && result.transactions && Array.isArray(result.transactions)) {
           const approvedApps = result.transactions.filter(t => {
-            // Show only approved/paid/completed applications
             const status = (t.display_status || t.status || t.approval_status || '').toLowerCase();
             const isApproved = status === 'approved' || status === 'paid' || status === 'pending_payment';
             const isNotService = !isServiceTransaction(t);
             return isApproved && isNotService;
           });
 
-          console.log('Total transactions:', result.transactions.length);
-          console.log('Approved apps:', approvedApps.length);
-          console.log('All transactions:', result.transactions);
+          console.log('Filtered applications:', approvedApps.length);
 
-          if (approvedApps.length === 0) {
-            document.getElementById('applicationsList').innerHTML = `
-              <div class="empty-message">
-                <i class="fa-solid fa-folder-open" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
-                <p>No approved applications found.</p>
-              </div>
-            `;
-            return;
-          }
-
-          let html = '';
-          approvedApps.forEach(t => {
+          return approvedApps.map(t => {
             const date = t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A';
             const updated = t.updated_at ? new Date(t.updated_at).toLocaleString() : 'N/A';
-            
             const appType = t.transaction_type || extractAppType(t.transaction_name) || 'License/Permit';
             const appDescription = t.transaction_name || 'Unknown Application';
             const appAmount = peso.format(t.amount || 0);
             
-            html += `
-              <div class="application-card">
-                <div class="application-header">
-                  <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                    <span class="application-type-badge">${appType}</span>
-                    <span style="color: #6b7280; font-size: 12px;">•</span>
-                    <span style="color: #6b7280; font-size: 12px;">${date}</span>
+            return {
+              date: t.created_at || new Date(),
+              html: `
+                <div class="application-card">
+                  <div class="application-header">
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                      <span class="application-type-badge">${appType}</span>
+                      <span style="color: #6b7280; font-size: 12px;">•</span>
+                      <span style="color: #6b7280; font-size: 12px;">${date}</span>
+                    </div>
                   </div>
-                </div>
-                <div style="margin-top: 8px;">
-                  <p style="font-weight: 600; color: #111827; margin: 0 0 4px;">${appDescription}</p>
-                  <div style="font-size: 12px; color: #9ca3af;">
-                    <span><strong>Amount:</strong> ${appAmount}</span>
+                  <div style="margin-top: 8px;">
+                    <p style="font-weight: 600; color: #111827; margin: 0 0 4px;">${appDescription}</p>
+                    <div style="font-size: 12px; color: #9ca3af;">
+                      <span><strong>Amount:</strong> ${appAmount}</span>
+                    </div>
                   </div>
+                  <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
+                    <i class="fa-solid fa-file-pdf"></i> Receipt
+                  </button>
                 </div>
-                <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
-                  <i class="fa-solid fa-file-pdf"></i> Receipt
-                </button>
-              </div>
-            `;
+              `
+            };
           });
-
-          document.getElementById('applicationsList').innerHTML = html;
-        } else {
-          document.getElementById('applicationsList').innerHTML = `
-            <div class="empty-message">
-              <p>${result.message || 'Unable to load applications.'}</p>
-            </div>
-          `;
         }
+        return [];
       } catch (error) {
         console.error('Error loading applications:', error);
-        document.getElementById('applicationsList').innerHTML = `
-          <div class="empty-message">
-            <p>An error occurred while loading applications.</p>
-          </div>
-        `;
+        return [];
+      }
+    }
+
+    async function loadServiceRequestsData(user) {
+      try {
+        console.log('Loading service requests for user:', user.uid);
+        
+        const q = query(
+          collection(db, 'service_requests'),
+          where('userId', '==', user.uid)
+        );
+
+        const querySnapshot = await getDocs(q);
+        console.log('Service requests found:', querySnapshot.size);
+        
+        const services = [];
+        
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          const status = (item.status || '').toLowerCase();
+          const paymentStatus = (item.paymentStatus || '').toLowerCase();
+          
+          // Show only approved or completed services
+          if (status === 'approved' || paymentStatus === 'completed') {
+            services.push({
+              id: doc.id,
+              ...item
+            });
+          }
+        });
+
+        console.log('Approved services:', services.length);
+
+        services.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        return services.map(service => {
+          const date = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) : 'N/A';
+          
+          const serviceType = service.serviceType || 'Service Request';
+          const status = (service.status || 'Unknown').toUpperCase();
+          const description = service.description || 'No description provided';
+
+          return {
+            date: service.createdAt || new Date(),
+            html: `
+              <div class="service-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: all 0.3s ease;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                  <span style="display: inline-block; background: #9ca3af; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${serviceType}</span>
+                  <span style="color: #6b7280; font-size: 12px;">•</span>
+                  <span style="color: #6b7280; font-size: 12px;">${date}</span>
+                  <span style="display: inline-block; background: #10b981; color: white; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: auto;">${status}</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                  <p style="font-weight: 700; color: #111827; margin: 0 0 4px; font-size: 14px;">${description}</p>
+                </div>
+              </div>
+            `
+          };
+        });
+      } catch (error) {
+        console.error('Error loading services:', error);
+        return [];
+      }
+    }
+
+    async function loadInventoryData(user) {
+      try {
+        console.log('Loading inventory for user:', user.uid);
+        
+        const q = query(
+          collection(db, 'inventory_registrations'), 
+          where('userId', '==', user.uid),
+          where('status', '==', 'approved')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        console.log('Inventory items found:', querySnapshot.size);
+
+        const categoryLabels = {
+          'farming': 'Crop & Plant',
+          'livestock': 'Fisheries & Agriculture',
+          'agribusiness': 'Agribusiness & Agro-Processing',
+          'trade': 'Agricultural Trade',
+          'infrastructure': 'Infrastructure',
+          'research': 'Research & Innovation',
+          'support': 'Support & Insurance',
+          'safety': 'Food Safety',
+          'extension': 'Extension Services',
+          'climate': 'Climate & Risk',
+          'data': 'Digital Agriculture',
+          'compliance': 'Compliance & Enforcement',
+          'institutional': 'Cooperative Development'
+        };
+
+        const sortedDocs = [];
+        querySnapshot.forEach(doc => sortedDocs.push(doc));
+        sortedDocs.sort((a, b) => {
+          const aTime = a.data().submittedAt?.toDate?.() || new Date(0);
+          const bTime = b.data().submittedAt?.toDate?.() || new Date(0);
+          return bTime - aTime;
+        });
+
+        console.log('Sorted inventory:', sortedDocs.length);
+
+        return sortedDocs.map((doc, index) => {
+          const item = doc.data();
+          const categoryLabel = categoryLabels[item.category] || item.category || 'Product';
+          const submittedDate = item.submittedAt ? new Date(item.submittedAt.toDate()).toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) : 'N/A';
+
+          return {
+            date: item.submittedAt || new Date(),
+            html: `
+              <div class="inventory-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: all 0.3s ease;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                  <span style="display: inline-block; background: #f59e0b; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Inventory</span>
+                  <span style="color: #6b7280; font-size: 12px;">•</span>
+                  <span style="color: #6b7280; font-size: 12px;">${submittedDate}</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                  <p style="font-weight: 700; color: #111827; margin: 0 0 4px; font-size: 14px;">${categoryLabel}</p>
+                  <div style="font-size: 12px; color: #9ca3af;">
+                    <span><strong>Harvest Qty:</strong> ${Number(item.harvestQty || 0).toLocaleString()} units</span>
+                    <span style="margin-left: 16px;"><strong>Investment:</strong> ₱${Number(item.investmentQty || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+                <a href="/user/inventory/stock-info?id=${doc.id}" style="display: inline-flex; align-items: center; gap: 6px; background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s ease;">
+                  <i class="fa-solid fa-eye"></i> View Details
+                </a>
+              </div>
+            `
+          };
+        });
+      } catch (error) {
+        console.error('Error loading inventory:', error);
+        return [];
       }
     }
 
@@ -1336,73 +1523,11 @@
 
     window.downloadApplicationsPDF = async function() {
       try {
-        const applicationsList = document.getElementById('applicationsList');
-        
-        if (!applicationsList || applicationsList.children.length === 0) {
-          alert('No applications to download.');
-          return;
-        }
-
         const downloadBtn = document.getElementById('downloadPdfBtn');
         if (downloadBtn) {
           downloadBtn.disabled = true;
-          downloadBtn.textContent = 'Generating PDF...';
+          downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
         }
-
-        const pdfContainer = document.createElement('div');
-        pdfContainer.style.padding = '15px';
-        pdfContainer.style.backgroundColor = '#ffffff';
-        pdfContainer.style.fontFamily = 'Arial, sans-serif';
-        pdfContainer.style.lineHeight = '1.3';
-        
-        const header = document.createElement('div');
-        header.style.textAlign = 'center';
-        header.style.marginBottom = '12px';
-        header.style.borderBottom = '2px solid #10b981';
-        header.style.paddingBottom = '8px';
-        
-        header.innerHTML = `
-          <h1 style="color: #1b330d; font-size: 20px; margin: 0; font-weight: 800;">DENR License & Permit Applications</h1>
-          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
-          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 10px;">Generated: ${new Date().toLocaleString()}</p>
-        `;
-        pdfContainer.appendChild(header);
-
-        const stats = document.createElement('div');
-        stats.style.display = 'grid';
-        stats.style.gridTemplateColumns = 'repeat(3, 1fr)';
-        stats.style.gap = '8px';
-        stats.style.marginBottom = '12px';
-        
-        const appCount = applicationsList.children.length;
-        stats.innerHTML = `
-          <div style="background: #f0fdf4; padding: 10px; border-radius: 6px; border-left: 3px solid #10b981; text-align: center;">
-            <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Total Apps</p>
-            <h3 style="color: #10b981; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">${appCount}</h3>
-          </div>
-          <div style="background: #eff6ff; padding: 10px; border-radius: 6px; border-left: 3px solid #3b82f6; text-align: center;">
-            <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Status</p>
-            <h3 style="color: #3b82f6; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">Approved</h3>
-          </div>
-          <div style="background: #fef3c7; padding: 10px; border-radius: 6px; border-left: 3px solid #f59e0b; text-align: center;">
-            <p style="color: #6b7280; font-size: 10px; margin: 0; text-transform: uppercase; font-weight: 700;">Format</p>
-            <h3 style="color: #f59e0b; font-size: 18px; margin: 4px 0 0 0; font-weight: 800;">PDF</h3>
-          </div>
-        `;
-        pdfContainer.appendChild(stats);
-
-        const detailsSection = document.createElement('div');
-        detailsSection.style.marginTop = '12px';
-        
-        const detailsTitle = document.createElement('h2');
-        detailsTitle.innerHTML = 'Application Details';
-        detailsTitle.style.color = '#1b330d';
-        detailsTitle.style.fontSize = '14px';
-        detailsTitle.style.fontWeight = '800';
-        detailsTitle.style.borderBottom = '2px solid #10b981';
-        detailsTitle.style.paddingBottom = '6px';
-        detailsTitle.style.marginBottom = '10px';
-        detailsSection.appendChild(detailsTitle);
 
         let userEmail = localStorage.getItem('denr_user_email') || '';
         
@@ -1418,248 +1543,112 @@
           });
         }
 
-        try {
-          let firebaseApplications = [];
-          
-          if (userEmail) {
-            const q = query(
-              collection(db, 'transactions'),
-              where('userEmail', '==', userEmail),
-              where('transactionType', '==', 'license-application'),
-              orderBy('createdAt', 'desc')
-            );
-            
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-              const data = doc.data();
-              firebaseApplications.push({
-                id: doc.id,
-                ...data
-              });
-            });
+        const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+        const result = await response.json();
 
-            console.log('Fetched applications from transactions:', firebaseApplications.length);
+        const approvedApps = result.status === 'success' && result.transactions ? 
+          result.transactions.filter(t => {
+            const status = (t.display_status || t.status || t.approval_status || '').toLowerCase();
+            const isApproved = status === 'approved' || status === 'paid' || status === 'pending_payment';
+            const isNotService = !isServiceTransaction(t);
+            return isApproved && isNotService;
+          }) : [];
+
+        if (approvedApps.length === 0) {
+          alert('No applications to download.');
+          if (downloadBtn) {
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Applications Report';
           }
-
-          if (firebaseApplications.length > 0) {
-            firebaseApplications.forEach((app, idx) => {
-              const appCard = document.createElement('div');
-              appCard.style.marginBottom = '12px';
-              appCard.style.padding = '10px';
-              appCard.style.border = '1px solid #e5e7eb';
-              appCard.style.borderRadius = '6px';
-              appCard.style.backgroundColor = '#f9fafb';
-              appCard.style.pageBreakInside = 'avoid';
-              appCard.style.fontSize = '11px';
-
-              const appName = app.formData?.appType || app.applicationType || 'License Application';
-              const appType = app.formData?.applicationType || app.applicationType || 'license';
-              const amount = app.formData?.amount || app.amount || 0;
-              const formFields = app.formData?.formFields || {};
-
-              let formFieldsHTML = '';
-              const fieldKeys = Object.keys(formFields).filter(key => formFields[key] !== null && formFields[key] !== undefined && formFields[key] !== '');
-              
-              if (fieldKeys.length > 0) {
-                fieldKeys.forEach((key) => {
-                  const label = key
-                    .replace(/([A-Z])/g, ' $1')
-                    .replace(/^./, str => str.toUpperCase())
-                    .trim();
-                  const value = formFields[key];
-                  formFieldsHTML += `<p style="margin: 6px 0 0 0;"><strong>${label}:</strong> ${value}</p>`;
-                });
-              }
-
-              appCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
-                  <div>
-                    <span style="display: inline-block; padding: 4px 8px; background: #d1fae5; color: #047857; border-radius: 4px; font-weight: 700; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">${appType.toUpperCase().replace(/-/g, ' ')}</span>
-                    <h3 style="color: #1b330d; font-size: 12px; font-weight: 700; margin: 4px 0 0 0;">${appName}</h3>
-                  </div>
-                  <span style="color: #6b7280; font-weight: 600; font-size: 10px;">App #${idx + 1}</span>
-                </div>
-                
-                <div style="background: white; padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 10px;">
-                  <p style="color: #6b7280; margin: 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span></p>
-                  <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Amount:</strong> ₱${amount}</p>
-                  <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Date:</strong> ${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</p>
-                  
-                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #1b330d; font-size: 9px; font-weight: 700; text-transform: uppercase; margin: 0 0 6px 0;">Form</p>
-                    <div style="background: #f3f4f6; padding: 6px; border-radius: 3px; font-size: 9px; color: #4b5563;">
-                      <p style="margin: 0;"><strong>Type:</strong> ${appType}</p>
-                      <p style="margin: 2px 0 0 0;"><strong>Amount:</strong> ₱${amount}</p>
-                      <p style="margin: 2px 0 0 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
-                      ${formFieldsHTML ? `
-                        <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #e5e7eb;">
-                          <p style="margin: 0; font-weight: 700; font-size: 8px;">Fields:</p>
-                          <div style="font-size: 8px;">${formFieldsHTML}</div>
-                        </div>
-                      ` : '<p style="margin-top: 5px; color: #9ca3af; font-size: 8px;"><em>No fields</em></p>'}
-                    </div>
-                  </div>
-                </div>
-              `;
-              
-              detailsSection.appendChild(appCard);
-            });
-          } else {
-            const applicationsData = Array.from(applicationsList.children).map((card, idx) => {
-              const badge = card.querySelector('.application-type-badge');
-              const pElements = card.querySelectorAll('p');
-              const appType = badge ? badge.textContent : 'License/Permit';
-              const appName = pElements.length > 0 ? pElements[0].textContent : 'Unknown';
-              
-              return {
-                type: appType,
-                name: appName,
-                index: idx + 1
-              };
-            });
-
-            applicationsData.forEach((app, idx) => {
-              const appCard = document.createElement('div');
-              appCard.style.marginBottom = '12px';
-              appCard.style.padding = '10px';
-              appCard.style.border = '1px solid #e5e7eb';
-              appCard.style.borderRadius = '6px';
-              appCard.style.backgroundColor = '#f9fafb';
-              appCard.style.pageBreakInside = 'avoid';
-              appCard.style.fontSize = '11px';
-
-              appCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
-                  <div>
-                    <span style="display: inline-block; padding: 4px 8px; background: #d1fae5; color: #047857; border-radius: 4px; font-weight: 700; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">${app.type}</span>
-                    <h3 style="color: #1b330d; font-size: 12px; font-weight: 700; margin: 4px 0 0 0;">${app.name}</h3>
-                  </div>
-                  <span style="color: #6b7280; font-weight: 600; font-size: 10px;">App #${app.index}</span>
-                </div>
-                
-                <div style="background: white; padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 10px;">
-                  <p style="color: #6b7280; margin: 0;">
-                    <strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span>
-                  </p>
-                  <p style="color: #6b7280; margin: 3px 0 0 0;">
-                    <strong>Form Details</strong>
-                  </p>
-                  <div style="margin-top: 3px; padding-top: 3px; border-top: 1px solid #e5e7eb;">
-                    <div style="background: #f3f4f6; padding: 4px; border-radius: 3px; font-size: 9px; color: #4b5563;">
-                      <p style="margin: 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-              `;
-              
-              detailsSection.appendChild(appCard);
-            });
-          }
-        } catch (e) {
-          console.warn('Could not fetch detailed application data from Firebase:', e);
-          const applicationsData = Array.from(applicationsList.children).map((card, idx) => {
-            const badge = card.querySelector('.application-type-badge');
-            const pElements = card.querySelectorAll('p');
-            return {
-              type: badge ? badge.textContent : 'License/Permit',
-              name: pElements.length > 0 ? pElements[0].textContent : 'Unknown',
-              index: idx + 1
-            };
-          });
-
-          applicationsData.forEach((app) => {
-            const appCard = document.createElement('div');
-            appCard.style.marginBottom = '12px';
-            appCard.style.padding = '10px';
-            appCard.style.border = '1px solid #e5e7eb';
-            appCard.style.borderRadius = '6px';
-            appCard.style.backgroundColor = '#f9fafb';
-            appCard.style.pageBreakInside = 'avoid';
-
-            appCard.innerHTML = `
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #10b981;">
-                <div>
-                  <span style="display: inline-block; padding: 4px 8px; background: #d1fae5; color: #047857; border-radius: 4px; font-weight: 700; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">${app.type}</span>
-                  <h3 style="color: #1b330d; font-size: 12px; font-weight: 700; margin: 4px 0 0 0;">${app.name}</h3>
-                </div>
-                <span style="color: #6b7280; font-weight: 600; font-size: 10px;">App</span>
-              </div>
-              
-              <div style="background: white; padding: 8px; border-radius: 4px; margin-top: 6px; font-size: 10px;">
-                <p style="color: #6b7280; margin: 0;">
-                  <strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span>
-                </p>
-                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #e5e7eb;">
-                  <div style="background: #f3f4f6; padding: 4px; border-radius: 3px; font-size: 9px; color: #4b5563;">
-                    <p style="margin: 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-            `;
-            
-            detailsSection.appendChild(appCard);
-          });
+          return;
         }
+
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.borderBottom = '3px solid #3b82f6';
+        header.style.paddingBottom = '15px';
+        
+        header.innerHTML = `
+          <h1 style="color: #1b330d; font-size: 22px; margin: 0; font-weight: 800;">DENR License & Permit Applications</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+
+        const detailsSection = document.createElement('div');
+        detailsSection.style.marginTop = '15px';
+
+        approvedApps.forEach((app, idx) => {
+          const date = app.created_at ? new Date(app.created_at).toISOString().split('T')[0] : 'N/A';
+          const appType = extractAppType(app.transaction_name) || 'License/Permit';
+          const appDescription = app.transaction_name || 'Unknown Application';
+          const appAmount = peso.format(app.amount || 0);
+          
+          const appCard = document.createElement('div');
+          appCard.style.marginBottom = '15px';
+          appCard.style.padding = '12px';
+          appCard.style.border = '1px solid #e5e7eb';
+          appCard.style.borderRadius = '6px';
+          appCard.style.backgroundColor = '#f9fafb';
+          appCard.style.pageBreakInside = 'avoid';
+
+          appCard.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #3b82f6;">
+              <div>
+                <span style="display: inline-block; padding: 4px 8px; background: #dbeafe; color: #1e40af; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">${appType}</span>
+                <h3 style="color: #1b330d; font-size: 13px; font-weight: 700; margin: 4px 0 0 0;">${appDescription}</h3>
+              </div>
+              <span style="color: #6b7280; font-weight: 600; font-size: 11px;">App #${idx + 1}</span>
+            </div>
+            
+            <div style="background: white; padding: 10px; border-radius: 4px; font-size: 11px;">
+              <p style="color: #6b7280; margin: 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span></p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Date:</strong> ${date}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Amount:</strong> ${appAmount}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Email:</strong> ${userEmail || 'N/A'}</p>
+            </div>
+          `;
+          
+          detailsSection.appendChild(appCard);
+        });
 
         pdfContainer.appendChild(detailsSection);
 
-        const footer = document.createElement('div');
-        footer.style.marginTop = '12px';
-        footer.style.paddingTop = '8px';
-        footer.style.borderTop = '1px solid #e5e7eb';
-        footer.style.textAlign = 'center';
-        footer.style.color = '#6b7280';
-        footer.style.fontSize = '10px';
-        footer.style.pageBreakInside = 'avoid';
-        footer.innerHTML = `
-          <p style="margin: 0; line-height: 1.2;">Official DENR Record | Apps: ${appCount} | Status: Approved</p>
-          <p style="margin: 2px 0 0 0; font-size: 9px; color: #9ca3af;">ID: ${Date.now()} | Generated: ${new Date().toLocaleString()}</p>
-        `;
-        pdfContainer.appendChild(footer);
+        const element = document.createElement('div');
+        element.appendChild(pdfContainer);
+        document.body.appendChild(element);
 
         const opt = {
-          margin: 5,
-          filename: `DENR_Applications_${new Date().getTime()}.pdf`,
+          margin: 10,
+          filename: 'denr-applications-report.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2 },
           jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
         };
 
-        html2pdf().set(opt).from(pdfContainer).save();
-
+        html2pdf().set(opt).from(element).save().finally(() => {
+          document.body.removeChild(element);
+          if (downloadBtn) {
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Applications Report';
+          }
+        });
       } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('Failed to generate PDF. Please try again.');
-      } finally {
+        alert('Error generating PDF. Please try again.');
         const downloadBtn = document.getElementById('downloadPdfBtn');
         if (downloadBtn) {
           downloadBtn.disabled = false;
-          downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download PDF';
+          downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Applications Report';
         }
       }
     };
-
-    window.downloadInventoryHistoryPDF = async function() {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          alert('Please sign in to download inventory history.');
-          return;
-        }
-
-        const downloadBtn = document.getElementById('downloadInventoryPdfBtn');
-        if (downloadBtn) {
-          downloadBtn.disabled = true;
-          downloadBtn.textContent = 'Generating PDF...';
-        }
-
-        const q = query(
-          collection(db, 'applications'), 
-          where('userId', '==', user.uid),
-          where('status', '==', 'approved')
-        );
-        
-        const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
           alert('No inventory items to download.');
@@ -1853,267 +1842,6 @@
       }
     };
 
-    async function loadInventoryHistory() {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          document.getElementById('inventoryList').innerHTML = `
-            <div class="empty-message">
-              <i class="fa-solid fa-exclamation-circle"></i>
-              <p>Please sign in to view inventory history.</p>
-            </div>
-          `;
-          return;
-        }
-
-        document.getElementById('inventoryList').innerHTML = `
-          <div style="text-align: center; padding: 40px;">
-            <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #10b981;"></i>
-            <p style="color: #6b7280; margin-top: 16px; font-weight: 600;">Loading inventory history...</p>
-          </div>
-        `;
-
-        const q = query(
-          collection(db, 'inventory_registrations'), 
-          where('userId', '==', user.uid),
-          where('status', '==', 'approved')
-        );
-        
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          document.getElementById('inventoryList').innerHTML = `
-            <div class="empty-message">
-              <i class="fa-solid fa-box-open"></i>
-              <p>No inventory items found. Submit an application to add items to your inventory.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const categoryLabels = {
-          'farming': 'Crop & Plant',
-          'livestock': 'Fisheries & Agriculture',
-          'agribusiness': 'Agribusiness & Agro-Processing',
-          'trade': 'Agricultural Trade',
-          'infrastructure': 'Infrastructure',
-          'research': 'Research & Innovation',
-          'support': 'Support & Insurance',
-          'safety': 'Food Safety',
-          'extension': 'Extension Services',
-          'climate': 'Climate & Risk',
-          'data': 'Digital Agriculture',
-          'compliance': 'Compliance & Enforcement',
-          'institutional': 'Cooperative Development'
-        };
-
-        const sortedDocs = [];
-        querySnapshot.forEach(doc => sortedDocs.push(doc));
-        sortedDocs.sort((a, b) => {
-          const aTime = a.data().submittedAt?.toDate?.() || new Date(0);
-          const bTime = b.data().submittedAt?.toDate?.() || new Date(0);
-          return bTime - aTime;
-        });
-
-        let html = '<main style="padding: 0 !important;">';
-        let itemIndex = 1;
-
-        sortedDocs.forEach(doc => {
-          const item = doc.data();
-          const categoryLabel = categoryLabels[item.category] || item.category || 'Product';
-          const unitPrice = item.harvestQty > 0 ? (item.investmentQty / item.harvestQty).toFixed(2) : '0.00';
-          const submittedDate = item.submittedAt ? new Date(item.submittedAt.toDate()).toLocaleDateString('en-PH', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          }) : 'N/A';
-
-          html += `
-            <div class="inventory-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: all 0.3s ease;">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                <span style="display: inline-block; background: #f59e0b; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Inventory</span>
-                <span style="color: #6b7280; font-size: 12px;">•</span>
-                <span style="color: #6b7280; font-size: 12px;">${submittedDate}</span>
-              </div>
-              <div style="margin-bottom: 10px;">
-                <p style="font-weight: 700; color: #111827; margin: 0 0 4px; font-size: 14px;">${categoryLabel}</p>
-                <div style="font-size: 12px; color: #9ca3af;">
-                  <span><strong>Harvest Qty:</strong> ${Number(item.harvestQty || 0).toLocaleString()} units</span>
-                  <span style="margin-left: 16px;"><strong>Investment:</strong> ₱${Number(item.investmentQty || 0).toLocaleString()}</span>
-                </div>
-              </div>
-              <a href="/user/inventory/stock-info?id=${doc.id}" style="display: inline-flex; align-items: center; gap: 6px; background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s ease;">
-                <i class="fa-solid fa-eye"></i> View Details
-              </a>
-            </div>
-          `;
-          itemIndex++;
-        });
-
-        html += '</main>';
-        document.getElementById('inventoryList').innerHTML = html;
-
-        document.querySelectorAll('#inventoryList .inventory-card').forEach(card => {
-          card.addEventListener('mouseenter', function() {
-            this.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.15)';
-            this.style.borderColor = '#10b981';
-            this.style.transform = 'translateY(-4px)';
-          });
-          
-          card.addEventListener('mouseleave', function() {
-            this.style.boxShadow = 'none';
-            this.style.borderColor = '#e5e7eb';
-            this.style.transform = 'translateY(0)';
-          });
-        });
-
-      } catch (error) {
-        console.error('Error loading inventory history:', error);
-        document.getElementById('inventoryList').innerHTML = `
-          <div class="empty-message">
-            <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444;"></i>
-            <p style="color: #ef4444;">Error loading inventory history: ${error.message}</p>
-          </div>
-        `;
-      }
-    }
-
-    
-
-    async function loadServiceRequests() {
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          document.getElementById('servicesList').innerHTML = `
-            <div class="empty-service-message">
-              <i class="fa-solid fa-exclamation-circle"></i>
-              <p>Please sign in to view your service requests.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const q = query(
-          collection(db, 'service_requests'),
-          where('userId', '==', currentUser.uid)
-        );
-
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          document.getElementById('servicesList').innerHTML = `
-            <div class="empty-service-message">
-              <i class="fa-solid fa-folder-open"></i>
-              <p>No service requests found.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const services = [];
-        querySnapshot.forEach((doc) => {
-          services.push({
-            id: doc.id,
-            ...doc.data()
-          });
-        });
-
-        services.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateB - dateA;
-        });
-
-        // Filter only approved service requests
-        const approvedServices = services.filter(s => s.status === 'approved' || s.paymentStatus === 'completed');
-
-        if (approvedServices.length === 0) {
-          document.getElementById('servicesList').innerHTML = `
-            <div class="empty-service-message">
-              <i class="fa-solid fa-folder-open"></i>
-              <p>No approved service requests found.</p>
-            </div>
-          `;
-          return;
-        }
-
-        let html = '';
-        approvedServices.forEach((service) => {
-          const serviceId = service.id;
-          
-          const createdDate = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }) : 'N/A';
-
-          let statusClass = 'pending';
-          let statusText = 'Pending';
-          
-          if (service.status === 'approved') {
-            statusClass = 'approved';
-            statusText = 'Approved';
-          } else if (service.status === 'processing' || service.paymentStatus === 'completed') {
-            statusClass = 'processing';
-            statusText = 'Processing';
-          } else if (service.status === 'rejected') {
-            statusClass = 'rejected';
-            statusText = 'Rejected';
-          }
-
-          html += `
-            <div class="service-card" data-service-id="${serviceId}">
-              <div class="service-header">
-                <div style="flex: 1;">
-                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span style="background: #f3f4f6; color: #6b7280; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase;">${service.serviceType || 'Service'}</span>
-                    <span style="color: #d1d5db;">•</span>
-                    <span style="color: #6b7280; font-size: 12px;"><i class="fa-solid fa-clock mr-1"></i>${createdDate}</span>
-                  </div>
-                </div>
-                <span class="service-status-badge ${statusClass}">
-                  <i class="fa-solid fa-${statusClass === 'approved' ? 'check-circle' : statusClass === 'processing' ? 'spinner fa-spin' : statusClass === 'rejected' ? 'times-circle' : 'clock'}"></i>
-                  ${statusText}
-                </span>
-              </div>
-              
-              <div class="service-details" id="details-${serviceId}" style="display: none;">
-                ${generateServiceDetails(service)}
-              </div>
-              
-              <div class="service-actions">
-                <button class="service-btn service-btn-primary" onclick="toggleServiceDetails('${serviceId}')">
-                  <i class="fa-solid fa-eye mr-1"></i> View Details
-                </button>
-                ${service.paymentStatus === 'completed' || service.paymentStatus === 'free' ? `
-                  <span class="service-btn" style="background-color: #10b981; color: white; border: none; cursor: default; display: flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-check-circle mr-1"></i> PAID
-                  </span>
-                ` : service.amount ? `
-                  <button class="service-btn service-btn-secondary" onclick="retryPayment('${serviceId}', '${(service.amount || 0).toString().replace(/'/g, "\\'")}', '${(service.serviceType || 'Service').replace(/'/g, "\\'")}', '${(currentUser.email || '').replace(/'/g, "\\'")}')" id="payment-btn-${serviceId}" style="background: #f59e0b; color: white;">
-                    <i class="fa-solid fa-credit-card mr-1"></i> Pay Now
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        });
-
-        document.getElementById('servicesList').innerHTML = html;
-
-      } catch (error) {
-        console.error('Error loading service requests:', error);
-        document.getElementById('servicesList').innerHTML = `
-          <div class="empty-service-message">
-            <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444;"></i>
-            <p style="color: #ef4444;">Error loading service requests: ${error.message}</p>
-          </div>
-        `;
-      }
-    }
-
     function generateServiceDetails(service) {
       let detailsHtml = '';
       
@@ -2221,37 +1949,99 @@
       }
     };
 
-    loadApplications();
-    loadServiceRequests();
-    loadInventoryHistory();
+    loadHistory();
 
     // Service Requests Download PDF
     window.downloadServiceRequestsPDF = async function() {
       try {
-        const servicesList = document.getElementById('servicesList');
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please sign in to download service requests.');
+          return;
+        }
+
+        const q = query(
+          collection(db, 'service_requests'),
+          where('userId', '==', user.uid)
+        );
+        const querySnapshot = await getDocs(q);
         
-        if (!servicesList || servicesList.children.length === 0) {
+        const services = [];
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          const status = (item.status || '').toLowerCase();
+          const paymentStatus = (item.paymentStatus || '').toLowerCase();
+          if (status === 'approved' || paymentStatus === 'completed') {
+            services.push({id: doc.id, ...item});
+          }
+        });
+
+        if (services.length === 0) {
           alert('No service requests to download.');
           return;
         }
 
+        services.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
         const pdfContainer = document.createElement('div');
-        pdfContainer.style.padding = '15px';
+        pdfContainer.style.padding = '20px';
         pdfContainer.style.backgroundColor = '#ffffff';
         pdfContainer.style.fontFamily = 'Arial, sans-serif';
         
         const header = document.createElement('div');
         header.style.textAlign = 'center';
         header.style.marginBottom = '20px';
-        header.style.borderBottom = '2px solid #ec4899';
+        header.style.borderBottom = '3px solid #ec4899';
         header.style.paddingBottom = '15px';
         
         header.innerHTML = `
-          <h1 style="color: #831843; font-size: 20px; margin: 0; font-weight: 800;">DENR Service Requests</h1>
-          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleString()}</p>
+          <h1 style="color: #831843; font-size: 22px; margin: 0; font-weight: 800;">DENR Service Requests Report</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px;">Generated: ${new Date().toLocaleString()}</p>
         `;
         pdfContainer.appendChild(header);
-        pdfContainer.appendChild(servicesList.cloneNode(true));
+
+        const detailsSection = document.createElement('div');
+        detailsSection.style.marginTop = '15px';
+
+        services.forEach((service, idx) => {
+          const date = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A';
+          const serviceType = service.serviceType || 'Service Request';
+          const status = (service.status || 'Unknown').toUpperCase();
+          const description = service.description || 'No description provided';
+
+          const card = document.createElement('div');
+          card.style.marginBottom = '15px';
+          card.style.padding = '12px';
+          card.style.border = '1px solid #e5e7eb';
+          card.style.borderRadius = '6px';
+          card.style.backgroundColor = '#f9fafb';
+          card.style.pageBreakInside = 'avoid';
+
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #ec4899;">
+              <div>
+                <span style="display: inline-block; padding: 4px 8px; background: #fbcfe8; color: #be123c; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">${serviceType}</span>
+                <h3 style="color: #1b330d; font-size: 13px; font-weight: 700; margin: 4px 0 0 0;">${description}</h3>
+              </div>
+              <span style="color: #6b7280; font-weight: 600; font-size: 11px;">Req #${idx + 1}</span>
+            </div>
+            
+            <div style="background: white; padding: 10px; border-radius: 4px; font-size: 11px;">
+              <p style="color: #6b7280; margin: 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">${status}</span></p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Service Type:</strong> ${serviceType}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Date:</strong> ${date}</p>
+            </div>
+          `;
+          
+          detailsSection.appendChild(card);
+        });
+
+        pdfContainer.appendChild(detailsSection);
 
         const element = document.createElement('div');
         element.appendChild(pdfContainer);
@@ -2259,7 +2049,7 @@
 
         const opt = {
           margin: 10,
-          filename: 'denr-service-requests.pdf',
+          filename: 'denr-service-requests-report.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2 },
           jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
@@ -2277,30 +2067,103 @@
     // Inventory History Download PDF
     window.downloadInventoryHistoryPDF = async function() {
       try {
-        const inventoryList = document.getElementById('inventoryList');
-        
-        if (!inventoryList || inventoryList.children.length === 0) {
-          alert('No inventory history to download.');
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please sign in to download inventory history.');
+          return;
+        }
+
+        const q = query(
+          collection(db, 'inventory_registrations'), 
+          where('userId', '==', user.uid),
+          where('status', '==', 'approved')
+        );
+        const querySnapshot = await getDocs(q);
+
+        const categoryLabels = {
+          'farming': 'Crop & Plant',
+          'livestock': 'Fisheries & Agriculture',
+          'agribusiness': 'Agribusiness & Agro-Processing',
+          'trade': 'Agricultural Trade',
+          'infrastructure': 'Infrastructure',
+          'research': 'Research & Innovation',
+          'support': 'Support & Insurance',
+          'safety': 'Food Safety',
+          'extension': 'Extension Services',
+          'climate': 'Climate & Risk',
+          'data': 'Digital Agriculture',
+          'compliance': 'Compliance & Enforcement',
+          'institutional': 'Cooperative Development'
+        };
+
+        const sortedDocs = [];
+        querySnapshot.forEach(doc => sortedDocs.push(doc));
+        sortedDocs.sort((a, b) => {
+          const aTime = a.data().submittedAt?.toDate?.() || new Date(0);
+          const bTime = b.data().submittedAt?.toDate?.() || new Date(0);
+          return bTime - aTime;
+        });
+
+        if (sortedDocs.length === 0) {
+          alert('No inventory items to download.');
           return;
         }
 
         const pdfContainer = document.createElement('div');
-        pdfContainer.style.padding = '15px';
+        pdfContainer.style.padding = '20px';
         pdfContainer.style.backgroundColor = '#ffffff';
         pdfContainer.style.fontFamily = 'Arial, sans-serif';
         
         const header = document.createElement('div');
         header.style.textAlign = 'center';
         header.style.marginBottom = '20px';
-        header.style.borderBottom = '2px solid #f59e0b';
+        header.style.borderBottom = '3px solid #f59e0b';
         header.style.paddingBottom = '15px';
         
         header.innerHTML = `
-          <h1 style="color: #78350f; font-size: 20px; margin: 0; font-weight: 800;">DENR Inventory History</h1>
-          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleString()}</p>
+          <h1 style="color: #78350f; font-size: 22px; margin: 0; font-weight: 800;">DENR Inventory Report</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Department of Environment and Natural Resources</p>
+          <p style="color: #9ca3af; margin: 2px 0 0 0; font-size: 11px;">Generated: ${new Date().toLocaleString()}</p>
         `;
         pdfContainer.appendChild(header);
-        pdfContainer.appendChild(inventoryList.cloneNode(true));
+
+        const detailsSection = document.createElement('div');
+        detailsSection.style.marginTop = '15px';
+
+        sortedDocs.forEach((doc, idx) => {
+          const item = doc.data();
+          const categoryLabel = categoryLabels[item.category] || item.category || 'Product';
+          const date = item.submittedAt ? new Date(item.submittedAt.toDate()).toLocaleDateString('en-PH', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A';
+
+          const card = document.createElement('div');
+          card.style.marginBottom = '15px';
+          card.style.padding = '12px';
+          card.style.border = '1px solid #e5e7eb';
+          card.style.borderRadius = '6px';
+          card.style.backgroundColor = '#f9fafb';
+          card.style.pageBreakInside = 'avoid';
+
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f59e0b;">
+              <div>
+                <span style="display: inline-block; padding: 4px 8px; background: #fef3c7; color: #92400e; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Inventory</span>
+                <h3 style="color: #1b330d; font-size: 13px; font-weight: 700; margin: 4px 0 0 0;">${categoryLabel}</h3>
+              </div>
+              <span style="color: #6b7280; font-weight: 600; font-size: 11px;">Item #${idx + 1}</span>
+            </div>
+            
+            <div style="background: white; padding: 10px; border-radius: 4px; font-size: 11px;">
+              <p style="color: #6b7280; margin: 0;"><strong>Date Submitted:</strong> ${date}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Harvest Qty:</strong> ${Number(item.harvestQty || 0).toLocaleString()} units</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Investment:</strong> ₱${Number(item.investmentQty || 0).toLocaleString()}</p>
+              <p style="color: #6b7280; margin: 3px 0 0 0;"><strong>Status:</strong> <span style="color: #059669; font-weight: 700;">Approved</span></p>
+            </div>
+          `;
+          
+          detailsSection.appendChild(card);
+        });
+
+        pdfContainer.appendChild(detailsSection);
 
         const element = document.createElement('div');
         element.appendChild(pdfContainer);
@@ -2308,7 +2171,7 @@
 
         const opt = {
           margin: 10,
-          filename: 'denr-inventory-history.pdf',
+          filename: 'denr-inventory-report.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2 },
           jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
