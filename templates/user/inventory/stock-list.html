@@ -32,21 +32,6 @@
             -webkit-box-orient: vertical; 
             overflow: hidden; 
         }
-        .tab-btn { 
-            transition: all 0.3s ease; 
-            position: relative;
-        }
-        .tab-btn::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 3px;
-            background: #059669;
-            transition: width 0.3s ease;
-        }
-        .tab-btn.active::after { width: 100%; }
         .card-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -91,16 +76,6 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
-        <!-- Tab Navigation -->
-        <div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
-            <button onclick="switchTab('inventory')" id="inventoryTab" class="tab-btn px-5 py-2 font-semibold text-sm rounded-lg bg-white text-emerald-700 shadow-sm">
-                <i class="fa-solid fa-box mr-2"></i> Inventory
-            </button>
-            <button onclick="switchTab('applications')" id="applicationsTab" class="tab-btn px-5 py-2 font-semibold text-sm rounded-lg text-gray-600 hover:text-gray-900 hover:bg-white/50">
-                <i class="fa-solid fa-file-alt mr-2"></i> Applications
-            </button>
-        </div>
-
         <!-- Loading State -->
         <div id="loadingState" class="text-center py-12">
             <div class="inline-flex items-center justify-center w-12 h-12 bg-emerald-50 rounded-full mb-3">
@@ -115,18 +90,11 @@
                 <i class="fa-solid fa-box-open text-3xl text-gray-300"></i>
             </div>
             <p class="text-gray-700 font-semibold text-sm mb-1">No items yet</p>
-            <p class="text-gray-500 text-xs" id="emptyMessage">Start by adding items to your inventory</p>
+            <p class="text-gray-500 text-xs">Start by adding items to your inventory or applications</p>
         </div>
 
-        <!-- Inventory Grid -->
-        <div id="inventoryContent" class="tab-content">
-            <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
-        </div>
-
-        <!-- Applications Grid -->
-        <div id="applicationsContent" class="tab-content hidden">
-            <div id="applicationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
-        </div>
+        <!-- Combined Grid -->
+        <div id="combinedGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
     </main>
 
     <nav class="fixed bottom-4 right-4 z-50">
@@ -143,7 +111,7 @@
 
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
-        const inventoryGrid = document.getElementById('inventoryGrid');
+        const combinedGrid = document.getElementById('combinedGrid');
 
         // Category labels mapping
         const categoryLabels = {
@@ -202,31 +170,6 @@
             return date.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
         }
 
-        // Tab switching
-        window.switchTab = function(tab) {
-            // Update tab buttons
-            const inventoryTab = document.getElementById('inventoryTab');
-            const applicationsTab = document.getElementById('applicationsTab');
-
-            if (tab === 'inventory') {
-                inventoryTab.classList.add('bg-white', 'text-emerald-700', 'shadow-sm');
-                inventoryTab.classList.remove('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
-                applicationsTab.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm');
-                applicationsTab.classList.add('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
-                
-                document.getElementById('inventoryContent').classList.remove('hidden');
-                document.getElementById('applicationsContent').classList.add('hidden');
-            } else {
-                applicationsTab.classList.add('bg-white', 'text-emerald-700', 'shadow-sm');
-                applicationsTab.classList.remove('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
-                inventoryTab.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm');
-                inventoryTab.classList.add('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
-                
-                document.getElementById('inventoryContent').classList.add('hidden');
-                document.getElementById('applicationsContent').classList.remove('hidden');
-            }
-        };
-
         function createInventoryCard(item) {
             const imageUrl = item.imageUrl || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop';
             const resourceName = item.resourceName || 'Resource';
@@ -257,6 +200,14 @@
                     
                     <!-- Content Section -->
                     <div class="p-3">
+                        <!-- Type Badge -->
+                        <div class="mb-2">
+                            <span class="inline-flex items-center gap-1 bg-emerald-600 text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase">
+                                <i class="fa-solid fa-box text-[8px]"></i>
+                                Inventory
+                            </span>
+                        </div>
+                        
                         <!-- Sector Badge -->
                         <div class="mb-2">
                             <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md text-[9px] font-semibold">
@@ -321,6 +272,14 @@
                     
                     <!-- Content Section -->
                     <div class="p-3">
+                        <!-- Type Badge -->
+                        <div class="mb-2">
+                            <span class="inline-flex items-center gap-1 bg-blue-600 text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase">
+                                <i class="fa-solid fa-file-alt text-[8px]"></i>
+                                Application
+                            </span>
+                        </div>
+                        
                         <!-- Header -->
                         <div class="mb-2">
                             <h3 class="text-sm font-bold text-gray-900 mb-1">
@@ -476,6 +435,7 @@
             try {
                 loadingState.classList.remove('hidden');
                 emptyState.classList.add('hidden');
+                combinedGrid.classList.add('hidden');
 
                 // Load both inventory and applications
                 const [inventoryItems, applications] = await Promise.all([
@@ -485,42 +445,32 @@
 
                 loadingState.classList.add('hidden');
 
-                // Display inventory
-                const inventoryGrid = document.getElementById('inventoryGrid');
-                if (inventoryItems.length > 0) {
-                    inventoryGrid.innerHTML = inventoryItems.map(item => createInventoryCard(item)).join('');
-                    inventoryGrid.classList.remove('hidden');
-                } else {
-                    inventoryGrid.innerHTML = `
-                        <div class="col-span-full text-center py-16">
-                            <i class="fa-solid fa-box-open text-6xl text-gray-200 mb-4"></i>
-                            <p class="text-gray-500 font-bold uppercase tracking-wider text-sm mb-2">No inventory items yet</p>
-                            <p class="text-gray-400 text-xs">Register your first inventory item</p>
-                            <a href="/user/inventory/add" class="inline-block mt-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-6 rounded-lg text-xs uppercase no-underline">
-                                <i class="fa-solid fa-plus mr-2"></i> Add Stock
-                            </a>
-                        </div>
-                    `;
-                    inventoryGrid.classList.remove('hidden');
-                }
+                // Combine and sort all items by date
+                const allItems = [];
+                
+                // Add inventory items with type marker
+                inventoryItems.forEach(item => {
+                    allItems.push({ ...item, itemType: 'inventory', sortDate: item.createdAt?.toDate?.() || new Date(0) });
+                });
+                
+                // Add applications with type marker
+                applications.forEach(app => {
+                    allItems.push({ ...app, itemType: 'application', sortDate: app.submittedAt?.toDate?.() || new Date(0) });
+                });
+                
+                // Sort by date (newest first)
+                allItems.sort((a, b) => b.sortDate - a.sortDate);
 
-                // Display applications
-                const applicationsGrid = document.getElementById('applicationsGrid');
-                if (applications.length > 0) {
-                    applicationsGrid.innerHTML = applications.map(app => createApplicationCard(app)).join('');
-                    applicationsGrid.classList.remove('hidden');
+                // Display combined items
+                if (allItems.length > 0) {
+                    combinedGrid.innerHTML = allItems.map(item => {
+                        return item.itemType === 'inventory' 
+                            ? createInventoryCard(item) 
+                            : createApplicationCard(item);
+                    }).join('');
+                    combinedGrid.classList.remove('hidden');
                 } else {
-                    applicationsGrid.innerHTML = `
-                        <div class="text-center py-16">
-                            <i class="fa-solid fa-folder-open text-6xl text-gray-200 mb-4"></i>
-                            <p class="text-gray-500 font-bold uppercase tracking-wider text-sm mb-2">No applications found</p>
-                            <p class="text-gray-400 text-xs">Start your first application</p>
-                            <a href="/user/application/apply" class="inline-block mt-4 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg text-xs uppercase no-underline">
-                                <i class="fa-solid fa-plus mr-2"></i> New Application
-                            </a>
-                        </div>
-                    `;
-                    applicationsGrid.classList.remove('hidden');
+                    emptyState.classList.remove('hidden');
                 }
 
                 console.log('✅ All data loaded successfully');
