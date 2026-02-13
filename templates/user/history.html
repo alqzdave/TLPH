@@ -46,44 +46,56 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    .tabs-container {
+    .section-header {
       display: flex;
-      gap: 8px;
-      margin-bottom: 32px;
-      border-bottom: 2px solid #e5e7eb;
-      padding-bottom: 0;
-      overflow-x: auto;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: linear-gradient(to right, #f9fafb, #f3f4f6);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      gap: 12px;
     }
 
-    .tab-btn {
-      padding: 14px 24px;
-      border: none;
-      background: transparent;
-      color: #6b7280;
-      font-weight: 600;
+    .section-title {
       font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      text-transform: uppercase;
+      margin: 0;
+      flex: 1;
+      letter-spacing: 0.3px;
+    }
+
+    .section-download-btn {
+      padding: 6px 12px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.2s;
-      border-bottom: 3px solid transparent;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
       white-space: nowrap;
+      transition: all 0.2s;
     }
 
-    .tab-btn:hover {
-      color: #10b981;
+    .section-download-btn:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
-    .tab-btn.active {
-      color: #10b981;
-      border-bottom-color: #10b981;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-      animation: fadeIn 0.3s ease-out;
+    .card-custom {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
     }
 
     @keyframes fadeIn {
@@ -1043,52 +1055,37 @@
     <div class="container">
       <h1><i class="fa-solid fa-history"></i> History</h1>
       
+      <!-- Applications Section -->
+      <div class="card-custom" style="margin-bottom: 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px;">
+          <h2 style="font-size: 16px; font-weight: 800; color: #111827; margin: 0; text-transform: uppercase; flex: 1;"><i class="fa-solid fa-file-lines mr-2" style="color: #3b82f6;"></i>Applications</h2>
+          <button id="downloadPdfBtn" onclick="downloadApplicationsPDF()" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap;">
+            <i class="fa-solid fa-download"></i> PDF
+          </button>
+        </div>
+        <div id="applicationsList"></div>
+      </div>
+
+      <!-- Services Section -->
+      <div class="card-custom" style="margin-bottom: 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px;">
+          <h2 style="font-size: 16px; font-weight: 800; color: #111827; margin: 0; text-transform: uppercase; flex: 1;"><i class="fa-solid fa-hand-holding-heart mr-2" style="color: #ec4899;"></i>Service Requests</h2>
+          <button onclick="downloadServiceRequestsPDF()" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap;">
+            <i class="fa-solid fa-download"></i> PDF
+          </button>
+        </div>
+        <div id="servicesList"></div>
+      </div>
+
+      <!-- Inventory Section -->
       <div class="card-custom">
-        <div class="tabs-container">
-          <button class="tab-btn active" data-tab="applications">
-            <i class="fa-solid fa-file-lines mr-2"></i>Applications
-          </button>
-          <button class="tab-btn" data-tab="services">
-            <i class="fa-solid fa-hand-holding-heart mr-2"></i>Service Requests
-          </button>
-          <button class="tab-btn" data-tab="inventory">
-            <i class="fa-solid fa-boxes-stacked mr-2"></i>Inventory History
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px;">
+          <h2 style="font-size: 16px; font-weight: 800; color: #111827; margin: 0; text-transform: uppercase; flex: 1;"><i class="fa-solid fa-boxes-stacked mr-2" style="color: #f59e0b;"></i>Inventory History</h2>
+          <button id="downloadInventoryPdfBtn" onclick="downloadInventoryHistoryPDF()" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap;">
+            <i class="fa-solid fa-download"></i> PDF
           </button>
         </div>
-
-        <!-- Applications Tab -->
-        <div id="applications" class="tab-content active">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              <i class="fa-solid fa-info-circle"></i> Your application records for licenses and permits.
-            </p>
-            <button id="downloadPdfBtn" onclick="downloadApplicationsPDF()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-              <i class="fa-solid fa-download"></i> Download PDF
-            </button>
-          </div>
-          <div id="applicationsList"></div>
-        </div>
-
-        <div id="services" class="tab-content">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              <i class="fa-solid fa-info-circle"></i> Your service requests and their current status.
-            </p>
-          </div>
-          <div id="servicesList"></div>
-        </div>
-
-        <div id="inventory" class="tab-content">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              <i class="fa-solid fa-info-circle"></i> Your inventory stock transaction history.
-            </p>
-            <button id="downloadInventoryPdfBtn" onclick="downloadInventoryHistoryPDF()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-              <i class="fa-solid fa-download"></i> Download PDF
-            </button>
-          </div>
-          <div id="inventoryList" style="min-height: 400px;"></div>
-        </div>
+        <div id="inventoryList" style="min-height: 400px;"></div>
       </div>
     </div>
   </main>
@@ -1173,17 +1170,8 @@
 
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const tabName = this.dataset.tab;
-        
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        this.classList.add('active');
-        document.getElementById(tabName).classList.add('active');
-      });
-    });
-
+    // Tab switching removed - all sections displayed at once
+    
     async function loadApplications() {
       try {
         let userEmail = null;
@@ -1216,11 +1204,13 @@
         const result = await response.json();
 
         if (result.status === 'success' && result.transactions) {
-          const approvedApps = result.transactions.filter(t => (
-            t.display_status === 'approved' || 
-            t.status === 'approved' ||
-            t.approval_status === 'approved'
-          ) && !isServiceTransaction(t));
+          const approvedApps = result.transactions.filter(t => {
+            // Show only approved/paid/completed applications
+            const status = (t.display_status || t.status || t.approval_status || '').toLowerCase();
+            const isApproved = status === 'approved' || status === 'paid' || status === 'pending_payment';
+            const isNotService = !isServiceTransaction(t);
+            return isApproved && isNotService;
+          });
 
           console.log('Total transactions:', result.transactions.length);
           console.log('Approved apps:', approvedApps.length);
@@ -1248,13 +1238,16 @@
             html += `
               <div class="application-card">
                 <div class="application-header">
-                  <span class="application-type-badge">${appType}</span>
-                  <div>
-                    <p>${appDescription}</p>
-                    <div style="font-size: 12px; color: #9ca3af; margin-top: 6px;">
-                      <span style="margin-right: 16px;"><strong>Amount:</strong> ${appAmount}</span>
-                      <span><strong>Date:</strong> ${date}</span>
-                    </div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                    <span class="application-type-badge">${appType}</span>
+                    <span style="color: #6b7280; font-size: 12px;">•</span>
+                    <span style="color: #6b7280; font-size: 12px;">${date}</span>
+                  </div>
+                </div>
+                <div style="margin-top: 8px;">
+                  <p style="font-weight: 600; color: #111827; margin: 0 0 4px;">${appDescription}</p>
+                  <div style="font-size: 12px; color: #9ca3af;">
+                    <span><strong>Amount:</strong> ${appAmount}</span>
                   </div>
                 </div>
                 <button class="receipt-btn" onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')">
@@ -1881,7 +1874,7 @@
         `;
 
         const q = query(
-          collection(db, 'applications'), 
+          collection(db, 'inventory_registrations'), 
           where('userId', '==', user.uid),
           where('status', '==', 'approved')
         );
@@ -2057,8 +2050,21 @@
           return dateB - dateA;
         });
 
+        // Filter only approved service requests
+        const approvedServices = services.filter(s => s.status === 'approved' || s.paymentStatus === 'completed');
+
+        if (approvedServices.length === 0) {
+          document.getElementById('servicesList').innerHTML = `
+            <div class="empty-service-message">
+              <i class="fa-solid fa-folder-open"></i>
+              <p>No approved service requests found.</p>
+            </div>
+          `;
+          return;
+        }
+
         let html = '';
-        services.forEach((service) => {
+        approvedServices.forEach((service) => {
           const serviceId = service.id;
           
           const createdDate = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {
@@ -2239,42 +2245,106 @@
     };
 
     loadApplications();
-    
-    window.addEventListener('DOMContentLoaded', () => {
-      const hash = window.location.hash.substring(1); // Remove the # symbol
-      
-      if (hash === 'services') {
-        const servicesTab = document.querySelector('.tab-btn[data-tab="services"]');
-        if (servicesTab) {
-          servicesTab.click();
+    loadServiceRequests();
+    loadInventoryHistory();
+
+    // Service Requests Download PDF
+    window.downloadServiceRequestsPDF = async function() {
+      try {
+        const servicesList = document.getElementById('servicesList');
+        
+        if (!servicesList || servicesList.children.length === 0) {
+          alert('No service requests to download.');
+          return;
         }
-      } else if (hash === 'inventory') {
-        const inventoryTab = document.querySelector('.tab-btn[data-tab="inventory"]');
-        if (inventoryTab) {
-          inventoryTab.click();
+
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '15px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.borderBottom = '2px solid #ec4899';
+        header.style.paddingBottom = '15px';
+        
+        header.innerHTML = `
+          <h1 style="color: #831843; font-size: 20px; margin: 0; font-weight: 800;">DENR Service Requests</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+        pdfContainer.appendChild(servicesList.cloneNode(true));
+
+        const element = document.createElement('div');
+        element.appendChild(pdfContainer);
+        document.body.appendChild(element);
+
+        const opt = {
+          margin: 10,
+          filename: 'denr-service-requests.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+
+        html2pdf().set(opt).from(element).save().finally(() => {
+          document.body.removeChild(element);
+        });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
+      }
+    };
+
+    // Inventory History Download PDF
+    window.downloadInventoryHistoryPDF = async function() {
+      try {
+        const inventoryList = document.getElementById('inventoryList');
+        
+        if (!inventoryList || inventoryList.children.length === 0) {
+          alert('No inventory history to download.');
+          return;
         }
-      }
-    });
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      if (btn.dataset.tab === 'inventory') {
-        btn.addEventListener('click', function() {
-          if (!document.getElementById('inventoryList').getAttribute('data-loaded')) {
-            loadInventoryHistory();
-            document.getElementById('inventoryList').setAttribute('data-loaded', 'true');
-          }
+
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '15px';
+        pdfContainer.style.backgroundColor = '#ffffff';
+        pdfContainer.style.fontFamily = 'Arial, sans-serif';
+        
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.borderBottom = '2px solid #f59e0b';
+        header.style.paddingBottom = '15px';
+        
+        header.innerHTML = `
+          <h1 style="color: #78350f; font-size: 20px; margin: 0; font-weight: 800;">DENR Inventory History</h1>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleString()}</p>
+        `;
+        pdfContainer.appendChild(header);
+        pdfContainer.appendChild(inventoryList.cloneNode(true));
+
+        const element = document.createElement('div');
+        element.appendChild(pdfContainer);
+        document.body.appendChild(element);
+
+        const opt = {
+          margin: 10,
+          filename: 'denr-inventory-history.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+
+        html2pdf().set(opt).from(element).save().finally(() => {
+          document.body.removeChild(element);
         });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
       }
-      
-      if (btn.dataset.tab === 'services') {
-        btn.addEventListener('click', function() {
-          if (!document.getElementById('servicesList').getAttribute('data-loaded')) {
-            loadServiceRequests();
-            document.getElementById('servicesList').setAttribute('data-loaded', 'true');
-          }
-        });
-      }
-    });
+    };
   </script>
 </body>
 </html>
