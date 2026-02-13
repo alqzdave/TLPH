@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TLPH | National Dashboard - Overview</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -29,22 +28,15 @@
     .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
   </style>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body class="min-h-screen text-slate-900">
-  <!-- KEY FIX:
-       Make layout full-height flex so the main content fits the screen width,
-       and add a comfortable gap from the sidenav. -->
   <div class="min-h-screen flex">
     {% include 'national/sidenav-national.html' %}
 
-    <!-- Main: takes remaining width, not centered under the sidenav, and has spacing away from it -->
     <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
-      <!-- Optional width cap so it doesn't look too stretched on ultrawide screens -->
       <div class="w-full max-w-[1700px]">
-        <!-- Page Controls (HEADER REMOVED as requested) -->
         <section class="card p-4">
           <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
@@ -109,7 +101,6 @@
           </div>
         </section>
 
-        <!-- KPI CARDS -->
         <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
           <div class="card p-4">
             <div class="text-xs text-gray-600">Total Applications</div>
@@ -158,7 +149,6 @@
           </div>
         </section>
 
-        <!-- GRAPHS ROW -->
         <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-6">
           <!-- Trend -->
           <div class="card p-4 xl:col-span-2">
@@ -174,7 +164,6 @@
             </div>
           </div>
 
-          <!-- Status Breakdown -->
           <div class="card p-4">
             <div>
               <div class="font-bold">Status Breakdown</div>
@@ -205,7 +194,6 @@
           </div>
         </section>
 
-        <!-- NEW: PER-REGION CHART -->
         <section class="card p-4 mt-6">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div>
@@ -235,7 +223,6 @@
           </div>
         </section>
 
-        <!-- TABLE: APPLICATIONS -->
         <section class="card overflow-hidden mt-6">
           <div class="p-4 flex items-center justify-between gap-3">
             <div>
@@ -306,7 +293,6 @@
           </div>
         </section>
 
-        <!-- TABLE: SERVICE REQUESTS -->
         <section class="card overflow-hidden mt-6">
           <div class="p-4 flex items-center justify-between gap-3">
             <div>
@@ -377,7 +363,6 @@
           </div>
         </section>
 
-        <!-- TABLE: INVENTORY (NATIONAL) -->
         <section class="card overflow-hidden mt-6">
           <div class="p-4 flex items-center justify-between gap-3">
             <div>
@@ -435,7 +420,6 @@
           </div>
         </section>
 
-        <!-- TABLE: USER INVENTORY -->
         <section class="card overflow-hidden mt-6">
           <div class="p-4 flex items-center justify-between gap-3">
             <div>
@@ -482,7 +466,6 @@
           </div>
         </section>
 
-        <!-- TABLE: LICENSING / PERMITS -->
         <section class="card overflow-hidden mt-6">
           <div class="p-4 flex items-center justify-between gap-3">
             <div>
@@ -531,7 +514,6 @@
           </div>
         </section>
 
-        <!-- TABLE: TRANSACTIONS -->
         <section class="card overflow-hidden mt-6">
           <div class="p-4 flex items-center justify-between gap-3">
             <div>
@@ -587,7 +569,6 @@
           </div>
         </section>
 
-        <!-- TABLE: USERS -->
         <section class="card overflow-hidden mt-6">
           <div class="p-4 flex items-center justify-between gap-3">
             <div>
@@ -666,7 +647,6 @@
   </div>
 
   <script>
-    // Trend Chart (sample)
     new Chart(document.getElementById('trendChart'), {
       type: 'line',
       data: {
@@ -686,7 +666,6 @@
       }
     });
 
-    // Status Breakdown (sample)
     new Chart(document.getElementById('statusChart'), {
       type: 'doughnut',
       data: {
@@ -700,7 +679,6 @@
       }
     });
 
-    // Per-Region Breakdown (sample grouped bar)
     new Chart(document.getElementById('regionChart'), {
       type: 'bar',
       data: {

@@ -1,20 +1,14 @@
-<!-- save as: templates/national/sidenav-national.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TLPH | National Sidenav</title>
-
-  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
-  <!-- Optional: Tailwind (only needed if your landing page doesn't already load Tailwind) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    /* IMPORTANT:
-       Keep styles scoped to #national-sidenav to avoid affecting the landing page */
+
     #national-sidenav .nsn-toplink{
       display:flex; align-items:center; gap:12px;
       padding:10px 12px; border-radius:12px;
@@ -55,11 +49,8 @@
 </head>
 
 <body class="bg-gray-100 text-slate-900">
-  <!-- Wrapper so you can preview this as a standalone page -->
   <div class="min-h-screen flex">
-    <!-- Sidenav -->
     <aside id="national-sidenav" class="w-[260px] shrink-0 h-screen bg-white border-r border-gray-200 flex flex-col sticky top-0">
-      <!-- Brand -->
       <div class="px-5 pt-5 pb-4 border-b border-gray-100">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl border border-gray-200 bg-white grid place-items-center overflow-hidden">
@@ -71,14 +62,12 @@
           </div>
         </div>
 
-        <!-- User -->
         <div class="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-3">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-slate-900 text-white grid place-items-center font-extrabold text-[12px]">
               NA
             </div>
             <div class="min-w-0">
-              <!-- Works as plain HTML; in Jinja this will be replaced -->
               <div class="font-bold text-slate-900 text-[12px] truncate">
                 {{ user_name|default('NATIONAL ADMIN') }}
               </div>
@@ -90,7 +79,6 @@
         </div>
       </div>
 
-      <!-- Nav -->
       <nav class="flex-1 overflow-y-auto px-3 py-3 nsn-scroll">
         <a href="/national/dashboard" class="nsn-toplink">
           <span class="material-icons-round text-[18px]">analytics</span>
@@ -153,7 +141,6 @@
         </a>
       </nav>
 
-      <!-- Footer -->
       <div class="px-5 py-4 border-t border-gray-100">
         <div class="text-[10px] text-gray-400 font-extrabold tracking-[0.18em] text-center">
           PHILIPPINE STANDARD TIME
@@ -166,7 +153,6 @@
     </aside>
 
   <script>
-    // Clock (safe to include)
     (function () {
       function updateClock() {
         const options = {
