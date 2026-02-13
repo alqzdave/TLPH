@@ -176,9 +176,9 @@
                 { id: 'cropFile', name: 'cropName' },
                 { id: 'planFile', name: 'planName' },
                 { id: 'brgyFile', name: 'brgyName' }
-            ];
+            ]
+            ;
 
-            // Real-time Validation Function
             function checkValidation() {
                 const prodName = productNameInput.value.trim();
                 const category = categorySelect.value;
@@ -186,7 +186,6 @@
                 const har = harvestInput.value;
                 const filesDone = fileConfigs.every(f => document.getElementById(f.id).files.length > 0);
 
-                // Button Enable/Disable Logic
                 if (prodName && category && inv && har && filesDone) {
                     submitBtn.disabled = false;
                     submitBtn.classList.replace('bg-gray-200', 'bg-green-700');
@@ -202,7 +201,6 @@
                 }
             }
 
-            // File Upload UI Listeners
             fileConfigs.forEach(f => {
                 const input = document.getElementById(f.id);
                 input.addEventListener('change', (e) => {
@@ -216,13 +214,11 @@
                 });
             });
 
-            // Input Event Listeners
             form.querySelectorAll('input, select').forEach(el => {
                 el.addEventListener('input', checkValidation);
                 el.addEventListener('change', checkValidation);
             });
 
-            // Reset Listener
             form.addEventListener('reset', () => {
                 setTimeout(() => {
                     fileConfigs.forEach(f => document.getElementById(f.name).textContent = "");
@@ -230,7 +226,6 @@
                 }, 10);
             });
 
-            // Form Submission Logic
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -245,16 +240,12 @@
                         return;
                     }
 
-                    // Fetch user info for location tagging
                     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
                     const userData = userDoc.data() || {};
                     
-                    // Prepare invoice data for Xendit payment
                     const amount = parseInt(document.getElementById('xendit_raw_amount').value) || 2450;
                     const productName = productNameInput.value.trim();
                     const category = categorySelect.value;
-                    
-                    // Create invoice via Xendit API
                     const invoiceResponse = await fetch('/api/payments/create-invoice', {
                         method: 'POST',
                         headers: {
@@ -280,7 +271,6 @@
                         throw new Error(invoiceData.message || 'Failed to create invoice');
                     }
 
-                    // Store application data temporarily in localStorage before redirecting to payment
                     const applicationData = {
                         userId: currentUser.uid,
                         userEmail: currentUser.email,
@@ -309,10 +299,9 @@
                     
                     console.log('Invoice created:', invoiceData);
                     console.log('Redirecting to payment URL:', invoiceData.invoice_url);
-                    
-                    // Redirect to Xendit payment page
                     window.location.href = invoiceData.invoice_url;
 
+                    
                 } catch (error) {
                     console.error('Error processing payment:', error);
                     alert('Error: ' + error.message);
