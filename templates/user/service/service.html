@@ -268,7 +268,80 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <script type="module">
+        import { auth, db, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+        import { query, where, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Store paid services map
+        let paidServices = {};
+
+        // Load paid services from Firebase
+        async function loadPaidServices() {
+            try {
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    return;
+                }
+
+                const q = query(
+                    collection(db, 'service_requests'),
+                    where('userId', '==', currentUser.uid)
+                );
+
+                const querySnapshot = await getDocs(q);
+                
+                querySnapshot.forEach((doc) => {
+                    const service = doc.data();
+                    if (service.paymentStatus === 'completed') {
+                        const serviceType = (service.serviceType || '').toLowerCase();
+                        paidServices[serviceType] = true;
+                    }
+                });
+
+                // Update UI to show paid services
+                updateServiceCardStatus();
+            } catch (error) {
+                console.warn('Could not load paid services:', error);
+            }
+        }
+
+        // Update service cards to show paid status
+        function updateServiceCardStatus() {
+            const serviceItems = document.querySelectorAll('.searchable-item');
+            serviceItems.forEach(item => {
+                const serviceName = item.querySelector('.service-name').innerText.toLowerCase();
+                const button = item.querySelector('.btn-apply');
+                
+                if (!button) return;
+
+                // Check if this service has been paid
+                let isPaid = false;
+                for (const [paidType, status] of Object.entries(paidServices)) {
+                    if (serviceName.includes(paidType) || paidType.includes(serviceName.split(' ')[0])) {
+                        isPaid = true;
+                        break;
+                    }
+                }
+
+                if (isPaid) {
+                    // Replace button with paid badge
+                    button.outerHTML = `
+                        <span class="paid-badge" style="display: inline-block; padding: 8px 15px; background-color: #10b981; color: white; border-radius: 4px; font-weight: 700; font-size: 0.7rem; text-align: center; white-space: nowrap;">
+                            <i class="fa-solid fa-check-circle mr-1"></i> PAID
+                        </span>
+                    `;
+                }
+            });
+        }
+
+        // Check auth state and load paid services
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadPaidServices();
+            }
+        });
+
+        // Original script code
         document.addEventListener('DOMContentLoaded', function () {
             // FIX DROPDOWN
             var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))

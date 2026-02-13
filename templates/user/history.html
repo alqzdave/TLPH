@@ -350,6 +350,12 @@
       background: #e5e7eb;
     }
 
+    .service-btn[style*="background: #f59e0b"]:hover {
+      background: #d97706 !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
     .empty-service-message {
       text-align: center;
       padding: 60px 20px;
@@ -2147,11 +2153,15 @@
                 <button class="service-btn service-btn-primary" onclick="toggleServiceDetails('${serviceId}')">
                   <i class="fa-solid fa-eye mr-1"></i> View Details
                 </button>
-                ${service.paymentStatus === 'completed' || service.paymentStatus === 'free' ? '' : `
-                  <button class="service-btn service-btn-secondary" onclick="retryPayment('${serviceId}')">
-                    <i class="fa-solid fa-credit-card mr-1"></i> Complete Payment
+                ${service.paymentStatus === 'completed' || service.paymentStatus === 'free' ? `
+                  <span class="service-btn" style="background-color: #10b981; color: white; border: none; cursor: default; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-check-circle mr-1"></i> PAID
+                  </span>
+                ` : service.amount ? `
+                  <button class="service-btn service-btn-secondary" onclick="retryPayment('${serviceId}', '${(service.amount || 0).toString().replace(/'/g, "\\'")}', '${(service.serviceType || 'Service').replace(/'/g, "\\'")}', '${(currentUser.email || '').replace(/'/g, "\\'")}')" id="payment-btn-${serviceId}" style="background: #f59e0b; color: white;">
+                    <i class="fa-solid fa-credit-card mr-1"></i> Pay Now
                   </button>
-                `}
+                ` : ''}
               </div>
             </div>
           `;
@@ -2216,9 +2226,72 @@
       }
     };
 
-    // Retry payment
-    window.retryPayment = function(serviceId) {
-      alert('Payment retry functionality coming soon. Service ID: ' + serviceId);
+    // Retry/Complete Service Payment
+    window.retryPayment = async function(serviceId, amount, serviceType, userEmail) {
+      try {
+        const paymentBtn = document.getElementById(`payment-btn-${serviceId}`);
+        if (paymentBtn) {
+          paymentBtn.disabled = true;
+          paymentBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Processing...';
+        }
+
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          alert('Please sign in to complete the payment.');
+          return;
+        }
+
+        // Prepare payment data
+        const paymentData = {
+          serviceId: serviceId,
+          amount: parseFloat(amount) || 0,
+          serviceType: serviceType,
+          userEmail: userEmail || currentUser.email,
+          userId: currentUser.uid,
+          timestamp: new Date().toISOString()
+        };
+
+        // Call API to initiate payment
+        const response = await fetch('/api/payments/service-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentData)
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          // If payment URL is provided, redirect to it
+          if (result.paymentUrl) {
+            window.location.href = result.paymentUrl;
+          } else if (result.invoiceUrl) {
+            window.location.href = result.invoiceUrl;
+          } else {
+            alert('Payment initiated successfully. Please wait for confirmation.');
+            // Reload the service list to show updated status
+            setTimeout(() => {
+              loadServiceRequests();
+            }, 2000);
+          }
+        } else {
+          alert(result.message || 'Failed to initiate payment. Please try again.');
+          if (paymentBtn) {
+            paymentBtn.disabled = false;
+            paymentBtn.innerHTML = '<i class="fa-solid fa-credit-card mr-1"></i> Complete Payment';
+          }
+        }
+      } catch (error) {
+        console.error('Error processing payment:', error);
+        alert('An error occurred while processing the payment. Please try again.');
+        
+        const paymentBtn = document.getElementById(`payment-btn-${serviceId}`);
+        if (paymentBtn) {
+          paymentBtn.disabled = false;
+          paymentBtn.innerHTML = '<i class="fa-solid fa-credit-card mr-1"></i> Complete Payment';
+        }
+      }
     };
 
     // Load applications on page load

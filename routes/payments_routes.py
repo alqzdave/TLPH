@@ -494,3 +494,141 @@ def cancel_transaction():
         }), 500
 
 
+@bp.route('/service-payment', methods=['POST'])
+def service_payment():
+    """Create a payment for service requests"""
+    try:
+        data = request.get_json(silent=True) or {}
+        auth_header = get_xendit_auth_header()
+        
+        if not auth_header:
+            return jsonify({
+                'status': 'error',
+                'message': 'Xendit API key not configured'
+            }), 400
+        
+        # Extract service payment data
+        service_id = data.get('serviceId', '')
+        amount = data.get('amount') or 0
+        service_type = data.get('serviceType', 'Service Request')
+        user_email = (data.get('userEmail') or '').strip()
+        
+        # Validate required fields
+        if not service_id:
+            return jsonify({
+                'status': 'error',
+                'message': 'Service ID is required'
+            }), 400
+        
+        try:
+            amount = int(amount) if amount else 0
+        except (TypeError, ValueError):
+            amount = 0
+
+        if amount <= 0:
+            return jsonify({
+                'status': 'error',
+                'message': 'Amount must be greater than 0'
+            }), 400
+
+        if user_email and '@' not in user_email:
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid payer email'
+            }), 400
+
+        # Generate external ID for the invoice
+        external_id = f"service-{service_id}-{int(datetime.now().timestamp())}"
+        
+        # Build invoice payload for Xendit
+        invoice_payload = {
+            'external_id': external_id,
+            'amount': amount,
+            'description': f'DENR {service_type} Payment',
+            'success_redirect_url': data.get('success_url', 'http://localhost:5000/user/history#services'),
+            'failure_redirect_url': data.get('failure_url', 'http://localhost:5000/user/history#services'),
+            'items': [
+                {
+                    'name': service_type,
+                    'quantity': 1,
+                    'price': amount
+                }
+            ]
+        }
+
+        if user_email:
+            invoice_payload['payer_email'] = user_email
+        
+        # Add customer info if provided
+        customer = {}
+        if data.get('firstName'):
+            customer['given_names'] = data.get('firstName')
+        if data.get('lastName'):
+            customer['surname'] = data.get('lastName')
+        if user_email:
+            customer['email'] = user_email
+        if data.get('phone'):
+            customer['mobile_number'] = data.get('phone')
+        
+        if customer:
+            invoice_payload['customer'] = customer
+        
+        # Create invoice via Xendit API
+        headers = {
+            'Authorization': auth_header,
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.post(
+            f'{XENDIT_BASE_URL}/v2/invoices',
+            json=invoice_payload,
+            headers=headers,
+            timeout=10
+        )
+        
+        if response.status_code in [200, 201]:
+            invoice = response.json()
+            
+            # Save transaction record
+            transaction_storage.add_transaction(
+                user_email=user_email,
+                external_id=external_id,
+                invoice_id=invoice.get('id'),
+                amount=amount,
+                item_name=service_type,
+                description=f'Service: {service_type}',
+                status='Pending'
+            )
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Payment initiated successfully',
+                'invoice_id': invoice.get('id'),
+                'paymentUrl': invoice.get('invoice_url'),
+                'invoiceUrl': invoice.get('invoice_url'),
+                'amount': invoice.get('amount'),
+                'external_id': invoice.get('external_id')
+            }), 201
+        else:
+            try:
+                error_body = response.json()
+            except ValueError:
+                error_body = {'raw': response.text}
+            return jsonify({
+                'status': 'error',
+                'message': f"Failed to create invoice: {response.status_code}",
+                'details': error_body
+            }), response.status_code
+        
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Request failed: {str(e)}'
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
