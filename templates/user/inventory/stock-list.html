@@ -51,12 +51,18 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card-hover:hover {
-            transform: translateY(-4px);
+            transform: translateY(-3px);
+        }
+        .card-hover img {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover img {
+            transform: scale(1.05);
         }
     </style>
 </head>
 
-<body class="bg-slate-50 pb-20">
+<body class="bg-gradient-to-b from-slate-50 to-gray-100 min-h-screen">
     {% include 'user/header.html' %}
 
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
@@ -84,49 +90,49 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
         <!-- Tab Navigation -->
-        <div class="flex gap-1 mb-8 bg-gray-100 p-1 rounded-xl w-fit">
-            <button onclick="switchTab('inventory')" id="inventoryTab" class="tab-btn px-6 py-2.5 font-semibold text-sm rounded-lg bg-white text-emerald-700 shadow-sm">
+        <div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
+            <button onclick="switchTab('inventory')" id="inventoryTab" class="tab-btn px-5 py-2 font-semibold text-sm rounded-lg bg-white text-emerald-700 shadow-sm">
                 <i class="fa-solid fa-box mr-2"></i> Inventory
             </button>
-            <button onclick="switchTab('applications')" id="applicationsTab" class="tab-btn px-6 py-2.5 font-semibold text-sm rounded-lg text-gray-600 hover:text-gray-900 hover:bg-white/50">
+            <button onclick="switchTab('applications')" id="applicationsTab" class="tab-btn px-5 py-2 font-semibold text-sm rounded-lg text-gray-600 hover:text-gray-900 hover:bg-white/50">
                 <i class="fa-solid fa-file-alt mr-2"></i> Applications
             </button>
         </div>
 
         <!-- Loading State -->
-        <div id="loadingState" class="text-center py-20">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-50 rounded-full mb-4">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-600"></i>
+        <div id="loadingState" class="text-center py-12">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-emerald-50 rounded-full mb-3">
+                <i class="fa-solid fa-spinner fa-spin text-xl text-emerald-600"></i>
             </div>
-            <p class="text-gray-500 font-medium text-sm">Loading your data...</p>
+            <p class="text-gray-500 font-medium text-xs">Loading your data...</p>
         </div>
 
         <!-- Empty State -->
-        <div id="emptyState" class="hidden text-center py-20">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-50 rounded-full mb-4">
-                <i class="fa-solid fa-box-open text-4xl text-gray-300"></i>
+        <div id="emptyState" class="hidden text-center py-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-full mb-3">
+                <i class="fa-solid fa-box-open text-3xl text-gray-300"></i>
             </div>
-            <p class="text-gray-700 font-semibold text-base mb-1">No items yet</p>
-            <p class="text-gray-500 text-sm" id="emptyMessage">Start by adding items to your inventory</p>
+            <p class="text-gray-700 font-semibold text-sm mb-1">No items yet</p>
+            <p class="text-gray-500 text-xs" id="emptyMessage">Start by adding items to your inventory</p>
         </div>
 
         <!-- Inventory Grid -->
         <div id="inventoryContent" class="tab-content">
-            <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5 hidden"></div>
+            <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
         </div>
 
         <!-- Applications Grid -->
         <div id="applicationsContent" class="tab-content hidden">
-            <div id="applicationsGrid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5 hidden"></div>
+            <div id="applicationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
         </div>
     </main>
 
-    <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-        <a href="/user/inventory/stock-history" class="flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-950 text-white shadow-2xl hover:bg-emerald-900 transition-all no-underline border border-emerald-500/30">
-            <span class="material-icons-round text-emerald-400 text-sm">history</span>
-            <span class="font-bold uppercase text-[8px] tracking-[0.15em]">Log History</span>
+    <nav class="fixed bottom-4 right-4 z-50">
+        <a href="/user/inventory/stock-history" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-gray-700 shadow-lg hover:shadow-xl transition-all no-underline border border-gray-200 hover:border-emerald-600 group">
+            <i class="fa-solid fa-clock-rotate-left text-emerald-600 text-base"></i>
+            <span class="font-semibold text-xs group-hover:text-emerald-600">History</span>
         </a>
     </nav>
 
@@ -178,14 +184,14 @@
         }
 
         function getStatusBadge(status) {
-            const baseClass = "px-2.5 py-1 rounded-lg text-[9px] md:text-[10px] font-black uppercase flex items-center gap-1.5 w-fit";
+            const baseClass = "px-2 py-0.5 rounded-md text-[9px] font-semibold flex items-center gap-1 w-fit backdrop-blur-sm shadow-md";
             const badges = {
-                'pending': `<span class="${baseClass} bg-yellow-50 text-yellow-700 border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending</span>`,
-                'approved': `<span class="${baseClass} bg-green-50 text-green-700 border border-green-200"><i class="fa-solid fa-check-double"></i> Approved</span>`,
-                'rejected': `<span class="${baseClass} bg-red-50 text-red-700 border border-red-200"><i class="fa-solid fa-ban"></i> Rejected</span>`,
-                'under-review': `<span class="${baseClass} bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-magnifying-glass"></i> Reviewing</span>`,
-                'cancelled': `<span class="${baseClass} bg-gray-50 text-gray-700 border border-gray-200"><i class="fa-solid fa-ban"></i> Cancelled</span>`,
-                'pending_payment': `<span class="${baseClass} bg-orange-50 text-orange-700 border border-orange-200"><i class="fa-solid fa-credit-card"></i> Payment Pending</span>`
+                'pending': `<span class="${baseClass} bg-yellow-500/90 text-white"><i class="fa-solid fa-clock text-[8px]"></i>Pending</span>`,
+                'approved': `<span class="${baseClass} bg-emerald-500/90 text-white"><i class="fa-solid fa-check text-[8px]"></i>Approved</span>`,
+                'rejected': `<span class="${baseClass} bg-red-500/90 text-white"><i class="fa-solid fa-times text-[8px]"></i>Rejected</span>`,
+                'under-review': `<span class="${baseClass} bg-blue-500/90 text-white"><i class="fa-solid fa-search text-[8px]"></i>Review</span>`,
+                'cancelled': `<span class="${baseClass} bg-gray-500/90 text-white"><i class="fa-solid fa-ban text-[8px]"></i>Cancelled</span>`,
+                'pending_payment': `<span class="${baseClass} bg-orange-500/90 text-white"><i class="fa-solid fa-credit-card text-[8px]"></i>Payment</span>`
             };
             return badges[status] || badges['pending'];
         }
@@ -199,19 +205,23 @@
         // Tab switching
         window.switchTab = function(tab) {
             // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('border-emerald-600', 'text-emerald-600');
-                btn.classList.add('border-transparent', 'text-gray-400');
-            });
+            const inventoryTab = document.getElementById('inventoryTab');
+            const applicationsTab = document.getElementById('applicationsTab');
 
             if (tab === 'inventory') {
-                document.getElementById('inventoryTab').classList.remove('border-transparent', 'text-gray-400');
-                document.getElementById('inventoryTab').classList.add('border-emerald-600', 'text-emerald-600');
+                inventoryTab.classList.add('bg-white', 'text-emerald-700', 'shadow-sm');
+                inventoryTab.classList.remove('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
+                applicationsTab.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm');
+                applicationsTab.classList.add('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
+                
                 document.getElementById('inventoryContent').classList.remove('hidden');
                 document.getElementById('applicationsContent').classList.add('hidden');
             } else {
-                document.getElementById('applicationsTab').classList.remove('border-transparent', 'text-gray-400');
-                document.getElementById('applicationsTab').classList.add('border-emerald-600', 'text-emerald-600');
+                applicationsTab.classList.add('bg-white', 'text-emerald-700', 'shadow-sm');
+                applicationsTab.classList.remove('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
+                inventoryTab.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm');
+                inventoryTab.classList.add('text-gray-600', 'hover:text-gray-900', 'hover:bg-white/50');
+                
                 document.getElementById('inventoryContent').classList.add('hidden');
                 document.getElementById('applicationsContent').classList.remove('hidden');
             }
@@ -228,60 +238,58 @@
             const createdDate = formatDate(item.createdAt);
 
             return `
-                <div onclick="window.location.href='/user/inventory/info/${item.id}'" class="group cursor-pointer bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all hover:border-emerald-600 hover:shadow-xl shadow-sm">
+                <div class="card-hover bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md border border-gray-200 hover:border-emerald-300 transition-all">
                     <!-- Image Section -->
-                    <div class="h-48 md:h-56 overflow-hidden relative bg-gradient-to-br from-emerald-50 to-blue-50">
+                    <div class="h-36 overflow-hidden relative bg-gradient-to-br from-emerald-50 via-gray-50 to-blue-50">
                         <img src="${imageUrl}" 
-                             class="w-full h-full object-cover transition-transform group-hover:scale-110"
+                             class="w-full h-full object-cover"
                              onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         
-                        <!-- Status Badges -->
-                        <div class="absolute top-3 right-3 flex gap-2">
-                            ${item.status === 'approved' ? '<div class="bg-green-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-lg"><i class="fa-solid fa-check mr-1"></i> Approved</div>' : ''}
-                            ${item.status === 'pending_payment' ? '<div class="bg-orange-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-lg"><i class="fa-solid fa-credit-card mr-1"></i> Pending Payment</div>' : ''}
-                        </div>
-                        ${item.isProtected ? '<div class="absolute top-3 left-3 bg-purple-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-lg"><i class="fa-solid fa-shield mr-1"></i> Protected Species</div>' : ''}
-                        
-                        <!-- Sector Badge -->
-                        <div class="absolute bottom-3 left-3">
-                            <span class="bg-white/90 backdrop-blur-sm text-emerald-800 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg">
-                                ${sector.replace('_', ' ')}
-                            </span>
+                        <!-- Status Overlays -->
+                        <div class="absolute top-2 left-2 right-2 flex justify-between items-start">
+                            ${item.isProtected ? '<div class="bg-purple-600/95 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[9px] font-semibold shadow-md"><i class="fa-solid fa-shield mr-1"></i>Protected</div>' : '<div></div>'}
+                            <div class="flex flex-col gap-1">
+                                ${item.status === 'approved' ? '<div class="bg-emerald-600/95 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[9px] font-semibold shadow-md"><i class="fa-solid fa-check mr-1"></i>Active</div>' : ''}
+                                ${item.status === 'pending_payment' ? '<div class="bg-orange-500/95 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[9px] font-semibold shadow-md"><i class="fa-solid fa-credit-card mr-1"></i>Pending</div>' : ''}
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Content Section -->
-                    <div class="p-4 md:p-5">
+                    <div class="p-3">
+                        <!-- Sector Badge -->
+                        <div class="mb-2">
+                            <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md text-[9px] font-semibold">
+                                <i class="fa-solid fa-tag text-[8px]"></i>
+                                ${sector.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </div>
+                        
                         <!-- Title -->
-                        <h3 class="text-base md:text-lg font-black text-emerald-950 mb-3 leading-tight line-clamp-2">
+                        <h3 class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-tight min-h-[2.5rem]">
                             ${resourceName}
                         </h3>
                         
                         <!-- Info Grid -->
-                        <div class="space-y-2 mb-4">
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stock Available</span>
-                                <span class="text-sm font-black text-slate-900">${formatNumber(stockAvailable)} <span class="text-[9px] text-slate-500">${unitOfMeasure.toUpperCase()}</span></span>
+                        <div class="space-y-1.5 mb-3">
+                            <div class="flex justify-between items-center pb-1.5 border-b border-gray-100">
+                                <span class="text-gray-500 text-[10px] font-medium">Stock</span>
+                                <span class="font-bold text-gray-900 text-xs">${formatNumber(stockAvailable)} <span class="text-[10px] text-gray-500 font-normal">${unitOfMeasure}</span></span>
                             </div>
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Property No.</span>
-                                <span class="text-xs font-black text-emerald-700">${propertyNumber}</span>
+                            <div class="flex justify-between items-center pb-1.5 border-b border-gray-100">
+                                <span class="text-gray-500 text-[10px] font-medium">Property No.</span>
+                                <span class="font-semibold text-emerald-600 text-[10px]">${propertyNumber}</span>
                             </div>
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Source</span>
-                                <span class="text-[10px] font-bold text-slate-700 text-right line-clamp-1">${sourceLocation}</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Registered</span>
-                                <span class="text-[10px] font-bold text-slate-600">${createdDate}</span>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 text-[10px] font-medium">Source</span>
+                                <span class="font-medium text-gray-700 text-[10px] line-clamp-1 text-right max-w-[55%]">${sourceLocation}</span>
                             </div>
                         </div>
                         
                         <!-- Action Button -->
-                        <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md group-hover:shadow-lg flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-eye"></i>
-                            View Full Details
+                        <button onclick="window.location.href='/user/inventory/info/${item.id}'" class="w-full mt-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-3 py-2 rounded-lg text-[10px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md">
+                            <span>View Details</span>
+                            <i class="fa-solid fa-arrow-right text-[9px]"></i>
                         </button>
                     </div>
                 </div>
@@ -290,82 +298,95 @@
 
         function createApplicationCard(app) {
             const categoryLabel = categoryLabels[app.category] || app.category;
-            // Get uploaded images from files object
             const imageUrl = app.files?.crop || app.files?.land || app.files?.livestock || app.files?.product || categoryImages[app.category] || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop';
             const submittedDate = formatDate(app.submittedAt);
             
             return `
-                <div onclick="viewApplicationDetails('${app.id}')" class="group cursor-pointer bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-green-600 transition-all shadow-sm hover:shadow-xl">
-                    <div class="grid md:grid-cols-5 gap-0">
-                        <!-- Image Section (Left side on desktop, top on mobile) -->
-                        <div class="md:col-span-2 h-48 md:h-full min-h-[200px] overflow-hidden relative bg-gradient-to-br from-blue-50 to-green-50">
-                            <img src="${imageUrl}" 
-                                 class="w-full h-full object-cover transition-transform group-hover:scale-110"
-                                 onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                            
-                            <!-- Category Badge on Image -->
-                            <div class="absolute bottom-3 left-3">
-                                <span class="bg-white/90 backdrop-blur-sm text-green-800 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg">
-                                    ${categoryLabel}
-                                </span>
+                <div class="card-hover bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md border border-gray-200 hover:border-emerald-300 transition-all">
+                    <!-- Image Header -->
+                    <div class="h-32 overflow-hidden relative bg-gradient-to-br from-blue-50 via-emerald-50 to-teal-50">
+                        <img src="${imageUrl}" 
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
+                        
+                        <!-- Category & Status Overlays -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
+                            <span class="bg-white/95 backdrop-blur-sm text-emerald-700 px-2 py-1 rounded-md text-[10px] font-semibold shadow-md">
+                                <i class="fa-solid fa-file-lines mr-1 text-[9px]"></i>${categoryLabel}
+                            </span>
+                            ${getStatusBadge(app.status)}
+                        </div>
+                    </div>
+                    
+                    <!-- Content Section -->
+                    <div class="p-3">
+                        <!-- Header -->
+                        <div class="mb-2">
+                            <h3 class="text-sm font-bold text-gray-900 mb-1">
+                                ${categoryLabel}
+                            </h3>
+                            <p class="text-[9px] text-gray-400 font-medium flex items-center gap-1">
+                                <i class="fa-solid fa-fingerprint text-[8px]"></i>
+                                <span>ID: ${app.id?.substring(0, 10) || 'N/A'}</span>
+                            </p>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="space-y-1.5 mb-3">
+                            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-2 border border-blue-100">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <div class="w-5 h-5 rounded bg-blue-600 flex items-center justify-center">
+                                        <i class="fa-solid fa-peso-sign text-white text-[8px]"></i>
+                                    </div>
+                                    <p class="text-[9px] text-blue-700 font-semibold uppercase">Investment</p>
+                                </div>
+                                <p class="text-base font-bold text-blue-900 break-words">₱${formatNumber(app.investmentQty || 0)}</p>
+                            </div>
+                            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg p-2 border border-emerald-100">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <div class="w-5 h-5 rounded bg-emerald-600 flex items-center justify-center">
+                                        <i class="fa-solid fa-seedling text-white text-[8px]"></i>
+                                    </div>
+                                    <p class="text-[9px] text-emerald-700 font-semibold uppercase">Est. Harvest</p>
+                                </div>
+                                <p class="text-base font-bold text-emerald-900 break-words">${formatNumber(app.harvestQty || 0)} <span class="text-[10px] font-normal text-emerald-700">qty</span></p>
                             </div>
                         </div>
-                        
-                        <!-- Content Section (Right side) -->
-                        <div class="md:col-span-3 p-4 md:p-6 flex flex-col">
-                            <!-- Header -->
-                            <div class="mb-4">
-                                <div class="flex items-start justify-between gap-3 mb-2">
-                                    <h3 class="text-lg md:text-xl font-black text-slate-800 uppercase tracking-tight leading-tight flex-1">
-                                        ${categoryLabel}
-                                    </h3>
-                                    ${getStatusBadge(app.status)}
-                                </div>
-                                <p class="text-[10px] md:text-[11px] text-gray-400 font-bold uppercase tracking-widest">
-                                    <i class="fa-solid fa-fingerprint mr-1"></i> ID: ${app.id?.substring(0, 12) || 'N/A'}
-                                </p>
-                            </div>
 
-                            <!-- Stats Grid -->
-                            <div class="grid grid-cols-2 gap-4 mb-4 flex-grow">
-                                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                    <p class="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-wider mb-1">Investment</p>
-                                    <p class="text-lg md:text-xl font-black text-slate-900">₱${formatNumber(app.investmentQty || 0)}</p>
-                                </div>
-                                <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
-                                    <p class="text-[9px] md:text-[10px] text-emerald-600 font-black uppercase tracking-wider mb-1">Est. Harvest</p>
-                                    <p class="text-lg md:text-xl font-black text-emerald-900">${formatNumber(app.harvestQty || 0)} <span class="text-xs">QTY</span></p>
-                                </div>
+                        <!-- Meta Info -->
+                        <div class="space-y-1 mb-3">
+                            <div class="flex justify-between items-center pb-1 border-b border-gray-100">
+                                <span class="flex items-center gap-1 text-gray-500 text-[10px] font-medium">
+                                    <i class="fa-regular fa-calendar text-gray-400 text-[9px]"></i>
+                                    Submitted
+                                </span>
+                                <span class="font-semibold text-gray-700 text-[10px]">${submittedDate}</span>
                             </div>
+                            ${app.landSize ? `
+                            <div class="flex justify-between items-center">
+                                <span class="flex items-center gap-1 text-gray-500 text-[10px] font-medium">
+                                    <i class="fa-solid fa-map-location-dot text-gray-400 text-[9px]"></i>
+                                    Land Size
+                                </span>
+                                <span class="font-semibold text-gray-700 text-[10px]">${formatNumber(app.landSize)} ha</span>
+                            </div>
+                            ` : ''}
+                        </div>
 
-                            <!-- Meta Info -->
-                            <div class="space-y-2 mb-4 py-3 border-t border-slate-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase"><i class="fa-solid fa-calendar mr-1"></i> Submitted</span>
-                                    <span class="text-[10px] font-black text-slate-600">${submittedDate}</span>
-                                </div>
-                                ${app.landSize ? `
-                                <div class="flex justify-between items-center">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase"><i class="fa-solid fa-map mr-1"></i> Land Size</span>
-                                    <span class="text-[10px] font-black text-slate-600">${formatNumber(app.landSize)} hectares</span>
-                                </div>
-                                ` : ''}
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="flex gap-2">
-                                <button onclick="event.stopPropagation(); viewApplicationDetails('${app.id}')" 
-                                        class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 shadow-md">
-                                    <i class="fa-solid fa-arrow-right-long"></i> View Details
-                                </button>
-                                ${app.status === 'pending' || app.status === 'under-review' ? `
-                                <button onclick="event.stopPropagation(); cancelApplication('${app.id}')" 
-                                        class="px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-[11px] font-bold uppercase tracking-wider transition border border-red-200">
-                                    <i class="fa-solid fa-times"></i>
-                                </button>
-                                ` : ''}
-                            </div>
+                        <!-- Actions -->
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="viewApplicationDetails('${app.id}')" 
+                                    class="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-3 py-2 rounded-lg text-[10px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md">
+                                <span>View Details</span>
+                                <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                            </button>
+                            ${app.status === 'pending' || app.status === 'under-review' ? `
+                            <button onclick="event.stopPropagation(); cancelApplication('${app.id}')" 
+                                    class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-[10px] font-semibold transition-all border border-red-200 hover:border-red-300">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -517,7 +538,7 @@
         }
 
         window.viewApplicationDetails = function(applicationId) {
-            window.location.href = `/user/inventory/stock-info/${applicationId}`;
+            window.location.href = `/user/inventory/info/${applicationId}`;
         };
 
         window.cancelApplication = async function(applicationId) {
