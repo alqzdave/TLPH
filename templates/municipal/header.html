@@ -33,13 +33,13 @@
             justify-content: space-between;
             padding: 0 40px;
             transition: all 0.3s ease;
+            gap: 20px;
         }
 
         /* SEARCH BAR STYLING */
         .search-group {
             position: relative;
-            flex: 0 1 500px;
-            margin: 0 30px;
+            flex: 0 1 350px;
         }
 
         .search-input {
@@ -47,7 +47,7 @@
             background-color: #f8fafc;
             border: 2px solid #f1f5f9;
             border-radius: 1.5rem;
-            padding: 0.8rem 1.5rem 0.8rem 3.5rem;
+            padding: 0.6rem 1.2rem 0.6rem 3rem;
             font-weight: 600;
             font-size: 0.95rem;
             transition: all 0.3s ease;
@@ -97,6 +97,9 @@
             :root { --sidebar-width: 0px; }
             .header-main { left: 0 !important; padding: 0 20px; }
             body { padding-left: 0 !important; }
+        }
+        
+        @media (max-width: 768px) {
             .search-group { display: none; }
         }
     </style>
@@ -117,14 +120,14 @@
             </div>
         </div>
 
-        <div class="search-group">
-            <span class="material-icons-round position-absolute start-0 top-50 translate-middle-y ms-4 text-slate-400 text-2xl">
-                search
-            </span>
-            <input type="text" placeholder="Search for applications, inventory, or users..." class="search-input">
-        </div>
-
         <div class="d-flex align-items-center gap-4">
+            
+            <div class="search-group">
+                <span class="material-icons-round position-absolute start-0 top-50 translate-middle-y ms-3 text-slate-400" style="font-size: 20px;">
+                    search
+                </span>
+                <input type="text" placeholder="Search applications, inventory..." class="search-input">
+            </div>
             
 <div class="position-relative" x-data="notificationData()">
     <a href="/municipal/notification" 
