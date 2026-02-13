@@ -9,17 +9,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     a { text-decoration: none !important; }
     .table-responsive { -webkit-overflow-scrolling: touch; }
     canvas { max-width: 100% !important; }
-
-    /* REDUCED SIZES SECTION */
     .bg-white.rounded-2xl { padding: 0.75rem !important; border-radius: 12px !important; }
     .text-2xl { font-size: 1.25rem !important; }
     .text-3xl { font-size: 1.5rem !important; }
@@ -46,7 +42,6 @@
       white-space: nowrap;
     }
 
-    /* DOWNLOAD BUTTON FIX PARA HINDI LUMALAKI SA MOBILE */
     #downloadReportBtn {
         min-width: 80px;
         transition: all 0.2s ease;
@@ -64,7 +59,6 @@
         #downloadReportBtn i { margin: 0 !important; font-size: 1.2rem; }
     }
 
-    /* CAROUSEL TO GRID RESET FOR DESKTOP */
     @media (min-width: 1024px) {
         .carousel-inner {
             display: grid !important;
@@ -311,10 +305,8 @@
   let inventoryStats = { count: 0, totalQty: 0 };
   const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-  // Fetch real transaction data from API and Firebase
   async function loadTransactions(userEmail, userId) {
     try {
-      // Fetch payment transactions from API
       const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
       const result = await response.json();
       
@@ -334,7 +326,6 @@
         }));
       }
 
-      // Fetch service requests from Firebase
       let serviceTransactions = [];
       if (userId) {
         try {
@@ -364,10 +355,7 @@
         }
       }
 
-      // Combine all transactions
       allTransactions = [...paymentTransactions, ...serviceTransactions];
-      
-      // Sort by date descending
       allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       
       computeCards();
@@ -378,6 +366,7 @@
       console.error('Error loading transactions:', error);
     }
   }
+
 
   async function fetchInventoryStats(userId) {
     try {
@@ -420,7 +409,6 @@
     return 'Unknown';
   }
 
-  // Map application name to type based on actual template structure
   function mapApplicationType(name, source = '') {
     const n = (name || '').toLowerCase();
     
@@ -428,50 +416,37 @@
     if (source === 'service' || n.includes('service request')) {
       return 'Service Request';
     }
-    
-    // Environment licenses (templates/user/license/environment/)
     if (n.includes('cco') || n.includes('environment') || n.includes('clearance') || 
         n.includes('hazardous') || n.includes('waste') || n.includes('water') || 
         n.includes('air') || n.includes('pcl') || n.includes('piccs')) {
       return 'License/Permit Request';
     }
     
-    // Fisheries licenses (templates/user/license/fisheries/)
     if (n.includes('fisheries') || n.includes('fish') || n.includes('aqua') || 
         n.includes('harvest') || n.includes('dealer') || n.includes('process')) {
       return 'License/Permit Request';
     }
     
-    // Forest licenses (templates/user/license/forest/)
     if (n.includes('forest') || n.includes('timber') || n.includes('tree') || 
         n.includes('plantation') || n.includes('reforestation') || n.includes('nursery')) {
       return 'License/Permit Request';
     }
     
-    // Livestock licenses (templates/user/license/livestock/)
     if (n.includes('livestock') || n.includes('animal') || n.includes('poultry') || 
         n.includes('slaughter') || n.includes('meat')) {
       return 'License/Permit Request';
     }
     
-    // Wildlife licenses (templates/user/license/wildlife/)
     if (n.includes('wildlife') || n.includes('collection') || n.includes('ownership') || 
         n.includes('wildfarm')) {
       return 'License/Permit Request';
     }
     
-    // General permits (templates/user/license/permits/)
     if (n.includes('export') || n.includes('import') || n.includes('operation') || 
         n.includes('local-transport') || n.includes('permit')) {
       return 'License/Permit Request';
     }
     
-    // Service requests (templates/user/service/)
-    // - compensation/ (pest, typhoon)
-    // - farm/ (compliance, disease, initial_visit, etc.)
-    // - fertilizer/
-    // - financial/
-    // - Seminar/
     if (n.includes('compensation') || n.includes('pest') || n.includes('typhoon') || 
         n.includes('compliance') || n.includes('disease') || n.includes('visit') || 
         n.includes('fertilizer') || n.includes('financial') || n.includes('seminar') || 
@@ -479,7 +454,6 @@
       return 'Service Request';
     }
     
-    // Default to License/Permit for license-related items
     if (n.includes('license')) {
       return 'License/Permit Request';
     }
@@ -639,13 +613,11 @@
     }
   });
 
-  /* DOWNLOAD REPORT FUNCTION */
   window.downloadDashboardReport = async function() {
     const downloadBtn = document.getElementById('downloadReportBtn');
     const isMobile = window.innerWidth < 640;
     
     try {
-      // Check if html2pdf is loaded
       if (typeof html2pdf === 'undefined') {
         alert('PDF library not loaded. Please refresh the page and try again.');
         return;
@@ -714,7 +686,6 @@
       `;
       pdfContainer.appendChild(execSummary);
 
-      /* App Breakdown Section */
       const breakdown = document.createElement('div');
       breakdown.style.marginBottom = '12px';
       breakdown.innerHTML = `
@@ -731,8 +702,6 @@
         </div>
       `;
       pdfContainer.appendChild(breakdown);
-
-      // SECTION 2: Application Type Breakdown
       const typeBreakdown = document.createElement('div');
       typeBreakdown.style.marginBottom = '12px';
       typeBreakdown.style.pageBreakInside = 'avoid';
@@ -773,8 +742,6 @@
 
       typeBreakdown.appendChild(typeGrid);
       pdfContainer.appendChild(typeBreakdown);
-
-      // SECTION 3: Application Status Analysis
       const statusSection = document.createElement('div');
       statusSection.style.marginBottom = '12px';
       statusSection.style.pageBreakInside = 'avoid';
@@ -817,7 +784,6 @@
       statusSection.appendChild(statusGrid);
       pdfContainer.appendChild(statusSection);
 
-      // SECTION 4: Payment Status Analysis
       const paymentSection = document.createElement('div');
       paymentSection.style.marginBottom = '12px';
       paymentSection.style.pageBreakInside = 'avoid';
@@ -859,7 +825,6 @@
       paymentSection.appendChild(paymentGrid);
       pdfContainer.appendChild(paymentSection);
 
-      // SECTION 5: Detailed Transaction List
       const detailsSection = document.createElement('div');
       detailsSection.style.pageBreakBefore = 'always';
       detailsSection.innerHTML = `<h2 style="color: #1b330d; font-size: 14px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 4px; margin-bottom: 10px;">Detailed Transaction List</h2>`;
@@ -898,7 +863,6 @@
     }
   };
 
-  // DOM event listeners
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("searchInput").addEventListener("input", applyFilters);
     document.getElementById("typeFilter").addEventListener("change", applyFilters);
@@ -914,7 +878,6 @@
       applyFilters();
     });
 
-    // Add event listener for download report button
     const reportBtn = document.getElementById("downloadReportBtn");
     if (reportBtn) {
       reportBtn.addEventListener("click", () => {
