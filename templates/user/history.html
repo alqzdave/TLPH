@@ -1929,40 +1929,23 @@
           }) : 'N/A';
 
           html += `
-            <article class="inventory-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; transition: all 0.3s ease;">
-              <div style="grid-column: 1; width: 100%;">
-                <strong style="font-size: 16px; font-weight: 800; color: #111827; display: block; margin-bottom: 12px;">
-                  ${categoryLabel}
-                </strong>
-                
-                <div class="item-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; margin-bottom: 0;">
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Harvest Qty</label>
-                    <div class="value" style="font-size: 14px; font-weight: 700; color: #111827;">${Number(item.harvestQty || 0).toLocaleString()} units</div>
-                  </div>
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Investment</label>
-                    <div class="amount" style="font-size: 16px; font-weight: 700; color: #10b981;">₱${Number(item.investmentQty || 0).toLocaleString()}</div>
-                  </div>
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Unit Price</label>
-                    <div class="value" style="font-size: 14px; font-weight: 700; color: #10b981;">₱${unitPrice}</div>
-                  </div>
-                  <div>
-                    <label style="display: block; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Date Added</label>
-                    <div class="value" style="font-size: 14px; font-weight: 700; color: #111827;">${submittedDate}</div>
-                  </div>
+            <div class="inventory-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: all 0.3s ease;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <span style="display: inline-block; background: #f59e0b; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Inventory</span>
+                <span style="color: #6b7280; font-size: 12px;">•</span>
+                <span style="color: #6b7280; font-size: 12px;">${submittedDate}</span>
+              </div>
+              <div style="margin-bottom: 10px;">
+                <p style="font-weight: 700; color: #111827; margin: 0 0 4px; font-size: 14px;">${categoryLabel}</p>
+                <div style="font-size: 12px; color: #9ca3af;">
+                  <span><strong>Harvest Qty:</strong> ${Number(item.harvestQty || 0).toLocaleString()} units</span>
+                  <span style="margin-left: 16px;"><strong>Investment:</strong> ₱${Number(item.investmentQty || 0).toLocaleString()}</span>
                 </div>
               </div>
-              
-              <code style="background: #f3f4f6; padding: 10px 14px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; color: #10b981; white-space: nowrap; border: 1px solid #e5e7eb; flex-shrink: 0; align-self: center;">
-                #INV-${String(itemIndex).padStart(3, '0')}
-              </code>
-              
-              <a href="/user/inventory/stock-info?id=${doc.id}" class="close" style="background: #10b981 !important; color: white !important; border: none !important; width: 36px !important; height: 36px !important; border-radius: 6px !important; font-size: 0 !important; text-decoration: none !important; cursor: pointer !important; transition: all 0.2s !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; white-space: nowrap !important; flex-shrink: 0 !important; position: relative !important;">
-                <span style="display: none !important;">View</span>
+              <a href="/user/inventory/stock-info?id=${doc.id}" style="display: inline-flex; align-items: center; gap: 6px; background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s ease;">
+                <i class="fa-solid fa-eye"></i> View Details
               </a>
-            </article>
+            </div>
           `;
           itemIndex++;
         });
@@ -1970,26 +1953,17 @@
         html += '</main>';
         document.getElementById('inventoryList').innerHTML = html;
 
-        document.querySelectorAll('#inventoryList .close').forEach(btn => {
-          btn.style.setProperty('font-size', '0', 'important');
-          btn.style.setProperty('background', '#10b981', 'important');
-          btn.style.setProperty('color', 'white', 'important');
-          const icon = document.createElement('i');
-          icon.className = 'fa-solid fa-eye';
-          icon.style.cssText = 'font-size: 14px !important; color: white !important; position: absolute !important;';
-          btn.innerHTML = '';
-          btn.appendChild(icon);
-          
-          btn.addEventListener('mouseenter', function() {
-            this.style.setProperty('background', '#059669', 'important');
-            this.style.setProperty('transform', 'translateY(-2px)', 'important');
-            this.style.setProperty('box-shadow', '0 4px 12px rgba(16, 185, 129, 0.3)', 'important');
+        document.querySelectorAll('#inventoryList .inventory-card').forEach(card => {
+          card.addEventListener('mouseenter', function() {
+            this.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.15)';
+            this.style.borderColor = '#10b981';
+            this.style.transform = 'translateY(-4px)';
           });
           
-          btn.addEventListener('mouseleave', function() {
-            this.style.setProperty('background', '#10b981', 'important');
-            this.style.setProperty('transform', 'translateY(0)', 'important');
-            this.style.setProperty('box-shadow', 'none', 'important');
+          card.addEventListener('mouseleave', function() {
+            this.style.boxShadow = 'none';
+            this.style.borderColor = '#e5e7eb';
+            this.style.transform = 'translateY(0)';
           });
         });
 
