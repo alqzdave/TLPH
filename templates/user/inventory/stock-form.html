@@ -89,17 +89,17 @@
                         <div class="grid grid-cols-2 gap-x-4 gap-y-2.5">
                             <div class="col-span-2">
                                 <label class="label-style">Resource Name / Species <span class="text-red-500">*</span></label>
-                                <input type="text" required placeholder="e.g. Narra Seedling" class="input-style">
+                                <input type="text" id="resourceName" name="resourceName" required placeholder="e.g. Narra Seedling" class="input-style">
                             </div>
                             
                             <div class="col-span-1">
                                 <label class="label-style">Property Number</label>
-                                <input type="text" placeholder="DENR-2026-XXXX" class="input-style">
+                                <input type="text" id="propertyNumber" name="propertyNumber" placeholder="DENR-2026-XXXX" class="input-style">
                             </div>
 
                             <div class="col-span-1">
                                 <label class="label-style">Sector / Classification</label>
-                                <select class="input-style appearance-none bg-white cursor-pointer">
+                                <select id="sector" name="sector" class="input-style appearance-none bg-white cursor-pointer">
                                     <option value="" disabled selected>Select Sector</option>
                                     <optgroup label="Forestry">
                                         <option value="timber">Timber / Logs</option>
@@ -119,12 +119,12 @@
 
                             <div class="col-span-1">
                                 <label class="label-style">Stock Available <span class="text-red-500">*</span></label>
-                                <input type="number" required placeholder="0" class="input-style">
+                                <input type="number" id="stockAvailable" name="stockAvailable" required placeholder="0" class="input-style">
                             </div>
 
                             <div class="col-span-1">
                                 <label class="label-style">Unit of Measure</label>
-                                <select class="input-style appearance-none bg-white cursor-pointer">
+                                <select id="unitOfMeasure" name="unitOfMeasure" class="input-style appearance-none bg-white cursor-pointer">
                                     <option value="pcs">Pieces (pcs)</option>
                                     <option value="seedlings">Seedlings</option>
                                     <option value="bd_ft">Board Feet</option>
@@ -137,12 +137,12 @@
 
                             <div class="col-span-2">
                                 <label class="label-style">Source / Origin Location</label>
-                                <input type="text" placeholder="e.g. Regional Nursery Office" class="input-style">
+                                <input type="text" id="sourceLocation" name="sourceLocation" placeholder="e.g. Regional Nursery Office" class="input-style">
                             </div>
 
                             <div class="col-span-2">
                                 <label class="label-style">Notes / Remarks</label>
-                                <textarea rows="2" placeholder="Additional handler notes..." class="input-style"></textarea>
+                                <textarea id="notes" name="notes" rows="2" placeholder="Additional handler notes..." class="input-style"></textarea>
                             </div>
                         </div>
                     </div>
@@ -174,7 +174,7 @@
                             </div>
 
                             <div id="protectedFields" class="hidden fade-in space-y-2">
-                                <input type="text" placeholder="Permit Number" class="input-style py-1.5 text-xs border-emerald-100">
+                                <input type="text" id="permitNumber" name="permitNumber" placeholder="Permit Number" class="input-style py-1.5 text-xs border-emerald-100">
                                 <div onclick="document.getElementById('file_permit').click()" 
                                      class="btn-transition border border-dashed border-emerald-300 rounded-lg py-3 flex items-center justify-center bg-white hover:bg-emerald-50 cursor-pointer text-center">
                                     <span class="text-[8px] font-[900] text-emerald-800 uppercase italic">Attach Permit File</span>
@@ -193,35 +193,182 @@
                     </div>
 
                     <div class="flex items-center space-x-2">
-                        <button type="button" class="btn-transition px-6 py-2.5 border border-gray-200 rounded-lg text-[9px] font-[900] text-gray-400 uppercase tracking-widest hover:bg-gray-100">Back</button>
+                        <button type="button" onclick="window.location.href='/user/inventory'" class="btn-transition px-6 py-2.5 border border-gray-200 rounded-lg text-[9px] font-[900] text-gray-400 uppercase tracking-widest hover:bg-gray-100">Back</button>
                         <button type="reset" onclick="resetDisplay()" class="btn-transition px-6 py-2.5 border border-gray-200 rounded-lg text-[9px] font-[900] text-gray-400 uppercase tracking-widest hover:bg-red-50 hover:text-red-600">Clear</button>
-                        <button type="submit" class="btn-transition px-8 py-2.5 bg-emerald-700 rounded-lg text-[9px] font-[900] text-white uppercase tracking-widest hover:bg-emerald-800 shadow-md active:scale-95">Add Entry</button>
+                        <button type="submit" id="submitBtn" class="btn-transition px-8 py-2.5 bg-emerald-700 rounded-lg text-[9px] font-[900] text-white uppercase tracking-widest hover:bg-emerald-800 shadow-md active:scale-95">Add Entry</button>
                     </div>
                 </div>
             </form>
         </div>
     </main>
 
-    <script>
-        function toggleProtectedFields() {
+    <script type="module">
+        import { auth, db, storage, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        const REGISTRATION_FEE = 150.00;
+        let currentUser = null;
+
+        // Check authentication
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                console.log('User authenticated:', user.email);
+            } else {
+                alert('Please sign in to register inventory items');
+                window.location.href = '/login';
+            }
+        });
+
+        // Toggle protected species fields
+        window.toggleProtectedFields = function() {
             const isChecked = document.getElementById('protectedToggle').checked;
             const fields = document.getElementById('protectedFields');
             isChecked ? fields.classList.remove('hidden') : fields.classList.add('hidden');
-        }
+        };
 
-        function updateFileName(input, statusId) {
+        // Update file name display
+        window.updateFileName = function(input, statusId) {
             if (input.files && input.files[0]) {
-                document.getElementById(statusId).innerText = "File: " + input.files[0].name.substring(0, 15) + "...";
+                const fileName = input.files[0].name;
+                document.getElementById(statusId).innerText = "File: " + (fileName.length > 20 ? fileName.substring(0, 20) + "..." : fileName);
             }
-        }
+        };
 
-        function resetDisplay() {
+        // Reset form display
+        window.resetDisplay = function() {
             setTimeout(() => {
                 document.getElementById('protectedFields').classList.add('hidden');
+                document.getElementById('protectedToggle').checked = false;
                 document.getElementById('imageStatus').innerText = "";
                 document.getElementById('permitStatus').innerText = "";
             }, 10);
+        };
+
+        // Upload file to Firebase Storage
+        async function uploadFile(file, path) {
+            if (!file) return null;
+            
+            const timestamp = Date.now();
+            const fileName = `${timestamp}_${file.name}`;
+            const storageRef = ref(storage, `${path}/${fileName}`);
+            
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            
+            return downloadURL;
         }
+
+        // Handle form submission
+        document.getElementById('stockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentUser) {
+                alert('Please sign in to continue');
+                window.location.href = '/login';
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+                // Collect form data
+                const formData = {
+                    resourceName: document.getElementById('resourceName').value,
+                    propertyNumber: document.getElementById('propertyNumber').value,
+                    sector: document.getElementById('sector').value,
+                    stockAvailable: parseInt(document.getElementById('stockAvailable').value),
+                    unitOfMeasure: document.getElementById('unitOfMeasure').value,
+                    sourceLocation: document.getElementById('sourceLocation').value,
+                    notes: document.getElementById('notes').value,
+                    isProtected: document.getElementById('protectedToggle').checked,
+                    permitNumber: document.getElementById('permitNumber')?.value || null,
+                    userEmail: currentUser.email,
+                    userId: currentUser.uid,
+                    status: 'pending_payment',
+                    registrationFee: REGISTRATION_FEE,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                // Upload image if provided
+                const imageFile = document.getElementById('file_image').files[0];
+                if (imageFile) {
+                    console.log('Uploading image...');
+                    formData.imageUrl = await uploadFile(imageFile, `inventory/images/${currentUser.uid}`);
+                }
+
+                // Upload permit if protected species
+                if (formData.isProtected) {
+                    const permitFile = document.getElementById('file_permit').files[0];
+                    if (permitFile) {
+                        console.log('Uploading permit...');
+                        formData.permitUrl = await uploadFile(permitFile, `inventory/permits/${currentUser.uid}`);
+                    }
+                }
+
+                // Save to Firestore
+                console.log('Saving to Firestore...');
+                const docRef = await addDoc(collection(db, 'inventory_registrations'), formData);
+                console.log('Document saved with ID:', docRef.id);
+
+                // Initiate Xendit payment
+                console.log('Initiating payment...');
+                const paymentData = {
+                    amount: REGISTRATION_FEE,
+                    description: `Inventory Registration - ${formData.resourceName}`,
+                    userEmail: currentUser.email,
+                    userId: currentUser.uid,
+                    inventoryId: docRef.id,
+                    transactionType: 'inventory-registration',
+                    external_id: `inventory-${docRef.id}`,
+                    item_name: `Inventory Registration - ${formData.resourceName}`,
+                    success_url: `${window.location.origin}/payment-success?transaction_type=inventory-registration`,
+                    failure_url: `${window.location.origin}/payment-failed?transaction_type=inventory-registration`,
+                    metadata: {
+                        resourceName: formData.resourceName,
+                        sector: formData.sector,
+                        stockAvailable: formData.stockAvailable,
+                        inventoryId: docRef.id
+                    }
+                };
+
+                const response = await fetch('/api/payments/create-invoice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success' && result.invoice_url) {
+                    // Store inventory ID and transaction type in session
+                    sessionStorage.setItem('pending_inventory_id', docRef.id);
+                    sessionStorage.setItem('transaction_type', 'inventory-registration');
+                    
+                    // Redirect to payment page
+                    window.location.href = result.invoice_url;
+                } else {
+                    throw new Error(result.message || 'Payment initiation failed');
+                }
+
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Error: ' + error.message);
+                
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
 
         // Dropdown Handlers
         document.addEventListener('click', function (e) {
@@ -231,6 +378,19 @@
                 menu.classList.toggle('show');
             } else {
                 document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+
+        // Check for payment success
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentSuccess = urlParams.get('payment_success');
+            
+            if (paymentSuccess === 'true') {
+                alert('Payment successful! Your inventory registration has been submitted.');
+                window.location.href = '/user/inventory';
+            } else if (paymentSuccess === 'false') {
+                alert('Payment was cancelled or failed. Please try again.');
             }
         });
     </script>

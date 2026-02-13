@@ -84,3 +84,19 @@ def payment_success():
 def payment_failed():
     return render_template('payment-failed.html')
 
+# Inventory routes
+@bp.route('/user/inventory')
+def user_inventory():
+    return render_template('user/inventory/stock-list.html')
+
+@bp.route('/user/inventory/add')
+def user_inventory_add():
+    return render_template('user/inventory/stock-form.html')
+
+@bp.route('/user/inventory/info/<stock_id>')
+def user_inventory_info(stock_id):
+    return render_template('user/inventory/stock-info.html')
+
+@bp.route('/user/inventory/history')
+def user_inventory_history():
+    return render_template('user/inventory/stock-history.html')
