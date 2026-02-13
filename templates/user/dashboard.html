@@ -316,7 +316,7 @@
           reference_num: t.external_id || t.reference || t.id,
           name_of_application: t.transaction_name || 'Unknown',
           type_of_application: mapApplicationType(t.transaction_name || '', 'payment'),
-          payment_status: mapPaymentStatus(t.display_status || ''),
+          payment_status: getActualPaymentStatus(t),
           status: mapApplicationStatus(t.display_status || ''),
           amount: t.amount || 0,
           created_at: t.created_at || '',
@@ -341,7 +341,7 @@
               reference_num: service.externalId || doc.id,
               name_of_application: service.serviceType || 'Service Request',
               type_of_application: 'Service Request',
-              payment_status: service.paymentStatus === 'free' ? 'N/A' : mapPaymentStatus(service.paymentStatus || 'pending'),
+              payment_status: service.paymentStatus === 'free' ? 'N/A' : (service.paymentStatus === 'completed' ? 'Paid' : 'Unpaid'),
               status: mapApplicationStatus(service.status || 'pending'),
               amount: service.amount || 0,
               created_at: service.createdAt || new Date().toISOString(),
@@ -399,6 +399,40 @@
     if (s === 'cancelled') return 'Refunded';
     if (s === 'pending' || s === 'unpaid') return 'Unpaid';
     return 'Pending';
+  }
+
+  // Improved function to detect actual payment status from transaction data
+  function getActualPaymentStatus(transaction) {
+    // Check if transaction has payment method set (indicates payment was processed)
+    if (transaction.payment_method) {
+      return 'Paid';
+    }
+    
+    // Check display_status for approval indicator
+    const displayStatus = (transaction.display_status || '').toLowerCase();
+    if (displayStatus === 'approved' || displayStatus === 'completed' || displayStatus === 'paid') {
+      return 'Paid';
+    }
+    
+    // Check status field
+    const status = (transaction.status || '').toLowerCase();
+    if (status === 'paid' || status === 'completed') {
+      return 'Paid';
+    }
+    
+    // Check if invoice was paid
+    if (transaction.paid_at || transaction.paid_date) {
+      return 'Paid';
+    }
+    
+    // Check if there's a payment status field
+    const paymentStatus = (transaction.paymentStatus || transaction.payment_status || '').toLowerCase();
+    if (paymentStatus === 'completed' || paymentStatus === 'paid') {
+      return 'Paid';
+    }
+    
+    // Default mapping
+    return mapPaymentStatus(displayStatus);
   }
 
   function mapApplicationStatus(status) {
