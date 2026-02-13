@@ -1063,7 +1063,6 @@
           <div id="applicationsList"></div>
         </div>
 
-        <!-- Service Requests Tab -->
         <div id="services" class="tab-content">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <p style="color: #6b7280; font-size: 14px; margin: 0;">
@@ -1073,7 +1072,6 @@
           <div id="servicesList"></div>
         </div>
 
-        <!-- Inventory History Tab -->
         <div id="inventory" class="tab-content">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <p style="color: #6b7280; font-size: 14px; margin: 0;">
@@ -1089,7 +1087,6 @@
     </div>
   </main>
 
-  <!-- Receipt Modal -->
   <div class="receipt-modal" id="receiptModal">
     <div class="receipt-content">
       <div class="receipt-header">
@@ -1170,16 +1167,12 @@
 
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-    // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         const tabName = this.dataset.tab;
         
-        // Remove active class from all buttons and content
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
-        // Add active class to clicked button and corresponding content
         this.classList.add('active');
         document.getElementById(tabName).classList.add('active');
       });
@@ -1189,7 +1182,6 @@
       try {
         let userEmail = null;
 
-        // Try to get email from Firebase Auth
         await new Promise((resolve) => {
           const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user && user.email) {
@@ -1200,7 +1192,6 @@
           });
         });
 
-        // Fallback to localStorage
         if (!userEmail) {
           userEmail = (localStorage.getItem('denr_user_email') || '').trim();
         }
@@ -1219,7 +1210,6 @@
         const result = await response.json();
 
         if (result.status === 'success' && result.transactions) {
-          // Filter only approved applications and exclude service requests
           const approvedApps = result.transactions.filter(t => (
             t.display_status === 'approved' || 
             t.status === 'approved' ||
@@ -1245,7 +1235,6 @@
             const date = t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A';
             const updated = t.updated_at ? new Date(t.updated_at).toLocaleString() : 'N/A';
             
-            // Determine application type from transaction name
             const appType = t.transaction_type || extractAppType(t.transaction_name) || 'License/Permit';
             const appDescription = t.transaction_name || 'Unknown Application';
             const appAmount = peso.format(t.amount || 0);
@@ -1287,7 +1276,6 @@
       }
     }
 
-    // Helper function to extract application type from transaction name
     function extractAppType(transactionName) {
       if (!transactionName) return null;
       
@@ -1304,7 +1292,6 @@
       return 'License/Permit';
     }
 
-    // Helper to detect service-related transactions from payment logs
     function isServiceTransaction(transaction) {
       const name = (transaction.transaction_name || '').toLowerCase();
       const description = (transaction.description || '').toLowerCase();
@@ -1341,7 +1328,6 @@
       document.getElementById('receiptModal').classList.remove('active');
     };
 
-    // Close receipt modal when clicking outside of it
     document.getElementById('receiptModal').addEventListener('click', function(e) {
       if (e.target === this) {
         closeReceipt();
@@ -1363,14 +1349,12 @@
           downloadBtn.textContent = 'Generating PDF...';
         }
 
-        // Create a container for the PDF content
         const pdfContainer = document.createElement('div');
         pdfContainer.style.padding = '15px';
         pdfContainer.style.backgroundColor = '#ffffff';
         pdfContainer.style.fontFamily = 'Arial, sans-serif';
         pdfContainer.style.lineHeight = '1.3';
         
-        // Add header
         const header = document.createElement('div');
         header.style.textAlign = 'center';
         header.style.marginBottom = '12px';
@@ -1384,7 +1368,6 @@
         `;
         pdfContainer.appendChild(header);
 
-        // Add application summary statistics
         const stats = document.createElement('div');
         stats.style.display = 'grid';
         stats.style.gridTemplateColumns = 'repeat(3, 1fr)';
@@ -1408,7 +1391,6 @@
         `;
         pdfContainer.appendChild(stats);
 
-        // Add detailed applications section
         const detailsSection = document.createElement('div');
         detailsSection.style.marginTop = '12px';
         
@@ -1422,10 +1404,8 @@
         detailsTitle.style.marginBottom = '10px';
         detailsSection.appendChild(detailsTitle);
 
-        // Get user email for fetching details
         let userEmail = localStorage.getItem('denr_user_email') || '';
         
-        // Try to get from Firebase if not in localStorage
         if (!userEmail) {
           await new Promise((resolve) => {
             const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -1438,11 +1418,9 @@
           });
         }
 
-        // Fetch applications from Firebase transactions collection
         try {
           let firebaseApplications = [];
           
-          // Try to fetch from Firestore if user is authenticated
           if (userEmail) {
             const q = query(
               collection(db, 'transactions'),
@@ -1463,7 +1441,6 @@
             console.log('Fetched applications from transactions:', firebaseApplications.length);
           }
 
-          // Add detailed card for each application
           if (firebaseApplications.length > 0) {
             firebaseApplications.forEach((app, idx) => {
               const appCard = document.createElement('div');
@@ -1480,13 +1457,11 @@
               const amount = app.formData?.amount || app.amount || 0;
               const formFields = app.formData?.formFields || {};
 
-              // Build form fields HTML - improved display
               let formFieldsHTML = '';
               const fieldKeys = Object.keys(formFields).filter(key => formFields[key] !== null && formFields[key] !== undefined && formFields[key] !== '');
               
               if (fieldKeys.length > 0) {
                 fieldKeys.forEach((key) => {
-                  // Convert camelCase to Title Case
                   const label = key
                     .replace(/([A-Z])/g, ' $1')
                     .replace(/^./, str => str.toUpperCase())
@@ -1530,7 +1505,6 @@
               detailsSection.appendChild(appCard);
             });
           } else {
-            // Fallback if no Firebase data found
             const applicationsData = Array.from(applicationsList.children).map((card, idx) => {
               const badge = card.querySelector('.application-type-badge');
               const pElements = card.querySelectorAll('p');
@@ -1583,7 +1557,6 @@
           }
         } catch (e) {
           console.warn('Could not fetch detailed application data from Firebase:', e);
-          // Fallback: show applications from DOM
           const applicationsData = Array.from(applicationsList.children).map((card, idx) => {
             const badge = card.querySelector('.application-type-badge');
             const pElements = card.querySelectorAll('p');
@@ -1630,7 +1603,6 @@
 
         pdfContainer.appendChild(detailsSection);
 
-        // Add footer
         const footer = document.createElement('div');
         footer.style.marginTop = '12px';
         footer.style.paddingTop = '8px';
@@ -1645,7 +1617,6 @@
         `;
         pdfContainer.appendChild(footer);
 
-        // Generate PDF
         const opt = {
           margin: 5,
           filename: `DENR_Applications_${new Date().getTime()}.pdf`,
@@ -1682,7 +1653,6 @@
           downloadBtn.textContent = 'Generating PDF...';
         }
 
-        // Fetch approved applications from Firebase
         const q = query(
           collection(db, 'applications'), 
           where('userId', '==', user.uid),
@@ -1716,11 +1686,9 @@
           'institutional': 'Cooperative Development'
         };
 
-        // Collect inventory items
         const inventoryItems = [];
         let totalInvestment = 0;
         
-        // Sort documents by submittedAt (newest first)
         const sortedDocs = [];
         querySnapshot.forEach(doc => sortedDocs.push(doc));
         sortedDocs.sort((a, b) => {
@@ -1747,14 +1715,12 @@
           });
         });
 
-        // Create a container for the PDF content
         const pdfContainer = document.createElement('div');
         pdfContainer.style.padding = '15px';
         pdfContainer.style.backgroundColor = '#ffffff';
         pdfContainer.style.fontFamily = 'Arial, sans-serif';
         pdfContainer.style.lineHeight = '1.3';
         
-        // Add header
         const header = document.createElement('div');
         header.style.textAlign = 'center';
         header.style.marginBottom = '12px';
@@ -1768,7 +1734,6 @@
         `;
         pdfContainer.appendChild(header);
 
-        // Add statistics
         const stats = document.createElement('div');
         stats.style.display = 'grid';
         stats.style.gridTemplateColumns = 'repeat(3, 1fr)';
@@ -1791,7 +1756,6 @@
         `;
         pdfContainer.appendChild(stats);
 
-        // Add detailed transactions section
         const detailsSection = document.createElement('div');
         detailsSection.style.marginTop = '12px';
         
@@ -1805,7 +1769,6 @@
         detailsTitle.style.marginBottom = '10px';
         detailsSection.appendChild(detailsTitle);
 
-        // Add detailed card for each inventory item
         inventoryItems.forEach((item, idx) => {
           const itemCard = document.createElement('div');
           itemCard.style.marginBottom = '12px';
@@ -1854,7 +1817,6 @@
 
         pdfContainer.appendChild(detailsSection);
 
-        // Add footer
         const footer = document.createElement('div');
         footer.style.marginTop = '12px';
         footer.style.paddingTop = '8px';
@@ -1869,7 +1831,6 @@
         `;
         pdfContainer.appendChild(footer);
 
-        // Generate PDF
         const opt = {
           margin: 5,
           filename: `DENR_Inventory_History_${new Date().getTime()}.pdf`,
@@ -1892,7 +1853,6 @@
       }
     };
 
-    // Load inventory history content
     async function loadInventoryHistory() {
       try {
         const user = auth.currentUser;
@@ -1906,7 +1866,6 @@
           return;
         }
 
-        // Show loading state
         document.getElementById('inventoryList').innerHTML = `
           <div style="text-align: center; padding: 40px;">
             <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #10b981;"></i>
@@ -1914,7 +1873,6 @@
           </div>
         `;
 
-        // Fetch approved applications from Firebase
         const q = query(
           collection(db, 'applications'), 
           where('userId', '==', user.uid),
@@ -1949,7 +1907,6 @@
           'institutional': 'Cooperative Development'
         };
 
-        // Sort documents by submittedAt (newest first)
         const sortedDocs = [];
         querySnapshot.forEach(doc => sortedDocs.push(doc));
         sortedDocs.sort((a, b) => {
@@ -2013,7 +1970,6 @@
         html += '</main>';
         document.getElementById('inventoryList').innerHTML = html;
 
-        // Override close button to show eye icon for view
         document.querySelectorAll('#inventoryList .close').forEach(btn => {
           btn.style.setProperty('font-size', '0', 'important');
           btn.style.setProperty('background', '#10b981', 'important');
@@ -2050,7 +2006,6 @@
 
     
 
-    // Load Service Requests from Firebase
     async function loadServiceRequests() {
       try {
         const currentUser = auth.currentUser;
@@ -2081,7 +2036,6 @@
           return;
         }
 
-        // Convert to array and sort by createdAt (newest first)
         const services = [];
         querySnapshot.forEach((doc) => {
           services.push({
@@ -2090,7 +2044,6 @@
           });
         });
 
-        // Sort by createdAt descending (newest first)
         services.sort((a, b) => {
           const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -2101,7 +2054,6 @@
         services.forEach((service) => {
           const serviceId = service.id;
           
-          // Format date
           const createdDate = service.createdAt ? new Date(service.createdAt).toLocaleDateString('en-PH', {
             year: 'numeric',
             month: 'short',
@@ -2110,7 +2062,6 @@
             minute: '2-digit'
           }) : 'N/A';
 
-          // Determine status
           let statusClass = 'pending';
           let statusText = 'Pending';
           
@@ -2125,7 +2076,6 @@
             statusText = 'Rejected';
           }
 
-          // Build service card
           html += `
             <div class="service-card" data-service-id="${serviceId}">
               <div class="service-header">
@@ -2170,7 +2120,6 @@
       }
     }
 
-    // Generate service details HTML
     function generateServiceDetails(service) {
       let detailsHtml = '';
       
@@ -2202,7 +2151,6 @@
       return detailsHtml || '<p style="color: #9ca3af;">No additional details available.</p>';
     }
 
-    // Toggle service details visibility
     window.toggleServiceDetails = function(serviceId) {
       const detailsElement = document.getElementById(`details-${serviceId}`);
       const button = event.target.closest('button');
@@ -2216,26 +2164,21 @@
       }
     };
 
-    // Retry payment
     window.retryPayment = function(serviceId) {
       alert('Payment retry functionality coming soon. Service ID: ' + serviceId);
     };
 
-    // Load applications on page load
     loadApplications();
     
-    // Check URL hash to auto-open specific tab
     window.addEventListener('DOMContentLoaded', () => {
       const hash = window.location.hash.substring(1); // Remove the # symbol
       
       if (hash === 'services') {
-        // Click the services tab
         const servicesTab = document.querySelector('.tab-btn[data-tab="services"]');
         if (servicesTab) {
           servicesTab.click();
         }
       } else if (hash === 'inventory') {
-        // Click the inventory tab
         const inventoryTab = document.querySelector('.tab-btn[data-tab="inventory"]');
         if (inventoryTab) {
           inventoryTab.click();
@@ -2243,7 +2186,6 @@
       }
     });
     
-    // Load inventory history when tab is clicked
     document.querySelectorAll('.tab-btn').forEach(btn => {
       if (btn.dataset.tab === 'inventory') {
         btn.addEventListener('click', function() {
@@ -2254,7 +2196,6 @@
         });
       }
       
-      // Load service requests when services tab is clicked
       if (btn.dataset.tab === 'services') {
         btn.addEventListener('click', function() {
           if (!document.getElementById('servicesList').getAttribute('data-loaded')) {
