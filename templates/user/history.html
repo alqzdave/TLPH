@@ -1060,7 +1060,7 @@
         <div id="applications" class="tab-content active">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              <i class="fa-solid fa-info-circle"></i> Your approved applications for licenses and permits.
+              <i class="fa-solid fa-info-circle"></i> Your application records for licenses and permits.
             </p>
             <button id="downloadPdfBtn" onclick="downloadApplicationsPDF()" style="padding: 10px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
               <i class="fa-solid fa-download"></i> Download PDF
@@ -1315,6 +1315,7 @@
         name.includes(keyword) || description.includes(keyword)
       );
     }
+
 
     window.viewReceipt = function(reference, permitType, date, amount, description, invoiceId, method, updated) {
       document.getElementById('receiptReference').textContent = reference;

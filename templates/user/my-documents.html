@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>My Documents | DENR Portal</title>
+
+  <style>
+    body {
+      font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f6f7fb;
+    }
+
+    .main-wrapper {
+      padding-top: 24px;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .page-header {
+      margin-bottom: 30px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 8px;
+      color: #111827;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+    }
+
+    .page-header p {
+      color: #6b7280;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .card-custom {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+    }
+
+    .filter-section {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .filter-section input,
+    .filter-section select {
+      padding: 10px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-section select {
+      cursor: pointer;
+    }
+
+    .document-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .document-card:hover {
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12);
+      border-color: #10b981;
+      transform: translateY(-2px);
+    }
+
+    .document-info {
+      flex: 1;
+    }
+
+    .document-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: #d1fae5;
+      color: #047857;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 10px;
+    }
+
+    .document-badge.wildlife { background: #dbeafe; color: #1e40af; }
+    .document-badge.forest { background: #dcfce7; color: #15803d; }
+    .document-badge.environment { background: #fef3c7; color: #92400e; }
+    .document-badge.fisheries { background: #e0e7ff; color: #4338ca; }
+    .document-badge.livestock { background: #fce7f3; color: #9f1239; }
+    .document-badge.other { background: #f3f4f6; color: #374151; }
+
+    .document-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 8px;
+    }
+
+    .document-meta {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 10px;
+    }
+
+    .document-meta i {
+      margin-right: 6px;
+      color: #10b981;
+    }
+
+    .document-actions {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn-action {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .btn-view {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-view:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      color: white;
+    }
+
+    .btn-download {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-download:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #9ca3af;
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      color: #d1d5db;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      padding: 20px;
+      border-radius: 12px;
+      color: white;
+    }
+
+    .stat-card:nth-child(2) {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    .stat-card:nth-child(3) {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .stat-card:nth-child(4) {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .status-approved {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    @media (max-width: 768px) {
+      .document-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .document-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .btn-action {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .document-meta {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .filter-section {
+        flex-direction: column;
+      }
+
+      .filter-section input,
+      .filter-section select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'user/header.html' %}
+
+  <main class="main-wrapper">
+    <div class="container">
+      <div class="page-header">
+        <h1><i class="fa-solid fa-folder-open"></i> My Documents</h1>
+        <p>View and manage all your approved licenses, permits, and certificates</p>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-label">Total Documents</div>
+          <h2 class="stat-value" id="totalDocs">0</h2>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Licenses</div>
+          <h2 class="stat-value" id="totalLicenses">0</h2>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Permits</div>
+          <h2 class="stat-value" id="totalPermits">0</h2>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Certificates</div>
+          <h2 class="stat-value" id="totalCerts">0</h2>
+        </div>
+      </div>
+
+      <div class="card-custom">
+        <div class="filter-section">
+          <input type="text" id="searchInput" placeholder="Search documents..." />
+          <select id="categoryFilter">
+            <option value="all">All Categories</option>
+            <option value="wildlife">Wildlife</option>
+            <option value="forest">Forest</option>
+            <option value="environment">Environment</option>
+            <option value="fisheries">Fisheries</option>
+            <option value="livestock">Livestock</option>
+            <option value="other">Other</option>
+          </select>
+          <select id="typeFilter">
+            <option value="all">All Types</option>
+            <option value="license">Licenses</option>
+            <option value="permit">Permits</option>
+            <option value="certificate">Certificates</option>
+          </select>
+        </div>
+
+        <div id="documentsList"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script type="module">
+    import { auth, db, onAuthStateChanged } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+    import { query, where, getDocs, collection, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+    let allDocuments = [];
+
+    async function loadDocuments() {
+      try {
+        let userEmail = null;
+
+        await new Promise((resolve) => {
+          const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user && user.email) {
+              userEmail = user.email;
+            }
+            unsubscribe();
+            resolve();
+          });
+        });
+
+        if (!userEmail) {
+          userEmail = (localStorage.getItem('denr_user_email') || '').trim();
+        }
+
+        if (!userEmail) {
+          displayEmpty('Please sign in to view your documents.');
+          return;
+        }
+
+        // Fetch from payments/transactions API
+        const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+        const result = await response.json();
+
+        if (result.status === 'success' && result.transactions) {
+          // Filter only approved documents
+          allDocuments = result.transactions.filter(t => 
+            (t.display_status === 'approved' || t.status === 'approved' || t.approval_status === 'approved') &&
+            !isServiceTransaction(t)
+          );
+
+          console.log('Loaded approved documents:', allDocuments.length);
+
+          if (allDocuments.length === 0) {
+            displayEmpty('No approved documents found.');
+            return;
+          }
+
+          updateStats();
+          displayDocuments(allDocuments);
+        } else {
+          displayEmpty('Unable to load documents.');
+        }
+      } catch (error) {
+        console.error('Error loading documents:', error);
+        displayEmpty('An error occurred while loading documents.');
+      }
+    }
+
+    function isServiceTransaction(transaction) {
+      const name = (transaction.transaction_name || '').toLowerCase();
+      const description = (transaction.description || '').toLowerCase();
+      const externalId = (transaction.external_id || transaction.reference || '').toLowerCase();
+
+      if (externalId.startsWith('service-')) return true;
+
+      const serviceKeywords = ['service', 'compensation', 'pest', 'typhoon', 'compliance', 'disease', 'visit', 'seminar'];
+      return serviceKeywords.some(keyword => name.includes(keyword) || description.includes(keyword));
+    }
+
+    function categorizeDocument(doc) {
+      const name = (doc.transaction_name || '').toLowerCase();
+      
+      if (name.includes('wildlife')) return 'wildlife';
+      if (name.includes('forest') || name.includes('timber') || name.includes('tree')) return 'forest';
+      if (name.includes('environment') || name.includes('ecc') || name.includes('waste')) return 'environment';
+      if (name.includes('fish') || name.includes('aqua')) return 'fisheries';
+      if (name.includes('livestock') || name.includes('animal') || name.includes('poultry')) return 'livestock';
+      return 'other';
+    }
+
+    function getDocumentType(doc) {
+      const name = (doc.transaction_name || doc.transaction_type || '').toLowerCase();
+      
+      if (name.includes('license')) return 'license';
+      if (name.includes('permit')) return 'permit';
+      if (name.includes('certificate') || name.includes('cert')) return 'certificate';
+      return 'permit';
+    }
+
+    function updateStats() {
+      const total = allDocuments.length;
+      const licenses = allDocuments.filter(d => getDocumentType(d) === 'license').length;
+      const permits = allDocuments.filter(d => getDocumentType(d) === 'permit').length;
+      const certs = allDocuments.filter(d => getDocumentType(d) === 'certificate').length;
+
+      document.getElementById('totalDocs').textContent = total;
+      document.getElementById('totalLicenses').textContent = licenses;
+      document.getElementById('totalPermits').textContent = permits;
+      document.getElementById('totalCerts').textContent = certs;
+    }
+
+    function displayDocuments(documents) {
+      const container = document.getElementById('documentsList');
+
+      if (documents.length === 0) {
+        displayEmpty('No documents match your filter criteria.');
+        return;
+      }
+
+      let html = '';
+      documents.forEach(doc => {
+        const category = categorizeDocument(doc);
+        const docType = getDocumentType(doc);
+        const date = doc.created_at ? new Date(doc.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+        const reference = doc.reference || doc.external_id || 'N/A';
+        const title = doc.transaction_name || 'Document';
+        const amount = peso.format(doc.amount || 0);
+
+        html += `
+          <div class="document-card" data-category="${category}" data-type="${docType}">
+            <div class="document-info">
+              <span class="document-badge ${category}">${category.toUpperCase()}</span>
+              <h3 class="document-title">${title}</h3>
+              <span class="status-badge status-approved">
+                <i class="fa-solid fa-check-circle"></i> Approved
+              </span>
+              <div class="document-meta">
+                <span><i class="fa-solid fa-calendar"></i>${date}</span>
+                <span><i class="fa-solid fa-hashtag"></i>${reference}</span>
+                <span><i class="fa-solid fa-peso-sign"></i>${amount}</span>
+              </div>
+            </div>
+            <div class="document-actions">
+              <button class="btn-action btn-view" onclick="viewDocument('${doc.reference || doc.external_id}')">
+                <i class="fa-solid fa-eye"></i> View
+              </button>
+              <button class="btn-action btn-download" onclick="downloadDocument('${doc.reference || doc.external_id}', '${title.replace(/'/g, "\\'")}')">
+                <i class="fa-solid fa-download"></i> Download
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function displayEmpty(message) {
+      const container = document.getElementById('documentsList');
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-folder-open"></i>
+          <h3>No Documents Found</h3>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+
+    // Filter functionality
+    function setupFilters() {
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const typeFilter = document.getElementById('typeFilter');
+
+      function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+        const selectedType = typeFilter.value;
+
+        let filtered = allDocuments;
+
+        if (selectedCategory !== 'all') {
+          filtered = filtered.filter(d => categorizeDocument(d) === selectedCategory);
+        }
+
+        if (selectedType !== 'all') {
+          filtered = filtered.filter(d => getDocumentType(d) === selectedType);
+        }
+
+        if (searchTerm) {
+          filtered = filtered.filter(d => 
+            (d.transaction_name || '').toLowerCase().includes(searchTerm) ||
+            (d.reference || '').toLowerCase().includes(searchTerm) ||
+            (d.external_id || '').toLowerCase().includes(searchTerm)
+          );
+        }
+
+        displayDocuments(filtered);
+      }
+
+      searchInput.addEventListener('input', applyFilters);
+      categoryFilter.addEventListener('change', applyFilters);
+      typeFilter.addEventListener('change', applyFilters);
+    }
+
+    window.viewDocument = function(reference) {
+      // Redirect to transaction history with the reference
+      window.location.href = `/user/history#applications`;
+    };
+
+    window.downloadDocument = function(reference, title) {
+      // Find the document
+      const doc = allDocuments.find(d => (d.reference || d.external_id) === reference);
+      if (!doc) {
+        alert('Document not found');
+        return;
+      }
+
+      const category = categorizeDocument(doc);
+      const docType = getDocumentType(doc);
+      const date = doc.created_at ? new Date(doc.created_at) : new Date();
+      const approvedDate = doc.updated_at ? new Date(doc.updated_at) : date;
+      const amount = peso.format(doc.amount || 0);
+      const userEmail = localStorage.getItem('denr_user_email') || 'N/A';
+      const userName = localStorage.getItem('denr_user_name') || 'User';
+
+      // Create PDF content
+      const pdfContent = document.createElement('div');
+      pdfContent.style.width = '210mm';
+      pdfContent.style.minHeight = '297mm';
+      pdfContent.style.padding = '20mm';
+      pdfContent.style.backgroundColor = '#ffffff';
+      pdfContent.style.fontFamily = 'Arial, sans-serif';
+      pdfContent.style.color = '#000';
+      pdfContent.style.position = 'relative';
+
+      pdfContent.innerHTML = `
+        <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #1b5e20; padding-bottom: 15px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
+            <div style="width: 70px; height: 70px; background: #1b5e20; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white; font-size: 10px; font-weight: bold;">
+              <div style="font-size: 24px; margin-bottom: -5px;">🌲</div>
+              <div>DENR</div>
+            </div>
+            <div style="text-align: center;">
+              <h2 style="margin: 0; font-size: 16px; font-weight: bold; color: #1b5e20;">Republic of the Philippines</h2>
+              <h1 style="margin: 5px 0; font-size: 18px; font-weight: bold; color: #000;">Department of Environment and Natural Resources</h1>
+              <p style="margin: 3px 0; font-size: 10px; color: #333;">Visayas Avenue, Diliman, Quezon City, 1100</p>
+              <p style="margin: 0; font-size: 9px; color: #555;">
+                Trunkline (632) 929-66-26 • 929-6628 • 929-6035 • 929-4028 • 929-3618<br>
+                426-0465 • 426-0001 • 426-0347 • 426-0480 • 426-0491<br>
+                Voice-Over-Internet-Protocol (VOIP) Trunkline (632) 988-3367
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin: 30px 0; text-align: center;">
+          <h2 style="margin: 0; font-size: 16px; font-weight: bold; text-transform: uppercase;">
+            DENR ${docType.toUpperCase()} CERTIFICATE
+          </h2>
+          <p style="margin: 5px 0; font-size: 12px; color: #555;">
+            Reference No. ${reference}
+          </p>
+        </div>
+
+        <div style="position: absolute; top: 20mm; right: 20mm; text-align: right;">
+          <div style="border: 2px solid #9c27b0; padding: 8px 12px; display: inline-block; transform: rotate(-15deg);">
+            <p style="margin: 0; font-size: 14px; font-weight: bold; color: #9c27b0; text-transform: uppercase;">
+              ${approvedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+            </p>
+          </div>
+        </div>
+
+        <div style="margin: 40px 0 30px; line-height: 1.8;">
+          <p style="margin-bottom: 20px; font-size: 13px; text-align: justify;">
+            <strong>SUBJECT:</strong> &nbsp; <span style="text-transform: uppercase;">${title}</span>
+          </p>
+
+          <p style="margin-bottom: 15px; font-size: 12px; text-align: justify; text-indent: 50px;">
+            Pursuant to the Philippine Environmental Laws and in accordance with DENR Administrative Orders and regulations, 
+            this is to certify that the application for <strong>${title}</strong> has been duly processed, evaluated, 
+            and <strong style="color: #1b5e20;">APPROVED</strong> by the Department of Environment and Natural Resources.
+          </p>
+
+          <div style="margin: 30px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #1b5e20;">
+            <h3 style="margin: 0 0 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; color: #1b5e20;">
+              Certificate Details
+            </h3>
+            <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 5px 10px; width: 40%; font-weight: bold;">Certificate Type:</td>
+                <td style="padding: 5px 10px;">${docType.toUpperCase()}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Category:</td>
+                <td style="padding: 5px 10px;">${category.toUpperCase()}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Reference Number:</td>
+                <td style="padding: 5px 10px;">${reference}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Applicant:</td>
+                <td style="padding: 5px 10px;">${userName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Email:</td>
+                <td style="padding: 5px 10px;">${userEmail}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Date Applied:</td>
+                <td style="padding: 5px 10px;">${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Date Approved:</td>
+                <td style="padding: 5px 10px;">${approvedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Processing Fee:</td>
+                <td style="padding: 5px 10px;">${amount}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 10px; font-weight: bold;">Status:</td>
+                <td style="padding: 5px 10px; color: #1b5e20; font-weight: bold;">APPROVED</td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="margin: 25px 0 15px; font-size: 12px; text-align: justify; text-indent: 50px;">
+            This certificate is issued in accordance with existing DENR rules and regulations and is valid 
+            subject to compliance with all applicable environmental laws and conditions as may be prescribed 
+            by the Department.
+          </p>
+
+          <p style="margin: 15px 0; font-size: 12px; text-align: justify; text-indent: 50px;">
+            The holder of this certificate shall strictly observe all environmental protection measures and 
+            shall be subject to monitoring and evaluation by authorized DENR personnel.
+          </p>
+        </div>
+
+        <div style="margin-top: 50px;">
+          <div style="text-align: right; margin-right: 50px;">
+            <div style="border-bottom: 2px solid #000; width: 250px; margin-left: auto; margin-bottom: 5px; padding-top: 40px;"></div>
+            <p style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase;">REGINA PAZ L. LOPEZ</p>
+            <p style="margin: 0; font-size: 11px;">Secretary</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="text-align: center; padding: 10px; background: #000; color: white; border-radius: 5px;">
+              <div style="font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 2px;">
+                ||||||||||||||||||||||||||||
+              </div>
+              <p style="margin: 5px 0 0; font-size: 8px;">DENR-${reference.substring(0, 8).toUpperCase()}</p>
+            </div>
+            <div style="text-align: right; font-size: 9px; color: #666;">
+              <p style="margin: 0;"><strong>PUBLICATION:</strong> DENR Official Gazette</p>
+              <p style="margin: 0;"><strong>DATE:</strong> ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+              <p style="margin: 5px 0 0;"><strong>ACKNOWLEDGMENT:</strong> U.P. Law Center</p>
+              <p style="margin: 0;">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px;">
+          <p style="margin: 0; font-size: 10px; color: #856404; text-align: center;">
+            <strong>NOTICE:</strong> This is an electronically generated document. 
+            Any alteration or tampering of this certificate is punishable by law.
+          </p>
+        </div>
+      `;
+
+      document.body.appendChild(pdfContent);
+
+      const options = {
+        margin: 0,
+        filename: `DENR_${docType.toUpperCase()}_${reference}_${new Date().getTime()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(options).from(pdfContent).save().then(() => {
+        document.body.removeChild(pdfContent);
+      }).catch(error => {
+        console.error('PDF generation error:', error);
+        document.body.removeChild(pdfContent);
+        alert('Error generating PDF. Please try again.');
+      });
+    };
+
+    // Initialize
+    loadDocuments();
+    setupFilters();
+  </script>
+</body>
+</html>

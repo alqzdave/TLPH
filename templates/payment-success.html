@@ -86,9 +86,32 @@
 const params = new URLSearchParams(window.location.search);
 const refId = params.get('invoice_id') || params.get('ref_id') || 'N/A';
 const amount = params.get('amount') || '0.00';
+const transactionType = params.get('transaction_type') || sessionStorage.getItem('transaction_type') || '';
+const inventoryId = sessionStorage.getItem('pending_inventory_id');
 
 document.getElementById('refId').textContent = refId;
 document.getElementById('amount').textContent = parseFloat(amount).toFixed(2);
+
+// Auto-redirect for inventory payments after 3 seconds
+if (transactionType === 'inventory-registration' || inventoryId) {
+    setTimeout(() => {
+        // Clear session storage
+        sessionStorage.removeItem('pending_inventory_id');
+        sessionStorage.removeItem('transaction_type');
+        
+        // Redirect to inventory list
+        window.location.href = '/user/inventory?payment_success=true';
+    }, 3000);
+    
+    // Show countdown message
+    const msgDiv = document.querySelector('.bg-emerald-50');
+    if (msgDiv) {
+        const countSpan = document.createElement('p');
+        countSpan.className = 'text-xs text-emerald-600 font-bold mt-2 mb-0';
+        countSpan.textContent = 'Redirecting to inventory in 3 seconds...';
+        msgDiv.appendChild(countSpan);
+    }
+}
 </script>
 
 </body>

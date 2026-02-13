@@ -52,6 +52,10 @@ def user_profile():
 def user_transaction():
     return render_template('user/transaction.html')
 
+@bp.route('/user/my-documents')
+def user_my_documents():
+    return render_template('user/my-documents.html')
+
 @bp.route('/user/transaction-history')
 def user_transaction_history():
     return render_template('user/transaction-history.html')
@@ -80,3 +84,19 @@ def payment_success():
 def payment_failed():
     return render_template('payment-failed.html')
 
+# Inventory routes
+@bp.route('/user/inventory')
+def user_inventory():
+    return render_template('user/inventory/stock-list.html')
+
+@bp.route('/user/inventory/add')
+def user_inventory_add():
+    return render_template('user/inventory/stock-form.html')
+
+@bp.route('/user/inventory/info/<stock_id>')
+def user_inventory_info(stock_id):
+    return render_template('user/inventory/stock-info.html')
+
+@bp.route('/user/inventory/history')
+def user_inventory_history():
+    return render_template('user/inventory/stock-history.html')
