@@ -1,199 +1,187 @@
-<aside id="regional-sidenav" class="sidebar-container p-4 shadow-xl">
-    
-    <div class="mb-8 px-2 pt-4 flex items-center gap-3">
-        <div class="flex-shrink-0 w-16 h-16 bg-white flex items-center justify-center shadow-md border border-slate-300 overflow-hidden p-1.5">
-            <img src="/static/images/denr.jpg" 
-                 alt="DENR Logo" 
-                 class="w-full h-full object-contain">
+<!-- save as: templates/national/sidenav-national.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TLPH | National Sidenav</title>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <!-- Optional: Tailwind (only needed if your landing page doesn't already load Tailwind) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* IMPORTANT:
+       Keep styles scoped to #national-sidenav to avoid affecting the landing page */
+    #national-sidenav .nsn-toplink{
+      display:flex; align-items:center; gap:12px;
+      padding:10px 12px; border-radius:12px;
+      font-weight:700; font-size:12px;
+      background:#0f172a; color:#fff !important;
+      text-decoration:none !important;
+      box-shadow: 0 1px 0 rgba(15,23,42,.12);
+    }
+
+    #national-sidenav .nsn-link{
+      display:flex; align-items:center; gap:12px;
+      padding:10px 12px; border-radius:12px;
+      font-weight:700; font-size:12px; color:#0f172a !important;
+      text-decoration:none !important;
+      margin-top:6px;
+      transition: background .15s ease, transform .15s ease;
+    }
+    #national-sidenav .nsn-link:hover{
+      background:#f1f5f9;
+      transform: translateX(2px);
+    }
+    #national-sidenav .nsn-ico{ font-size:18px; color:#334155; }
+
+    #national-sidenav .nsn-logout{
+      margin-top:10px;
+      display:flex; align-items:center; gap:12px;
+      padding:10px 12px; border-radius:12px;
+      font-weight:700; font-size:12px;
+      color:#b91c1c !important;
+      text-decoration:none !important;
+      transition: background .15s ease;
+    }
+    #national-sidenav .nsn-logout:hover{ background:#fef2f2; }
+
+    #national-sidenav .nsn-scroll::-webkit-scrollbar{ width:6px; }
+    #national-sidenav .nsn-scroll::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:999px; }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-slate-900">
+  <!-- Wrapper so you can preview this as a standalone page -->
+  <div class="min-h-screen flex">
+    <!-- Sidenav -->
+    <aside id="national-sidenav" class="w-[260px] shrink-0 h-screen bg-white border-r border-gray-200 flex flex-col sticky top-0">
+      <!-- Brand -->
+      <div class="px-5 pt-5 pb-4 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl border border-gray-200 bg-white grid place-items-center overflow-hidden">
+            <img src="/static/images/denr.jpg" alt="Logo" class="w-full h-full object-contain p-1.5">
+          </div>
+          <div class="leading-tight">
+            <div class="font-extrabold text-slate-900 text-[13px] tracking-tight">TLPH</div>
+            <div class="text-[11px] text-gray-500 font-semibold">National Dashboard</div>
+          </div>
         </div>
-        
-        <div class="border-l-2 border-blue-900/30 pl-3 py-1">
-            <h2 class="font-bold text-[14px] tracking-tighter m-0 text-slate-900 uppercase leading-none">
-                DENR REGIONAL
-            </h2>
-            <div class="mt-1 flex flex-col">
-                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none">
-                    Region IV-A Oversight
-                </span>
-                <span class="text-[8px] font-black text-blue-800 uppercase tracking-tighter mt-1 italic">
-                    Regional Administrator
-                </span>
+
+        <!-- User -->
+        <div class="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-slate-900 text-white grid place-items-center font-extrabold text-[12px]">
+              NA
             </div>
-        </div>
-    </div>
-
-    <div class="px-2 mb-6 no-print">
-        <div class="p-3 bg-slate-100 border border-slate-200 flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-900 flex items-center justify-center text-white font-bold">
-                RA
+            <div class="min-w-0">
+              <!-- Works as plain HTML; in Jinja this will be replaced -->
+              <div class="font-bold text-slate-900 text-[12px] truncate">
+                {{ user_name|default('NATIONAL ADMIN') }}
+              </div>
+              <div class="text-[10px] text-gray-500 font-semibold">
+                {{ user_status|default('Active Session') }}
+              </div>
             </div>
-            <div class="overflow-hidden">
-                <p class="text-[11px] font-bold text-slate-900 truncate m-0">ADMIN NAME</p>
-                <p class="text-[9px] text-slate-500 uppercase tracking-tighter m-0">Active Session</p>
-            </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <nav class="flex-grow space-y-1 overflow-y-auto pr-2 custom-sidebar-nav">
-        
-        <a href="/regional/dashboard" class="nav-btn-link">
-            <span class="material-icons-round">analytics</span>
-            <span>Dashboard</span>
+      <!-- Nav -->
+      <nav class="flex-1 overflow-y-auto px-3 py-3 nsn-scroll">
+        <a href="/national/dashboard" class="nsn-toplink">
+          <span class="material-icons-round text-[18px]">analytics</span>
+          <span>Overview</span>
         </a>
 
-        <div class="nav-category-label">Operations</div>
+        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">OPERATIONS</div>
 
-        <a href="/regional/application-list" class="nav-btn-link">
-            <span class="material-icons-round">description</span>
-            <span>Application</span>
+        <a href="/national/application-list" class="nsn-link">
+          <span class="material-icons-round nsn-ico">description</span>
+          <span>Applications</span>
         </a>
 
-        <a href="/regional/service-list" class="nav-btn-link">
-            <span class="material-icons-round">room_service</span>
-            <span>Service Request</span>
+        <a href="/national/service-list" class="nsn-link">
+          <span class="material-icons-round nsn-ico">room_service</span>
+          <span>Service Requests</span>
         </a>
 
-        <div class="nav-category-label">Resources</div>
-
-        <a href="/regional/inventory-view" class="nav-btn-link">
-            <span class="material-icons-round">inventory_2</span>
-            <span>Inventory</span>
+        <a href="/national/licensing-list" class="nsn-link">
+          <span class="material-icons-round nsn-ico">verified</span>
+          <span>Licensing / Permits</span>
         </a>
 
-        <a href="/regional/license-view" class="nav-btn-link">
-            <span class="material-icons-round">verified</span>
-            <span>Licensing</span>
+        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">RESOURCES</div>
+
+        <a href="/national/inventory-national" class="nsn-link">
+          <span class="material-icons-round nsn-ico">inventory_2</span>
+          <span>Inventory (National)</span>
         </a>
 
-        <div class="nav-category-label">Compliance & Security</div>
-
-        <a href="/regional/transaction-view" class="nav-btn-link">
-            <span class="material-icons-round">receipt_long</span>
-            <span>Transaction</span>
+        <a href="/national/inventory-users" class="nsn-link">
+          <span class="material-icons-round nsn-ico">qr_code_2</span>
+          <span>User Inventory</span>
         </a>
 
-        <a href="/regional/municipal-account-management-view" class="nav-btn-link">
-            <span class="material-icons-round">manage_accounts</span>
-            <span>Municipal Accounts</span>
+        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">FINANCE</div>
+
+        <a href="/national/transactions" class="nsn-link">
+          <span class="material-icons-round nsn-ico">receipt_long</span>
+          <span>Transactions</span>
         </a>
 
-        <a href="/regional/audit-logs-view" class="nav-btn-link">
-            <span class="material-icons-round">history_edu</span>
-            <span>Audit Logs</span>
+        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">ADMINISTRATION</div>
+
+        <a href="/national/users" class="nsn-link">
+          <span class="material-icons-round nsn-ico">manage_accounts</span>
+          <span>Users</span>
         </a>
 
-        <div class="nav-category-label">Account Controls</div>
+        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">ACCOUNT</div>
 
-        <a href="/regional/profile" class="nav-btn-link hover:bg-slate-200">
-            <span class="material-icons-round">person</span>
-            <span>My Profile</span>
+        <a href="/national/profile" class="nsn-link">
+          <span class="material-icons-round nsn-ico">person</span>
+          <span>My Profile</span>
         </a>
 
-        <a href="/logout" class="nav-btn-link text-red-700 hover:bg-red-700 hover:text-white !important">
-            <span class="material-icons-round">logout</span>
-            <span>Logout System</span>
+        <a href="/logout" class="nsn-logout">
+          <span class="material-icons-round text-[18px]">logout</span>
+          <span>Logout</span>
         </a>
-    </nav>
+      </nav>
 
-    <div class="mt-auto pt-4 border-t border-slate-300">
-        <div class="px-4 py-3 bg-blue-900/5 border border-blue-900/10">
-            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] m-0 text-center uppercase">Philippine Standard Time</p>
-            <p id="reg-ph-clock-final" class="text-[11px] font-bold text-blue-900 m-0 mt-2 text-center tracking-wider italic">--:--:-- --</p>
+      <!-- Footer -->
+      <div class="px-5 py-4 border-t border-gray-100">
+        <div class="text-[10px] text-gray-400 font-extrabold tracking-[0.18em] text-center">
+          PHILIPPINE STANDARD TIME
         </div>
-    </div>
+        <div id="ph-clock-national"
+             class="mt-2 text-center text-[12px] font-extrabold text-slate-900 italic tracking-wide">
+          --:--:-- -- PHT
+        </div>
+      </div>
+    </aside>
 
-</aside>
-
-<style>
-    /* GLOBAL ARIAL FORCE BOI */
-    #regional-sidenav, 
-    #regional-sidenav h2, 
-    #regional-sidenav span, 
-    #regional-sidenav a, 
-    #regional-sidenav p {
-        font-family: Arial, Helvetica, sans-serif !important;
-    }
-
-    #regional-sidenav.sidebar-container {
-        width: 300px;
-        height: 100vh;
-        background-color: #ffffff;
-        position: fixed;
-        left: 0;
-        top: 0;
-        display: flex;
-        flex-direction: column;
-        border-right: 2px solid #cbd5e1;
-        z-index: 2000;
-    }
-
-    /* BUTTON LINKS STYLE */
-    #regional-sidenav .nav-btn-link {
-        display: flex !important;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.8rem 1.25rem;
-        color: #334155 !important;
-        text-decoration: none !important;
-        border-radius: 0; /* BOXY STYLE */
-        font-weight: bold;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        letter-spacing: 0.05em;
-        transition: all 0.2s ease-in-out;
-    }
-
-    /* HOVER BITAW */
-    #regional-sidenav .nav-btn-link:hover {
-        background-color: #1e3a8a !important;
-        color: #ffffff !important;
-        padding-left: 1.75rem;
-    }
-
-    #regional-sidenav .nav-category-label {
-        padding: 1.25rem 0.75rem 0.5rem 0.75rem;
-        text-transform: uppercase;
-        font-size: 9px;
-        font-weight: 900;
-        color: #94a3b8;
-        letter-spacing: 0.15em;
-    }
-
-    /* FIX PARA SA ICONS */
-    #regional-sidenav .material-icons-round {
-        font-family: 'Material Icons Round' !important;
-        font-size: 18px;
-        display: inline-flex;
-        vertical-align: middle;
-        line-height: 1;
-    }
-
-    #regional-sidenav .custom-sidebar-nav::-webkit-scrollbar { width: 4px; }
-    #regional-sidenav .custom-sidebar-nav::-webkit-scrollbar-thumb {
-        background: #1e3a8a;
-    }
-
-    @media (max-width: 1024px) {
-        #regional-sidenav.sidebar-container { transform: translateX(-100%); }
-    }
-</style>
-
-<script>
-    (function() {
-        function updateRegClock() {
-            const options = { 
-                timeZone: 'Asia/Manila', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: true 
-            };
-            const clockEl = document.getElementById('reg-ph-clock-final');
-            if(clockEl) {
-                clockEl.innerText = new Date().toLocaleTimeString('en-US', options) + ' PHT';
-            }
-        }
-        setInterval(updateRegClock, 1000);
-        updateRegClock();
+  <script>
+    // Clock (safe to include)
+    (function () {
+      function updateClock() {
+        const options = {
+          timeZone: "Asia/Manila",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true
+        };
+        const el = document.getElementById("ph-clock-national");
+        if (el) el.textContent = new Date().toLocaleTimeString("en-US", options) + " PHT";
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
     })();
-</script>
+  </script>
+</body>
+</html>

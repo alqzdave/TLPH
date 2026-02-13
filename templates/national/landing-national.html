@@ -34,629 +34,636 @@
 </head>
 
 <body class="min-h-screen text-slate-900">
-  {% include 'national/sidenav-national.html' %}
+  <!-- KEY FIX:
+       Make layout full-height flex so the main content fits the screen width,
+       and add a comfortable gap from the sidenav. -->
+  <div class="min-h-screen flex">
+    {% include 'national/sidenav-national.html' %}
 
-  <main class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Main: takes remaining width, not centered under the sidenav, and has spacing away from it -->
+    <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
+      <!-- Optional width cap so it doesn't look too stretched on ultrawide screens -->
+      <div class="w-full max-w-[1700px]">
+        <!-- Page Controls (HEADER REMOVED as requested) -->
+        <section class="card p-4">
+          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <div class="text-lg font-bold">National Dashboard Overview</div>
+              <div class="text-xs text-gray-600">
+                Cards + graphs for data visualization (UI draft). Replace sample numbers with DB values later.
+              </div>
+            </div>
 
-    <!-- Page Controls (HEADER REMOVED as requested) -->
-    <section class="card p-4">
-      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-        <div>
-          <div class="text-lg font-bold">National Dashboard Overview</div>
-          <div class="text-xs text-gray-600">
-            Cards + graphs for data visualization (UI draft). Replace sample numbers with DB values later.
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-gray-600">From</label>
+                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-gray-600">To</label>
+                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+              </div>
+
+              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+                <option selected>All Regions</option>
+                <option>NCR</option>
+                <option>Region I</option>
+                <option>Region II</option>
+                <option>Region III</option>
+                <option>Region IV-A</option>
+                <option>Region V</option>
+                <option>Region VI</option>
+                <option>Region VII</option>
+                <option>Region VIII</option>
+                <option>Region IX</option>
+                <option>Region X</option>
+                <option>Region XI</option>
+                <option>Region XII</option>
+                <option>CAR</option>
+                <option>BARMM</option>
+              </select>
+
+              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+                <option selected>All Status</option>
+                <option>Approved</option>
+                <option>Pending</option>
+                <option>To Review</option>
+                <option>Reject</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="Search ref # / name…"
+                class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-64 focus-ring"
+              />
+
+              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
+                Apply
+              </button>
+
+              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm">
+                Export All
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-2">
-            <label class="text-xs text-gray-600">From</label>
-            <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+        <!-- KPI CARDS -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">Total Applications</div>
+            <div class="text-2xl font-bold mt-1">12,480</div>
+            <div class="mt-2 text-xs text-gray-600">Approved: <span class="font-semibold">8,915</span></div>
+            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full w-[71%] bg-slate-900 rounded-full"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">Approval rate: <span class="font-semibold">71.4%</span></div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <label class="text-xs text-gray-600">To</label>
-            <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">Service Requests</div>
+            <div class="text-2xl font-bold mt-1">4,235</div>
+            <div class="mt-2 text-xs text-gray-600">To Review: <span class="font-semibold">612</span></div>
+            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full w-[14%] bg-slate-900 rounded-full"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">Review rate: <span class="font-semibold">14.5%</span></div>
           </div>
 
-          <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-            <option selected>All Regions</option>
-            <option>NCR</option>
-            <option>Region I</option>
-            <option>Region II</option>
-            <option>Region III</option>
-            <option>Region IV-A</option>
-            <option>Region V</option>
-            <option>Region VI</option>
-            <option>Region VII</option>
-            <option>Region VIII</option>
-            <option>Region IX</option>
-            <option>Region X</option>
-            <option>Region XI</option>
-            <option>Region XII</option>
-            <option>CAR</option>
-            <option>BARMM</option>
-          </select>
-
-          <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-            <option selected>All Status</option>
-            <option>Approved</option>
-            <option>Pending</option>
-            <option>To Review</option>
-            <option>Reject</option>
-          </select>
-
-          <input
-            type="text"
-            placeholder="Search ref # / name…"
-            class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-64 focus-ring"
-          />
-
-          <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-            Apply
-          </button>
-
-          <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm">
-            Export All
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- KPI CARDS -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Total Applications</div>
-        <div class="text-2xl font-bold mt-1">12,480</div>
-        <div class="mt-2 text-xs text-gray-600">Approved: <span class="font-semibold">8,915</span></div>
-        <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div class="h-full w-[71%] bg-slate-900 rounded-full"></div>
-        </div>
-        <div class="mt-2 text-xs text-gray-600">Approval rate: <span class="font-semibold">71.4%</span></div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Service Requests</div>
-        <div class="text-2xl font-bold mt-1">4,235</div>
-        <div class="mt-2 text-xs text-gray-600">To Review: <span class="font-semibold">612</span></div>
-        <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div class="h-full w-[14%] bg-slate-900 rounded-full"></div>
-        </div>
-        <div class="mt-2 text-xs text-gray-600">Review rate: <span class="font-semibold">14.5%</span></div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Licensing / Permits</div>
-        <div class="text-2xl font-bold mt-1">3,102</div>
-        <div class="mt-2 text-xs text-gray-600">Pending: <span class="font-semibold">788</span></div>
-        <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div class="h-full w-[25%] bg-slate-900 rounded-full"></div>
-        </div>
-        <div class="mt-2 text-xs text-gray-600">Pending rate: <span class="font-semibold">25.4%</span></div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Transactions (Paid)</div>
-        <div class="text-2xl font-bold mt-1">₱ 3,740,250</div>
-        <div class="mt-2 text-xs text-gray-600">Refunded: <span class="font-semibold">₱ 96,500</span></div>
-        <div class="mt-3 grid grid-cols-2 gap-2">
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-            <div class="text-[11px] text-gray-600">Paid</div>
-            <div class="font-bold">98.2%</div>
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">Licensing / Permits</div>
+            <div class="text-2xl font-bold mt-1">3,102</div>
+            <div class="mt-2 text-xs text-gray-600">Pending: <span class="font-semibold">788</span></div>
+            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full w-[25%] bg-slate-900 rounded-full"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">Pending rate: <span class="font-semibold">25.4%</span></div>
           </div>
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-            <div class="text-[11px] text-gray-600">Refund</div>
-            <div class="font-bold">1.8%</div>
+
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">Transactions (Paid)</div>
+            <div class="text-2xl font-bold mt-1">₱ 3,740,250</div>
+            <div class="mt-2 text-xs text-gray-600">Refunded: <span class="font-semibold">₱ 96,500</span></div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-[11px] text-gray-600">Paid</div>
+                <div class="font-bold">98.2%</div>
+              </div>
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-[11px] text-gray-600">Refund</div>
+                <div class="font-bold">1.8%</div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
+        </section>
 
-    <!-- GRAPHS ROW -->
-    <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-      <!-- Trend -->
-      <div class="card p-4 xl:col-span-2">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="font-bold">Volume Trend</div>
-            <div class="text-xs text-gray-600">Applications, Service Requests, Licensing/Permits (sample monthly)</div>
+        <!-- GRAPHS ROW -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-6">
+          <!-- Trend -->
+          <div class="card p-4 xl:col-span-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-bold">Volume Trend</div>
+                <div class="text-xs text-gray-600">Applications, Service Requests, Licensing/Permits (sample monthly)</div>
+              </div>
+              <div class="text-xs text-gray-600">Last 6 months</div>
+            </div>
+            <div class="mt-3 h-[320px]">
+              <canvas id="trendChart"></canvas>
+            </div>
           </div>
-          <div class="text-xs text-gray-600">Last 6 months</div>
-        </div>
-        <div class="mt-3 h-[320px]">
-          <canvas id="trendChart"></canvas>
-        </div>
-      </div>
 
-      <!-- Status Breakdown -->
-      <div class="card p-4">
-        <div>
-          <div class="font-bold">Status Breakdown</div>
-          <div class="text-xs text-gray-600">Approved • Pending • To Review • Reject (sample)</div>
-        </div>
-        <div class="mt-3 h-[320px]">
-          <canvas id="statusChart"></canvas>
-        </div>
+          <!-- Status Breakdown -->
+          <div class="card p-4">
+            <div>
+              <div class="font-bold">Status Breakdown</div>
+              <div class="text-xs text-gray-600">Approved • Pending • To Review • Reject (sample)</div>
+            </div>
+            <div class="mt-3 h-[320px]">
+              <canvas id="statusChart"></canvas>
+            </div>
 
-        <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-            <div class="text-gray-600">Approved</div>
-            <div class="font-bold">18,430</div>
+            <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-gray-600">Approved</div>
+                <div class="font-bold">18,430</div>
+              </div>
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-gray-600">Pending</div>
+                <div class="font-bold">3,680</div>
+              </div>
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-gray-600">To Review</div>
+                <div class="font-bold">1,320</div>
+              </div>
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-gray-600">Reject</div>
+                <div class="font-bold">1,487</div>
+              </div>
+            </div>
           </div>
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-            <div class="text-gray-600">Pending</div>
-            <div class="font-bold">3,680</div>
+        </section>
+
+        <!-- NEW: PER-REGION CHART -->
+        <section class="card p-4 mt-6">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div>
+              <div class="font-bold">Per-Region Breakdown</div>
+              <div class="text-xs text-gray-600">Applications vs Service Requests vs Licensing/Permits (sample grouped bar)</div>
+            </div>
+            <div class="text-xs text-gray-600">Showing selected regions (adjust list or show Top N)</div>
           </div>
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-            <div class="text-gray-600">To Review</div>
-            <div class="font-bold">1,320</div>
+
+          <div class="mt-3 h-[380px]">
+            <canvas id="regionChart"></canvas>
           </div>
-          <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-            <div class="text-gray-600">Reject</div>
-            <div class="font-bold">1,487</div>
+
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <div class="text-gray-600">Highest Applications</div>
+              <div class="font-bold mt-1">NCR • 2,190</div>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <div class="text-gray-600">Highest Service Requests</div>
+              <div class="font-bold mt-1">Region IV-A • 720</div>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <div class="text-gray-600">Highest Permits</div>
+              <div class="font-bold mt-1">Region IV-A • 680</div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <!-- TABLE: APPLICATIONS -->
+        <section class="card overflow-hidden mt-6">
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-bold">Applications</div>
+              <div class="text-xs text-gray-600">Date • Reference & Applicant • Applicant Category • Region • Municipality • Status • Actions</div>
+            </div>
+            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">APP-2026-001284</div>
+                    <div class="text-xs text-gray-600">Dela Cruz, Juan</div>
+                  </td>
+                  <td class="py-3 px-4">Crop &amp; Plant</td>
+                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">APP-2026-001241</div>
+                    <div class="text-xs text-gray-600">Santos, Maria</div>
+                  </td>
+                  <td class="py-3 px-4">Food Safety &amp; Quality Regulation</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Approved</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TABLE: SERVICE REQUESTS -->
+        <section class="card overflow-hidden mt-6">
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-bold">Service Requests</div>
+              <div class="text-xs text-gray-600">Date • Reference & Applicant • Applicant Category • Region • Municipality • Status • Actions</div>
+            </div>
+            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">SR-2026-000442</div>
+                    <div class="text-xs text-gray-600">Rivera, Liza</div>
+                  </td>
+                  <td class="py-3 px-4">Initial farm visit</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region VII</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Cebu City</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-sky-200 bg-sky-50 text-sky-800">To Review</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">SR-2026-000429</div>
+                    <div class="text-xs text-gray-600">Garcia, Noel</div>
+                  </td>
+                  <td class="py-3 px-4">Good Agricultural Practice (GAP) training</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
+                  <td class="py-3 px-4 whitespace-nowrap">San Pablo</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TABLE: INVENTORY (NATIONAL) -->
+        <section class="card overflow-hidden mt-6">
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-bold">Inventory (National)</div>
+              <div class="text-xs text-gray-600">Category • Description • Quantity • Region • Municipality • Actions</div>
+            </div>
+            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Category</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Description</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Quantity</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4">Chemical inventory</td>
+                  <td class="py-3 px-4">Registered pesticide stock (warehouse)</td>
+                  <td class="py-3 px-4 whitespace-nowrap">120</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4">Biodiversity inventory</td>
+                  <td class="py-3 px-4">Species monitoring equipment</td>
+                  <td class="py-3 px-4 whitespace-nowrap">34</td>
+                  <td class="py-3 px-4 whitespace-nowrap">BARMM</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Cotabato City</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TABLE: USER INVENTORY -->
+        <section class="card overflow-hidden mt-6">
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-bold">User Inventory</div>
+              <div class="text-xs text-gray-600">Product • Category • Owner • Initial • Current • Region • Municipality • Actions</div>
+            </div>
+            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Product Name</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Category</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Owner</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Initial Qty</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Current Qty</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 font-semibold">Pesticide A (Sample)</td>
+                  <td class="py-3 px-4">Chemical inventory</td>
+                  <td class="py-3 px-4">Dela Cruz, Juan</td>
+                  <td class="py-3 px-4 whitespace-nowrap">50</td>
+                  <td class="py-3 px-4 whitespace-nowrap">18</td>
+                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TABLE: LICENSING / PERMITS -->
+        <section class="card overflow-hidden mt-6">
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-bold">Licensing / Permits</div>
+              <div class="text-xs text-gray-600">Reference & Applicant • Category • Region • Municipality • Status • Actions</div>
+            </div>
+            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">LIC-2026-000118</div>
+                    <div class="text-xs text-gray-600">Santos, Maria</div>
+                  </td>
+                  <td class="py-3 px-4">Environment Compliance Certificate (ECC)</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TABLE: TRANSACTIONS -->
+        <section class="card overflow-hidden mt-6">
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-bold">Transactions</div>
+              <div class="text-xs text-gray-600">Reference # • Name • Type • Date • Region • Municipality • Status • Amount</div>
+            </div>
+            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Reference #</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Name</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Type</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Amount</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 font-semibold">TXN-004182</td>
+                  <td class="py-3 px-4">Dela Cruz, Juan</td>
+                  <td class="py-3 px-4">Application</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
+                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Paid</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">₱ 1,250</td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 font-semibold">TXN-004170</td>
+                  <td class="py-3 px-4">Santos, Maria</td>
+                  <td class="py-3 px-4">Licensing/Permit</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 10, 2026</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-rose-200 bg-rose-50 text-rose-800">Refunded</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">₱ 850</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TABLE: USERS -->
+        <section class="card overflow-hidden mt-6">
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-bold">Users</div>
+              <div class="text-xs text-gray-600">Name • Email • User Type • Region • Municipality • Status • Actions</div>
+            </div>
+            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Name</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Email</th>
+                  <th class="py-3 px-4 whitespace-nowrap">User Type</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 font-semibold">National Admin</td>
+                  <td class="py-3 px-4">national.admin@tlph.gov</td>
+                  <td class="py-3 px-4 whitespace-nowrap">National</td>
+                  <td class="py-3 px-4 whitespace-nowrap">—</td>
+                  <td class="py-3 px-4 whitespace-nowrap">—</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Active</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs">Disable</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 font-semibold">Municipal Admin - Calamba</td>
+                  <td class="py-3 px-4">calamba.admin@tlph.gov</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Municipal</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-gray-200 bg-gray-50 text-gray-700">Disabled</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Enable</button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="py-6 text-xs text-gray-600">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>© 2026 TLPH • National Overview (UI Draft)</div>
+            <div class="inline-flex items-center gap-2">
+              <span>RBAC-ready</span>
+              <span>DB-ready</span>
+            </div>
+          </div>
+        </footer>
       </div>
-    </section>
-
-    <!-- NEW: PER-REGION CHART -->
-    <section class="card p-4">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div>
-          <div class="font-bold">Per-Region Breakdown</div>
-          <div class="text-xs text-gray-600">Applications vs Service Requests vs Licensing/Permits (sample grouped bar)</div>
-        </div>
-        <div class="text-xs text-gray-600">Showing selected regions (adjust list or show Top N)</div>
-      </div>
-
-      <div class="mt-3 h-[380px]">
-        <canvas id="regionChart"></canvas>
-      </div>
-
-      <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
-          <div class="text-gray-600">Highest Applications</div>
-          <div class="font-bold mt-1">NCR • 2,190</div>
-        </div>
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
-          <div class="text-gray-600">Highest Service Requests</div>
-          <div class="font-bold mt-1">Region IV-A • 720</div>
-        </div>
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
-          <div class="text-gray-600">Highest Permits</div>
-          <div class="font-bold mt-1">Region IV-A • 680</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TABLE: APPLICATIONS -->
-    <section class="card overflow-hidden">
-      <div class="p-4 flex items-center justify-between gap-3">
-        <div>
-          <div class="font-bold">Applications</div>
-          <div class="text-xs text-gray-600">Date • Reference & Applicant • Applicant Category • Region • Municipality • Status • Actions</div>
-        </div>
-        <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 border-y border-gray-200">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4 whitespace-nowrap">Date</th>
-              <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-              <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
-              <th class="py-3 px-4 whitespace-nowrap">Region</th>
-              <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-              <th class="py-3 px-4 whitespace-nowrap">Status</th>
-              <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-              <td class="py-3 px-4">
-                <div class="font-semibold">APP-2026-001284</div>
-                <div class="text-xs text-gray-600">Dela Cruz, Juan</div>
-              </td>
-              <td class="py-3 px-4">Crop &amp; Plant</td>
-              <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-              <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
-              <td class="py-3 px-4">
-                <div class="font-semibold">APP-2026-001241</div>
-                <div class="text-xs text-gray-600">Santos, Maria</div>
-              </td>
-              <td class="py-3 px-4">Food Safety &amp; Quality Regulation</td>
-              <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-              <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Approved</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TABLE: SERVICE REQUESTS -->
-    <section class="card overflow-hidden">
-      <div class="p-4 flex items-center justify-between gap-3">
-        <div>
-          <div class="font-bold">Service Requests</div>
-          <div class="text-xs text-gray-600">Date • Reference & Applicant • Applicant Category • Region • Municipality • Status • Actions</div>
-        </div>
-        <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 border-y border-gray-200">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4 whitespace-nowrap">Date</th>
-              <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-              <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
-              <th class="py-3 px-4 whitespace-nowrap">Region</th>
-              <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-              <th class="py-3 px-4 whitespace-nowrap">Status</th>
-              <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-              <td class="py-3 px-4">
-                <div class="font-semibold">SR-2026-000442</div>
-                <div class="text-xs text-gray-600">Rivera, Liza</div>
-              </td>
-              <td class="py-3 px-4">Initial farm visit</td>
-              <td class="py-3 px-4 whitespace-nowrap">Region VII</td>
-              <td class="py-3 px-4 whitespace-nowrap">Cebu City</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-sky-200 bg-sky-50 text-sky-800">To Review</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
-              <td class="py-3 px-4">
-                <div class="font-semibold">SR-2026-000429</div>
-                <div class="text-xs text-gray-600">Garcia, Noel</div>
-              </td>
-              <td class="py-3 px-4">Good Agricultural Practice (GAP) training</td>
-              <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-              <td class="py-3 px-4 whitespace-nowrap">San Pablo</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TABLE: INVENTORY (NATIONAL) -->
-    <section class="card overflow-hidden">
-      <div class="p-4 flex items-center justify-between gap-3">
-        <div>
-          <div class="font-bold">Inventory (National)</div>
-          <div class="text-xs text-gray-600">Category • Description • Quantity • Region • Municipality • Actions</div>
-        </div>
-        <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 border-y border-gray-200">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4 whitespace-nowrap">Category</th>
-              <th class="py-3 px-4 whitespace-nowrap">Description</th>
-              <th class="py-3 px-4 whitespace-nowrap">Quantity</th>
-              <th class="py-3 px-4 whitespace-nowrap">Region</th>
-              <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-              <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4">Chemical inventory</td>
-              <td class="py-3 px-4">Registered pesticide stock (warehouse)</td>
-              <td class="py-3 px-4 whitespace-nowrap">120</td>
-              <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-              <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4">Biodiversity inventory</td>
-              <td class="py-3 px-4">Species monitoring equipment</td>
-              <td class="py-3 px-4 whitespace-nowrap">34</td>
-              <td class="py-3 px-4 whitespace-nowrap">BARMM</td>
-              <td class="py-3 px-4 whitespace-nowrap">Cotabato City</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TABLE: USER INVENTORY -->
-    <section class="card overflow-hidden">
-      <div class="p-4 flex items-center justify-between gap-3">
-        <div>
-          <div class="font-bold">User Inventory</div>
-          <div class="text-xs text-gray-600">Product • Category • Owner • Initial • Current • Region • Municipality • Actions</div>
-        </div>
-        <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 border-y border-gray-200">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4 whitespace-nowrap">Product Name</th>
-              <th class="py-3 px-4 whitespace-nowrap">Category</th>
-              <th class="py-3 px-4 whitespace-nowrap">Owner</th>
-              <th class="py-3 px-4 whitespace-nowrap">Initial Qty</th>
-              <th class="py-3 px-4 whitespace-nowrap">Current Qty</th>
-              <th class="py-3 px-4 whitespace-nowrap">Region</th>
-              <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-              <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 font-semibold">Pesticide A (Sample)</td>
-              <td class="py-3 px-4">Chemical inventory</td>
-              <td class="py-3 px-4">Dela Cruz, Juan</td>
-              <td class="py-3 px-4 whitespace-nowrap">50</td>
-              <td class="py-3 px-4 whitespace-nowrap">18</td>
-              <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-              <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TABLE: LICENSING / PERMITS -->
-    <section class="card overflow-hidden">
-      <div class="p-4 flex items-center justify-between gap-3">
-        <div>
-          <div class="font-bold">Licensing / Permits</div>
-          <div class="text-xs text-gray-600">Reference & Applicant • Category • Region • Municipality • Status • Actions</div>
-        </div>
-        <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 border-y border-gray-200">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-              <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
-              <th class="py-3 px-4 whitespace-nowrap">Region</th>
-              <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-              <th class="py-3 px-4 whitespace-nowrap">Status</th>
-              <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4">
-                <div class="font-semibold">LIC-2026-000118</div>
-                <div class="text-xs text-gray-600">Santos, Maria</div>
-              </td>
-              <td class="py-3 px-4">Environment Compliance Certificate (ECC)</td>
-              <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-              <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TABLE: TRANSACTIONS -->
-    <section class="card overflow-hidden">
-      <div class="p-4 flex items-center justify-between gap-3">
-        <div>
-          <div class="font-bold">Transactions</div>
-          <div class="text-xs text-gray-600">Reference # • Name • Type • Date • Region • Municipality • Status • Amount</div>
-        </div>
-        <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 border-y border-gray-200">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4 whitespace-nowrap">Reference #</th>
-              <th class="py-3 px-4 whitespace-nowrap">Name</th>
-              <th class="py-3 px-4 whitespace-nowrap">Type</th>
-              <th class="py-3 px-4 whitespace-nowrap">Date</th>
-              <th class="py-3 px-4 whitespace-nowrap">Region</th>
-              <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-              <th class="py-3 px-4 whitespace-nowrap">Status</th>
-              <th class="py-3 px-4 whitespace-nowrap">Amount</th>
-            </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 font-semibold">TXN-004182</td>
-              <td class="py-3 px-4">Dela Cruz, Juan</td>
-              <td class="py-3 px-4">Application</td>
-              <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-              <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-              <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Paid</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">₱ 1,250</td>
-            </tr>
-
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 font-semibold">TXN-004170</td>
-              <td class="py-3 px-4">Santos, Maria</td>
-              <td class="py-3 px-4">Licensing/Permit</td>
-              <td class="py-3 px-4 whitespace-nowrap">Feb 10, 2026</td>
-              <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-              <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-rose-200 bg-rose-50 text-rose-800">Refunded</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">₱ 850</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TABLE: USERS -->
-    <section class="card overflow-hidden">
-      <div class="p-4 flex items-center justify-between gap-3">
-        <div>
-          <div class="font-bold">Users</div>
-          <div class="text-xs text-gray-600">Name • Email • User Type • Region • Municipality • Status • Actions</div>
-        </div>
-        <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 border-y border-gray-200">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4 whitespace-nowrap">Name</th>
-              <th class="py-3 px-4 whitespace-nowrap">Email</th>
-              <th class="py-3 px-4 whitespace-nowrap">User Type</th>
-              <th class="py-3 px-4 whitespace-nowrap">Region</th>
-              <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-              <th class="py-3 px-4 whitespace-nowrap">Status</th>
-              <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 font-semibold">National Admin</td>
-              <td class="py-3 px-4">national.admin@tlph.gov</td>
-              <td class="py-3 px-4 whitespace-nowrap">National</td>
-              <td class="py-3 px-4 whitespace-nowrap">—</td>
-              <td class="py-3 px-4 whitespace-nowrap">—</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Active</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs">Disable</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 px-4 font-semibold">Municipal Admin - Calamba</td>
-              <td class="py-3 px-4">calamba.admin@tlph.gov</td>
-              <td class="py-3 px-4 whitespace-nowrap">Municipal</td>
-              <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-              <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-gray-200 bg-gray-50 text-gray-700">Disabled</span>
-              </td>
-              <td class="py-3 px-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-2">
-                  <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Enable</button>
-                  <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <footer class="py-6 text-xs text-gray-600">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>© 2026 TLPH • National Overview (UI Draft)</div>
-        <div class="inline-flex items-center gap-2">
-          <span>RBAC-ready</span>
-          <span>DB-ready</span>
-        </div>
-      </div>
-    </footer>
-
-  </main>
+    </main>
+  </div>
 
   <script>
     // Trend Chart (sample)
@@ -712,12 +719,9 @@
           tooltip: { mode: 'index', intersect: false }
         },
         interaction: { mode: 'index', intersect: false },
-        scales: {
-          y: { beginAtZero: true }
-        }
+        scales: { y: { beginAtZero: true } }
       }
     });
   </script>
-
 </body>
 </html>

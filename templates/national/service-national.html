@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TLPH | National Dashboard - Service Requests</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --gov-font: Verdana, Arial, Tahoma, sans-serif;
+      --gov-text: #111827;
+      --gov-muted: #4b5563;
+      --gov-border: #d1d5db;
+      --gov-bg: #f3f4f6;
+      --gov-panel: #ffffff;
+      --gov-primary: #0f172a;
+      --gov-focus: rgba(5, 150, 105, 0.18);
+    }
+    html, body{ font-family: var(--gov-font); color: var(--gov-text); }
+    body{ background: var(--gov-bg); }
+    .card{
+      background: var(--gov-panel);
+      border: 1px solid var(--gov-border);
+      border-radius: 16px;
+    }
+    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
+    .sticky-head thead th{ position: sticky; top: 0; z-index: 5; }
+  </style>
+</head>
+
+<body class="min-h-screen text-slate-900">
+  <div class="min-h-screen flex">
+    {% include 'national/sidenav-national.html' %}
+
+    <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
+      <div class="w-full max-w-[1700px] space-y-6">
+
+        <!-- Controls -->
+        <section class="card p-4">
+          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <div class="text-lg font-bold">Service Requests</div>
+              <div class="text-xs text-gray-600">
+                National view of all service requests. Filter by region, status, and request type.
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-gray-600">From</label>
+                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-gray-600">To</label>
+                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+              </div>
+
+              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+                <option selected>All Regions</option>
+                <option>NCR</option>
+                <option>Region I</option>
+                <option>Region II</option>
+                <option>Region III</option>
+                <option>Region IV-A</option>
+                <option>Region V</option>
+                <option>Region VI</option>
+                <option>Region VII</option>
+                <option>Region VIII</option>
+                <option>Region IX</option>
+                <option>Region X</option>
+                <option>Region XI</option>
+                <option>Region XII</option>
+                <option>CAR</option>
+                <option>BARMM</option>
+              </select>
+
+              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+                <option selected>All Status</option>
+                <option>Approved</option>
+                <option>Pending</option>
+                <option>To Review</option>
+                <option>Reject</option>
+              </select>
+
+              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
+                <option selected>All Request Types</option>
+                <option>Initial farm visit</option>
+                <option>Compliance inspection</option>
+                <option>Disease/pest investigation</option>
+                <option>Agribusiness & agro-processing</option>
+                <option>Soil/crop evaluation</option>
+                <option>Follow up visit</option>
+                <option>Good Agricultural Practice (GAP) training</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="Search ref # / applicant…"
+                class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-64 focus-ring"
+              />
+
+              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
+                Apply
+              </button>
+
+              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
+                <span class="material-icons-round text-[18px]">download</span>
+                Export
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- KPI Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">Total Service Requests</div>
+            <div class="text-2xl font-bold mt-1">4,235</div>
+            <div class="mt-2 text-xs text-gray-600">This month: <span class="font-semibold">820</span></div>
+            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full w-[58%] bg-slate-900 rounded-full"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">Month progress: <span class="font-semibold">58%</span></div>
+          </div>
+
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">Completed</div>
+            <div class="text-2xl font-bold mt-1">2,910</div>
+            <div class="mt-2 text-xs text-gray-600">Completion rate: <span class="font-semibold">68.7%</span></div>
+            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full w-[69%] bg-slate-900 rounded-full"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">Avg. completion time: <span class="font-semibold">6.1 days</span></div>
+          </div>
+
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">To Review</div>
+            <div class="text-2xl font-bold mt-1">612</div>
+            <div class="mt-2 text-xs text-gray-600">Review rate: <span class="font-semibold">14.5%</span></div>
+            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full w-[15%] bg-slate-900 rounded-full"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">Oldest in queue: <span class="font-semibold">12 days</span></div>
+          </div>
+
+          <div class="card p-4">
+            <div class="text-xs text-gray-600">Rejected / Cancelled</div>
+            <div class="text-2xl font-bold mt-1">410</div>
+            <div class="mt-2 text-xs text-gray-600">Rejection rate: <span class="font-semibold">9.7%</span></div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-[11px] text-gray-600">Top reason</div>
+                <div class="font-bold">No-show</div>
+              </div>
+              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
+                <div class="text-[11px] text-gray-600">2nd reason</div>
+                <div class="font-bold">Invalid</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Visualizations -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <!-- Trend -->
+          <div class="card p-4 xl:col-span-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-bold">Service Requests Trend</div>
+                <div class="text-xs text-gray-600">Submitted vs Completed vs Rejected (sample last 6 months)</div>
+              </div>
+              <div class="text-xs text-gray-600">Last 6 months</div>
+            </div>
+            <div class="mt-3 h-[320px]">
+              <canvas id="srTrendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Status Breakdown -->
+          <div class="card p-4">
+            <div>
+              <div class="font-bold">Status Breakdown</div>
+              <div class="text-xs text-gray-600">Completed • Pending • To Review • Rejected</div>
+            </div>
+            <div class="mt-3 h-[320px]">
+              <canvas id="srStatusChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Type + Region -->
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <!-- By Request Type -->
+          <div class="card p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-bold">Requests by Type</div>
+                <div class="text-xs text-gray-600">Top request types (sample)</div>
+              </div>
+              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
+                View all types
+              </button>
+            </div>
+            <div class="mt-3 h-[340px]">
+              <canvas id="srTypeChart"></canvas>
+            </div>
+          </div>
+
+          <!-- By Region -->
+          <div class="card p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-bold">Requests by Region</div>
+                <div class="text-xs text-gray-600">Volume per region (sample)</div>
+              </div>
+              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
+                Top N
+              </button>
+            </div>
+            <div class="mt-3 h-[340px]">
+              <canvas id="srRegionChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Table -->
+        <section class="card overflow-hidden">
+          <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div>
+              <div class="font-bold">Service Requests List</div>
+              <div class="text-xs text-gray-600">
+                Date • Reference & Applicant • Request Type • Region • Municipality • Status • Actions
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm inline-flex items-center gap-2">
+                <span class="material-icons-round text-[18px]">tune</span>
+                Advanced Filters
+              </button>
+              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
+                <span class="material-icons-round text-[18px]">download</span>
+                Export Table
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-[560px] sticky-head">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-y border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Request Type</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
+                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">SR-2026-000442</div>
+                    <div class="text-xs text-gray-600">Rivera, Liza</div>
+                  </td>
+                  <td class="py-3 px-4">Initial farm visit</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region VII</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Cebu City</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-sky-200 bg-sky-50 text-sky-800">To Review</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">visibility</span> View
+                      </button>
+                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">check</span> Approve
+                      </button>
+                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">close</span> Reject
+                      </button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">download</span> Export
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">SR-2026-000429</div>
+                    <div class="text-xs text-gray-600">Garcia, Noel</div>
+                  </td>
+                  <td class="py-3 px-4">Good Agricultural Practice (GAP) training</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
+                  <td class="py-3 px-4 whitespace-nowrap">San Pablo</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">visibility</span> View
+                      </button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">download</span> Export
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap">Feb 10, 2026</td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold">SR-2026-000401</div>
+                    <div class="text-xs text-gray-600">Santos, Maria</div>
+                  </td>
+                  <td class="py-3 px-4">Compliance inspection</td>
+                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
+                  <td class="py-3 px-4 whitespace-nowrap">Manila</td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Completed</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">visibility</span> View
+                      </button>
+                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
+                        <span class="material-icons-round text-[16px]">download</span> Export
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-600">
+            <div>Showing <span class="font-semibold">1–3</span> of <span class="font-semibold">4,235</span> service requests (sample)</div>
+            <div class="flex items-center gap-2">
+              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Prev</button>
+              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <footer class="py-6 text-xs text-gray-600">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>© 2026 TLPH • Service Requests (UI Draft)</div>
+            <div class="inline-flex items-center gap-2">
+              <span>RBAC-ready</span>
+              <span>DB-ready</span>
+            </div>
+          </div>
+        </footer>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Trend (sample)
+    new Chart(document.getElementById('srTrendChart'), {
+      type: 'line',
+      data: {
+        labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+        datasets: [
+          { label: 'Submitted', data: [520, 610, 700, 680, 740, 735], tension: 0.25 },
+          { label: 'Completed', data: [340, 410, 480, 455, 520, 515], tension: 0.25 },
+          { label: 'Rejected', data: [45, 52, 60, 58, 66, 64], tension: 0.25 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        interaction: { mode: 'index', intersect: false },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // Status breakdown (sample)
+    new Chart(document.getElementById('srStatusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Completed', 'Pending', 'To Review', 'Rejected'],
+        datasets: [{ data: [2910, 303, 612, 410] }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // By type (horizontal bar)
+    new Chart(document.getElementById('srTypeChart'), {
+      type: 'bar',
+      data: {
+        labels: [
+          'Initial farm visit',
+          'Compliance inspection',
+          'Disease/pest investigation',
+          'Soil/crop evaluation',
+          'Follow up visit',
+          'GAP training'
+        ],
+        datasets: [{ label: 'Requests', data: [920, 760, 610, 540, 480, 395] }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+
+    // By region (bar)
+    new Chart(document.getElementById('srRegionChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Region IV-A', 'NCR', 'Region VII', 'Region III', 'BARMM', 'CAR'],
+        datasets: [{ label: 'Requests', data: [720, 640, 510, 430, 260, 240] }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  </script>
+</body>
+</html>

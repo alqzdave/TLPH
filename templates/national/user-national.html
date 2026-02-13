@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TLPH | National Dashboard - Users</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    body{ font-family: Verdana, Arial, sans-serif; background:#f3f4f6; }
+    .card{ background:#fff; border:1px solid #d1d5db; border-radius:16px; }
+    .modal-bg{ background:rgba(0,0,0,0.4); }
+  </style>
+</head>
+
+<body class="min-h-screen text-slate-900">
+<div class="min-h-screen flex">
+
+{% include 'national/sidenav-national.html' %}
+
+<main class="flex-1 px-6 py-6 space-y-6">
+<div class="max-w-[1700px] mx-auto space-y-6">
+
+<!-- HEADER -->
+<section class="card p-4 flex justify-between items-center">
+  <div>
+    <div class="font-bold text-lg">Users Management (National)</div>
+    <div class="text-xs text-gray-600">Manage National, Regional, and Municipal users.</div>
+  </div>
+
+  <button class="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm">
+    Export Users
+  </button>
+</section>
+
+<!-- KPI CARDS -->
+<section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+  <div class="card p-4">
+    <div class="text-xs text-gray-600">Total Users</div>
+    <div id="kpiTotalUsers" class="text-2xl font-bold mt-1">—</div>
+  </div>
+
+  <div class="card p-4">
+    <div class="text-xs text-gray-600">National Admin</div>
+    <div id="kpiNational" class="text-2xl font-bold mt-1">—</div>
+  </div>
+
+  <div class="card p-4">
+    <div class="text-xs text-gray-600">Regional Users</div>
+    <div id="kpiRegional" class="text-2xl font-bold mt-1">—</div>
+  </div>
+
+  <div class="card p-4">
+    <div class="text-xs text-gray-600">Municipal Users</div>
+    <div id="kpiMunicipal" class="text-2xl font-bold mt-1">—</div>
+  </div>
+</section>
+
+<!-- CHARTS -->
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+  <div class="card p-4">
+    <div class="font-bold">Users by Type</div>
+    <div class="mt-3 h-[350px]">
+      <canvas id="chartUserType"></canvas>
+    </div>
+  </div>
+
+  <div class="card p-4">
+    <div class="font-bold">Users by Region</div>
+    <div class="mt-3 h-[350px]">
+      <canvas id="chartUserRegion"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- TABLE -->
+<section class="card overflow-hidden">
+  <div class="p-4 font-bold">Users List</div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 border-y">
+        <tr class="text-left text-gray-600">
+          <th class="py-3 px-4">Name</th>
+          <th class="py-3 px-4">Email</th>
+          <th class="py-3 px-4">User Type</th>
+          <th class="py-3 px-4">Region</th>
+          <th class="py-3 px-4">Municipality</th>
+          <th class="py-3 px-4">Status</th>
+          <th class="py-3 px-4">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="usersTbody" class="divide-y">
+
+        <tr>
+          <td class="px-4 py-3 font-semibold">National Admin</td>
+          <td class="px-4 py-3">national.admin@tlph.gov</td>
+          <td class="px-4 py-3">National</td>
+          <td class="px-4 py-3">—</td>
+          <td class="px-4 py-3">—</td>
+          <td class="px-4 py-3 text-green-700">Active</td>
+          <td class="px-4 py-3 flex gap-2">
+            <button onclick="viewUser(this)" class="px-3 py-1 border rounded text-xs">View</button>
+            <button onclick="editUser(this)" class="px-3 py-1 border rounded text-xs">Edit</button>
+            <button onclick="removeUser(this)" class="px-3 py-1 border border-rose-300 bg-rose-50 text-rose-700 rounded text-xs">Remove</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="px-4 py-3 font-semibold">Municipal Admin - Calamba</td>
+          <td class="px-4 py-3">calamba.admin@tlph.gov</td>
+          <td class="px-4 py-3">Municipal</td>
+          <td class="px-4 py-3">Region IV-A</td>
+          <td class="px-4 py-3">Calamba</td>
+          <td class="px-4 py-3 text-gray-600">Disabled</td>
+          <td class="px-4 py-3 flex gap-2">
+            <button onclick="viewUser(this)" class="px-3 py-1 border rounded text-xs">View</button>
+            <button onclick="editUser(this)" class="px-3 py-1 border rounded text-xs">Edit</button>
+            <button onclick="removeUser(this)" class="px-3 py-1 border border-rose-300 bg-rose-50 text-rose-700 rounded text-xs">Remove</button>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</div>
+</main>
+</div>
+
+<!-- VIEW MODAL -->
+<div id="viewModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
+  <div class="bg-white rounded-xl w-[450px] p-6">
+    <div class="flex justify-between items-center mb-4">
+      <div class="font-bold text-lg">User Details</div>
+      <button onclick="closeModal()">✕</button>
+    </div>
+    <div id="viewContent"></div>
+  </div>
+</div>
+
+<script>
+function getRows(){
+  return [...document.querySelectorAll('#usersTbody tr')];
+}
+
+function updateAnalytics(){
+  const rows = getRows();
+  let total = rows.length;
+  let national=0, regional=0, municipal=0;
+  let byRegion={};
+
+  rows.forEach(r=>{
+    const type=r.cells[2].innerText.trim();
+    const region=r.cells[3].innerText.trim();
+
+    if(type==="National") national++;
+    if(type==="Regional") regional++;
+    if(type==="Municipal") municipal++;
+
+    if(region!=="—"){
+      byRegion[region]=(byRegion[region]||0)+1;
+    }
+  });
+
+  document.getElementById('kpiTotalUsers').innerText=total;
+  document.getElementById('kpiNational').innerText=national;
+  document.getElementById('kpiRegional').innerText=regional;
+  document.getElementById('kpiMunicipal').innerText=municipal;
+
+  new Chart(document.getElementById('chartUserType'),{
+    type:'doughnut',
+    data:{
+      labels:['National','Regional','Municipal'],
+      datasets:[{data:[national,regional,municipal]}]
+    },
+    options:{responsive:true,maintainAspectRatio:false}
+  });
+
+  new Chart(document.getElementById('chartUserRegion'),{
+    type:'bar',
+    data:{
+      labels:Object.keys(byRegion),
+      datasets:[{label:'Users',data:Object.values(byRegion)}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function viewUser(btn){
+  const tr=btn.closest('tr');
+  const cells=tr.cells;
+  const html=`
+    <p><strong>Name:</strong> ${cells[0].innerText}</p>
+    <p><strong>Email:</strong> ${cells[1].innerText}</p>
+    <p><strong>Type:</strong> ${cells[2].innerText}</p>
+    <p><strong>Region:</strong> ${cells[3].innerText}</p>
+    <p><strong>Municipality:</strong> ${cells[4].innerText}</p>
+    <p><strong>Status:</strong> ${cells[5].innerText}</p>
+  `;
+  document.getElementById('viewContent').innerHTML=html;
+  document.getElementById('viewModal').classList.remove('hidden');
+  document.getElementById('viewModal').classList.add('flex');
+}
+
+function editUser(btn){
+  alert("Connect edit modal to backend form here.");
+}
+
+function removeUser(btn){
+  if(confirm("Remove this user?")){
+    btn.closest('tr').remove();
+    updateAnalytics();
+  }
+}
+
+function closeModal(){
+  document.getElementById('viewModal').classList.add('hidden');
+  document.getElementById('viewModal').classList.remove('flex');
+}
+
+updateAnalytics();
+</script>
+
+</body>
+</html>
