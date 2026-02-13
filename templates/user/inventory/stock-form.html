@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR Resource Registration | TLPH Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            letter-spacing: -0.01em; 
+            background-color: #f8fafc;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- Header Fixes --- */
+        .dropdown-menu:not(.show) { display: none !important; }
+        .collapse:not(.show) { display: none !important; }
+        header { z-index: 1050 !important; }
+
+        /* --- Compact Form Styles --- */
+        .label-style { 
+            font-size: 9px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: #064e3b; 
+            margin-bottom: 0.2rem; 
+            display: block; 
+        }
+
+        .input-style { 
+            background-color: #f9fafb; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 0.5rem; 
+            padding: 0.4rem 0.75rem; 
+            font-size: 0.75rem; 
+            width: 100%; 
+            transition: all 0.2s ease-in-out; 
+        }
+
+        .input-style:focus { 
+            outline: none; 
+            border-color: #10b981; 
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); 
+        }
+
+        .btn-transition { transition: all 0.2s ease-in-out; }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .main-wrapper {
+            min-height: calc(100vh - 64px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    {% include 'user/header.html' %}
+
+    <main class="flex-grow flex flex-col items-center justify-center p-4 main-wrapper">
+        
+        <div class="text-center mb-4">
+            <h1 class="text-2xl font-[900] text-[#064e3b] uppercase tracking-tighter leading-none">Resource Registration</h1>
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-1">Strategic Resource Management • TLPH Portal</p>
+        </div>
+
+        <div class="w-full max-w-5xl bg-white rounded-[24px] shadow-lg border border-gray-200 p-6">
+            <form id="stockForm" class="space-y-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-gray-50 pb-2">
+                            <i class="fas fa-list-alt text-emerald-800 text-[10px]"></i>
+                            <h2 class="text-[9px] font-[900] text-emerald-900 uppercase tracking-widest">Resource Details</h2>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                            <div class="col-span-2">
+                                <label class="label-style">Resource Name / Species <span class="text-red-500">*</span></label>
+                                <input type="text" required placeholder="e.g. Narra Seedling" class="input-style">
+                            </div>
+                            
+                            <div class="col-span-1">
+                                <label class="label-style">Property Number</label>
+                                <input type="text" placeholder="DENR-2026-XXXX" class="input-style">
+                            </div>
+
+                            <div class="col-span-1">
+                                <label class="label-style">Sector / Classification</label>
+                                <select class="input-style appearance-none bg-white cursor-pointer">
+                                    <option value="" disabled selected>Select Sector</option>
+                                    <optgroup label="Forestry">
+                                        <option value="timber">Timber / Logs</option>
+                                        <option value="ntfp">Non-Timber Forest Products</option>
+                                        <option value="seedlings">Nursery Stocks / Seedlings</option>
+                                    </optgroup>
+                                    <optgroup label="Biodiversity">
+                                        <option value="flora">Terrestrial Flora (Plants)</option>
+                                        <option value="fauna">Terrestrial Fauna (Wildlife)</option>
+                                    </optgroup>
+                                    <optgroup label="Mining & Land">
+                                        <option value="minerals">Metallic/Non-Metallic Minerals</option>
+                                        <option value="land">Land Resources / Titling</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div class="col-span-1">
+                                <label class="label-style">Stock Available <span class="text-red-500">*</span></label>
+                                <input type="number" required placeholder="0" class="input-style">
+                            </div>
+
+                            <div class="col-span-1">
+                                <label class="label-style">Unit of Measure</label>
+                                <select class="input-style appearance-none bg-white cursor-pointer">
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="seedlings">Seedlings</option>
+                                    <option value="bd_ft">Board Feet</option>
+                                    <option value="cu_m">Cubic Meters</option>
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="bundles">Bundles</option>
+                                    <option value="reams">Reams</option>
+                                </select>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="label-style">Source / Origin Location</label>
+                                <input type="text" placeholder="e.g. Regional Nursery Office" class="input-style">
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="label-style">Notes / Remarks</label>
+                                <textarea rows="2" placeholder="Additional handler notes..." class="input-style"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-gray-50 pb-2">
+                            <i class="fas fa-paperclip text-emerald-800 text-[10px]"></i>
+                            <h2 class="text-[9px] font-[900] text-emerald-900 uppercase tracking-widest">Required Documentation</h2>
+                        </div>
+
+                        <div onclick="document.getElementById('file_image').click()" 
+                             class="btn-transition border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50/30 hover:border-emerald-500 hover:bg-emerald-50/50 cursor-pointer group text-center">
+                            <i class="fas fa-camera text-gray-400 text-3xl mb-3 group-hover:text-emerald-600 transition duration-300"></i>
+                            <span class="text-[10px] font-[900] text-gray-500 uppercase group-hover:text-emerald-900">Upload Photo</span>
+                            <input type="file" id="file_image" class="hidden" accept="image/*" onchange="updateFileName(this, 'imageStatus')">
+                            <p id="imageStatus" class="text-[8px] mt-1 text-emerald-600 font-bold uppercase"></p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 flex items-center justify-between">
+                                <div class="leading-none">
+                                    <h3 class="text-[9px] font-[900] text-emerald-900 uppercase">Protected Species Mode</h3>
+                                    <p class="text-[8px] font-bold text-emerald-600 uppercase mt-0.5">Toggle to attach CITES permit</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="protectedToggle" class="sr-only peer" onchange="toggleProtectedFields()">
+                                    <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+
+                            <div id="protectedFields" class="hidden fade-in space-y-2">
+                                <input type="text" placeholder="Permit Number" class="input-style py-1.5 text-xs border-emerald-100">
+                                <div onclick="document.getElementById('file_permit').click()" 
+                                     class="btn-transition border border-dashed border-emerald-300 rounded-lg py-3 flex items-center justify-center bg-white hover:bg-emerald-50 cursor-pointer text-center">
+                                    <span class="text-[8px] font-[900] text-emerald-800 uppercase italic">Attach Permit File</span>
+                                    <input type="file" id="file_permit" class="hidden" accept=".pdf,image/*" onchange="updateFileName(this, 'permitStatus')">
+                                    <p id="permitStatus" class="text-[8px] mt-1 text-emerald-700 font-bold"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div class="bg-[#fefce8] border border-yellow-100 rounded-lg px-4 py-2 flex items-center space-x-3">
+                        <span class="text-[9px] font-[900] text-emerald-900 uppercase">Fee:</span>
+                        <span class="text-xl font-[900] text-emerald-900">₱ 150.00</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button type="button" class="btn-transition px-6 py-2.5 border border-gray-200 rounded-lg text-[9px] font-[900] text-gray-400 uppercase tracking-widest hover:bg-gray-100">Back</button>
+                        <button type="reset" onclick="resetDisplay()" class="btn-transition px-6 py-2.5 border border-gray-200 rounded-lg text-[9px] font-[900] text-gray-400 uppercase tracking-widest hover:bg-red-50 hover:text-red-600">Clear</button>
+                        <button type="submit" class="btn-transition px-8 py-2.5 bg-emerald-700 rounded-lg text-[9px] font-[900] text-white uppercase tracking-widest hover:bg-emerald-800 shadow-md active:scale-95">Add Entry</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function toggleProtectedFields() {
+            const isChecked = document.getElementById('protectedToggle').checked;
+            const fields = document.getElementById('protectedFields');
+            isChecked ? fields.classList.remove('hidden') : fields.classList.add('hidden');
+        }
+
+        function updateFileName(input, statusId) {
+            if (input.files && input.files[0]) {
+                document.getElementById(statusId).innerText = "File: " + input.files[0].name.substring(0, 15) + "...";
+            }
+        }
+
+        function resetDisplay() {
+            setTimeout(() => {
+                document.getElementById('protectedFields').classList.add('hidden');
+                document.getElementById('imageStatus').innerText = "";
+                document.getElementById('permitStatus').innerText = "";
+            }, 10);
+        }
+
+        // Dropdown Handlers
+        document.addEventListener('click', function (e) {
+            const dropdownBtn = e.target.closest('[data-bs-toggle="dropdown"]');
+            if (dropdownBtn) {
+                const menu = dropdownBtn.nextElementSibling;
+                menu.classList.toggle('show');
+            } else {
+                document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+    </script>
+</body>
+</html>

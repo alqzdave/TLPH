@@ -25,25 +25,30 @@
     {% include 'user/header.html' %}
 
     <header class="bg-emerald-950 text-white py-4 md:py-6 px-4 shadow-sm mb-4">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
             <div class="flex items-center gap-3">
                 <div class="w-1 h-6 bg-emerald-500 rounded-full"></div>
                 <h1 class="text-xl md:text-2xl font-black uppercase tracking-tighter italic mb-0">Inventory Stocks</h1>
             </div>
-            <p class="text-emerald-300 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mb-0">
-                Resource Monitoring & Logistics
-            </p>
+            
+            <div class="flex items-center gap-4">
+                <p class="hidden md:block text-emerald-300 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mb-0">
+                    Resource Monitoring & Logistics
+                </p>
+                <a href="/user/inventory/stock-form" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg transition-all no-underline shadow-lg border border-emerald-400/20">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span class="text-[10px] font-black uppercase tracking-wider">Add New Stock</span>
+                </a>
+            </div>
         </div>
     </header>
 
     <main class="max-w-6xl mx-auto px-4">
-        <!-- Loading State -->
         <div id="loadingState" class="text-center py-16">
             <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-700"></i>
             <p class="text-gray-400 mt-4 font-bold uppercase tracking-wider text-xs">Loading inventory...</p>
         </div>
 
-        <!-- Empty State -->
         <div id="emptyState" class="hidden text-center py-16">
             <i class="fa-solid fa-box-open text-6xl text-gray-200 mb-4"></i>
             <p class="text-gray-500 font-bold uppercase tracking-wider text-sm mb-2">No inventory items yet</p>
@@ -53,10 +58,8 @@
             </a>
         </div>
 
-        <!-- Inventory Grid -->
         <div id="inventoryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 hidden">
-            <!-- Items will be dynamically loaded here -->
-        </div>
+            </div>
     </main>
 
     <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">

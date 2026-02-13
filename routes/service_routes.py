@@ -163,3 +163,8 @@ def inventory_stock_history():
 def inventory_stock_info():
     """Shows inventory stock info page"""
     return render_template('user/inventory/stock-info.html')
+
+@bp.route('/inventory/stock-form')
+def inventory_stock_form():
+    """Shows inventory stock info page"""
+    return render_template('user/inventory/stock-form.html')
