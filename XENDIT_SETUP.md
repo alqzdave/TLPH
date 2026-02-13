@@ -137,7 +137,7 @@ Edit `templates/payment-form.html` around line 265:
 ```javascript
 const servicePricing = {
     'aquafarm': { name: 'Your Name', price: 5000 },
-    // Add or modify services
+    
 };
 ```
 
