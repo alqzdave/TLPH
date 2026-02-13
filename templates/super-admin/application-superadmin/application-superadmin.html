@@ -1,13 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DENR | Application Management Bureau</title>
+  <title>DENR | Application Master Registry Console</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script>
     tailwind.config = {
@@ -16,321 +17,293 @@
           colors: {
             denr: '#006400',
             'denr-light': '#f0fdf4',
+            'gov-blue': '#0038a8',
+            'gov-red': '#ce1126',
+          },
+          fontFamily: {
+            'serif': ['Georgia', 'serif'],
+            'sans': ['Inter', 'sans-serif'],
           }
         }
       }
     }
   </script>
+  
+  <style>
+    /* Official Government Identity Strip */
+    .gov-strip {
+        background: linear-gradient(to right, #0038a8 50%, #ce1126 50%);
+        height: 4px; width: 100%; position: fixed; top: 0; z-index: 2000;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #006400; border-radius: 10px; }
+    
+    /* Layout logic without @apply */
+    .main-wrapper { transition: all 0.3s ease-in-out; }
+    
+    /* Active tab style */
+    .nav-trigger.active { 
+        border-bottom: 4px solid #0038a8; 
+        background-color: #f8fafc; 
+        color: #0038a8; 
+        font-weight: 900; 
+    }
+  </style>
 </head>
 
-<body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
-    {% include 'super-admin/header-superadmin.html' %}
-    {% include 'super-admin/sidenav-superadmin.html' %}
+<body class="min-h-screen bg-[#f4f7f6] font-sans text-slate-900 overflow-x-hidden">
 
-  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
-    
-    <header class="bg-white border border-slate-300 border-t-4 border-t-denr rounded-lg p-4 flex items-center gap-6 shadow-sm">
-      <div class="bg-denr-light p-2 rounded-lg border border-denr/10">
-        <span class="material-icons-round text-denr text-3xl">assignment_turned_in</span>
-      </div>
-      <div class="flex-1">
-        <h1 class="font-serif text-xl font-black uppercase tracking-tight">Application Master Registry</h1>
-        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">2026 National Resource & Agricultural Compliance</p>
-      </div>
-      <div class="flex gap-2">
-          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Global Export</button>
-          <button class="bg-denr text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
-            <span class="material-icons-round text-xs">sync</span> Force Sync
-          </button>
-      </div>
-    </header>
+    <div class="gov-strip"></div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Active Apps</p>
-          <h3 class="text-2xl font-black" id="kpi-total">2,840</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-amber-500">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Pending Processing</p>
-          <h3 class="text-2xl font-black text-amber-600" id="kpi-pending">142</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-blue-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Under Review</p>
-          <h3 class="text-2xl font-black text-blue-600" id="kpi-review">89</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-green-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Approved MTD</p>
-          <h3 class="text-2xl font-black text-green-700" id="kpi-approved">567</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-red-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Rejections</p>
-          <h3 class="text-2xl font-black text-red-600" id="kpi-rejected">31</h3>
-        </div>
+    <div class="fixed top-1 w-full z-[1050]">
+        {% include 'super-admin/header-superadmin.html' %}
+    </div>
+    <div class="fixed left-0 h-full z-[1040]">
+        {% include 'super-admin/sidenav-superadmin.html' %}
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">7-Day Application Submission Volume</h4>
-            <div class="h-[250px]">
-                <canvas id="trendChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">Status Distribution</h4>
-            <div class="h-[200px]">
-                <canvas id="statusChart"></canvas>
-            </div>
-            <div class="mt-6 grid grid-cols-2 gap-2">
-                <div class="bg-slate-50 p-2 rounded text-center">
-                    <p class="text-[8px] font-black text-slate-400 uppercase">Avg Response</p>
-                    <p class="text-xs font-black">3.2 Days</p>
-                </div>
-                <div class="bg-slate-50 p-2 rounded text-center">
-                    <p class="text-[8px] font-black text-slate-400 uppercase">Completion</p>
-                    <p class="text-xs font-black">94.1%</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
-        
-        <div class="p-4 bg-slate-50 border-b space-y-4">
-            <div class="flex flex-wrap gap-4 items-center">
-                <div class="flex-1 min-w-[300px] relative">
-                  <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
-                  <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-denr outline-none shadow-sm" placeholder="Search Reference ID, Applicant Name...">
+    <main class="lg:ml-64 pt-20 pb-10 main-wrapper">
+        <div class="max-w-[1750px] mx-auto p-4 lg:px-8 space-y-6"> 
+            
+            <header class="bg-white border border-slate-300 border-t-4 border-t-denr p-5 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Seal_of_the_Department_of_Environment_and_Natural_Resources.png" class="h-16 w-16 drop-shadow-md" alt="DENR">
+                <div class="flex-1 text-center md:text-left border-l-0 md:border-l-2 border-slate-200 md:pl-6">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-tight">Republic of the Philippines</p>
+                    <h1 class="font-serif text-2xl font-black uppercase tracking-tight text-denr">Application Master Console</h1>
+                    <p class="text-[11px] font-bold text-gov-blue uppercase tracking-widest mt-1">Super Admin National Compliance Oversight • 2026</p>
                 </div>
                 <div class="flex gap-2">
-                    <button id="resetFilters" class="px-3 py-2 text-[10px] font-black text-red-600 uppercase border border-red-200 rounded hover:bg-red-50 transition-colors">Reset</button>
-                    <button class="bg-slate-800 text-white px-4 py-2 text-[10px] font-black rounded shadow-sm uppercase tracking-wider">Apply Filters</button>
+                    <button onclick="exportTableToCSV()" class="bg-white border border-slate-400 px-5 py-2 text-[10px] font-black uppercase hover:bg-slate-50 shadow-sm transition">Export CSV</button>
+                    <button class="bg-denr text-white px-6 py-2 text-[10px] font-black uppercase shadow-md hover:bg-black transition">Force System Sync</button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="bg-white border border-slate-200 border-t-4 border-t-denr p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Total Intake</p>
+                    <h3 class="text-2xl font-black">2,840</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-amber-500 p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">SLA Breach</p>
+                    <h3 class="text-2xl font-black text-amber-600">12</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-blue-600 p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Pending Review</p>
+                    <h3 class="text-2xl font-black text-blue-600">89</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-green-600 p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Approval Rate</p>
+                    <h3 class="text-2xl font-black text-green-700">92.4%</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-gov-blue p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Avg Response</p>
+                    <h3 class="text-2xl font-black text-gov-blue">3.2d</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-gov-red p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Rejections</p>
+                    <h3 class="text-2xl font-black text-gov-red">31</h3>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Category</label>
-                <select id="catFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Categories</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region</label>
-                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Regions</option>
-                  <option value="NCR">NCR</option>
-                  <option value="III">Region III</option>
-                  <option value="IV-A">Region IV-A</option>
-                  <option value="IV-B">Region IV-B</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Municipality</label>
-                <select id="munFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white disabled:opacity-50" disabled>
-                  <option value="all">All Municipalities</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Status</label>
-                <select id="statusFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Status</option>
-                  <option>Approved</option>
-                  <option>Pending</option>
-                  <option>To Review</option>
-                  <option>Reject</option>
-                </select>
-              </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white border border-slate-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-widest border-l-4 border-gov-blue pl-3">Submission Intake Trend (National)</h4>
+                        <span class="text-[10px] font-bold text-slate-400">Feb 07 - Feb 13, 2026</span>
+                    </div>
+                    <div class="h-[280px]"><canvas id="trendChart"></canvas></div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-widest border-l-4 border-gov-red pl-3 mb-6">Regional Submission Volume</h4>
+                    <div class="h-[280px]"><canvas id="regionalChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-widest border-l-4 border-amber-500 pl-3 mb-6">Reviewer Efficiency (Avg Days)</h4>
+                    <div class="h-[220px]"><canvas id="efficiencyChart"></canvas></div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-widest border-l-4 border-denr pl-3 mb-6">Classification Focus</h4>
+                    <div class="h-[220px]"><canvas id="categoryChart"></canvas></div>
+                </div>
+                <div class="bg-slate-900 text-white shadow-xl flex flex-col h-[320px]">
+                    <div class="p-4 border-b border-slate-700 bg-black/20 flex justify-between items-center">
+                        <h4 class="text-[11px] font-black text-amber-400 uppercase tracking-widest">Live Audit Stream</h4>
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    </div>
+                    <div class="p-4 space-y-4 overflow-y-auto flex-1 font-mono text-[10px]">
+                        <div class="border-l border-slate-600 pl-3">
+                            <span class="text-slate-500">[14:02]</span> <span class="text-blue-400">CENRO Calapan:</span> Approved PMT-2026-X1
+                        </div>
+                        <div class="border-l border-slate-600 pl-3 text-gov-red">
+                            <span class="text-slate-500">[13:58]</span> <span class="text-red-400">PENRO III:</span> Flagged Incomplete Docs (APP-004)
+                        </div>
+                        <div class="border-l border-slate-600 pl-3">
+                            <span class="text-slate-500">[13:45]</span> <span class="text-green-400">System:</span> Database Sync Completed
+                        </div>
+                    </div>
+                    <button class="p-3 text-[9px] font-black bg-white/5 hover:bg-white/10 uppercase tracking-widest border-t border-slate-700">Access Global Audit Logs</button>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 shadow-md flex flex-col min-h-[600px]">
+                <div class="p-6 bg-slate-50 border-b grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase mb-1 block">Quick Search</label>
+                        <input id="searchInput" oninput="renderTable()" class="w-full px-4 py-2 text-xs border border-slate-300 outline-none focus:ring-1 focus:ring-gov-blue" placeholder="Ref ID, Entity Name...">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase mb-1 block">Sector Filter</label>
+                        <select id="catFilter" onchange="renderTable()" class="w-full px-4 py-2 text-xs border border-slate-300 bg-white font-bold uppercase outline-none">
+                            <option value="all">-- ALL SECTORS --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase mb-1 block">Jurisdiction</label>
+                        <select id="regFilter" class="w-full px-4 py-2 text-xs border border-slate-300 bg-white outline-none">
+                            <option value="all">National / All Regions</option>
+                            <option value="IV-B">Region IV-B</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="location.reload()" class="w-full bg-slate-800 text-white px-6 py-2 text-[11px] font-black uppercase hover:bg-black transition">Refresh Data</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto flex-1">
+                    <table id="masterTable" class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-[10px] uppercase font-black text-slate-600 border-b-2 border-slate-200">
+                                <th class="px-6 py-4">Submission Date</th>
+                                <th class="px-6 py-4">Registry No & Applicant</th>
+                                <th class="px-6 py-4">Administrative Region</th>
+                                <th class="px-6 py-4 text-center">Compliance Status</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appTableBody" class="divide-y divide-slate-100 text-[12px] text-slate-700"></tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 bg-slate-800 text-white flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <div>Showing <span id="resCount" class="text-amber-400">0</span> Records</div>
+                    <div>DENR Secure Registry Session • 2026</div>
+                </div>
             </div>
         </div>
+    </main>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
-                    <th class="px-6 py-4">Date</th>
-                    <th class="px-6 py-4">Reference & Applicant</th>
-                    <th class="px-6 py-4">Applicant Category</th>
-                    <th class="px-6 py-4">Region</th>
-                    <th class="px-6 py-4">Municipality</th>
-                    <th class="px-6 py-4 text-center">Status</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="appTableBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
-            </table>
-        </div>
-        
-        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
-            <div>Result Count: <span id="resCount" class="text-denr">0</span> Entries</div>
-            <div class="flex items-center gap-4">
-              <span>Page 1 of 12</span>
-              <div class="flex gap-1">
-                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
-                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
-              </div>
-            </div>
-        </div>
-    </div>
-  </div>
+    <script>
+        const APP_CATEGORIES = ["Forestry", "Biodiversity", "Lands", "Mining", "Environmental Management"];
+        const MOCK_DATA = [
+            { date: "2026-02-13", ref: "APP-2026-001", name: "MIMAROPA Dev Corp", reg: "IV-B", status: "Pending", category: "Forestry" },
+            { date: "2026-02-12", ref: "APP-2026-002", name: "Green Foundation", reg: "IV-B", status: "Approved", category: "Biodiversity" },
+            { date: "2026-02-11", ref: "APP-2026-003", name: "Oriental Mindoro Co", reg: "IV-B", status: "To Review", category: "Lands" }
+        ];
 
-  <script>
-    const APP_CATEGORIES = [
-      "Crop & Plant", "Livestock & Poultry", "Fisheries & Aquaculture", 
-      "Agribusiness & Agro-Processing", "Agricultural Trade (Import & Export)", 
-      "Land Use & Farm Development infrastructure", "Research, Technology & Innovation", 
-      "Farmer Support, Subsidies & Insurance", "Food Safety & Quality Regulation", 
-      "Extension Services & Capacity Building", "Climate Change, Disaster & Risk Management", 
-      "Data, Monitoring & Digital Agriculture", "Compliance, Inspection & Enforcement", 
-      "Institutional & Cooperative Development"
-    ];
-
-    const MUN_DATA = {
-        "IV-B": ["Calapan", "Naujan", "Victoria", "Pola", "Pinamalayan", "Baco"],
-        "III": ["Tarlac City", "Concepcion", "Capas"],
-        "NCR": ["Quezon City", "Manila", "Makati"],
-        "IV-A": ["Lipa", "Batangas City", "Tanauan"]
-    };
-
-    const MOCK_DATA = [
-      { date: "2026-02-12", ref: "APP-99812", name: "Alqz Dave", cat: "Fisheries & Aquaculture", reg: "IV-B", mun: "Calapan", status: "Pending" },
-      { date: "2026-02-11", ref: "APP-99811", name: "Sarah Jimenez", cat: "Crop & Plant", reg: "IV-B", mun: "Naujan", status: "Approved" },
-      { date: "2026-02-11", ref: "APP-99810", name: "EcoFarm Corp", cat: "Land Use & Farm Development infrastructure", reg: "III", mun: "Tarlac City", status: "To Review" },
-      { date: "2026-02-10", ref: "APP-99809", name: "Juan Dela Cruz", cat: "Livestock & Poultry", reg: "IV-A", mun: "Lipa", status: "Reject" },
-      { date: "2026-02-10", ref: "APP-99808", name: "TechGrow Inc", cat: "Research, Technology & Innovation", reg: "NCR", mun: "Quezon City", status: "Approved" }
-    ];
-
-    function initTable() {
-      const catFilter = document.getElementById('catFilter');
-      APP_CATEGORIES.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c; opt.textContent = c; catFilter.appendChild(opt);
-      });
-
-      // Handle Region Change to update Municipality Filter
-      document.getElementById('regFilter').addEventListener('change', function(e) {
-        const munFilter = document.getElementById('munFilter');
-        const region = e.target.value;
-        
-        munFilter.innerHTML = '<option value="all">All Municipalities</option>';
-        
-        if(region !== 'all' && MUN_DATA[region]) {
-            munFilter.disabled = false;
-            MUN_DATA[region].forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m; opt.textContent = m; munFilter.appendChild(opt);
+        function initCharts() {
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Feb 07','08','09','10','11','12','13'],
+                    datasets: [{
+                        label: 'Intake', data: [120, 150, 90, 210, 180, 240, 280],
+                        borderColor: '#0038a8', backgroundColor: 'rgba(0, 56, 168, 0.05)', fill: true, tension: 0.3, borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
-        } else {
-            munFilter.disabled = true;
+
+            new Chart(document.getElementById('regionalChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Region IV-B', 'Region III', 'NCR', 'Region IV-A', 'Region VII'],
+                    datasets: [{ data: [840, 620, 580, 450, 350], backgroundColor: '#006400' }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            new Chart(document.getElementById('efficiencyChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['CENRO Calapan', 'CENRO Naujan', 'PENRO III'],
+                    datasets: [{ label: 'Days', data: [2.1, 4.5, 3.8], backgroundColor: '#f59e0b' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            new Chart(document.getElementById('categoryChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: ['Forestry', 'Fisheries', 'Mining', 'Wildlife'],
+                    datasets: [{ data: [45, 30, 15, 10], backgroundColor: ['#15803d','#0369a1','#b45309','#be123c'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
         }
-        applyFilters();
-      });
-      
-      ['tableSearch', 'catFilter', 'munFilter', 'statusFilter'].forEach(id => {
-          document.getElementById(id).addEventListener('input', applyFilters);
-      });
 
-      renderTable(MOCK_DATA);
-    }
+        function renderTable() {
+            const body = document.getElementById('appTableBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('catFilter').value;
+            
+            const filtered = MOCK_DATA.filter(item => {
+                const matchSearch = Object.values(item).join(" ").toLowerCase().includes(search);
+                const matchCat = category === 'all' || item.category === category;
+                return matchSearch && matchCat;
+            });
 
-    function applyFilters() {
-        const search = document.getElementById('tableSearch').value.toLowerCase();
-        const cat = document.getElementById('catFilter').value;
-        const reg = document.getElementById('regFilter').value;
-        const mun = document.getElementById('munFilter').value;
-        const status = document.getElementById('statusFilter').value;
+            body.innerHTML = '';
+            document.getElementById('resCount').textContent = filtered.length;
 
-        const filtered = MOCK_DATA.filter(item => {
-            const matchSearch = item.ref.toLowerCase().includes(search) || item.name.toLowerCase().includes(search);
-            const matchCat = cat === 'all' || item.cat === cat;
-            const matchReg = reg === 'all' || item.reg === reg;
-            const matchMun = mun === 'all' || item.mun === mun;
-            const matchStatus = status === 'all' || item.status === status;
-            return matchSearch && matchCat && matchReg && matchMun && matchStatus;
-        });
-
-        renderTable(filtered);
-    }
-
-    function renderTable(data) {
-      const body = document.getElementById('appTableBody');
-      body.innerHTML = '';
-      document.getElementById('resCount').textContent = data.length;
-
-      data.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-denr-light/20 transition-colors group";
-        
-        let statusClass = "bg-slate-100 text-slate-600 border-slate-200";
-        if(row.status === 'Approved') statusClass = "bg-green-100 text-green-700 border-green-200";
-        if(row.status === 'Pending') statusClass = "bg-amber-100 text-amber-700 border-amber-200";
-        if(row.status === 'To Review') statusClass = "bg-blue-100 text-blue-700 border-blue-200";
-        if(row.status === 'Reject') statusClass = "bg-red-100 text-red-700 border-red-200";
-
-        tr.innerHTML = `
-          <td class="px-6 py-4 font-bold text-slate-400 whitespace-nowrap">${row.date}</td>
-          <td class="px-6 py-4">
-            <div class="font-black text-denr uppercase tracking-tighter">${row.ref}</div>
-            <div class="text-[10px] text-slate-500 font-bold">${row.name}</div>
-          </td>
-          <td class="px-6 py-4 uppercase font-black text-[10px] text-slate-400 max-w-[180px] leading-tight">${row.cat}</td>
-          <td class="px-6 py-4 font-bold text-slate-700">${row.reg}</td>
-          <td class="px-6 py-4 font-bold text-slate-700">${row.mun}</td>
-          <td class="px-6 py-4 text-center">
-            <span class="px-2 py-0.5 rounded border text-[9px] font-black uppercase ${statusClass}">${row.status}</span>
-          </td>
-          <td class="px-6 py-4 text-right whitespace-nowrap">
-            <div class="flex gap-1 justify-end">
-              <button class="p-1.5 hover:bg-slate-200 rounded text-slate-500"><span class="material-icons-round text-sm">visibility</span></button>
-              <button class="p-1.5 hover:bg-green-100 rounded text-green-600"><span class="material-icons-round text-sm">check_circle</span></button>
-              <button class="p-1.5 hover:bg-red-100 rounded text-red-600"><span class="material-icons-round text-sm">cancel</span></button>
-            </div>
-          </td>
-        `;
-        body.appendChild(tr);
-      });
-    }
-
-    function initCharts() {
-      new Chart(document.getElementById('trendChart'), {
-        type: 'line',
-        data: {
-          labels: ['Feb 06', 'Feb 07', 'Feb 08', 'Feb 09', 'Feb 10', 'Feb 11', 'Feb 12'],
-          datasets: [{
-            label: 'Total Submissions',
-            data: [42, 38, 55, 60, 45, 82, 95],
-            borderColor: '#006400',
-            backgroundColor: 'rgba(0, 100, 0, 0.05)',
-            fill: true, tension: 0.4, borderWidth: 3
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } }
-      });
-
-      new Chart(document.getElementById('statusChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Approved', 'Pending', 'To Review', 'Reject'],
-          datasets: [{
-            data: [567, 142, 89, 31],
-            backgroundColor: ['#15803d', '#d97706', '#2563eb', '#dc2626'],
-            borderWidth: 0
-          }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            cutout: '75%', 
-            plugins: { 
-                legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9, weight: 'bold' }, padding: 15 } } 
-            } 
+            filtered.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/50 border-b";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-bold text-slate-400">${row.date}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-black text-denr uppercase tracking-tighter">${row.ref}</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase">${row.name}</div>
+                    </td>
+                    <td class="px-6 py-4 font-bold text-slate-700">${row.reg}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-2 py-0.5 rounded border text-[10px] font-black uppercase bg-amber-100 text-amber-700 border-amber-300">${row.status}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button class="text-gov-blue text-[10px] font-black hover:underline uppercase">Full Registry View</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
         }
-      });
-    }
 
-    window.onload = () => {
-      initTable();
-      initCharts();
-    };
-  </script>
+        function exportTableToCSV() {
+            let csv = [];
+            const rows = document.querySelectorAll("#masterTable tr");
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText + '"');
+                csv.push(row.join(","));
+            }
+            const csvBlob = new Blob([csv.join("\n")], { type: "text/csv" });
+            const url = window.URL.createObjectURL(csvBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `DENR_MASTER_REGISTRY_2026.csv`;
+            a.click();
+        }
+
+        window.onload = () => {
+            const catFilter = document.getElementById('catFilter');
+            APP_CATEGORIES.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c.toUpperCase(); catFilter.appendChild(opt);
+            });
+            initCharts();
+            renderTable();
+        };
+    </script>
 </body>
 </html>

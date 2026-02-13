@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DENR | Service Request Bureau</title>
+  <title>DENR | Service Request Registry</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,292 +15,207 @@
         extend: {
           colors: {
             denr: '#006400',
-            'denr-light': '#f0fdf4',
+            'gov-blue': '#0038a8',
+            'gov-red': '#ce1126',
+          },
+          fontFamily: {
+            'serif': ['Georgia', 'serif'],
+            'sans': ['Inter', 'sans-serif'],
           }
         }
       }
     }
   </script>
+  <style>
+    .gov-strip { background: linear-gradient(to right, #0038a8 50%, #ce1126 50%); height: 4px; width: 100%; position: fixed; top: 0; z-index: 2000; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #1d4ed8; border-radius: 10px; }
+    
+    /* Layout Logic */
+    .main-wrapper { transition: all 0.3s ease-in-out; }
+  </style>
 </head>
 
-<body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
-    {% include 'super-admin/header-superadmin.html' %}
-    {% include 'super-admin/sidenav-superadmin.html' %}
+<body class="min-h-screen bg-[#f4f7f6] font-sans text-slate-900 overflow-x-hidden">
+    <div class="gov-strip"></div>
 
-  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    <div class="fixed top-1 w-full z-[1050]">
+        {% include 'super-admin/header-superadmin.html' %}
+    </div>
     
-    <header class="bg-white border border-slate-300 border-t-4 border-t-blue-700 rounded-lg p-4 flex items-center gap-6 shadow-sm">
-      <div class="bg-blue-50 p-2 rounded-lg border border-blue-700/10">
-        <span class="material-icons-round text-blue-700 text-3xl">plumbing</span>
-      </div>
-      <div class="flex-1">
-        <h1 class="font-serif text-xl font-black uppercase tracking-tight">Service Request Registry</h1>
-        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Field Support & Technical Assistance Management</p>
-      </div>
-      <div class="flex gap-2">
-          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Field Logs Export</button>
-          <button class="bg-blue-700 text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
-            <span class="material-icons-round text-xs">calendar_today</span> Schedule Task
-          </button>
-      </div>
-    </header>
-
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Active Requests</p>
-          <h3 class="text-2xl font-black" id="kpi-total">1,120</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-amber-500">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Awaiting Inspection</p>
-          <h3 class="text-2xl font-black text-amber-600" id="kpi-pending">64</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-blue-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">In Review</p>
-          <h3 class="text-2xl font-black text-blue-600" id="kpi-review">42</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-green-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Resolved MTD</p>
-          <h3 class="text-2xl font-black text-green-700" id="kpi-approved">312</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-red-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Cancelled/Denied</p>
-          <h3 class="text-2xl font-black text-red-600" id="kpi-rejected">14</h3>
-        </div>
+    <div class="fixed left-0 h-full z-[1040]">
+        {% include 'super-admin/sidenav-superadmin.html' %}
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">Support Request Volume (Weekly)</h4>
-            <div class="h-[250px]">
-                <canvas id="requestTrendChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">Service Distribution</h4>
-            <div class="h-[250px]">
-                <canvas id="serviceChart"></canvas>
-            </div>
-        </div>
-    </div>
+    <main class="lg:ml-64 pt-20 pb-10 main-wrapper">
+        <div class="max-w-[1750px] mx-auto p-4 lg:px-8 space-y-6"> 
+            
+            <header class="bg-white border border-slate-300 border-t-4 border-t-blue-700 rounded-none p-5 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-700/10">
+                    <span class="material-icons-round text-blue-700 text-4xl">plumbing</span>
+                </div>
+                <div class="flex-1 text-center md:text-left border-l-0 md:border-l-2 border-slate-200 md:pl-6">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Republic of the Philippines</p>
+                    <h1 class="font-serif text-2xl font-black uppercase tracking-tight text-blue-900">Service Request Registry</h1>
+                    <p class="text-[11px] font-bold text-gov-blue uppercase tracking-widest mt-1">Field Support & Technical Assistance Intelligence Console</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="bg-white border border-slate-400 px-5 py-2.5 text-[10px] font-black uppercase hover:bg-slate-50 shadow-sm transition">Export CSV</button>
+                    </button>
+                </div>
+            </header>
 
-    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
-        
-        <div class="p-4 bg-slate-50 border-b space-y-4">
-            <div class="flex flex-wrap gap-4 items-center">
-                <div class="flex-1 min-w-[300px] relative">
-                  <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
-                  <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-700 outline-none shadow-sm" placeholder="Search Reference, Name, or Municipality...">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div class="bg-white border border-slate-200 rounded-none p-4 shadow-sm border-t-4 border-t-blue-700 text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Active Requests</p>
+                    <h3 class="text-3xl font-black text-slate-800" id="kpi-total">1,120</h3>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-none p-4 shadow-sm border-t-4 border-t-amber-500 text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Awaiting Action</p>
+                    <h3 class="text-3xl font-black text-amber-600" id="kpi-pending">64</h3>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-none p-4 shadow-sm border-t-4 border-t-indigo-600 text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Field Review</p>
+                    <h3 class="text-3xl font-black text-indigo-600" id="kpi-review">42</h3>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-none p-4 shadow-sm border-t-4 border-t-green-600 text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Resolved MTD</p>
+                    <h3 class="text-3xl font-black text-green-700" id="kpi-approved">312</h3>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-none p-4 shadow-sm border-t-4 border-t-gov-red text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Cancelled</p>
+                    <h3 class="text-3xl font-black text-gov-red" id="kpi-rejected">14</h3>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Request Type</label>
-                <select id="catFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Service Types</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region</label>
-                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Regions</option>
-                  <option value="IV-B">Region IV-B</option>
-                  <option value="NCR">NCR</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Municipality</label>
-                <select id="munFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white disabled:opacity-50" disabled>
-                  <option value="all">All Municipalities</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Status</label>
-                <select id="statusFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Status</option>
-                  <option>Approved</option>
-                  <option>Pending</option>
-                  <option>To Review</option>
-                  <option>Reject</option>
-                </select>
-              </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-blue-900 uppercase tracking-widest border-l-4 border-gov-blue pl-3 mb-6">Support Request Volume (Weekly)</h4>
+                    <div class="h-[280px]"><canvas id="requestTrendChart"></canvas></div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-blue-900 uppercase tracking-widest border-l-4 border-gov-red pl-3 mb-6">Category Distribution</h4>
+                    <div class="h-[280px]"><canvas id="serviceChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 shadow-md flex flex-col min-h-[600px] overflow-hidden">
+                <div class="p-6 bg-slate-50 border-b grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Registry Search</label>
+                        <input id="tableSearch" class="w-full px-4 py-2 text-xs border border-slate-300 outline-none focus:ring-1 focus:ring-blue-700" placeholder="Filter by Ref, Entity...">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Service Type</label>
+                        <select id="catFilter" class="w-full px-4 py-2 text-xs border border-slate-300 bg-white font-bold outline-none uppercase"></select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Jurisdiction</label>
+                        <select id="regFilter" class="w-full px-4 py-2 text-xs border border-slate-300 bg-white outline-none uppercase">
+                            <option value="all">National Scope</option>
+                            <option value="IV-B">Region IV-B</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="location.reload()" class="w-full bg-slate-800 text-white px-6 py-2.5 text-[11px] font-black uppercase hover:bg-black transition tracking-widest">Refresh Registry</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b-2 border-slate-200">
+                            <tr class="text-[10px] uppercase font-black text-slate-600">
+                                <th class="px-6 py-4">Submission Date</th>
+                                <th class="px-6 py-4">Reference & Applicant</th>
+                                <th class="px-6 py-4">Service Category</th>
+                                <th class="px-6 py-4">Region</th>
+                                <th class="px-6 py-4">Municipality</th>
+                                <th class="px-6 py-4 text-center">Status</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reqTableBody" class="divide-y divide-slate-100 text-[12px] text-slate-700"></tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 bg-slate-800 text-white flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <div>Showing <span id="resCount" class="text-amber-400">0</span> Active Records</div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                        Encrypted Super Admin Session • 2026
+                    </div>
+                </div>
             </div>
         </div>
+    </main>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
-                    <th class="px-6 py-4">Date</th>
-                    <th class="px-6 py-4">Reference & Applicant</th>
-                    <th class="px-6 py-4">Request Category</th>
-                    <th class="px-6 py-4">Region</th>
-                    <th class="px-6 py-4">Municipality</th>
-                    <th class="px-6 py-4 text-center">Status</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="reqTableBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
-            </table>
-        </div>
-        
-        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
-            <div>Result Count: <span id="resCount" class="text-blue-700">0</span> Entries</div>
-            <div class="flex items-center gap-4">
-              <span>Page 1 of 5</span>
-              <div class="flex gap-1">
-                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
-                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
-              </div>
-            </div>
-        </div>
-    </div>
-  </div>
+    <script>
+        const SERVICE_CATEGORIES = ["Site Inspection", "Audit", "Technical Training", "Subsidy Aid", "Certification"];
+        const DATA = [
+            { date: "2026-02-13", ref: "SR-2026-HQ-001", name: "Oriental Mindoro Coop", cat: "Site Inspection", reg: "IV-B", mun: "Victoria", status: "To Review" },
+            { date: "2026-02-12", ref: "SR-2026-HQ-002", name: "Green Earth NGO", cat: "Technical Training", reg: "IV-B", mun: "Calapan", status: "Approved" }
+        ];
 
-  <script>
-    const SERVICE_CATEGORIES = [
-      "initial farm visit", "compliance inspection", "disease/pest investigation", 
-      "agribusiness & agro-processing", "soil/crop evaluation", "follow up visit", 
-      "good agricultural practice(GAP) training", "pest & disease management seminar", 
-      "safe pesticide handling training", "nursery/propagation seminar", 
-      "regulatory compliance orientation", "input usage approval", 
-      "chemical registration/clearance", "fertilizer recommendation", 
-      "pesticide recommendation", "subsidy application", "grant assistance", 
-      "load endorsement", "crop insurance support", "startup/expansion support"
-    ];
-
-    const MUN_DATA = {
-        "IV-B": ["Calapan", "Naujan", "Victoria", "Baco"],
-        "NCR": ["Quezon City", "Manila"]
-    };
-
-    const MOCK_DATA = [
-      { date: "2026-02-12", ref: "SR-2026-001", name: "Maria Santos", cat: "compliance inspection", reg: "IV-B", mun: "Victoria", status: "To Review" },
-      { date: "2026-02-12", ref: "SR-2026-002", name: "Greenland Coop", cat: "soil/crop evaluation", reg: "IV-B", mun: "Calapan", status: "Pending" },
-      { date: "2026-02-11", ref: "SR-2026-003", name: "Jose Rizal", cat: "pest & disease management seminar", reg: "NCR", mun: "Manila", status: "Approved" },
-      { date: "2026-02-10", ref: "SR-2026-004", name: "Harvest Best", cat: "subsidy application", reg: "IV-B", mun: "Naujan", status: "Reject" }
-    ];
-
-    function initTable() {
-      const catFilter = document.getElementById('catFilter');
-      SERVICE_CATEGORIES.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c; opt.textContent = c.toUpperCase(); catFilter.appendChild(opt);
-      });
-
-      document.getElementById('regFilter').addEventListener('change', function(e) {
-        const munFilter = document.getElementById('munFilter');
-        const region = e.target.value;
-        munFilter.innerHTML = '<option value="all">All Municipalities</option>';
-        if(region !== 'all' && MUN_DATA[region]) {
-            munFilter.disabled = false;
-            MUN_DATA[region].forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m; opt.textContent = m; munFilter.appendChild(opt);
+        function renderTable() {
+            const body = document.getElementById('reqTableBody');
+            body.innerHTML = '';
+            document.getElementById('resCount').textContent = DATA.length;
+            DATA.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/50 border-b";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-bold text-slate-400">${row.date}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-black text-blue-800">${row.ref}</div>
+                        <div class="text-[9px] font-bold text-slate-500 uppercase">${row.name}</div>
+                    </td>
+                    <td class="px-6 py-4 font-black uppercase text-[10px] text-slate-500">${row.cat}</td>
+                    <td class="px-6 py-4 font-bold">${row.reg}</td>
+                    <td class="px-6 py-4 font-bold">${row.mun}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-2 py-1 rounded border text-[10px] font-black uppercase bg-amber-100 text-amber-700 border-amber-200">${row.status}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button class="text-gov-blue text-[10px] font-black hover:underline uppercase">Audit History</button>
+                    </td>
+                `;
+                body.appendChild(tr);
             });
-        } else { munFilter.disabled = true; }
-        applyFilters();
-      });
+        }
 
-      ['tableSearch', 'catFilter', 'munFilter', 'statusFilter'].forEach(id => {
-          document.getElementById(id).addEventListener('input', applyFilters);
-      });
+        function initCharts() {
+            new Chart(document.getElementById('requestTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Requests', data: [120, 190, 150, 220, 300, 110, 95],
+                        borderColor: '#0038a8', backgroundColor: 'rgba(0, 56, 168, 0.05)', fill: true, tension: 0.3, borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
 
-      renderTable(MOCK_DATA);
-    }
+            new Chart(document.getElementById('serviceChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Inspection', 'Training', 'Audit', 'Other'],
+                    datasets: [{ data: [45, 25, 20, 10], backgroundColor: ['#0038a8', '#006400', '#ce1126', '#f59e0b'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
+            });
+        }
 
-    function applyFilters() {
-        const search = document.getElementById('tableSearch').value.toLowerCase();
-        const cat = document.getElementById('catFilter').value;
-        const reg = document.getElementById('regFilter').value;
-        const mun = document.getElementById('munFilter').value;
-        const status = document.getElementById('statusFilter').value;
-
-        const filtered = MOCK_DATA.filter(item => {
-            const matchSearch = item.ref.toLowerCase().includes(search) || item.name.toLowerCase().includes(search);
-            const matchCat = cat === 'all' || item.cat === cat;
-            const matchReg = reg === 'all' || item.reg === reg;
-            const matchMun = mun === 'all' || item.mun === mun;
-            const matchStatus = status === 'all' || item.status === status;
-            return matchSearch && matchCat && matchReg && matchMun && matchStatus;
-        });
-        renderTable(filtered);
-    }
-
-    function renderTable(data) {
-      const body = document.getElementById('reqTableBody');
-      body.innerHTML = '';
-      document.getElementById('resCount').textContent = data.length;
-
-      data.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-blue-50/50 transition-colors group";
-        
-        let statusClass = "bg-slate-100 text-slate-600 border-slate-200";
-        if(row.status === 'Approved') statusClass = "bg-green-100 text-green-700 border-green-200";
-        if(row.status === 'Pending') statusClass = "bg-amber-100 text-amber-700 border-amber-200";
-        if(row.status === 'To Review') statusClass = "bg-blue-100 text-blue-700 border-blue-200";
-        if(row.status === 'Reject') statusClass = "bg-red-100 text-red-700 border-red-200";
-
-        tr.innerHTML = `
-          <td class="px-6 py-4 font-bold text-slate-400 whitespace-nowrap">${row.date}</td>
-          <td class="px-6 py-4">
-            <div class="font-black text-blue-800 uppercase tracking-tighter">${row.ref}</div>
-            <div class="text-[10px] text-slate-500 font-bold">${row.name}</div>
-          </td>
-          <td class="px-6 py-4 uppercase font-black text-[10px] text-slate-400 max-w-[220px] leading-tight">${row.cat}</td>
-          <td class="px-6 py-4 font-bold text-slate-700">${row.reg}</td>
-          <td class="px-6 py-4 font-bold text-slate-700">${row.mun}</td>
-          <td class="px-6 py-4 text-center">
-            <span class="px-2 py-0.5 rounded border text-[9px] font-black uppercase ${statusClass}">${row.status}</span>
-          </td>
-          <td class="px-6 py-4 text-right whitespace-nowrap">
-            <div class="flex gap-1 justify-end">
-              <button class="p-1.5 hover:bg-slate-200 rounded text-slate-500"><span class="material-icons-round text-sm">visibility</span></button>
-              <button class="p-1.5 hover:bg-green-100 rounded text-green-600"><span class="material-icons-round text-sm">task_alt</span></button>
-              <button class="p-1.5 hover:bg-red-100 rounded text-red-600"><span class="material-icons-round text-sm">do_not_disturb_on</span></button>
-              <button class="p-1.5 hover:bg-slate-200 rounded text-slate-500"><span class="material-icons-round text-sm">file_download</span></button>
-            </div>
-          </td>
-        `;
-        body.appendChild(tr);
-      });
-    }
-
-    function initCharts() {
-      new Chart(document.getElementById('requestTrendChart'), {
-        type: 'line',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [{
-            label: 'Service Requests',
-            data: [12, 19, 15, 22, 30, 10, 8],
-            borderColor: '#1d4ed8',
-            backgroundColor: 'rgba(29, 78, 216, 0.05)',
-            fill: true, tension: 0.4, borderWidth: 3
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
-      });
-
-      new Chart(document.getElementById('serviceChart'), {
-        type: 'bar',
-        data: {
-          labels: ['Inspection', 'Training', 'Pest', 'Subsidy'],
-          datasets: [{
-            data: [45, 30, 20, 15],
-            backgroundColor: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa'],
-            borderRadius: 4
-          }]
-        },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { font: { size: 8, weight: 'bold' } } } } }
-      });
-    }
-
-    window.onload = () => {
-      initTable();
-      initCharts();
-    };
-  </script>
+        window.onload = () => {
+            const catFilter = document.getElementById('catFilter');
+            catFilter.innerHTML = '<option value="all">-- ALL SERVICE TYPES --</option>';
+            SERVICE_CATEGORIES.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c.toUpperCase(); catFilter.appendChild(opt);
+            });
+            initCharts();
+            renderTable();
+        };
+    </script>
 </body>
 </html>

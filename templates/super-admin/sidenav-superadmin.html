@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DENR | Super Admin Sidenav</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -14,7 +15,14 @@
     #sidebar.collapsed .badge-count { 
         right: 10px; top: 10px; font-size: 0; padding: 4px; min-width: 8px; height: 8px; 
     }
-    .nav-item.active { border-left: 4px solid #006400; background-color: #f0fdf4; color: #006400; }
+    
+    /* Active State para sa Redirection */
+    .nav-item { border-left: 4px solid transparent; text-decoration: none !important; }
+    .nav-item.active { 
+        border-left: 4px solid #006400; 
+        background-color: #f0fdf4; 
+        color: #006400; 
+    }
   </style>
 </head>
 <body>
@@ -31,61 +39,61 @@
 
     <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4">
       
-      <div onclick="switchTab('home')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/super-admin/dashboard" class="nav-item flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">grid_view</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Home</span>
-      </div>
+      </a>
 
-      <div onclick="switchTab('applications')" class="nav-item active relative flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/user-application" class="nav-item relative flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">description</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Applications</span>
         <span class="badge-count absolute right-4 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">12</span>
-      </div>
+      </a>
 
-      <div onclick="switchTab('requests')" class="nav-item relative flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/user-service-request" class="nav-item relative flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">settings_suggest</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Service Requests</span>
         <span class="badge-count absolute right-4 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">5</span>
-      </div>
+      </a>
 
-      <div onclick="switchTab('inventory')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/inventory" class="nav-item flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">inventory_2</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Inventory</span>
-      </div>
+      </a>
 
-      <div onclick="switchTab('userInventory')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/user-inventory" class="nav-item flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">devices</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">User Inventory</span>
-      </div>
+      </a>
 
-      <div onclick="switchTab('permits')" class="nav-item relative flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/permits" class="nav-item relative flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">verified_user</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Licensing/Permits</span>
         <span class="badge-count absolute right-4 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">8</span>
-      </div>
+      </a>
 
-      <div onclick="switchTab('transactions')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/transaction" class="nav-item flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">payments</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Transactions</span>
-      </div>
+      </a>
 
-      <div onclick="switchTab('users')" class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/account" class="nav-item flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">manage_accounts</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Manage Accounts</span>
-      </div>
+      </a>
 
       <div class="mx-5 my-4 h-px bg-slate-100"></div>
 
-      <div class="nav-item flex cursor-pointer items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
+      <a href="/superadmin/audit-logs" class="nav-item flex items-center px-5 py-3 text-slate-600 transition-all hover:bg-green-50 hover:text-green-800">
         <span class="material-icons-round mr-4 text-[22px] flex-shrink-0">analytics</span>
         <span class="nav-text text-sm font-semibold whitespace-nowrap">Audit Logs</span>
-      </div>
+      </a>
     </nav>
 
     <div class="border-t border-slate-100 bg-slate-50 p-4">
       <div class="flex items-center gap-3 overflow-hidden">
         <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-green-800 font-bold text-white text-xs">AD</div>
-        <div class="nav-text">
+        <div class="nav-text text-left">
           <p class="text-xs font-black text-slate-800">Alqz Dave</p>
           <button onclick="handleLogout()" class="text-[10px] font-bold text-red-600 uppercase hover:underline">Sign Out</button>
         </div>
@@ -93,32 +101,48 @@
     </div>
   </aside>
 
+  <script>
+    // Sidebar Collapse Toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    // AUTO-ACTIVE SCRIPT: Bine-verify ang URL para i-highlight ang tamang link
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      const navLinks = document.querySelectorAll('.nav-item');
+
+      navLinks.forEach(link => {
+        const linkHref = link.getAttribute('href');
+        
+        // Chine-check kung ang URL ay tumutugma sa link
+        if (currentPath === linkHref) {
+          link.classList.add('active');
+        }
+      });
+
+      // Special case: Kung nasa root dashboard or home
+      if (currentPath === '/super-admin/dashboard' || currentPath === '/super-admin/') {
+        document.querySelector('a[href*="dashboard"]').classList.add('active');
+      }
+    });
+  </script>
+
   <script type="module">
     import { auth } from '/static/js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     window.handleLogout = async function() {
-      try {
-        console.log('Logging out...');
-        await signOut(auth);
-        console.log('Successfully logged out');
-        window.location.href = '/login';
-      } catch (error) {
-        console.error('Logout error:', error);
-        alert('Logout failed: ' + error.message);
+      if(confirm('Are you sure you want to sign out?')) {
+        try {
+          await signOut(auth);
+          window.location.href = '/login';
+        } catch (error) {
+          console.error('Error logging out:', error);
+        }
       }
     };
   </script>
 
-  <script>
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('collapsed');
-    }
-    
-    function switchTab(tab) {
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-    }
-  </script>
 </body>
 </html>

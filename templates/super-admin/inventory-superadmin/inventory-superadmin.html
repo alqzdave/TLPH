@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script>
     tailwind.config = {
@@ -15,271 +16,226 @@
         extend: {
           colors: {
             denr: '#006400',
+            'gov-blue': '#0038a8',
+            'gov-red': '#ce1126',
             'inventory-teal': '#0d9488',
+          },
+          fontFamily: {
+            'serif': ['Georgia', 'serif'],
+            'sans': ['Inter', 'sans-serif'],
           }
         }
       }
     }
   </script>
+  <style>
+    /* Republic of the Philippines Identity Strip */
+    .gov-strip {
+        background: linear-gradient(to right, #0038a8 50%, #ce1126 50%);
+        height: 4px; width: 100%; position: fixed; top: 0; left: 0; z-index: 2100;
+    }
+    
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #0d9488; border-radius: 10px; }
+
+    /* Fix para sa Nav Triggers */
+    .nav-trigger.active { 
+        border-bottom: 4px solid #0038a8; 
+        background-color: #f8fafc; 
+        color: #0038a8; 
+        font-weight: 900; 
+    }
+  </style>
 </head>
 
-<body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
-    {% include 'super-admin/header-superadmin.html' %}
-    {% include 'super-admin/sidenav-superadmin.html' %}
+<body class="min-h-screen bg-[#f4f7f6] font-sans text-slate-900 overflow-x-hidden flex flex-col">
 
-  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    <div class="gov-strip"></div>
+
+    <div class="fixed top-1 w-full z-[1050]">
+        {% include 'super-admin/header-superadmin.html' %}
+    </div>
     
-    <header class="bg-white border border-slate-300 border-t-4 border-t-inventory-teal rounded-lg p-4 flex items-center gap-6 shadow-sm">
-      <div class="bg-teal-50 p-2 rounded-lg border border-teal-700/10">
-        <span class="material-icons-round text-inventory-teal text-3xl">inventory_2</span>
-      </div>
-      <div class="flex-1">
-        <h1 class="font-serif text-xl font-black uppercase tracking-tight text-slate-800">Inventory & Asset Registry</h1>
-        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">National Resource Monitoring & Stock Control</p>
-      </div>
-      <div class="flex gap-2">
-          <button class="bg-white border border-slate-300 px-4 py-2 text-[10px] font-black rounded hover:bg-slate-50 transition-colors uppercase shadow-sm">Download Manifest</button>
-          <button class="bg-inventory-teal text-white px-5 py-2 text-[10px] font-black rounded shadow hover:opacity-90 uppercase flex items-center gap-2">
-            <span class="material-icons-round text-xs">add_box</span> Add New Asset
-          </button>
-      </div>
-    </header>
-
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Line Items</p>
-          <h3 class="text-2xl font-black">4,210</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-orange-500">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Chemical Stocks</p>
-          <h3 class="text-2xl font-black text-orange-600">842</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-emerald-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Natural Resources</p>
-          <h3 class="text-2xl font-black text-emerald-600">2,105</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-indigo-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Protected Areas</p>
-          <h3 class="text-2xl font-black text-indigo-600">128</h3>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm border-l-4 border-l-rose-600">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Low Stock Alerts</p>
-          <h3 class="text-2xl font-black text-rose-600">12</h3>
-        </div>
+    <div class="fixed left-0 top-0 h-full w-64 z-[1040]">
+        {% include 'super-admin/sidenav-superadmin.html' %}
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest">Stock Level Trends (Monthly)</h4>
-            <div class="h-[250px]">
-                <canvas id="inventoryTrendChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white border border-slate-300 rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Category Volume</h4>
-            <div class="h-[250px]">
-                <canvas id="inventoryCatChart"></canvas>
-            </div>
-        </div>
-    </div>
+    <main class="lg:pl-64 mt-16 transition-all duration-300 w-full min-h-screen">
+        <div class="max-w-[1700px] mx-auto p-4 lg:p-8 space-y-6"> 
+            
+            <header class="bg-white border border-slate-300 border-t-4 border-t-inventory-teal p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+                <div class="bg-teal-50 p-3 rounded-xl border border-teal-700/10">
+                    <span class="material-icons-round text-inventory-teal text-4xl">inventory_2</span>
+                </div>
+                <div class="flex-1 text-center md:text-left border-l-0 md:border-l-2 border-slate-200 md:pl-6">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-tight">Republic of the Philippines</p>
+                    <h1 class="font-serif text-2xl font-black uppercase tracking-tight text-slate-800 leading-none">Inventory & Asset Registry</h1>
+                    <p class="text-[11px] font-bold text-gov-blue uppercase tracking-widest mt-2">National Resource Monitoring & Stock Control Intelligence</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="bg-white border border-slate-400 px-5 py-2 text-[10px] font-black uppercase hover:bg-slate-50 transition">Export Manifest</button>
+                    <button class="bg-inventory-teal text-white px-6 py-2 text-[10px] font-black uppercase shadow-md hover:bg-teal-800 transition">Add New Asset</button>
+                </div>
+            </header>
 
-    <div class="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
-        
-        <div class="p-4 bg-slate-50 border-b space-y-4">
-            <div class="flex flex-wrap gap-4 items-center">
-                <div class="flex-1 min-w-[300px] relative">
-                  <span class="material-icons-round absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
-                  <input id="tableSearch" class="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-inventory-teal outline-none shadow-sm" placeholder="Search by Asset Description or SKU...">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div class="bg-white border border-slate-200 border-t-4 border-t-slate-800 p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Total Line Items</p>
+                    <h3 class="text-3xl font-black text-slate-800">4,210</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-orange-500 p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Chemical Stocks</p>
+                    <h3 class="text-3xl font-black text-orange-600">842</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-emerald-600 p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Natural Resources</p>
+                    <h3 class="text-3xl font-black text-emerald-600">2,105</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-indigo-600 p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Protected Areas</p>
+                    <h3 class="text-3xl font-black text-indigo-600">128</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-rose-600 p-5 shadow-sm text-center animate-pulse">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Critical Low Stock</p>
+                    <h3 class="text-3xl font-black text-rose-600">12</h3>
                 </div>
             </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-widest border-l-4 border-gov-blue pl-3 mb-6">Stock Level Trends (Nationwide)</h4>
+                    <div class="h-[280px]"><canvas id="inventoryTrendChart"></canvas></div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-widest border-l-4 border-gov-red pl-3 mb-6 text-center">Category Distribution</h4>
+                    <div class="h-[280px]"><canvas id="inventoryCatChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 shadow-md flex flex-col min-h-[600px] overflow-hidden">
+                <div class="p-6 bg-slate-50 border-b grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Registry Search</label>
+                        <input id="tableSearch" oninput="renderTable()" class="w-full px-4 py-2 text-xs border border-slate-300 outline-none focus:ring-1 focus:ring-inventory-teal" placeholder="Asset SKU or Description...">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Classification</label>
+                        <select id="catFilter" onchange="renderTable()" class="w-full px-4 py-2 text-xs border border-slate-300 bg-white font-bold outline-none uppercase">
+                            <option value="all">-- ALL CATEGORIES --</option>
+                            <option value="chemical inventory">Chemicals</option>
+                            <option value="natural resources">Natural Resources</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Jurisdiction Scope</label>
+                        <select class="w-full px-4 py-2 text-xs border border-slate-300 bg-white outline-none">
+                            <option>NATIONAL (All Regions)</option>
+                            <option>REGION IV-B (MIMAROPA)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="location.reload()" class="w-full bg-slate-800 text-white px-6 py-2.5 text-[11px] font-black uppercase hover:bg-black transition tracking-widest">Refresh Registry</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto flex-1">
+                    <table id="inventoryTable" class="w-full text-left">
+                        <thead class="bg-slate-50 border-b-2 border-slate-200">
+                            <tr class="text-[10px] uppercase font-black text-slate-600">
+                                <th class="px-6 py-4">Category</th>
+                                <th class="px-6 py-4">Resource Description</th>
+                                <th class="px-6 py-4 text-center">On-Hand Qty</th>
+                                <th class="px-6 py-4">Region</th>
+                                <th class="px-6 py-4">Municipality</th>
+                                <th class="px-6 py-4 text-right">Registry Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-[12px] text-slate-700"></tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 bg-slate-800 text-white flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <div>Records Found: <span id="resCount" class="text-amber-400">0</span></div>
+                    <div class="flex items-center gap-2 text-teal-400">
+                        <span class="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></span>
+                        SECURE SUPER ADMIN DATABASE v3.0
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const INVENTORY_DATA = [
+            { cat: "chemical inventory", desc: "NPK Fertilizer Grade-A", qty: 540, reg: "IV-B", mun: "Naujan" },
+            { cat: "natural resources", desc: "Mahogany Propagules", qty: 1250, reg: "IV-B", mun: "Calapan" },
+            { cat: "protected area", desc: "Naujan Lake National Park", qty: 1, reg: "IV-B", mun: "Victoria" },
+            { cat: "chemical inventory", desc: "Liquid Nitrogen Solution", qty: 15, reg: "NCR", mun: "Manila" }
+        ];
+
+        function renderTable() {
+            const body = document.getElementById('inventoryTableBody');
+            const search = document.getElementById('tableSearch').value.toLowerCase();
+            const catFilter = document.getElementById('catFilter').value;
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Asset Category</label>
-                <select id="catFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Categories</option>
-                  <option value="chemical inventory">Chemical Inventory</option>
-                  <option value="natural resources">Natural Resources</option>
-                  <option value="protected area">Protected Area</option>
-                  <option value="biodiversity inventory">Biodiversity Inventory</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Region</label>
-                <select id="regFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white">
-                  <option value="all">All Regions</option>
-                  <option value="IV-B">Region IV-B</option>
-                  <option value="NCR">NCR</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[8px] font-black text-slate-400 uppercase mb-1 block">Municipality</label>
-                <select id="munFilter" class="w-full px-3 py-2 text-[10px] border border-slate-300 rounded font-bold uppercase outline-none bg-white disabled:opacity-50" disabled>
-                  <option value="all">All Municipalities</option>
-                </select>
-              </div>
-              <div class="flex items-end">
-                  <button id="resetBtn" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[9px] uppercase py-2 rounded border border-slate-300 transition-colors">Clear All Filters</button>
-              </div>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-slate-100 text-[9px] uppercase font-black text-slate-500 border-b">
-                    <th class="px-6 py-4">Asset Category</th>
-                    <th class="px-6 py-4">Description</th>
-                    <th class="px-6 py-4 text-center">Quantity</th>
-                    <th class="px-6 py-4">Region</th>
-                    <th class="px-6 py-4">Municipality</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-[11px] font-medium text-slate-600"></tbody>
-            </table>
-        </div>
-        
-        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
-            <div>Stock Count: <span id="resCount" class="text-inventory-teal">0</span> Unique Records</div>
-            <div class="flex items-center gap-4">
-              <span>Page 1 of 8</span>
-              <div class="flex gap-1">
-                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_left</span></button>
-                <button class="p-1 border bg-white rounded hover:bg-slate-100"><span class="material-icons-round text-sm">chevron_right</span></button>
-              </div>
-            </div>
-        </div>
-    </div>
-  </div>
-
-  <script>
-    const MUN_DATA = {
-        "IV-B": ["Calapan", "Naujan", "Victoria", "Baco"],
-        "NCR": ["Quezon City", "Manila"]
-    };
-
-    const INVENTORY_DATA = [
-      { cat: "chemical inventory", desc: "NPK Fertilizer Grade-A", qty: 540, reg: "IV-B", mun: "Naujan" },
-      { cat: "natural resources", desc: "Mahogany Propagules", qty: 1250, reg: "IV-B", mun: "Calapan" },
-      { cat: "protected area", desc: "Naujan Lake National Park", qty: 1, reg: "IV-B", mun: "Victoria" },
-      { cat: "biodiversity inventory", desc: "Endemic Flora Survey Docs", qty: 88, reg: "NCR", mun: "Quezon City" },
-      { cat: "chemical inventory", desc: "Organic Pesticide Solution", qty: 15, reg: "IV-B", mun: "Baco" }
-    ];
-
-    function initTable() {
-      document.getElementById('regFilter').addEventListener('change', function(e) {
-        const munFilter = document.getElementById('munFilter');
-        const region = e.target.value;
-        munFilter.innerHTML = '<option value="all">All Municipalities</option>';
-        if(region !== 'all' && MUN_DATA[region]) {
-            munFilter.disabled = false;
-            MUN_DATA[region].forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m; opt.textContent = m; munFilter.appendChild(opt);
+            const filtered = INVENTORY_DATA.filter(item => {
+                const matchSearch = Object.values(item).join(" ").toLowerCase().includes(search);
+                const matchCat = catFilter === 'all' || item.cat === catFilter;
+                return matchSearch && matchCat;
             });
-        } else { munFilter.disabled = true; }
-        applyFilters();
-      });
 
-      ['tableSearch', 'catFilter', 'munFilter'].forEach(id => {
-          document.getElementById(id).addEventListener('input', applyFilters);
-      });
+            body.innerHTML = '';
+            document.getElementById('resCount').textContent = filtered.length;
 
-      document.getElementById('resetBtn').addEventListener('click', () => {
-          document.querySelectorAll('select').forEach(s => s.value = 'all');
-          document.getElementById('tableSearch').value = '';
-          applyFilters();
-      });
+            filtered.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/50 transition-colors border-b border-slate-100";
+                
+                let catBadge = "bg-slate-100 text-slate-600 border-slate-200";
+                if(row.cat.includes('chemical')) catBadge = "bg-orange-100 text-orange-700 border-orange-200";
+                if(row.cat.includes('natural')) catBadge = "bg-emerald-100 text-emerald-700 border-emerald-200";
 
-      renderTable(INVENTORY_DATA);
-    }
+                tr.innerHTML = `
+                    <td class="px-6 py-4"><span class="px-2 py-0.5 rounded border text-[10px] font-black uppercase ${catBadge}">${row.cat}</span></td>
+                    <td class="px-6 py-4 font-black uppercase tracking-tighter text-slate-800">${row.desc}</td>
+                    <td class="px-6 py-4 text-center font-bold text-slate-900">${row.qty.toLocaleString()}</td>
+                    <td class="px-6 py-4 font-bold text-slate-500">${row.reg}</td>
+                    <td class="px-6 py-4 font-bold text-slate-500">${row.mun}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button class="text-inventory-teal text-[10px] font-black hover:underline uppercase">Full Details</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
 
-    function applyFilters() {
-        const search = document.getElementById('tableSearch').value.toLowerCase();
-        const cat = document.getElementById('catFilter').value;
-        const reg = document.getElementById('regFilter').value;
-        const mun = document.getElementById('munFilter').value;
+        function initCharts() {
+            new Chart(document.getElementById('inventoryTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Sep','Oct','Nov','Dec','Jan','Feb'],
+                    datasets: [{
+                        label: 'Volume', data: [3100, 3400, 3200, 3800, 4000, 4210],
+                        borderColor: '#0038a8', backgroundColor: 'rgba(0, 56, 168, 0.05)', fill: true, tension: 0.3, borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
 
-        const filtered = INVENTORY_DATA.filter(item => {
-            const matchSearch = item.desc.toLowerCase().includes(search);
-            const matchCat = cat === 'all' || item.cat === cat;
-            const matchReg = reg === 'all' || item.reg === reg;
-            const matchMun = mun === 'all' || item.mun === mun;
-            return matchSearch && matchCat && matchReg && matchMun;
-        });
-        renderTable(filtered);
-    }
+            new Chart(document.getElementById('inventoryCatChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Chemicals', 'Natural', 'Protected', 'Other'],
+                    datasets: [{ data: [842, 2105, 128, 1135], backgroundColor: ['#f97316', '#10b981', '#4f46e5', '#f43f5e'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
+            });
+        }
 
-    function renderTable(data) {
-      const body = document.getElementById('inventoryTableBody');
-      body.innerHTML = '';
-      document.getElementById('resCount').textContent = data.length;
-
-      data.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-teal-50/30 transition-colors group";
-        
-        let catColor = "text-slate-500 bg-slate-100";
-        if(row.cat === 'chemical inventory') catColor = "text-orange-700 bg-orange-50 border-orange-100";
-        if(row.cat === 'natural resources') catColor = "text-emerald-700 bg-emerald-50 border-emerald-100";
-        if(row.cat === 'protected area') catColor = "text-indigo-700 bg-indigo-50 border-indigo-100";
-        if(row.cat === 'biodiversity inventory') catColor = "text-rose-700 bg-rose-50 border-rose-100";
-
-        tr.innerHTML = `
-          <td class="px-6 py-4">
-            <span class="px-2 py-0.5 rounded border text-[9px] font-black uppercase ${catColor}">${row.cat}</span>
-          </td>
-          <td class="px-6 py-4 font-black text-slate-700 uppercase tracking-tight">${row.desc}</td>
-          <td class="px-6 py-4 text-center font-bold text-slate-800">${row.qty.toLocaleString()}</td>
-          <td class="px-6 py-4 font-bold text-slate-500">${row.reg}</td>
-          <td class="px-6 py-4 font-bold text-slate-500">${row.mun}</td>
-          <td class="px-6 py-4 text-right whitespace-nowrap">
-            <div class="flex gap-1 justify-end">
-              <button title="View" class="p-1.5 hover:bg-slate-200 rounded text-slate-500"><span class="material-icons-round text-sm">visibility</span></button>
-              <button title="Edit" class="p-1.5 hover:bg-teal-100 rounded text-inventory-teal"><span class="material-icons-round text-sm">edit</span></button>
-              <button title="Remove" class="p-1.5 hover:bg-red-100 rounded text-red-600"><span class="material-icons-round text-sm">delete_outline</span></button>
-            </div>
-          </td>
-        `;
-        body.appendChild(tr);
-      });
-    }
-
-    function initCharts() {
-      new Chart(document.getElementById('inventoryTrendChart'), {
-        type: 'line',
-        data: {
-          labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
-          datasets: [{
-            label: 'Asset Volume',
-            data: [3100, 3400, 3200, 3800, 4000, 4210],
-            borderColor: '#0d9488',
-            backgroundColor: 'rgba(13, 148, 136, 0.05)',
-            fill: true, tension: 0.4, borderWidth: 3
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
-      });
-
-      new Chart(document.getElementById('inventoryCatChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Chemicals', 'Natural', 'Protected', 'Biodiversity'],
-          datasets: [{
-            data: [842, 2105, 128, 1135],
-            backgroundColor: ['#f97316', '#10b981', '#4f46e5', '#f43f5e'],
-            borderWidth: 0
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9, weight: 'bold' }, padding: 15 } } } }
-      });
-    }
-
-    window.onload = () => {
-      initTable();
-      initCharts();
-    };
-  </script>
+        window.onload = () => {
+            initCharts();
+            renderTable();
+        };
+    </script>
 </body>
 </html>

@@ -1,326 +1,305 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DENR | Super Admin Console</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENR | Super Admin Master Console</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-  
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            denr: '#006400',
-            'denr-light': '#f0fdf4',
-          }
-        }
-      }
-    }
-  </script>
-</head>
-
-<body class="min-h-screen bg-slate-50 font-sans text-slate-900">
-    {% include 'super-admin/header-superadmin.html' %}
-    {% include 'super-admin/sidenav-superadmin.html' %}
-
-  <div class="max-w-[1750px] mx-auto p-4 lg:p-6 space-y-6"> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <header class="bg-white border border-slate-300 border-t-4 border-t-denr rounded-lg p-4 flex items-center gap-6 shadow-sm">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Seal_of_the_Department_of_Environment_and_Natural_Resources.png" class="h-12 w-12" alt="DENR Seal">
-      <div class="flex-1">
-        <h1 class="font-serif text-xl font-black">Super Admin Master Control</h1>
-        <p class="text-[9px] font-bold text-green-700 uppercase tracking-widest">2026 Nationwide Compliance & Resource Management</p>
-      </div>
-      <div class="flex gap-2">
-          <button class="border border-slate-300 px-5 py-2 text-[10px] font-bold rounded hover:bg-slate-50 transition-colors uppercase">Export Logs</button>
-          <button class="bg-denr text-white px-5 py-2 text-[10px] font-bold rounded shadow hover:opacity-90 uppercase">System Sync</button>
-      </div>
-    </header>
-
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <div class="bg-white border border-slate-300 border-t-4 border-t-green-800 rounded-lg p-3">
-          <p class="text-[9px] font-bold text-slate-400 uppercase">Applications</p>
-          <h3 class="text-xl font-black" id="kpi-apps">0</h3>
-        </div>
-        <div class="bg-white border border-slate-300 border-t-4 border-t-blue-700 rounded-lg p-3">
-          <p class="text-[9px] font-bold text-slate-400 uppercase">Requests</p>
-          <h3 class="text-xl font-black" id="kpi-reqs">0</h3>
-        </div>
-        <div class="bg-white border border-slate-300 border-t-4 border-t-amber-500 rounded-lg p-3">
-          <p class="text-[9px] font-bold text-slate-400 uppercase">Permits</p>
-          <h3 class="text-xl font-black" id="kpi-permits">0</h3>
-        </div>
-        <div class="bg-white border border-slate-300 border-t-4 border-t-emerald-600 rounded-lg p-3">
-          <p class="text-[9px] font-bold text-slate-400 uppercase">Inventory</p>
-          <h3 class="text-xl font-black" id="kpi-inv">0</h3>
-        </div>
-        <div class="bg-white border border-slate-300 border-t-4 border-t-indigo-600 rounded-lg p-3">
-          <p class="text-[9px] font-bold text-slate-400 uppercase">User Assets</p>
-          <h3 class="text-xl font-black" id="kpi-uinv">0</h3>
-        </div>
-        <div class="bg-white border border-slate-300 border-t-4 border-t-red-600 rounded-lg p-3">
-          <p class="text-[9px] font-bold text-slate-400 uppercase">Transactions</p>
-          <h3 class="text-xl font-black" id="kpi-txn">0</h3>
-        </div>
-        <div class="bg-white border border-slate-300 border-t-4 border-t-black rounded-lg p-3">
-          <p class="text-[9px] font-bold text-slate-400 uppercase">Users</p>
-          <h3 class="text-xl font-black" id="kpi-users">0</h3>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white border border-slate-300 border-t-4 border-t-denr rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-wider">7-Day Submission Volume</h4>
-            <div class="h-[200px]">
-                <canvas id="lineChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white border border-slate-300 border-t-4 border-t-denr rounded-lg p-5 shadow-sm">
-            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-wider">Category Distribution</h4>
-            <div class="h-[200px]">
-                <canvas id="doughnutChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white border border-slate-300 border-t-4 border-t-denr rounded-lg shadow-sm flex flex-col min-h-[600px] overflow-hidden">
-        
-        <div class="p-4 bg-slate-50 border-b grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label class="text-[9px] font-black text-slate-500 uppercase">Global Search</label>
-                <input id="searchInput" class="w-full px-3 py-2 text-xs border border-slate-300 rounded outline-none focus:ring-1 focus:ring-denr" placeholder="Search reference, name, or LGU...">
-            </div>
-            <div>
-                <label class="text-[9px] font-black text-slate-500 uppercase">Category Filter</label>
-                <select id="categorySelect" class="w-full px-3 py-2 text-xs border border-slate-300 rounded bg-white font-bold outline-none focus:ring-1 focus:ring-denr uppercase"></select>
-            </div>
-            <div class="flex items-end gap-2">
-                <div class="flex-1">
-                    <label class="text-[9px] font-black text-slate-500 uppercase">Scope</label>
-                    <select id="scopeSelect" class="w-full px-3 py-2 text-xs border border-slate-300 rounded bg-white outline-none focus:ring-1 focus:ring-denr">
-                        <option value="all">National</option>
-                        <option value="ivb">Region IV-B</option>
-                    </select>
-                </div>
-                <button class="bg-slate-800 text-white px-4 py-2 text-[10px] font-bold rounded hover:bg-black transition-colors">REFRESH</button>
-            </div>
-        </div>
-
-        <nav class="flex bg-white border-b overflow-x-auto">
-            <button class="nav-trigger active px-6 py-4 text-[10px] font-extrabold uppercase tracking-tight border-b-4 border-b-amber-500 bg-denr-light text-denr whitespace-nowrap" data-tab="applications">Applications</button>
-            <button class="nav-trigger px-6 py-4 text-[10px] font-extrabold uppercase tracking-tight border-b-4 border-b-transparent text-slate-500 hover:text-denr whitespace-nowrap transition-all" data-tab="requests">Service Requests</button>
-            <button class="nav-trigger px-6 py-4 text-[10px] font-extrabold uppercase tracking-tight border-b-4 border-b-transparent text-slate-500 hover:text-denr whitespace-nowrap transition-all" data-tab="inventory">Inventory</button>
-            <button class="nav-trigger px-6 py-4 text-[10px] font-extrabold uppercase tracking-tight border-b-4 border-b-transparent text-slate-500 hover:text-denr whitespace-nowrap transition-all" data-tab="userInventory">User Inventory</button>
-            <button class="nav-trigger px-6 py-4 text-[10px] font-extrabold uppercase tracking-tight border-b-4 border-b-transparent text-slate-500 hover:text-denr whitespace-nowrap transition-all" data-tab="permits">Licensing/Permits</button>
-            <button class="nav-trigger px-6 py-4 text-[10px] font-extrabold uppercase tracking-tight border-b-4 border-b-transparent text-slate-500 hover:text-denr whitespace-nowrap transition-all" data-tab="transactions">Transactions</button>
-            <button class="nav-trigger px-6 py-4 text-[10px] font-extrabold uppercase tracking-tight border-b-4 border-b-transparent text-slate-500 hover:text-denr whitespace-nowrap transition-all" data-tab="users">Users</button>
-        </nav>
-
-        <div class="overflow-x-auto flex-1">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 sticky top-0">
-                  <tr id="tableHeadRow" class="text-[9px] uppercase font-black text-slate-400 border-b"></tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-slate-100 text-[11px] text-slate-600"></tbody>
-            </table>
-        </div>
-        
-        <div class="p-3 bg-slate-50 border-t flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
-            <div>Result Count: <span id="resultCount" class="text-denr">0</span></div>
-            <div>DENR-CO • Secure Super Admin Session • 2026</div>
-        </div>
-    </div>
-  </div>
-
-  <script>
-    const CATEGORIES = {
-      applications: ["Crop & Plant", "Livestock & Poultry", "Fisheries & Aquaculture", "Agribusiness & Agro-Processing", "Agricultural Trade (Import & Export)", "Land Use & Farm Development infrastructure", "Research, Technology & Innovation", "Farmer Support, Subsidies & Insurance", "Food Safety & Quality Regulation", "Extension Services & Capacity Building", "Climate Change, Disaster & Risk Management", "Data, Monitoring & Digital Agriculture", "Compliance, Inspection & Enforcement", "Institutional & Cooperative Development"],
-      requests: ["initial farm visit", "compliance inspection", "disease/pest investigation", "agribusiness & agro-processing", "soil/crop evaluation", "follow up visit", "good agricultural practice(GAP) training", "pest & disease management seminar", "safe pesticide handling training", "nursery/propagation seminar", "regulatory compliance orientation", "input usage approval", "chemical registration/clearance", "fertilizer recommendation", "pesticide recommendation", "subsidy application", "grant assistance", "load endorsement", "crop insurance support", "startup/expansion support"],
-      inventory: ["chemical inventory", "natural resources", "protected area", "biodiversity inventory"],
-      userInventory: ["Field Electronics", "Safety Gear", "Vehicles", "Mobile Units"],
-      permits: ["import permit", "Wildlife Trade Permit", "Transport Local Permit", "Harvest Permit", "Meat Transport / Shipping Permit", "Slaughterhouse Accreditation Permit", "Poultry Farm Registration", "Animal Health Veterinary Clearance", "Wildlife Possession & Ownership Permit", "Wildlife Transport Licensing Permit", "Wildlife Collection Licensing Permit", "Wildlife Farm & Breeding Registration", "Tree Cutting Permit", "Timber Wood / Transfer Permit", "Reforestation Agreement", "Nursery Accreditation", "Non-Timber Collection Permit", "Environment Compliance Certificate (ECC)", "Waste Management Permit", "Hazardous Material Handling Clearance", "Aquaculture Farm Registration", "Fish Transport Permit", "Fish Dealer / Trade License", "Collection / Harvest Permit", "Wastewater Discharge Permit (WWDP)", "Permit to Operate (PTO) Air Pollution", "Hazardous Waste Generator (HWG) ID", "PICCS validation", "PCL Compliance Certificate", "Chemical Control Orders (CCOs)", "Certificate of Tree Plantation Ownership (CTPO)"],
-      transactions: ["Application Fee", "Permit Fee", "Inspection Fee"],
-      users: ["National", "Regional", "Municipal"]
-    };
-
-    const DATA = {
-      applications: [
-          { date: "2026-02-12", ref: "APP-101", applicant: "Alqz Dave", category: "Fisheries & Aquaculture", region: "IV-B", municipality: "Calapan", status: "Pending" },
-          { date: "2026-02-11", ref: "APP-102", applicant: "Juan Luna", category: "Crop & Plant", region: "IV-B", municipality: "Naujan", status: "Approved" }
-      ],
-      requests: [{ date: "2026-02-12", ref: "SR-990", applicant: "Maria Santos", category: "soil/crop evaluation", region: "IV-B", municipality: "Victoria", status: "To Review" }],
-      inventory: [{ category: "natural resources", desc: "Nursery Propagules", qty: 1500, region: "IV-B", municipality: "Naujan" }],
-      userInventory: [{ product: "Rugged Tablet", category: "Field Electronics", owner: "Cedric Admin", init: 10, curr: 7, region: "IV-B", municipality: "Calapan" }],
-      permits: [{ ref: "PMT-882", applicant: "Nature Corp", category: "Wildlife Trade Permit", region: "IV-B", municipality: "Naujan", status: "Approved" }],
-      transactions: [{ ref: "TXN-001", name: "Alqz Dave", type: "Permit Fee", date: "2026-02-12", region: "IV-B", municipality: "Calapan", status: "Paid", amount: 2500 }],
-      users: [{ name: "Cedric Admin", email: "cedric@denr.gov.ph", type: "Regional", region: "IV-B", municipality: "Calapan", status: "Active" }]
-    };
-
-    const HEADERS = {
-      applications: ["Date", "Reference & Applicant", "Category", "Region", "Municipality", "Status", "Actions"],
-      requests: ["Date", "Reference & Applicant", "Category", "Region", "Municipality", "Status", "Actions"],
-      inventory: ["Category", "Description", "Quantity", "Region", "Municipality", "Actions"],
-      userInventory: ["Product Name", "Category", "Owner", "Initial Qty", "Current Qty", "Region", "Municipality", "Actions"],
-      permits: ["Reference & Applicant", "Category", "Region", "Municipality", "Status", "Actions"],
-      transactions: ["Reference Number", "Name", "Type", "Date", "Region", "Municipality", "Status", "Amount"],
-      users: ["Name", "Email", "User Type", "Region", "Municipality", "Status", "Actions"]
-    };
-
-    let activeTab = "applications";
-    const $ = (id) => document.getElementById(id);
-    let myLineChart, myDoughnutChart;
-
-    function populateCategories() {
-      const select = $("categorySelect");
-      select.innerHTML = '<option value="all">ALL CATEGORIES</option>';
-      (CATEGORIES[activeTab] || []).forEach(cat => {
-        const opt = document.createElement("option"); opt.value = cat; opt.textContent = cat.toUpperCase(); select.appendChild(opt);
-      });
-    }
-
-    function renderTable() {
-      const head = $("tableHeadRow"); const body = $("tableBody");
-      const search = $("searchInput").value.toLowerCase();
-      const catF = $("categorySelect").value;
-      
-      head.innerHTML = ""; body.innerHTML = "";
-      HEADERS[activeTab].forEach(t => { const th = document.createElement("th"); th.className="px-6 py-4"; th.textContent = t; head.appendChild(th); });
-
-      const filtered = DATA[activeTab].filter(r => {
-        const mCat = catF === "all" || (Object.values(r).some(v => String(v).toLowerCase() === catF.toLowerCase()));
-        const mSearch = Object.values(r).join(" ").toLowerCase().includes(search);
-        return mCat && mSearch;
-      });
-
-      $("resultCount").textContent = filtered.length;
-
-      filtered.forEach(r => {
-        const tr = document.createElement("tr"); tr.className = "hover:bg-slate-50 transition-colors";
-        const keys = Object.keys(r);
-        keys.forEach(k => {
-            const td = document.createElement("td"); td.className = "px-6 py-3 whitespace-nowrap";
-            if (k === "ref" && (activeTab === "applications" || activeTab === "requests" || activeTab === "permits")) {
-                td.innerHTML = `<div class="font-bold text-denr">${r.ref}</div><div class="text-[10px] font-medium text-slate-400">${r.applicant}</div>`;
-            } 
-            else if (k === "applicant" && (activeTab === "applications" || activeTab === "requests" || activeTab === "permits")) return;
-            else if (k === "status") {
-                const s = r[k].toLowerCase();
-                const cls = (s==='approved'||s==='paid'||s==='active') ? 'bg-green-100 text-green-800 border-green-200' : 'bg-amber-100 text-amber-800 border-amber-200';
-                td.innerHTML = `<span class="px-2 py-0.5 rounded border text-[9px] font-black uppercase ${cls}">${r[k]}</span>`;
-            } 
-            else if (k === "amount") td.textContent = "₱" + r[k].toLocaleString();
-            else td.textContent = r[k];
-            tr.appendChild(td);
-        });
-
-        const actionTd = document.createElement("td"); actionTd.className = "px-6 py-3 flex gap-1";
-        const btnClass = "text-[9px] font-bold uppercase px-2 py-1 rounded border border-slate-200 hover:bg-slate-100 transition-colors";
-        
-        if(["applications","requests","permits"].includes(activeTab)) {
-            actionTd.innerHTML = `
-                <button class="${btnClass}">View</button>
-                <button class="${btnClass} text-green-600">Approve</button>
-                <button class="${btnClass} text-red-600">Reject</button>`;
-        } else if(activeTab === "inventory" || activeTab === "userInventory") {
-            actionTd.innerHTML = `
-                <button class="${btnClass}">View</button>
-                <button class="${btnClass} text-blue-600">Edit</button>`;
-        } else if(activeTab === "users") {
-            actionTd.innerHTML = `<button class="${btnClass}">Disable</button><button class="${btnClass} text-red-600">Delete</button>`;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gov-blue': '#0038a8', 
+                        'gov-red': '#ce1126',  
+                        'denr-dark': '#004d00',
+                        'denr-green': '#006400',
+                    },
+                    fontFamily: {
+                        'serif': ['Georgia', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
         }
-        if(activeTab !== "transactions") tr.appendChild(actionTd);
-        body.appendChild(tr);
-      });
-      updateCharts(filtered);
-    }
-
-    function initCharts() {
-        const ctxLine = $('lineChart').getContext('2d');
-        myLineChart = new Chart(ctxLine, {
-            type: 'line',
-            data: {
-                labels: ['Feb 06', 'Feb 07', 'Feb 08', 'Feb 09', 'Feb 10', 'Feb 11', 'Feb 12'],
-                datasets: [{
-                    label: 'Volume',
-                    data: [12, 19, 3, 5, 2, 3, 9],
-                    borderColor: '#006400',
-                    backgroundColor: 'rgba(0, 100, 0, 0.05)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 2
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
-        });
-
-        const ctxDoughnut = $('doughnutChart').getContext('2d');
-        myDoughnutChart = new Chart(ctxDoughnut, {
-            type: 'doughnut',
-            data: {
-                labels: ['Approved', 'Pending', 'To Review', 'Reject'],
-                datasets: [{
-                    data: [10, 5, 2, 1],
-                    backgroundColor: ['#006400', '#f59e0b', '#3b82f6', '#ef4444'],
-                    borderWidth: 0
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } } }
-        });
-    }
-
-    function updateCharts(filteredData) {
-        if (!myDoughnutChart) return;
-        const counts = {};
-        filteredData.forEach(d => {
-            const val = d.status || d.category || 'Other';
-            counts[val] = (counts[val] || 0) + 1;
-        });
-        myDoughnutChart.data.labels = Object.keys(counts);
-        myDoughnutChart.data.datasets[0].data = Object.values(counts);
-        myLineChart.data.datasets[0].label = activeTab.toUpperCase();
-        myDoughnutChart.update();
-        myLineChart.update();
-    }
-
-    function updateKPIs() {
-        $("kpi-apps").textContent = DATA.applications.length;
-        $("kpi-reqs").textContent = DATA.requests.length;
-        $("kpi-permits").textContent = DATA.permits.length;
-        $("kpi-inv").textContent = DATA.inventory.length;
-        $("kpi-uinv").textContent = DATA.userInventory.length;
-        $("kpi-txn").textContent = DATA.transactions.length;
-        $("kpi-users").textContent = DATA.users.length;
-    }
-
-    document.querySelectorAll(".nav-trigger").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        document.querySelectorAll(".nav-trigger").forEach(b => {
-            b.classList.remove("active", "border-b-amber-500", "bg-denr-light", "text-denr");
-            b.classList.add("border-b-transparent", "text-slate-500");
-        });
+    </script>
+    <style>
+        /* Official Government Visual Identity */
+        .gov-strip { background: linear-gradient(to right, #0038a8 50%, #ce1126 50%); height: 4px; width: 100%; position: fixed; top: 0; z-index: 2000; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #004d00; border-radius: 10px; }
         
-        e.target.classList.add("active", "border-b-amber-500", "bg-denr-light", "text-denr");
-        e.target.classList.remove("border-b-transparent", "text-slate-500");
+        /* Navigation & Tabs Styling */
+        .nav-trigger.active { border-bottom: 4px solid #0038a8; background-color: #f8fafc; color: #0038a8; font-weight: 900; }
+        .dropdown-menu:not(.show) { display: none !important; }
         
-        activeTab = e.target.getAttribute("data-tab");
-        populateCategories(); 
-        renderTable();
-      });
-    });
+        /* Print Handling for Official Reports */
+        @media print {
+            .no-print { display: none !important; }
+            main { margin-left: 0 !important; padding-top: 0 !important; }
+            .bg-slate-800 { background-color: white !important; color: black !important; border: 1px solid black; }
+            .shadow-md, .shadow-xl { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-[#f4f7f6] font-sans text-slate-900 overflow-x-hidden">
+    <div class="gov-strip no-print"></div>
 
-    $("searchInput").addEventListener("input", renderTable);
-    $("categorySelect").addEventListener("change", renderTable);
+    <div class="fixed top-1 w-full z-[1050] no-print">
+        {% include 'super-admin/header-superadmin.html' %}
+    </div>
+    <div class="fixed left-0 h-full z-[1040] no-print">
+        {% include 'super-admin/sidenav-superadmin.html' %}
+    </div>
 
-    window.onload = () => {
-        initCharts();
-        populateCategories(); 
-        renderTable(); 
-        updateKPIs();
-    };
-  </script>
+    <main class="lg:ml-64 pt-20 pb-10 transition-all duration-300">
+        <div class="max-w-[1700px] mx-auto p-4 lg:px-8 space-y-6"> 
+            
+            <div class="flex flex-col md:flex-row items-center justify-between border-b border-slate-300 pb-4 mb-6">
+                <div class="flex items-center gap-4">
+                    <img src="{{ url_for('static', filename='images/denr.jpg') }}" class="h-16 w-16" alt="DENR Seal">
+                    <div class="text-left border-l-2 border-slate-200 pl-4">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Republic of the Philippines</p>
+                        <h1 class="font-serif text-2xl font-black text-denr-dark uppercase tracking-tighter">DENR Master Control Console</h1>
+                        <p class="text-[11px] font-bold text-gov-blue uppercase tracking-widest mt-1">Super Admin Registry & Intelligence Dashboard</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-center no-print">
+                    <div class="text-right">
+                        <p class="text-[9px] font-black text-slate-400 uppercase">System Status</p>
+                        <p class="text-[11px] font-black text-denr-green uppercase tracking-tighter">Secure Connection Active</p>
+                    </div>
+                    <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2 text-[10px] font-black uppercase shadow hover:bg-black flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-print"></i> Generate Report
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 no-print">
+                <div class="bg-white border border-slate-200 border-t-4 border-t-denr-green p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Applications</p>
+                    <h3 class="text-xl font-black" id="kpi-apps">0</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-gov-blue p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Requests</p>
+                    <h3 class="text-xl font-black" id="kpi-reqs">0</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-amber-500 p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Permits</p>
+                    <h3 class="text-xl font-black" id="kpi-permits">0</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-emerald-600 p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Inventory</p>
+                    <h3 class="text-xl font-black" id="kpi-inv">0</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-indigo-600 p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Assets</p>
+                    <h3 class="text-xl font-black" id="kpi-uinv">0</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-gov-red p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Revenue</p>
+                    <h3 class="text-xl font-black" id="kpi-txn">0</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-slate-800 p-4 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Personnel</p>
+                    <h3 class="text-xl font-black" id="kpi-users">0</h3>
+                </div>
+            </div>
+
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 no-print">
+                <div class="lg:col-span-2 bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-denr-dark uppercase mb-4 border-l-4 border-gov-blue pl-3">Nationwide Submission Trends</h4>
+                    <div class="h-[250px]"><canvas id="lineChart"></canvas></div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 shadow-sm">
+                    <h4 class="text-[11px] font-black text-denr-dark uppercase mb-4 border-l-4 border-gov-red pl-3">Regional Compliance Rank</h4>
+                    <div class="h-[250px]"><canvas id="barChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 shadow-md flex flex-col min-h-[700px]">
+                
+                <div class="p-6 bg-slate-50 border-b no-print">
+                    <div class="flex flex-col lg:flex-row justify-between items-end gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 w-full">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-500 uppercase">Registry Search</label>
+                                <input id="searchInput" class="w-full px-4 py-2 text-xs border border-slate-300 outline-none focus:ring-1 focus:ring-gov-blue" placeholder="Filter Registry...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-500 uppercase">Registry Sector</label>
+                                <select id="categorySelect" class="w-full px-4 py-2 text-xs border border-slate-300 bg-white font-bold outline-none uppercase"></select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-500 uppercase">Jurisdiction</label>
+                                <select id="scopeSelect" class="w-full px-4 py-2 text-xs border border-slate-300 bg-white outline-none">
+                                    <option value="all">NATIONAL (All Regions)</option>
+                                    <option value="ivb">REGION IV-B</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="exportTableToCSV()" class="bg-denr-green text-white px-6 py-2.5 text-[10px] font-black uppercase tracking-widest shadow hover:bg-denr-dark transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-file-csv"></i> Export CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="flex bg-slate-100 border-b overflow-x-auto no-print">
+                    <button class="nav-trigger active px-8 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap" data-tab="applications">Applications</button>
+                    <button class="nav-trigger px-8 py-4 text-[11px] font-black uppercase tracking-tight text-slate-500 hover:text-gov-blue whitespace-nowrap transition-all" data-tab="requests">Service Requests</button>
+                    <button class="nav-trigger px-8 py-4 text-[11px] font-black uppercase tracking-tight text-slate-500 hover:text-gov-blue whitespace-nowrap transition-all" data-tab="inventory">Inventory</button>
+                    <button class="nav-trigger px-8 py-4 text-[11px] font-black uppercase tracking-tight text-slate-500 hover:text-gov-blue whitespace-nowrap transition-all" data-tab="permits">Licensing</button>
+                    <button class="nav-trigger px-8 py-4 text-[11px] font-black uppercase tracking-tight text-slate-500 hover:text-gov-blue whitespace-nowrap transition-all" data-tab="transactions">Revenue/Collections</button>
+                    <button class="nav-trigger px-8 py-4 text-[11px] font-black uppercase tracking-tight text-slate-500 hover:text-gov-blue whitespace-nowrap transition-all" data-tab="users">System Accounts</button>
+                </nav>
+
+                <div class="overflow-x-auto flex-1">
+                    <table id="masterTable" class="w-full text-left">
+                        <thead class="bg-slate-50 border-b-2 border-slate-200">
+                            <tr id="tableHeadRow" class="text-[10px] uppercase font-black text-slate-600"></tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100 text-[12px] text-slate-700"></tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 bg-slate-800 flex justify-between items-center text-[10px] font-black text-white uppercase tracking-[0.1em] no-print">
+                    <div>Records Found: <span id="resultCount" class="text-amber-400">0</span></div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        Secure Super Admin Registry Session • 2026
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- COMPLETE SYSTEM DATASET ---
+        const CATEGORIES = {
+            applications: ["Forestry Management", "Biodiversity", "Lands", "Mining", "Environmental Services"],
+            requests: ["Site Inspection", "Administrative Audit", "Clearance", "Certification"],
+            inventory: ["Seedlings", "Wildlife Registry", "Seized Materials", "Government Assets"],
+            permits: ["Tree Cutting", "Wildlife Trade", "ECC", "PTO", "CITES"],
+            transactions: ["Application Fee", "Permit Fee", "Administrative Penalty"],
+            users: ["Central Office", "Regional Director", "PENRO Official", "CENRO Personnel"]
+        };
+
+        const DATA = {
+            applications: [
+                { date: "2026-02-13", ref: "DENR-APP-2026-001", entity: "MIMAROPA Dev Corp", sector: "Forestry Management", region: "IV-B", lgu: "Calapan City", status: "PENDING" },
+                { date: "2026-02-12", ref: "DENR-APP-2026-002", entity: "Naujan NGO", sector: "Biodiversity", region: "IV-B", lgu: "Naujan", status: "APPROVED" }
+            ],
+            requests: [{ date: "2026-02-13", ref: "SR-9910-B", entity: "Mindoro Cooperative", sector: "Inspection", region: "IV-B", lgu: "Victoria", status: "FOR REVIEW" }],
+            inventory: [{ cat: "Seedlings", desc: "Narra Premium Saplings", qty: 5000, region: "IV-B", lgu: "Baco" }],
+            permits: [{ ref: "PMT-CITES-882", entity: "Nature Exporters", sector: "Wildlife Trade", region: "IV-B", lgu: "San Teodoro", status: "ACTIVE" }],
+            transactions: [{ ref: "OR-10291-TX", entity: "MIMAROPA Corp", type: "Permit Fee", date: "2026-02-13", region: "IV-B", status: "PAID", amount: 15400 }],
+            users: [{ name: "Maria Santos", email: "maria@denr.gov.ph", type: "Regional Director", region: "IV-B", lgu: "Calapan", status: "ACTIVE" }]
+        };
+
+        const HEADERS = {
+            applications: ["Date", "Registry ID", "Entity Name", "Sector", "Region", "LGU", "Status"],
+            requests: ["Date", "Request ID", "Client", "Category", "Region", "LGU", "Status"],
+            inventory: ["Category", "Asset Description", "Units on Hand", "Region", "Municipality"],
+            permits: ["License No", "Licensee", "Sector", "Region", "LGU", "Status"],
+            transactions: ["OR No.", "Payor", "Fee Type", "Date", "Region", "Status", "Amount"],
+            users: ["Personnel", "Gov Email", "Designation", "Region", "Assigned LGU", "Account"]
+        };
+
+        let activeTab = "applications";
+        const $ = (id) => document.getElementById(id);
+        let myLineChart, myBarChart;
+
+        // --- CORE SYSTEM LOGIC ---
+        function populateCategories() {
+            const select = $("categorySelect");
+            select.innerHTML = '<option value="all">-- ALL SECTORS --</option>';
+            (CATEGORIES[activeTab] || []).forEach(cat => {
+                const opt = document.createElement("option"); opt.value = cat; opt.textContent = cat.toUpperCase(); select.appendChild(opt);
+            });
+        }
+
+        function renderTable() {
+            const head = $("tableHeadRow"); const body = $("tableBody");
+            const search = $("searchInput").value.toLowerCase();
+            const catF = $("categorySelect").value;
+            
+            head.innerHTML = ""; body.innerHTML = "";
+            (HEADERS[activeTab] || []).forEach(t => { const th = document.createElement("th"); th.className="px-6 py-4"; th.textContent = t; head.appendChild(th); });
+
+            const filtered = (DATA[activeTab] || []).filter(r => {
+                const mSearch = Object.values(r).join(" ").toLowerCase().includes(search);
+                const mCat = catF === "all" || r.sector === catF || r.category === catF || r.cat === catF;
+                return mSearch && mCat;
+            });
+
+            $("resultCount").textContent = filtered.length;
+            filtered.forEach(r => {
+                const tr = document.createElement("tr"); tr.className = "border-b hover:bg-slate-50 transition-colors";
+                Object.values(r).forEach(v => {
+                    const td = document.createElement("td"); td.className = "px-6 py-4 whitespace-nowrap";
+                    td.textContent = (typeof v === 'number' && v > 1000) ? v.toLocaleString() : v;
+                    tr.appendChild(td);
+                });
+                body.appendChild(tr);
+            });
+        }
+
+        function initCharts() {
+            // Trend Line
+            myLineChart = new Chart($('lineChart'), { 
+                type: 'line', 
+                data: { labels: ['Feb 07','08','09','10','11','12','13'], datasets: [{ label:'Submissions', data:[450, 620, 580, 890, 720, 950, 1100], borderColor:'#0038a8', fill: true, tension: 0.3 }] },
+                options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}}
+            });
+
+            // Regional Bar Rank
+            myBarChart = new Chart($('barChart'), { 
+                type: 'bar', 
+                data: { labels: ['NCR','IV-A','IV-B','III','VII'], datasets: [{ data:[92, 85, 95, 78, 88], backgroundColor:['#004d00','#006400','#0038a8','#f59e0b','#ce1126'] }] },
+                options: { indexAxis: 'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{max:100}} }
+            });
+        }
+
+        // --- EXPORT COMMAND ---
+        function exportTableToCSV() {
+            let csv = [];
+            const rows = document.querySelectorAll("#masterTable tr");
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText + '"');
+                csv.push(row.join(","));
+            }
+            const csvBlob = new Blob([csv.join("\n")], { type: "text/csv" });
+            const url = window.URL.createObjectURL(csvBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `DENR_MASTER_REPORT_${activeTab.toUpperCase()}_2026.csv`;
+            a.click();
+        }
+
+        // --- EVENTS ---
+        document.querySelectorAll(".nav-trigger").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                document.querySelectorAll(".nav-trigger").forEach(b => b.classList.remove("active"));
+                e.target.classList.add("active");
+                activeTab = e.target.getAttribute("data-tab");
+                populateCategories(); renderTable();
+            });
+        });
+
+        $("searchInput").addEventListener("input", renderTable);
+        $("categorySelect").addEventListener("change", renderTable);
+
+        window.onload = () => { initCharts(); populateCategories(); renderTable(); $("kpi-apps").textContent=DATA.applications.length; $("kpi-reqs").textContent=DATA.requests.length; $("kpi-permits").textContent=DATA.permits.length; $("kpi-inv").textContent=DATA.inventory.length; $("kpi-txn").textContent=DATA.transactions.length; $("kpi-users").textContent=DATA.users.length; };
+    </script>
 </body>
 </html>

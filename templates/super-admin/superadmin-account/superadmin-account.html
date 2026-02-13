@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DENR | Government Account Registry</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        denr: '#006400',
+                        'denr-light': '#f0fdf4',
+                        'gov-blue': '#0038a8',
+                        'gov-red': '#ce1126',
+                    },
+                    fontFamily: {
+                        'serif': ['Georgia', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Philippine Government Identity Strip */
+        .gov-strip {
+            background: linear-gradient(to right, #0038a8 50%, #ce1126 50%);
+            height: 4px; width: 100%; position: fixed; top: 0; left: 0; z-index: 5000;
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #006400; border-radius: 10px; }
+        .modal-active { overflow: hidden; }
+    </style>
+</head>
+
+<body class="min-h-screen bg-[#f4f7f6] font-sans text-slate-900 overflow-x-hidden">
+
+    <div class="gov-strip"></div>
+
+    <div class="fixed top-1 w-full z-[1050]">
+        {% include 'super-admin/header-superadmin.html' %}
+    </div>
+    <div class="fixed left-0 h-full z-[1040]">
+        {% include 'super-admin/sidenav-superadmin.html' %}
+    </div>
+
+    <div id="accountModal" class="fixed inset-0 z-[6000] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-lg border-t-8 border-slate-800 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <div class="flex items-center gap-3">
+                    <span class="material-icons-round text-slate-700">person_add</span>
+                    <h2 class="font-serif text-xl font-black text-slate-800 uppercase leading-none">Authorize Personnel</h2>
+                </div>
+                <button onclick="toggleModal()" class="text-slate-400 hover:text-red-600 transition-colors"><span class="material-icons-round">close</span></button>
+            </div>
+            <form class="p-8 space-y-5">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Personnel Full Name</label>
+                    <input type="text" required class="w-full px-4 py-2 border border-slate-300 outline-none text-sm focus:ring-1 focus:ring-gov-blue" placeholder="e.g. Juan Dela Cruz">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Official Government Email</label>
+                    <input type="email" required class="w-full px-4 py-2 border border-slate-300 outline-none text-sm focus:ring-1 focus:ring-gov-blue" placeholder="name@denr.gov.ph">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Access Role</label>
+                        <select class="w-full px-4 py-2 border border-slate-300 text-sm font-bold outline-none bg-white">
+                            <option>Regional Director</option>
+                            <option>PENRO Official</option>
+                            <option>CENRO Personnel</option>
+                            <option>Field Inspector</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase">Jurisdiction Region</label>
+                        <select class="w-full px-4 py-2 border border-slate-300 text-sm font-bold outline-none bg-white">
+                            <option>National Central</option>
+                            <option>Region IV-B</option>
+                            <option>NCR</option>
+                            <option>Region III</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="pt-6 border-t flex gap-3">
+                    <button type="button" onclick="toggleModal()" class="flex-1 py-3 border border-slate-300 text-[10px] font-black uppercase hover:bg-slate-50 transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 bg-slate-800 text-white text-[10px] font-black uppercase shadow-lg hover:bg-black transition">Authorize Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <main class="lg:pl-64 pt-16 transition-all duration-300">
+        <div class="max-w-[1750px] mx-auto p-4 lg:p-8 space-y-6"> 
+            
+            
+            <header class="bg-white border border-slate-300 border-t-4 border-t-slate-800 p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+                <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
+                    <span class="material-icons-round text-slate-700 text-4xl">manage_accounts</span>
+                </div>
+                <div class="flex-1 text-center md:text-left border-l-0 md:border-l-2 border-slate-200 md:pl-6">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-tight">Republic of the Philippines</p>
+                    <h1 class="font-serif text-2xl font-black uppercase tracking-tight text-slate-800">Account Management Registry</h1>
+                    <p class="text-[11px] font-bold text-gov-blue uppercase tracking-widest mt-1">Authorized Personnel Access & Security Intelligence Console</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleModal()" class="bg-denr text-white px-6 py-2.5 text-[10px] font-black uppercase shadow-md hover:bg-black transition-all flex items-center gap-2">
+                        <span class="material-icons-round text-sm">person_add</span> New Account
+                    </button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div class="bg-white border border-slate-200 border-t-4 border-t-denr p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Active Users</p>
+                    <h3 class="text-3xl font-black text-slate-800">482</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-gov-blue p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Admin Access</p>
+                    <h3 class="text-3xl font-black text-gov-blue">12</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-amber-500 p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Pending Approval</p>
+                    <h3 class="text-3xl font-black text-amber-600">05</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-gov-red p-5 shadow-sm text-center animate-pulse">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Security Risks</p>
+                    <h3 class="text-3xl font-black text-gov-red">03</h3>
+                </div>
+                <div class="bg-white border border-slate-200 border-t-4 border-t-indigo-600 p-5 shadow-sm text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase">Registry Status</p>
+                    <h3 class="text-3xl font-black text-indigo-600">100%</h3>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 shadow-md flex flex-col min-h-[600px] overflow-hidden">
+                <div class="p-6 bg-slate-50 border-b grid grid-cols-1 md:grid-cols-4 gap-6 no-print">
+                    <div class="md:col-span-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase mb-1 block">Global Personnel Search</label>
+                        <input id="searchInput" oninput="renderTable()" class="w-full px-4 py-2.5 text-xs border border-slate-300 outline-none focus:ring-1 focus:ring-slate-800 shadow-sm" placeholder="Search by name, email, or employee ID...">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase mb-1 block">Office Location</label>
+                        <select class="w-full px-4 py-2.5 text-xs border border-slate-300 bg-white font-bold uppercase outline-none">
+                            <option>All Regional Offices</option>
+                            <option>NCR</option>
+                            <option>Region IV-B</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="location.reload()" class="w-full bg-slate-800 text-white px-6 py-2.5 text-[11px] font-black uppercase hover:bg-black transition tracking-widest shadow-md">Apply Filters</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b-2 border-slate-200">
+                            <tr class="text-[10px] uppercase font-black text-slate-600">
+                                <th class="px-6 py-5">Personnel Identification</th>
+                                <th class="px-6 py-5">Designation</th>
+                                <th class="px-6 py-5">Jurisdiction Office</th>
+                                <th class="px-6 py-5 text-center">Access Status</th>
+                                <th class="px-6 py-4 text-right">Security Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountTableBody" class="divide-y divide-slate-100 text-[12px] text-slate-700">
+                            <tr class="hover:bg-blue-50/50 transition-colors border-b">
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded bg-slate-800 text-white flex items-center justify-center font-bold text-[12px]">AD</div>
+                                    <div>
+                                        <div class="font-black text-slate-800 uppercase tracking-tighter leading-none">Dave Alquiz</div>
+                                        <div class="text-[10px] text-slate-400 font-medium italic lowercase">d.alquiz@denr.gov.ph</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 font-bold text-gov-blue uppercase text-[10px]">Super Administrator</td>
+                                <td class="px-6 py-4 font-bold text-slate-500 uppercase">National / Central HQ</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="px-2 py-0.5 rounded border border-green-200 bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-tighter">Verified</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button title="Access Security" class="text-slate-400 hover:text-gov-blue transition-colors"><span class="material-icons-round text-sm">security</span></button>
+                                        <button title="Lock Account" class="text-slate-400 hover:text-gov-red transition-colors"><span class="material-icons-round text-sm">lock_person</span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="p-4 bg-slate-800 text-white flex justify-between items-center text-[10px] font-black uppercase tracking-widest no-print">
+                    <div>Authorized Personnel Database</div>
+                    <div class="flex items-center gap-2 text-green-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        SECURE PERSONNEL ACCESS v2.5
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Modal Trigger Logic
+        function toggleModal() {
+            const modal = document.getElementById('accountModal');
+            modal.classList.toggle('hidden');
+            document.body.classList.toggle('modal-active');
+        }
+
+        // Close on backdrop click
+        window.onclick = function(event) {
+            const modal = document.getElementById('accountModal');
+            if (event.target == modal) toggleModal();
+        }
+
+        // Search Rendering logic (Placeholder)
+        function renderTable() {
+            console.log("Filtering registry...");
+        }
+    </script>
+
+</body>
+</html>
