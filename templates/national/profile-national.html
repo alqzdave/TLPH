@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Profile | TLPH Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .app-container { display: flex; width: 100%; height: 100vh; }
+        .main-content { flex: 1; overflow-y: auto; height: 100vh; }
+        .main-content::-webkit-scrollbar { width: 4px; }
+        .main-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .info-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .info-value { font-size: 11px; font-weight: 700; color: #1e293b; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        {% include 'national/sidenav-national.html' %}
+
+        <main class="main-content flex flex-col">
+            
+            <header class="h-12 border-b border-gray-200 bg-white flex items-center justify-between px-6 sticky top-0 z-20">
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">National Admin / Account Settings</span>
+                </div>
+                <button class="bg-slate-900 text-white px-4 py-1.5 rounded-lg text-[10px] font-bold hover:bg-slate-800 transition-all">
+                    SAVE CHANGES
+                </button>
+            </header>
+
+            <div class="p-4 space-y-4">
+                
+                <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                    <div class="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                        <div class="relative shrink-0">
+                            <div class="w-20 h-20 rounded-2xl bg-slate-900 flex items-center justify-center border-2 border-white shadow-md overflow-hidden">
+                                <span id="profile-placeholder" class="text-2xl font-black text-white">NA</span>
+                                <img id="profile-preview" src="#" class="hidden w-full h-full object-cover">
+                            </div>
+                            <input type="file" id="profile-upload" class="hidden" accept="image/*">
+                            <button type="button" onclick="document.getElementById('profile-upload').click()" 
+                                class="absolute -bottom-1 -right-1 bg-white border border-gray-200 p-1.5 rounded-lg shadow hover:bg-slate-50 text-slate-600">
+                                <span class="material-icons-round text-[14px]">photo_camera</span>
+                            </button>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-lg font-extrabold text-slate-900 truncate tracking-tight">{{ user_name|default('NATIONAL ADMIN') }}</h2>
+                                <span class="material-icons-round text-blue-500 text-sm">verified</span>
+                            </div>
+                            <p class="text-[11px] font-bold text-slate-500 italic mt-0.5">National System Administrator • Central Office</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 py-3 border-t border-gray-50">
+                                <div>
+                                    <p class="info-label">Employee ID</p>
+                                    <p class="info-value">DENR-2024-001</p>
+                                </div>
+                                <div>
+                                    <p class="info-label">Plantilla Item</p>
+                                    <p class="info-value">IS-MANAGER-04</p>
+                                </div>
+                                <div>
+                                    <p class="info-label">Appointed Date</p>
+                                    <p class="info-value">Jan 12, 2024</p>
+                                </div>
+                                <div>
+                                    <p class="info-label">Gov. Service</p>
+                                    <p class="info-value">08 Years, 04 Mos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="lg:col-span-2 space-y-4">
+                        
+                        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                            <h3 class="text-[10px] font-black text-slate-900 mb-4 uppercase tracking-widest flex items-center gap-2">
+                                <span class="material-icons-round text-blue-500 text-sm">contact_page</span> 
+                                Professional Credentials
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="info-label">Official Email</label>
+                                    <input type="email" value="national_admin@denr.gov.ph" class="w-full bg-slate-50 border border-gray-100 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-300">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="info-label">Official Mobile</label>
+                                    <input type="text" value="+63 917 123 4567" class="w-full bg-slate-50 border border-gray-100 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-300">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="info-label">Emergency Contact Person</label>
+                                    <input type="text" value="Jane Doe (Spouse)" class="w-full bg-slate-50 border border-gray-100 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="info-label">Emergency Contact Number</label>
+                                    <input type="text" value="+63 918 765 4321" class="w-full bg-slate-50 border border-gray-100 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                            <h3 class="text-[10px] font-black text-slate-900 mb-3 uppercase tracking-widest flex items-center gap-2">
+                                <span class="material-icons-round text-emerald-500 text-sm">admin_panel_settings</span> 
+                                System Privileges & Scope
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div class="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase">National Finance</p>
+                                    <p class="text-[10px] font-extrabold text-emerald-600">FULL ACCESS</p>
+                                </div>
+                                <div class="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase">Regional Overrides</p>
+                                    <p class="text-[10px] font-extrabold text-emerald-600">AUTHORIZED</p>
+                                </div>
+                                <div class="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase">User Database</p>
+                                    <p class="text-[10px] font-extrabold text-emerald-600">ROOT ACCESS</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-slate-900 rounded-2xl p-4 text-white shadow-lg">
+                            <h3 class="text-[9px] font-bold text-slate-500 uppercase mb-4 tracking-widest">Authentication Meta</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="info-label !text-slate-500">Security Key</span>
+                                    <span class="text-[10px] font-mono">FIDO2-ENABLED</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="info-label !text-slate-500">Workstation IP</span>
+                                    <span class="text-[10px] font-mono text-emerald-400">10.0.44.12</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="info-label !text-slate-500">Access Token</span>
+                                    <span class="text-[10px] font-mono">Valid (24h)</span>
+                                </div>
+                                <button class="w-full bg-slate-800 text-[9px] font-black py-2 rounded-lg hover:bg-slate-700 uppercase">
+                                    Rotate Access Keys
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                    <span class="material-icons-round text-sm">security_update_good</span>
+                                </div>
+                                <h4 class="text-[10px] font-black text-slate-900 uppercase">Account Recovery</h4>
+                            </div>
+                            <p class="text-[9px] text-slate-500 font-bold leading-tight mb-3">Last password change: 32 days ago. Backup codes generated.</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button class="bg-slate-100 text-slate-900 text-[9px] font-black py-2 rounded-lg hover:bg-slate-200 uppercase transition-all">Change Pass</button>
+                                <button class="bg-slate-100 text-slate-900 text-[9px] font-black py-2 rounded-lg hover:bg-slate-200 uppercase transition-all">2FA Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        (function() {
+            // Sidebar Highlight Logic
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('#national-sidenav .nav-item');
+            navItems.forEach(item => {
+                const itemPath = item.getAttribute('href');
+                item.classList.remove('active-toplink', 'active-link');
+                if (currentPath === itemPath) {
+                    if (item.classList.contains('nsn-toplink')) item.classList.add('active-toplink');
+                    else item.classList.add('active-link');
+                }
+            });
+
+            // Image Preview
+            const fileInput = document.getElementById('profile-upload');
+            const previewImg = document.getElementById('profile-preview');
+            const placeholder = document.getElementById('profile-placeholder');
+            fileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewImg.classList.remove('hidden');
+                        placeholder.classList.add('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

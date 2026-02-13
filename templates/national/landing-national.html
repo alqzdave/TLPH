@@ -1,726 +1,254 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TLPH | National Dashboard - Overview</title>
-
-  <!-- Tailwind -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TLPH | National Government Dashboard</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --gov-font: Verdana, Arial, Tahoma, sans-serif;
-      --gov-text: #111827;
-      --gov-muted: #4b5563;
-      --gov-border: #d1d5db;
-      --gov-bg: #f3f4f6;
-      --gov-panel: #ffffff;
-      --gov-primary: #0f172a;
-      --gov-focus: rgba(5, 150, 105, 0.18);
-    }
-    html, body{ font-family: var(--gov-font); color: var(--gov-text); }
-    body{ background: var(--gov-bg); }
-    .card{
-      background: var(--gov-panel);
-      border: 1px solid var(--gov-border);
-      border-radius: 16px;
-    }
-    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
+    body { font-family: 'Inter', sans-serif; background-color: #f2f5f7; color: #0f172a; font-size: 13px; }
+    :root { --gov-navy: #002e5d; --gov-emerald: #065f46; }
+    
+    .sidebar-container { width: 260px; height: 100vh; position: fixed; left: 0; top: 0; z-index: 50; }
+    .main-wrapper { margin-left: 260px; padding: 24px; min-height: 100vh; }
+    
+    .card { background: #ffffff; border: 1px solid #d1d5db; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .gov-header { background: var(--gov-navy); color: white; padding: 12px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; }
+    
+    th { background: #f8fafc; color: #475569; text-transform: uppercase; font-size: 10px; font-weight: 800; padding: 12px 16px; border-bottom: 2px solid #e2e8f0; text-align: left; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    
+    .status-badge { padding: 2px 8px; font-size: 9px; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; border-radius: 2px; }
+    .table-scroll { overflow-x: auto; width: 100%; }
+
+    @media (max-width: 1024px) { .sidebar-container { display: none; } .main-wrapper { margin-left: 0; } }
   </style>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
+<body class="min-h-screen">
 
-<body class="min-h-screen text-slate-900">
-  <!-- KEY FIX:
-       Make layout full-height flex so the main content fits the screen width,
-       and add a comfortable gap from the sidenav. -->
-  <div class="min-h-screen flex">
+  <aside class="sidebar-container hidden lg:block">
     {% include 'national/sidenav-national.html' %}
+  </aside>
 
-    <!-- Main: takes remaining width, not centered under the sidenav, and has spacing away from it -->
-    <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
-      <!-- Optional width cap so it doesn't look too stretched on ultrawide screens -->
-      <div class="w-full max-w-[1700px]">
-        <!-- Page Controls (HEADER REMOVED as requested) -->
-        <section class="card p-4">
-          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-            <div>
-              <div class="text-lg font-bold">National Dashboard Overview</div>
-              <div class="text-xs text-gray-600">
-                Cards + graphs for data visualization (UI draft). Replace sample numbers with DB values later.
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">From</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">To</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Regions</option>
-                <option>NCR</option>
-                <option>Region I</option>
-                <option>Region II</option>
-                <option>Region III</option>
-                <option>Region IV-A</option>
-                <option>Region V</option>
-                <option>Region VI</option>
-                <option>Region VII</option>
-                <option>Region VIII</option>
-                <option>Region IX</option>
-                <option>Region X</option>
-                <option>Region XI</option>
-                <option>Region XII</option>
-                <option>CAR</option>
-                <option>BARMM</option>
-              </select>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Status</option>
-                <option>Approved</option>
-                <option>Pending</option>
-                <option>To Review</option>
-                <option>Reject</option>
-              </select>
-
-              <input
-                type="text"
-                placeholder="Search ref # / name…"
-                class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-64 focus-ring"
-              />
-
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-                Apply
-              </button>
-
-              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm">
-                Export All
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- KPI CARDS -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Total Applications</div>
-            <div class="text-2xl font-bold mt-1">12,480</div>
-            <div class="mt-2 text-xs text-gray-600">Approved: <span class="font-semibold">8,915</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[71%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Approval rate: <span class="font-semibold">71.4%</span></div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Service Requests</div>
-            <div class="text-2xl font-bold mt-1">4,235</div>
-            <div class="mt-2 text-xs text-gray-600">To Review: <span class="font-semibold">612</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[14%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Review rate: <span class="font-semibold">14.5%</span></div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Licensing / Permits</div>
-            <div class="text-2xl font-bold mt-1">3,102</div>
-            <div class="mt-2 text-xs text-gray-600">Pending: <span class="font-semibold">788</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[25%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Pending rate: <span class="font-semibold">25.4%</span></div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Transactions (Paid)</div>
-            <div class="text-2xl font-bold mt-1">₱ 3,740,250</div>
-            <div class="mt-2 text-xs text-gray-600">Refunded: <span class="font-semibold">₱ 96,500</span></div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">Paid</div>
-                <div class="font-bold">98.2%</div>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">Refund</div>
-                <div class="font-bold">1.8%</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- GRAPHS ROW -->
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-6">
-          <!-- Trend -->
-          <div class="card p-4 xl:col-span-2">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Volume Trend</div>
-                <div class="text-xs text-gray-600">Applications, Service Requests, Licensing/Permits (sample monthly)</div>
-              </div>
-              <div class="text-xs text-gray-600">Last 6 months</div>
-            </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="trendChart"></canvas>
-            </div>
-          </div>
-
-          <!-- Status Breakdown -->
-          <div class="card p-4">
-            <div>
-              <div class="font-bold">Status Breakdown</div>
-              <div class="text-xs text-gray-600">Approved • Pending • To Review • Reject (sample)</div>
-            </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="statusChart"></canvas>
-            </div>
-
-            <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-gray-600">Approved</div>
-                <div class="font-bold">18,430</div>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-gray-600">Pending</div>
-                <div class="font-bold">3,680</div>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-gray-600">To Review</div>
-                <div class="font-bold">1,320</div>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-gray-600">Reject</div>
-                <div class="font-bold">1,487</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- NEW: PER-REGION CHART -->
-        <section class="card p-4 mt-6">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div>
-              <div class="font-bold">Per-Region Breakdown</div>
-              <div class="text-xs text-gray-600">Applications vs Service Requests vs Licensing/Permits (sample grouped bar)</div>
-            </div>
-            <div class="text-xs text-gray-600">Showing selected regions (adjust list or show Top N)</div>
-          </div>
-
-          <div class="mt-3 h-[380px]">
-            <canvas id="regionChart"></canvas>
-          </div>
-
-          <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
-              <div class="text-gray-600">Highest Applications</div>
-              <div class="font-bold mt-1">NCR • 2,190</div>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
-              <div class="text-gray-600">Highest Service Requests</div>
-              <div class="font-bold mt-1">Region IV-A • 720</div>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
-              <div class="text-gray-600">Highest Permits</div>
-              <div class="font-bold mt-1">Region IV-A • 680</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- TABLE: APPLICATIONS -->
-        <section class="card overflow-hidden mt-6">
-          <div class="p-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="font-bold">Applications</div>
-              <div class="text-xs text-gray-600">Date • Reference & Applicant • Applicant Category • Region • Municipality • Status • Actions</div>
-            </div>
-            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">APP-2026-001284</div>
-                    <div class="text-xs text-gray-600">Dela Cruz, Juan</div>
-                  </td>
-                  <td class="py-3 px-4">Crop &amp; Plant</td>
-                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">APP-2026-001241</div>
-                    <div class="text-xs text-gray-600">Santos, Maria</div>
-                  </td>
-                  <td class="py-3 px-4">Food Safety &amp; Quality Regulation</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Approved</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- TABLE: SERVICE REQUESTS -->
-        <section class="card overflow-hidden mt-6">
-          <div class="p-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="font-bold">Service Requests</div>
-              <div class="text-xs text-gray-600">Date • Reference & Applicant • Applicant Category • Region • Municipality • Status • Actions</div>
-            </div>
-            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">SR-2026-000442</div>
-                    <div class="text-xs text-gray-600">Rivera, Liza</div>
-                  </td>
-                  <td class="py-3 px-4">Initial farm visit</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region VII</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Cebu City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-sky-200 bg-sky-50 text-sky-800">To Review</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">SR-2026-000429</div>
-                    <div class="text-xs text-gray-600">Garcia, Noel</div>
-                  </td>
-                  <td class="py-3 px-4">Good Agricultural Practice (GAP) training</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">San Pablo</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- TABLE: INVENTORY (NATIONAL) -->
-        <section class="card overflow-hidden mt-6">
-          <div class="p-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="font-bold">Inventory (National)</div>
-              <div class="text-xs text-gray-600">Category • Description • Quantity • Region • Municipality • Actions</div>
-            </div>
-            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Category</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Description</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Quantity</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4">Chemical inventory</td>
-                  <td class="py-3 px-4">Registered pesticide stock (warehouse)</td>
-                  <td class="py-3 px-4 whitespace-nowrap">120</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4">Biodiversity inventory</td>
-                  <td class="py-3 px-4">Species monitoring equipment</td>
-                  <td class="py-3 px-4 whitespace-nowrap">34</td>
-                  <td class="py-3 px-4 whitespace-nowrap">BARMM</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Cotabato City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- TABLE: USER INVENTORY -->
-        <section class="card overflow-hidden mt-6">
-          <div class="p-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="font-bold">User Inventory</div>
-              <div class="text-xs text-gray-600">Product • Category • Owner • Initial • Current • Region • Municipality • Actions</div>
-            </div>
-            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Product Name</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Category</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Owner</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Initial Qty</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Current Qty</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">Pesticide A (Sample)</td>
-                  <td class="py-3 px-4">Chemical inventory</td>
-                  <td class="py-3 px-4">Dela Cruz, Juan</td>
-                  <td class="py-3 px-4 whitespace-nowrap">50</td>
-                  <td class="py-3 px-4 whitespace-nowrap">18</td>
-                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- TABLE: LICENSING / PERMITS -->
-        <section class="card overflow-hidden mt-6">
-          <div class="p-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="font-bold">Licensing / Permits</div>
-              <div class="text-xs text-gray-600">Reference & Applicant • Category • Region • Municipality • Status • Actions</div>
-            </div>
-            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">LIC-2026-000118</div>
-                    <div class="text-xs text-gray-600">Santos, Maria</div>
-                  </td>
-                  <td class="py-3 px-4">Environment Compliance Certificate (ECC)</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Approve</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Reject</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Export</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- TABLE: TRANSACTIONS -->
-        <section class="card overflow-hidden mt-6">
-          <div class="p-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="font-bold">Transactions</div>
-              <div class="text-xs text-gray-600">Reference # • Name • Type • Date • Region • Municipality • Status • Amount</div>
-            </div>
-            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Reference #</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Name</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Type</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Amount</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">TXN-004182</td>
-                  <td class="py-3 px-4">Dela Cruz, Juan</td>
-                  <td class="py-3 px-4">Application</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Paid</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">₱ 1,250</td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">TXN-004170</td>
-                  <td class="py-3 px-4">Santos, Maria</td>
-                  <td class="py-3 px-4">Licensing/Permit</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 10, 2026</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-rose-200 bg-rose-50 text-rose-800">Refunded</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">₱ 850</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- TABLE: USERS -->
-        <section class="card overflow-hidden mt-6">
-          <div class="p-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="font-bold">Users</div>
-              <div class="text-xs text-gray-600">Name • Email • User Type • Region • Municipality • Status • Actions</div>
-            </div>
-            <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">Export</button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Name</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Email</th>
-                  <th class="py-3 px-4 whitespace-nowrap">User Type</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">National Admin</td>
-                  <td class="py-3 px-4">national.admin@tlph.gov</td>
-                  <td class="py-3 px-4 whitespace-nowrap">National</td>
-                  <td class="py-3 px-4 whitespace-nowrap">—</td>
-                  <td class="py-3 px-4 whitespace-nowrap">—</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Active</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs">Disable</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">Municipal Admin - Calamba</td>
-                  <td class="py-3 px-4">calamba.admin@tlph.gov</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Municipal</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-gray-200 bg-gray-50 text-gray-700">Disabled</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs">Enable</button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <footer class="py-6 text-xs text-gray-600">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>© 2026 TLPH • National Overview (UI Draft)</div>
-            <div class="inline-flex items-center gap-2">
-              <span>RBAC-ready</span>
-              <span>DB-ready</span>
-            </div>
-          </div>
-        </footer>
+  <div class="main-wrapper">
+    <header class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-300 pb-4 mb-6 gap-4">
+      <div>
+        <h1 class="text-2xl font-black text-slate-900 uppercase tracking-tight">National Overview Dashboard</h1>
+        <div class="flex items-center gap-2 text-slate-500 mt-1">
+          <span class="text-[10px] font-black uppercase tracking-widest bg-slate-200 px-2 py-0.5 rounded text-slate-700">Official Portal</span>
+          <span class="text-xs font-medium italic">As of Feb 13, 2026</span>
+        </div>
       </div>
-    </main>
+      <div class="flex items-center gap-2">
+        <button class="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-300 text-[11px] font-black uppercase tracking-widest text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
+          <span class="material-icons-round text-sm">print</span> Print Report
+        </button>
+        <button class="flex items-center gap-1.5 px-4 py-2 bg-emerald-800 text-[11px] font-black uppercase tracking-widest text-white hover:bg-emerald-900 shadow-sm transition-all">
+          <span class="material-icons-round text-sm">sync</span> Refresh Data
+        </button>
+      </div>
+    </header>
+
+    <section class="card p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div class="space-y-1">
+          <label class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Jurisdiction</label>
+          <select class="w-full px-2 py-1.5 border border-slate-300 text-[11px] font-bold bg-slate-50 outline-none">
+            <option value="all" selected>All Regions (National)</option>
+            <option value="ncr">NCR - National Capital Region</option>
+            <option value="car">CAR - Cordillera</option>
+            <option value="r1">Region I - Ilocos</option>
+            <option value="r2">Region II - Cagayan</option>
+            <option value="r3">Region III - Central Luzon</option>
+            <option value="r4a">Region IV-A - CALABARZON</option>
+            <option value="r4b">MIMAROPA</option>
+            <option value="r5">Region V - Bicol</option>
+            <option value="r6">Region VI - Western Visayas</option>
+            <option value="r7">Region VII - Central Visayas</option>
+            <option value="r8">Region VIII - Eastern Visayas</option>
+            <option value="r9">Region IX - Zamboanga</option>
+            <option value="r10">Region X - Northern Mindanao</option>
+            <option value="r11">Region XI - Davao</option>
+            <option value="r12">Region XII - SOCCSKSARGEN</option>
+            <option value="r13">Region XIII - Caraga</option>
+            <option value="barmm">BARMM</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Status</label>
+          <select class="w-full px-2 py-1.5 border border-slate-300 text-[11px] font-bold bg-slate-50 outline-none">
+            <option selected>All Status</option><option>Approved</option><option>Pending</option><option>Reject</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-black uppercase text-slate-500 tracking-widest">From</label>
+          <input type="date" class="w-full px-2 py-1.5 border border-slate-300 text-[11px] font-bold outline-none bg-slate-50">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-black uppercase text-slate-500 tracking-widest">To</label>
+          <input type="date" class="w-full px-2 py-1.5 border border-slate-300 text-[11px] font-bold outline-none bg-slate-50">
+        </div>
+        <div class="space-y-1 lg:col-span-1">
+          <label class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Search Identifier</label>
+          <input type="text" placeholder="Ref # / Applicant / Municipality" class="w-full px-2 py-1.5 border border-slate-300 text-[11px] font-bold outline-none">
+        </div>
+        <div class="flex items-end">
+          <button class="w-full py-1.5 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all">Apply Filters</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+      <div class="card p-4 border-t-4 border-t-slate-800">
+        <p class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Applications Received</p>
+        <h3 class="text-3xl font-black text-slate-900 mt-1">12,480</h3>
+      </div>
+      <div class="card p-4 border-t-4 border-t-blue-800">
+        <p class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Service Requests</p>
+        <h3 class="text-3xl font-black text-slate-900 mt-1">4,235</h3>
+      </div>
+      <div class="card p-4 border-t-4 border-t-amber-700">
+        <p class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Compliance Registry</p>
+        <h3 class="text-3xl font-black text-slate-900 mt-1">3,102</h3>
+      </div>
+      <div class="card p-4 border-t-4 border-t-emerald-800 bg-emerald-950 text-white shadow-lg">
+        <p class="text-[9px] font-black uppercase text-emerald-400 tracking-widest">National Collections</p>
+        <h3 class="text-3xl font-black text-white mt-1">₱ 3.74M</h3>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-8">
+      <div class="card p-4 xl:col-span-3">
+        <h3 class="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-4 border-b border-slate-100 pb-2">National Throughput Analysis (180 Days)</h3>
+        <div class="h-[220px]"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="card p-4">
+        <h3 class="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-4 border-b border-slate-100 pb-2">Operational Health</h3>
+        <div class="relative h-[120px] w-full mx-auto">
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-1">
+            <span class="text-lg font-black text-slate-900">24.9k</span>
+            <span class="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Total Items</span>
+          </div>
+          <canvas id="statusChart"></canvas>
+        </div>
+        <div class="space-y-1 mt-4">
+          <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200"><span class="text-[8px] font-black text-slate-500 uppercase">Approved</span><span class="text-[10px] font-black text-emerald-700">18,430</span></div>
+          <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200"><span class="text-[8px] font-black text-slate-500 uppercase">Pending</span><span class="text-[10px] font-black text-amber-700">3,680</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="space-y-8">
+      
+      <section class="card overflow-hidden">
+        <div class="gov-header">1. Application Registry</div>
+        <div class="table-scroll"><table class="w-full">
+          <thead><tr><th>Date</th><th>Reference & Applicant</th><th>Category</th><th>Region</th><th>Municipality</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Feb 12, 2026</td>
+              <td><span class="font-black font-mono">APP-2026-001284</span><br><span class="text-[10px] text-slate-500 uppercase tracking-tighter italic">Dela Cruz, Juan M.</span></td>
+              <td>Crop & Plant</td><td>NCR</td><td>Quezon City</td>
+              <td><span class="status-badge bg-amber-50 text-amber-800 border-amber-200">Pending</span></td>
+              <td><button class="bg-slate-800 text-white px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest">Review</button></td>
+            </tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="card overflow-hidden">
+        <div class="gov-header">2. Service Requests Masterlist</div>
+        <div class="table-scroll"><table class="w-full">
+          <thead><tr><th>Date</th><th>Request ID</th><th>Applicant Category</th><th>Region</th><th>Municipality</th><th>Current Status</th><th>Actions</th></tr></thead>
+          <tbody><tr><td>Feb 12, 2026</td><td class="font-black">SR-2026-000442</td><td>Initial farm visit</td><td>Region VII</td><td>Cebu City</td><td><span class="status-badge bg-blue-50 text-blue-800 border-blue-200">Processing</span></td><td><button class="border border-slate-300 px-3 py-1 rounded text-[9px] font-black">EXPORT</button></td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card overflow-hidden">
+        <div class="gov-header">3. National Asset Inventory (Government Stock)</div>
+        <div class="table-scroll"><table class="w-full">
+          <thead><tr><th>Asset Category</th><th>Technical Description</th><th>Unit Quantity</th><th>Region Hub</th><th>Municipality</th><th>Actions</th></tr></thead>
+          <tbody><tr><td class="font-black uppercase tracking-tighter">Chemicals</td><td>Pesticide Stock (Official)</td><td class="font-bold">120 Units</td><td>Region IV-A</td><td>Calamba</td><td><button class="text-slate-400 font-bold text-[10px] tracking-widest uppercase">Logs</button></td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card overflow-hidden">
+        <div class="gov-header">4. User Inventory (On-Hand Accountable Resources)</div>
+        <div class="table-scroll"><table class="w-full">
+          <thead><tr><th>Resource Name</th><th>Category</th><th>Owner/Admin</th><th>Initial Qty</th><th>Current Stock</th><th>Jurisdiction</th><th>Actions</th></tr></thead>
+          <tbody><tr><td class="font-black">Pesticide Alpha</td><td>Chemicals</td><td>Santos, Maria</td><td>50</td><td class="text-rose-700 font-black">18</td><td>NCR Office</td><td><button class="border px-3 py-1 rounded text-[9px] font-black">HISTORY</button></td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card overflow-hidden">
+        <div class="gov-header">5. Licensing & Permits Registry</div>
+        <div class="table-scroll"><table class="w-full">
+          <thead><tr><th>License Reference</th><th>Permit Type</th><th>Region</th><th>Municipality</th><th>Status</th><th>Verification</th></tr></thead>
+          <tbody><tr><td class="font-black font-mono tracking-tighter">LIC-2026-000118</td><td>Environmental ECC</td><td>Region IV-A</td><td>Calamba</td><td><span class="status-badge bg-emerald-50 text-emerald-800 border-emerald-200">Compliant</span></td><td><button class="bg-slate-100 px-2 py-1 rounded text-[9px] font-black uppercase">Check</button></td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card overflow-hidden">
+        <div class="gov-header">6. National Financial Audit Registry</div>
+        <div class="table-scroll"><table class="w-full">
+          <thead><tr><th>Audit Ref #</th><th>Payor</th><th>Classification</th><th>Date</th><th>Amount (PHP)</th><th>Status</th></tr></thead>
+          <tbody><tr><td class="font-black font-mono italic">TXN-004182</td><td>Dela Cruz, J.</td><td>Application Fee</td><td>Feb 12</td><td class="font-bold">1,250.00</td><td><span class="status-badge bg-emerald-50 text-emerald-800 border-emerald-200 font-black">Verified</span></td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card overflow-hidden border-2 border-slate-300">
+        <div class="gov-header">7. Administrative User Access Management</div>
+        <div class="table-scroll"><table class="w-full">
+          <thead><tr><th>Authorized Official</th><th>Email</th><th>Role</th><th>Jurisdiction</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody><tr><td class="font-black italic">National Admin</td><td>admin@denr.gov.ph</td><td>Super Admin</td><td>National</td><td><span class="status-badge bg-emerald-50 text-emerald-800 border-emerald-200">Active</span></td><td><button class="text-slate-400 font-bold text-[9px]">MANAGE</button></td></tr></tbody>
+        </table></div>
+      </section>
+
+    </div>
+
+    <footer class="mt-12 py-8 border-t border-slate-300 text-center text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">
+      Republic of the Philippines • DENR Systems 2026
+    </footer>
   </div>
 
   <script>
-    // Trend Chart (sample)
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#475569';
+
+    // 180-Day Volume Trend Chart
     new Chart(document.getElementById('trendChart'), {
       type: 'line',
       data: {
         labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
         datasets: [
-          { label: 'Applications', data: [1800, 2050, 2200, 2400, 2600, 2480] },
-          { label: 'Service Requests', data: [520, 610, 700, 680, 740, 735] },
-          { label: 'Licensing/Permits', data: [430, 480, 520, 610, 540, 552] }
+          { label: 'Applications', data: [1800, 2050, 2200, 2400, 2600, 2480], borderColor: '#002e5d', backgroundColor: 'rgba(0, 46, 93, 0.02)', fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 0 },
+          { label: 'Requests', data: [520, 610, 700, 680, 740, 735], borderColor: '#065f46', tension: 0.4, borderWidth: 2.5, pointRadius: 0 }
         ]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        interaction: { mode: 'index', intersect: false },
-        scales: { y: { beginAtZero: true } }
+      options: { 
+        responsive: true, maintainAspectRatio: false, 
+        plugins: { legend: { display: false } }, 
+        scales: { x: { grid: { display: false } }, y: { ticks: { font: { size: 9 } }, border: { display: false }, grid: { color: '#e2e8f0' } } } 
       }
     });
 
-    // Status Breakdown (sample)
+    // Operational Status Chart
     new Chart(document.getElementById('statusChart'), {
       type: 'doughnut',
       data: {
-        labels: ['Approved', 'Pending', 'To Review', 'Reject'],
-        datasets: [{ data: [18430, 3680, 1320, 1487] }]
+        datasets: [{
+          data: [18430, 3680, 1320, 1487],
+          backgroundColor: ['#065f46', '#f59e0b', '#002e5d', '#be123c'],
+          borderWidth: 0,
+          cutout: '88%'
+        }]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
-
-    // Per-Region Breakdown (sample grouped bar)
-    new Chart(document.getElementById('regionChart'), {
-      type: 'bar',
-      data: {
-        labels: ['NCR', 'Region IV-A', 'Region VII', 'Region III', 'BARMM', 'CAR'],
-        datasets: [
-          { label: 'Applications', data: [2190, 1940, 1210, 990, 610, 540] },
-          { label: 'Service Requests', data: [620, 720, 510, 430, 260, 240] },
-          { label: 'Licensing/Permits', data: [480, 680, 390, 300, 180, 210] }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom' },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        interaction: { mode: 'index', intersect: false },
-        scales: { y: { beginAtZero: true } }
-      }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, layout: { padding: 4 } }
     });
   </script>
 </body>

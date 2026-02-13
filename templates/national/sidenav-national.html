@@ -1,187 +1,179 @@
-<!-- save as: templates/national/sidenav-national.html -->
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TLPH | National Sidenav</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
-  <!-- Optional: Tailwind (only needed if your landing page doesn't already load Tailwind) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    /* IMPORTANT:
-       Keep styles scoped to #national-sidenav to avoid affecting the landing page */
-    #national-sidenav .nsn-toplink{
-      display:flex; align-items:center; gap:12px;
-      padding:10px 12px; border-radius:12px;
-      font-weight:700; font-size:12px;
-      background:#0f172a; color:#fff !important;
-      text-decoration:none !important;
-      box-shadow: 0 1px 0 rgba(15,23,42,.12);
+<style>
+    /* --- BASE STYLES --- */
+    
+    /* Overview / Toplink Button */
+    #national-sidenav .nsn-toplink {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px; border-radius: 12px;
+        font-weight: 700; font-size: 12px;
+        /* DEFAULT: Transparent o light para hindi mukhang active agad */
+        background: #f8fafc; 
+        color: #475569 !important;
+        border: 1px solid #e2e8f0;
+        text-decoration: none !important;
+        transition: all 0.2s ease;
+    }
+    #national-sidenav .nsn-toplink:hover {
+        background: #f1f5f9;
+        color: #0f172a !important;
     }
 
-    #national-sidenav .nsn-link{
-      display:flex; align-items:center; gap:12px;
-      padding:10px 12px; border-radius:12px;
-      font-weight:700; font-size:12px; color:#0f172a !important;
-      text-decoration:none !important;
-      margin-top:6px;
-      transition: background .15s ease, transform .15s ease;
+    /* Regular Links */
+    #national-sidenav .nsn-link {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px; border-radius: 12px;
+        font-weight: 700; font-size: 12px; 
+        color: #64748b !important;
+        text-decoration: none !important;
+        margin-top: 4px;
+        transition: all 0.15s ease;
     }
-    #national-sidenav .nsn-link:hover{
-      background:#f1f5f9;
-      transform: translateX(2px);
+    #national-sidenav .nsn-link:hover {
+        background: #f1f5f9;
+        color: #0f172a !important;
+        transform: translateX(4px);
     }
-    #national-sidenav .nsn-ico{ font-size:18px; color:#334155; }
 
-    #national-sidenav .nsn-logout{
-      margin-top:10px;
-      display:flex; align-items:center; gap:12px;
-      padding:10px 12px; border-radius:12px;
-      font-weight:700; font-size:12px;
-      color:#b91c1c !important;
-      text-decoration:none !important;
-      transition: background .15s ease;
+    #national-sidenav .nsn-ico { font-size: 18px; color: #94a3b8; }
+
+    /* --- STATES (Dito ang Magic) --- */
+
+    /* ACTIVE STATE para sa Overview (Dark Background) */
+    #national-sidenav .active-toplink {
+        background: #0f172a !important; /* Dito lang siya magiging dark */
+        color: #ffffff !important;
+        border-color: #0f172a;
     }
-    #national-sidenav .nsn-logout:hover{ background:#fef2f2; }
+    #national-sidenav .active-toplink .material-icons-round {
+        color: #ffffff !important;
+    }
 
-    #national-sidenav .nsn-scroll::-webkit-scrollbar{ width:6px; }
-    #national-sidenav .nsn-scroll::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:999px; }
-  </style>
-</head>
+    /* ACTIVE STATE para sa regular links (Gray Background + Bar) */
+    #national-sidenav .active-link {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-left: 4px solid #0f172a;
+        border-radius: 4px 12px 12px 4px;
+    }
+    #national-sidenav .active-link .nsn-ico {
+        color: #0f172a !important;
+    }
 
-<body class="bg-gray-100 text-slate-900">
-  <!-- Wrapper so you can preview this as a standalone page -->
-  <div class="min-h-screen flex">
-    <!-- Sidenav -->
-    <aside id="national-sidenav" class="w-[260px] shrink-0 h-screen bg-white border-r border-gray-200 flex flex-col sticky top-0">
-      <!-- Brand -->
-      <div class="px-5 pt-5 pb-4 border-b border-gray-100">
+    /* Logout */
+    #national-sidenav .nsn-logout {
+        margin-top: 10px; display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px; border-radius: 12px;
+        font-weight: 700; font-size: 12px;
+        color: #b91c1c !important; text-decoration: none !important;
+    }
+    #national-sidenav .nsn-logout:hover { background: #fef2f2; }
+
+    #national-sidenav .nsn-scroll::-webkit-scrollbar { width: 5px; }
+    #national-sidenav .nsn-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+</style>
+
+<aside id="national-sidenav" class="w-[260px] shrink-0 h-screen bg-white border-r border-gray-200 flex flex-col sticky top-0">
+    <div class="px-5 pt-5 pb-4 border-b border-gray-100">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl border border-gray-200 bg-white grid place-items-center overflow-hidden">
-            <img src="/static/images/denr.jpg" alt="Logo" class="w-full h-full object-contain p-1.5">
-          </div>
-          <div class="leading-tight">
-            <div class="font-extrabold text-slate-900 text-[13px] tracking-tight">TLPH</div>
-            <div class="text-[11px] text-gray-500 font-semibold">National Dashboard</div>
-          </div>
-        </div>
-
-        <!-- User -->
-        <div class="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-3">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-slate-900 text-white grid place-items-center font-extrabold text-[12px]">
-              NA
+            <div class="w-10 h-10 rounded-xl border border-gray-200 bg-white grid place-items-center overflow-hidden">
+                <img src="/static/images/denr.jpg" alt="Logo" class="w-full h-full object-contain p-1.5">
             </div>
-            <div class="min-w-0">
-              <!-- Works as plain HTML; in Jinja this will be replaced -->
-              <div class="font-bold text-slate-900 text-[12px] truncate">
-                {{ user_name|default('NATIONAL ADMIN') }}
-              </div>
-              <div class="text-[10px] text-gray-500 font-semibold">
-                {{ user_status|default('Active Session') }}
-              </div>
+            <div class="leading-tight">
+                <div class="font-extrabold text-slate-900 text-[13px] tracking-tight">TLPH</div>
+                <div class="text-[11px] text-gray-500 font-semibold">National Dashboard</div>
             </div>
-          </div>
         </div>
-      </div>
+    </div>
 
-      <!-- Nav -->
-      <nav class="flex-1 overflow-y-auto px-3 py-3 nsn-scroll">
-        <a href="/national/dashboard" class="nsn-toplink">
-          <span class="material-icons-round text-[18px]">analytics</span>
-          <span>Overview</span>
+    <nav class="flex-1 overflow-y-auto px-3 py-4 nsn-scroll">
+        <a href="/national/dashboard" class="nsn-toplink nav-item">
+            <span class="material-icons-round text-[18px]">analytics</span>
+            <span>Overview</span>
         </a>
 
-        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">OPERATIONS</div>
-
-        <a href="/national/application-list" class="nsn-link">
-          <span class="material-icons-round nsn-ico">description</span>
-          <span>Applications</span>
+        <div class="mt-5 px-3 text-[10px] font-extrabold tracking-[0.15em] text-slate-400 uppercase">Operations</div>
+        <a href="/national/application-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">description</span>
+            <span>Applications</span>
+        </a>
+        <a href="/national/service-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">room_service</span>
+            <span>Service Requests</span>
+        </a>
+        <a href="/national/permit-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">verified</span>
+            <span>Licensing / Permits</span>
         </a>
 
-        <a href="/national/service-list" class="nsn-link">
-          <span class="material-icons-round nsn-ico">room_service</span>
-          <span>Service Requests</span>
+        <div class="mt-5 px-3 text-[10px] font-extrabold tracking-[0.15em] text-slate-400 uppercase">Resources</div>
+        <a href="/national/inventory-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">inventory_2</span>
+            <span>Inventory (National)</span>
+        </a>
+        <a href="/national/user-inventory-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">qr_code_2</span>
+            <span>User Inventory</span>
         </a>
 
-        <a href="/national/licensing-list" class="nsn-link">
-          <span class="material-icons-round nsn-ico">verified</span>
-          <span>Licensing / Permits</span>
+        <div class="mt-5 px-3 text-[10px] font-extrabold tracking-[0.15em] text-slate-400 uppercase">Finance</div>
+        <a href="/national/transaction-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">receipt_long</span>
+            <span>Transactions</span>
         </a>
 
-        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">RESOURCES</div>
-
-        <a href="/national/inventory-national" class="nsn-link">
-          <span class="material-icons-round nsn-ico">inventory_2</span>
-          <span>Inventory (National)</span>
+        <div class="mt-5 px-3 text-[10px] font-extrabold tracking-[0.15em] text-slate-400 uppercase">System</div>
+        <a href="/national/user-management-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">manage_accounts</span>
+            <span>User Management</span>
+        </a>
+        <a href="/national/profile-national" class="nsn-link nav-item">
+            <span class="material-icons-round nsn-ico">person</span>
+            <span>My Profile</span>
         </a>
 
-        <a href="/national/inventory-users" class="nsn-link">
-          <span class="material-icons-round nsn-ico">qr_code_2</span>
-          <span>User Inventory</span>
+        <a href="/" class="nsn-logout">
+            <span class="material-icons-round text-[18px]">logout</span>
+            <span>Logout</span>
         </a>
+    </nav>
 
-        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">FINANCE</div>
+    <div class="px-5 py-4 border-t border-gray-100 bg-gray-50/50">
+        <div id="ph-clock-national" class="text-center text-[11px] font-bold text-slate-600 tracking-wide">--:--:-- -- PHT</div>
+    </div>
+</aside>
 
-        <a href="/national/transactions" class="nsn-link">
-          <span class="material-icons-round nsn-ico">receipt_long</span>
-          <span>Transactions</span>
-        </a>
-
-        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">ADMINISTRATION</div>
-
-        <a href="/national/users" class="nsn-link">
-          <span class="material-icons-round nsn-ico">manage_accounts</span>
-          <span>Users</span>
-        </a>
-
-        <div class="mt-4 px-3 text-[10px] font-extrabold tracking-[0.18em] text-gray-400">ACCOUNT</div>
-
-        <a href="/national/profile" class="nsn-link">
-          <span class="material-icons-round nsn-ico">person</span>
-          <span>My Profile</span>
-        </a>
-
-        <a href="/logout" class="nsn-logout">
-          <span class="material-icons-round text-[18px]">logout</span>
-          <span>Logout</span>
-        </a>
-      </nav>
-
-      <!-- Footer -->
-      <div class="px-5 py-4 border-t border-gray-100">
-        <div class="text-[10px] text-gray-400 font-extrabold tracking-[0.18em] text-center">
-          PHILIPPINE STANDARD TIME
-        </div>
-        <div id="ph-clock-national"
-             class="mt-2 text-center text-[12px] font-extrabold text-slate-900 italic tracking-wide">
-          --:--:-- -- PHT
-        </div>
-      </div>
-    </aside>
-
-  <script>
-    // Clock (safe to include)
+<script>
     (function () {
-      function updateClock() {
-        const options = {
-          timeZone: "Asia/Manila",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true
-        };
-        const el = document.getElementById("ph-clock-national");
-        if (el) el.textContent = new Date().toLocaleTimeString("en-US", options) + " PHT";
-      }
-      updateClock();
-      setInterval(updateClock, 1000);
+        // Kunin ang kasalukuyang URL path
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('#national-sidenav .nav-item');
+
+        navItems.forEach(item => {
+            const itemPath = item.getAttribute('href');
+
+            // I-clear ang lahat ng active classes muna
+            item.classList.remove('active-toplink', 'active-link');
+
+            // Exact match logic
+            if (currentPath === itemPath) {
+                if (item.classList.contains('nsn-toplink')) {
+                    item.classList.add('active-toplink');
+                } else {
+                    item.classList.add('active-link');
+                }
+            }
+        });
+
+        // Clock logic
+        function updateClock() {
+            const options = { timeZone: "Asia/Manila", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true };
+            const el = document.getElementById("ph-clock-national");
+            if (el) el.textContent = new Date().toLocaleTimeString("en-US", options) + " PHT";
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
     })();
-  </script>
-</body>
-</html>
+</script>
