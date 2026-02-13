@@ -1650,6 +1650,28 @@
       }
     };
 
+    // Inventory History Download PDF
+    window.downloadInventoryHistoryPDF = async function() {
+      try {
+        const downloadBtn = document.getElementById('downloadInventoryPdfBtn');
+        if (downloadBtn) {
+          downloadBtn.disabled = true;
+          downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        }
+
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please sign in to download inventory history.');
+          return;
+        }
+
+        const q = query(
+          collection(db, 'inventory_registrations'), 
+          where('userId', '==', user.uid),
+          where('status', '==', 'approved')
+        );
+        const querySnapshot = await getDocs(q);
+
         if (querySnapshot.empty) {
           alert('No inventory items to download.');
           if (downloadBtn) {
