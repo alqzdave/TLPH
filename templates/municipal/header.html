@@ -126,15 +126,15 @@
 
         <div class="d-flex align-items-center gap-4">
             
-<div class="position-relative" x-data="{ count: 8, hasUnviewed: true }">
+<div class="position-relative" x-data="notificationData()">
     <a href="/municipal/notification" 
-       @click="hasUnviewed = false"
+       @click="markAsViewed()"
        class="btn border-0 p-2 rounded-4 bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-900 transition-all d-flex align-items-center justify-center shadow-sm"
        title="Notifications">
         
         <span class="material-icons-round text-[28px] block">notifications</span>
 
-        <template x-if="hasUnviewed && count > 0">
+        <template x-if="count > 0">
             <div class="position-absolute top-0 start-100 translate-middle">
                 <span class="badge rounded-pill bg-danger border border-white shadow-sm font-black flex items-center justify-center" 
                       style="font-size: 10px; min-width: 20px; height: 20px; z-index: 10;">
@@ -184,6 +184,43 @@
             </div>
             </div>
     </header>
+
+    <script type="module">
+      import { db } from '/static/js/firebase-config.js';
+      import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+      // Alpine.js notification data component
+      window.notificationData = function() {
+        return {
+          count: 0,
+          init() {
+            this.loadNotificationCount();
+          },
+          async loadNotificationCount() {
+            try {
+              // Query applications with 'under-review' or 'pending' status
+              const q = query(
+                collection(db, 'applications'),
+                where('status', 'in', ['under-review', 'pending'])
+              );
+
+              // Real-time listener for notification count
+              onSnapshot(q, (snapshot) => {
+                this.count = snapshot.size;
+                console.log('Notification count:', this.count);
+              });
+            } catch (error) {
+              console.error('Error loading notifications:', error);
+              this.count = 0;
+            }
+          },
+          markAsViewed() {
+            // Optional: Mark notifications as viewed when clicked
+            console.log('Notifications viewed');
+          }
+        }
+      }
+    </script>
 
     <script type="module">
       import { auth } from '/static/js/firebase-config.js';
