@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="regionalAppMaster()">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         /* OFFICIAL ARIAL FORCE */
@@ -38,22 +37,22 @@
 <body>
     {% include 'regional/sidenav.html' %}
 
-    <div class="main-wrapper">
+    <div class="main-wrapper" x-data="regionalAppMaster()">
         <div class="container-fluid p-4 lg:p-5">
             
             <div class="print-header">
                 <h4 class="font-bold uppercase m-0">Republic of the Philippines</h4>
                 <h3 class="font-black uppercase m-0">Department of Environment and Natural Resources</h3>
-                <p class="text-[10px] uppercase font-bold">Region IV-A (CALABARZON) Regional Office</p>
+                <p class="text-[10px] uppercase font-bold">Region IV-B (MIMAROPA) Regional Office</p>
                 <hr style="border: 1px solid #000; margin: 15px 0;">
                 <h5 class="font-black uppercase tracking-widest mt-4">Regional Application Masterlist Report</h5>
-                <p class="text-[9px] italic">Generated on: February 12, 2026</p>
+                <p class="text-[9px] italic">Generated on: February 13, 2026</p>
             </div>
 
             <div class="mb-6 d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-4 no-print">
                 <div>
                     <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 m-0">Regional Application Masterlist</h1>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Region IV-A Unified Monitoring System</p>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Region IV-B (MIMAROPA) Unified Monitoring System</p>
                 </div>
 
                 <div class="d-flex gap-2">
@@ -79,20 +78,21 @@
                         <div style="width: 200px;">
                             <select x-model="filterProvince" class="form-select form-select-sm text-[10px] font-black uppercase">
                                 <option value="ALL">All Provinces</option>
-                                <option value="CAVITE">CAVITE</option>
-                                <option value="LAGUNA">LAGUNA</option>
-                                <option value="BATANGAS">BATANGAS</option>
-                                <option value="RIZAL">RIZAL</option>
-                                <option value="QUEZON">QUEZON</option>
+                                <option value="MARINDUQUE">MARINDUQUE</option>
+                                <option value="OCCIDENTAL MINDORO">OCCIDENTAL MINDORO</option>
+                                <option value="ORIENTAL MINDORO">ORIENTAL MINDORO</option>
+                                <option value="PALAWAN">PALAWAN</option>
+                                <option value="ROMBLON">ROMBLON</option>
                             </select>
                         </div>
 
                         <div style="width: 200px;">
                             <select x-model="filterStatus" class="form-select form-select-sm text-[10px] font-black uppercase">
                                 <option value="ALL">All Status</option>
-                                <option value="PENDING">PENDING</option>
-                                <option value="APPROVED">APPROVED</option>
-                                <option value="REJECTED">REJECTED</option>
+                                <option value="to-review">TO REVIEW</option>
+                                <option value="pending">PENDING</option>
+                                <option value="accepted">ACCEPTED</option>
+                                <option value="rejected">REJECTED</option>
                             </select>
                         </div>
                         
@@ -133,12 +133,26 @@
                                 </tr>
                             </template>
 
-                            <template x-if="filteredApps.length === 0">
+                            <template x-if="loading">
+                                <tr>
+                                    <td colspan="7" class="py-5 text-center bg-white">
+                                        <div class="d-flex flex-column align-items-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="font-bold uppercase text-[10px] tracking-widest mt-3 text-slate-600">Loading Applications...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template x-if="!loading && filteredApps.length === 0">
                                 <tr>
                                     <td colspan="7" class="py-5 text-center bg-white">
                                         <div class="d-flex flex-column align-items-center py-5 opacity-40">
                                             <span class="material-icons-round text-5xl">folder_off</span>
                                             <p class="font-black uppercase text-[10px] tracking-widest mt-2">No Records Found</p>
+                                            <p class="text-[9px] text-slate-500 mt-1">Applications with "to-review" or "pending" status will appear here</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -148,50 +162,132 @@
                 </div>
             </div>
 
-            <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mt-10 no-print italic uppercase">DENR Region IV-A Regional Management Oversight • 2026</p>
+            <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mt-10 no-print italic uppercase">DENR Region IV-B (MIMAROPA) Regional Management Oversight • 2026</p>
         </div>
     </div>
 
+    <!-- Load Firebase config first -->
+    <script type="module">
+        import { db } from '/static/js/firebase-config.js';
+        import { collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Expose to window for Alpine
+        window.firebaseDB = db;
+        window.firebaseCollection = collection;
+        window.firebaseQuery = query;
+        window.firebaseWhere = where;
+        window.firebaseOnSnapshot = onSnapshot;
+        console.log('Firebase modules loaded and exposed to window');
+    </script>
+
+    <!-- Load Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Register Alpine component -->
     <script>
-        function regionalAppMaster() {
-            return {
+        document.addEventListener('alpine:init', () => {
+            console.log('Alpine:init event fired, registering regionalAppMaster...');
+            Alpine.data('regionalAppMaster', () => ({
                 searchQuery: '',
                 filterProvince: 'ALL',
                 filterStatus: 'ALL',
-                apps: [
-                    { id: 1, ref: 'REG-2026-001', province: 'LAGUNA', municipality: 'CALAMBA', applicant: 'JUAN DELA CRUZ', category: 'TREE CUTTING', status: 'PENDING' },
-                    { id: 2, ref: 'REG-2026-002', province: 'CAVITE', municipality: 'DASMARIÑAS', applicant: 'MARIA CLARA', category: 'WILDLIFE', status: 'APPROVED' },
-                    { id: 3, ref: 'REG-2026-003', province: 'BATANGAS', municipality: 'LIPA CITY', applicant: 'JOSE RIZAL', category: 'FISHERIES', status: 'PENDING' },
-                    { id: 4, ref: 'REG-2026-004', province: 'RIZAL', municipality: 'ANTIPOLO', applicant: 'ANDRES BONIFACIO', category: 'LANDS', status: 'REJECTED' },
-                    { id: 5, ref: 'REG-2026-005', province: 'QUEZON', municipality: 'LUCENA', applicant: 'EMILIO AGUINALDO', category: 'WASTE MGMT', status: 'PENDING' }
-                ],
+                apps: [],
+                loading: true,
+                
+                async init() {
+                    await this.loadApplications();
+                },
+                
+                async loadApplications() {
+                    try {
+                        console.log('==== REGIONAL APPLICATION LOADING ====');
+                        console.log('Loading regional applications for Region 4B...');
+                        
+                        // Query applications with status 'to-review' or 'pending'
+                        const q = window.firebaseQuery(
+                            window.firebaseCollection(window.firebaseDB, 'applications'),
+                            window.firebaseWhere('status', 'in', ['to-review', 'pending', 'under-review'])
+                        );
+                        
+                        console.log('Query created, setting up listener...');
+                        
+                        // Real-time listener
+                        window.firebaseOnSnapshot(q, (snapshot) => {
+                            console.log('onSnapshot fired! Snapshot size:', snapshot.size);
+                            this.apps = [];
+                            
+                            snapshot.forEach((doc) => {
+                                const data = doc.data();
+                                console.log('Processing application:', doc.id, 'Status:', data.status);
+                                
+                                this.apps.push({
+                                    id: doc.id,
+                                    ref: doc.id.substring(0, 12).toUpperCase(),
+                                    province: (data.province || 'N/A').toUpperCase(),
+                                    municipality: (data.municipality || 'N/A').toUpperCase(),
+                                    applicant: `${data.firstName || ''} ${data.lastName || ''}`.toUpperCase().trim() || 'N/A',
+                                    category: (data.category || 'N/A').toUpperCase(),
+                                    status: (data.status || 'pending').toUpperCase()
+                                });
+                            });
+                            
+                            console.log(`✓ Loaded ${this.apps.length} applications for regional view`);
+                            console.log('Applications:', this.apps);
+                            this.loading = false;
+                        }, (error) => {
+                            console.error('onSnapshot error:', error);
+                            this.loading = false;
+                            alert('Error listening to applications: ' + error.message);
+                        });
+                        
+                    } catch (error) {
+                        console.error('Error loading applications:', error);
+                        this.loading = false;
+                        alert('Error loading applications: ' + error.message);
+                    }
+                },
+                
                 get filteredApps() {
-                    return this.apps.filter(i => {
+                    const filtered = this.apps.filter(i => {
                         const s = this.searchQuery.toLowerCase();
-                        const matchesSearch = i.ref.toLowerCase().includes(s) || i.applicant.toLowerCase().includes(s) || i.municipality.toLowerCase().includes(s);
+                        const matchesSearch = i.ref.toLowerCase().includes(s) || 
+                                            i.applicant.toLowerCase().includes(s) || 
+                                            i.municipality.toLowerCase().includes(s);
                         const matchesProv = this.filterProvince === 'ALL' || i.province === this.filterProvince;
-                        const matchesStat = this.filterStatus === 'ALL' || i.status === this.filterStatus;
+                        const matchesStat = this.filterStatus === 'ALL' || i.status.toLowerCase() === this.filterStatus.toLowerCase();
                         return matchesSearch && matchesProv && matchesStat;
                     });
+                    
+                    console.log('Filtered apps:', filtered.length, '/', this.apps.length);
+                    console.log('Filters - Province:', this.filterProvince, 'Status:', this.filterStatus, 'Search:', this.searchQuery);
+                    
+                    return filtered;
                 },
+                
                 getStatusClass(status) {
+                    const statusLower = status.toLowerCase();
                     const colors = {
-                        'PENDING': 'bg-amber-50 text-amber-700 border-amber-200',
-                        'APPROVED': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                        'REJECTED': 'bg-rose-50 text-rose-700 border-rose-200'
+                        'pending': 'bg-amber-50 text-amber-700 border-amber-200',
+                        'under-review': 'bg-blue-50 text-blue-700 border-blue-200',
+                        'to-review': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                        'accepted': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'approved': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'rejected': 'bg-rose-50 text-rose-700 border-rose-200'
                     };
-                    return colors[status] || 'bg-slate-50 text-slate-600 border-slate-200';
+                    return colors[statusLower] || 'bg-slate-50 text-slate-600 border-slate-200';
                 },
+                
                 resetFilters() {
                     this.searchQuery = '';
                     this.filterProvince = 'ALL';
                     this.filterStatus = 'ALL';
                 },
+                
                 printReport() {
                     setTimeout(() => { window.print(); }, 150);
                 }
-            }
-        }
+            }));
+        });
     </script>
 </body>
 </html>
