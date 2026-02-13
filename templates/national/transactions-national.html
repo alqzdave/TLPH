@@ -5,13 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TLPH | National Dashboard - Transactions</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
@@ -38,7 +35,6 @@
     <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
       <div class="w-full max-w-[1700px] space-y-6">
 
-        <!-- Header -->
         <section class="card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div class="text-lg font-bold">Transactions (National)</div>
@@ -56,7 +52,6 @@
           </div>
         </section>
 
-        <!-- Filters -->
         <section class="card p-4">
           <div class="flex flex-wrap items-center gap-2">
             <div class="flex items-center gap-2">
@@ -113,7 +108,6 @@
           </div>
         </section>
 
-        <!-- KPI Cards -->
         <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <div class="card p-4">
             <div class="text-xs text-gray-600">Total Transactions</div>
@@ -140,9 +134,7 @@
           </div>
         </section>
 
-        <!-- Charts -->
         <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <!-- Status breakdown -->
           <div class="card p-4">
             <div class="font-bold">Status Breakdown</div>
             <div class="text-xs text-gray-600">Paid vs Refunded (count)</div>
@@ -151,7 +143,6 @@
             </div>
           </div>
 
-          <!-- Amount by Type -->
           <div class="card p-4">
             <div class="font-bold">Amount by Type</div>
             <div class="text-xs text-gray-600">Paid amounts per transaction type</div>
@@ -160,7 +151,6 @@
             </div>
           </div>
 
-          <!-- Amount by Region -->
           <div class="card p-4">
             <div class="font-bold">Amount by Region</div>
             <div class="text-xs text-gray-600">Paid amounts per region</div>
@@ -170,7 +160,6 @@
           </div>
         </section>
 
-        <!-- Table -->
         <section class="card overflow-hidden">
           <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div>
@@ -297,7 +286,6 @@
     </main>
   </div>
 
-  <!-- Quick View Modal -->
   <div id="txnViewModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
     <div class="bg-white rounded-2xl w-[560px] max-w-[92vw] p-6 space-y-4">
       <div class="flex items-center justify-between">
@@ -318,9 +306,6 @@
   </div>
 
   <script>
-    // ---------------------------
-    // State + DOM
-    // ---------------------------
     const tbody = document.getElementById('txnTbody');
     const fFrom = document.getElementById('fFrom');
     const fTo = document.getElementById('fTo');
@@ -342,9 +327,6 @@
       return Number((td.innerText || "").replace(/[^\d.-]/g, "")) || 0;
     }
 
-    // ---------------------------
-    // Filters
-    // ---------------------------
     function applyTxnFilters(){
       const type = fType.value;
       const region = fRegion.value;
@@ -359,10 +341,10 @@
         const ref = cells[1].innerText.trim();
         const name = cells[2].innerText.trim();
         const t = cells[3].innerText.trim();
-        const dateStr = cells[4].innerText.trim(); // yyyy-mm-dd
+        const dateStr = cells[4].innerText.trim(); 
         const r = cells[5].innerText.trim();
         const muni = cells[6].innerText.trim();
-        const st = cells[7].innerText.trim(); // Paid/Refunded (from badge)
+        const st = cells[7].innerText.trim(); 
 
         const hay = (ref + " " + name + " " + muni).toLowerCase();
 
@@ -395,9 +377,6 @@
       updateTxnAnalytics();
     }
 
-    // ---------------------------
-    // KPI + Charts
-    // ---------------------------
     function visibleRows(){
       return [...tbody.querySelectorAll('tr')].filter(tr => tr.style.display !== "none");
     }
@@ -438,7 +417,6 @@
       document.getElementById('kpiRefunded').textContent = peso(refundedSum);
       document.getElementById('kpiNet').textContent = peso(paidSum - refundedSum);
 
-      // Status chart (counts)
       if(charts.status) charts.status.destroy();
       charts.status = new Chart(document.getElementById('chartStatus'), {
         type: 'doughnut',
@@ -449,7 +427,6 @@
         options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
       });
 
-      // Type chart (paid amounts)
       const typeEntries = Object.entries(byTypePaid);
       if(charts.type) charts.type.destroy();
       charts.type = new Chart(document.getElementById('chartType'), {
@@ -466,7 +443,6 @@
         }
       });
 
-      // Region chart (paid amounts)
       const regionEntries = Object.entries(byRegionPaid).sort((a,b)=>b[1]-a[1]);
       if(charts.region) charts.region.destroy();
       charts.region = new Chart(document.getElementById('chartRegion'), {
@@ -483,10 +459,7 @@
         }
       });
     }
-
-    // ---------------------------
-    // Quick View
-    // ---------------------------
+    
     function openTxnViewSelectedInfo(){
       const rows = visibleRows();
       let selectedTr = null;
