@@ -1,0 +1,199 @@
+<aside id="regional-sidenav" class="sidebar-container p-4 shadow-xl">
+    
+    <div class="mb-8 px-2 pt-4 flex items-center gap-3">
+        <div class="flex-shrink-0 w-16 h-16 bg-white flex items-center justify-center shadow-md border border-slate-300 overflow-hidden p-1.5">
+            <img src="/static/images/denr.jpg" 
+                 alt="DENR Logo" 
+                 class="w-full h-full object-contain">
+        </div>
+        
+        <div class="border-l-2 border-blue-900/30 pl-3 py-1">
+            <h2 class="font-bold text-[14px] tracking-tighter m-0 text-slate-900 uppercase leading-none">
+                DENR REGIONAL
+            </h2>
+            <div class="mt-1 flex flex-col">
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none">
+                    Region IV-A Oversight
+                </span>
+                <span class="text-[8px] font-black text-blue-800 uppercase tracking-tighter mt-1 italic">
+                    Regional Administrator
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-2 mb-6 no-print">
+        <div class="p-3 bg-slate-100 border border-slate-200 flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-900 flex items-center justify-center text-white font-bold">
+                RA
+            </div>
+            <div class="overflow-hidden">
+                <p class="text-[11px] font-bold text-slate-900 truncate m-0">ADMIN NAME</p>
+                <p class="text-[9px] text-slate-500 uppercase tracking-tighter m-0">Active Session</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="flex-grow space-y-1 overflow-y-auto pr-2 custom-sidebar-nav">
+        
+        <a href="/regional/dashboard" class="nav-btn-link">
+            <span class="material-icons-round">analytics</span>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="nav-category-label">Operations</div>
+
+        <a href="/regional/application-list" class="nav-btn-link">
+            <span class="material-icons-round">description</span>
+            <span>Application</span>
+        </a>
+
+        <a href="/regional/service-list" class="nav-btn-link">
+            <span class="material-icons-round">room_service</span>
+            <span>Service Request</span>
+        </a>
+
+        <div class="nav-category-label">Resources</div>
+
+        <a href="/regional/inventory-view" class="nav-btn-link">
+            <span class="material-icons-round">inventory_2</span>
+            <span>Inventory</span>
+        </a>
+
+        <a href="/regional/license-view" class="nav-btn-link">
+            <span class="material-icons-round">verified</span>
+            <span>Licensing</span>
+        </a>
+
+        <div class="nav-category-label">Compliance & Security</div>
+
+        <a href="/regional/transaction-view" class="nav-btn-link">
+            <span class="material-icons-round">receipt_long</span>
+            <span>Transaction</span>
+        </a>
+
+        <a href="/regional/municipal-account-management-view" class="nav-btn-link">
+            <span class="material-icons-round">manage_accounts</span>
+            <span>Municipal Accounts</span>
+        </a>
+
+        <a href="/regional/audit-logs-view" class="nav-btn-link">
+            <span class="material-icons-round">history_edu</span>
+            <span>Audit Logs</span>
+        </a>
+
+        <div class="nav-category-label">Account Controls</div>
+
+        <a href="/regional/profile" class="nav-btn-link hover:bg-slate-200">
+            <span class="material-icons-round">person</span>
+            <span>My Profile</span>
+        </a>
+
+        <a href="/logout" class="nav-btn-link text-red-700 hover:bg-red-700 hover:text-white !important">
+            <span class="material-icons-round">logout</span>
+            <span>Logout System</span>
+        </a>
+    </nav>
+
+    <div class="mt-auto pt-4 border-t border-slate-300">
+        <div class="px-4 py-3 bg-blue-900/5 border border-blue-900/10">
+            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] m-0 text-center uppercase">Philippine Standard Time</p>
+            <p id="reg-ph-clock-final" class="text-[11px] font-bold text-blue-900 m-0 mt-2 text-center tracking-wider italic">--:--:-- --</p>
+        </div>
+    </div>
+
+</aside>
+
+<style>
+    /* GLOBAL ARIAL FORCE BOI */
+    #regional-sidenav, 
+    #regional-sidenav h2, 
+    #regional-sidenav span, 
+    #regional-sidenav a, 
+    #regional-sidenav p {
+        font-family: Arial, Helvetica, sans-serif !important;
+    }
+
+    #regional-sidenav.sidebar-container {
+        width: 300px;
+        height: 100vh;
+        background-color: #ffffff;
+        position: fixed;
+        left: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        border-right: 2px solid #cbd5e1;
+        z-index: 2000;
+    }
+
+    /* BUTTON LINKS STYLE */
+    #regional-sidenav .nav-btn-link {
+        display: flex !important;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem 1.25rem;
+        color: #334155 !important;
+        text-decoration: none !important;
+        border-radius: 0; /* BOXY STYLE */
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        transition: all 0.2s ease-in-out;
+    }
+
+    /* HOVER BITAW */
+    #regional-sidenav .nav-btn-link:hover {
+        background-color: #1e3a8a !important;
+        color: #ffffff !important;
+        padding-left: 1.75rem;
+    }
+
+    #regional-sidenav .nav-category-label {
+        padding: 1.25rem 0.75rem 0.5rem 0.75rem;
+        text-transform: uppercase;
+        font-size: 9px;
+        font-weight: 900;
+        color: #94a3b8;
+        letter-spacing: 0.15em;
+    }
+
+    /* FIX PARA SA ICONS */
+    #regional-sidenav .material-icons-round {
+        font-family: 'Material Icons Round' !important;
+        font-size: 18px;
+        display: inline-flex;
+        vertical-align: middle;
+        line-height: 1;
+    }
+
+    #regional-sidenav .custom-sidebar-nav::-webkit-scrollbar { width: 4px; }
+    #regional-sidenav .custom-sidebar-nav::-webkit-scrollbar-thumb {
+        background: #1e3a8a;
+    }
+
+    @media (max-width: 1024px) {
+        #regional-sidenav.sidebar-container { transform: translateX(-100%); }
+    }
+</style>
+
+<script>
+    (function() {
+        function updateRegClock() {
+            const options = { 
+                timeZone: 'Asia/Manila', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: true 
+            };
+            const clockEl = document.getElementById('reg-ph-clock-final');
+            if(clockEl) {
+                clockEl.innerText = new Date().toLocaleTimeString('en-US', options) + ' PHT';
+            }
+        }
+        setInterval(updateRegClock, 1000);
+        updateRegClock();
+    })();
+</script>
