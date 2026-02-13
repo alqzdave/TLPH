@@ -52,6 +52,10 @@ def user_profile():
 def user_transaction():
     return render_template('user/transaction.html')
 
+@bp.route('/user/my-documents')
+def user_my_documents():
+    return render_template('user/my-documents.html')
+
 @bp.route('/user/transaction-history')
 def user_transaction_history():
     return render_template('user/transaction-history.html')
