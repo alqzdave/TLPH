@@ -89,12 +89,12 @@
             <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-full mb-3">
                 <i class="fa-solid fa-box-open text-3xl text-gray-300"></i>
             </div>
-            <p class="text-gray-700 font-semibold text-sm mb-1">No items yet</p>
-            <p class="text-gray-500 text-xs">Start by adding items to your inventory or applications</p>
+            <p class="text-gray-700 font-semibold text-sm mb-1">No approved items yet</p>
+            <p class="text-gray-500 text-xs">Only approved inventory and applications are displayed here</p>
         </div>
 
         <!-- Combined Grid -->
-        <div id="combinedGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
+        <div id="combinedGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 hidden"></div>
     </main>
 
     <nav class="fixed bottom-4 right-4 z-50">
@@ -152,14 +152,14 @@
         }
 
         function getStatusBadge(status) {
-            const baseClass = "px-2 py-0.5 rounded-md text-[9px] font-semibold flex items-center gap-1 w-fit backdrop-blur-sm shadow-md";
+            const baseClass = "px-1.5 py-0.5 rounded text-[8px] font-semibold flex items-center gap-0.5 w-fit backdrop-blur-sm shadow-sm";
             const badges = {
-                'pending': `<span class="${baseClass} bg-yellow-500/90 text-white"><i class="fa-solid fa-clock text-[8px]"></i>Pending</span>`,
-                'approved': `<span class="${baseClass} bg-emerald-500/90 text-white"><i class="fa-solid fa-check text-[8px]"></i>Approved</span>`,
-                'rejected': `<span class="${baseClass} bg-red-500/90 text-white"><i class="fa-solid fa-times text-[8px]"></i>Rejected</span>`,
-                'under-review': `<span class="${baseClass} bg-blue-500/90 text-white"><i class="fa-solid fa-search text-[8px]"></i>Review</span>`,
-                'cancelled': `<span class="${baseClass} bg-gray-500/90 text-white"><i class="fa-solid fa-ban text-[8px]"></i>Cancelled</span>`,
-                'pending_payment': `<span class="${baseClass} bg-orange-500/90 text-white"><i class="fa-solid fa-credit-card text-[8px]"></i>Payment</span>`
+                'pending': `<span class="${baseClass} bg-yellow-500/90 text-white"><i class="fa-solid fa-clock text-[7px]"></i>Pending</span>`,
+                'approved': `<span class="${baseClass} bg-emerald-500/90 text-white"><i class="fa-solid fa-check text-[7px]"></i>Approved</span>`,
+                'rejected': `<span class="${baseClass} bg-red-500/90 text-white"><i class="fa-solid fa-times text-[7px]"></i>Rejected</span>`,
+                'under-review': `<span class="${baseClass} bg-blue-500/90 text-white"><i class="fa-solid fa-search text-[7px]"></i>Review</span>`,
+                'cancelled': `<span class="${baseClass} bg-gray-500/90 text-white"><i class="fa-solid fa-ban text-[7px]"></i>Cancelled</span>`,
+                'pending_payment': `<span class="${baseClass} bg-orange-500/90 text-white"><i class="fa-solid fa-credit-card text-[7px]"></i>Payment</span>`
             };
             return badges[status] || badges['pending'];
         }
@@ -183,64 +183,54 @@
             return `
                 <div class="card-hover bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md border border-gray-200 hover:border-emerald-300 transition-all">
                     <!-- Image Section -->
-                    <div class="h-36 overflow-hidden relative bg-gradient-to-br from-emerald-50 via-gray-50 to-blue-50">
+                    <div class="h-24 overflow-hidden relative bg-gradient-to-br from-emerald-50 via-gray-50 to-blue-50">
                         <img src="${imageUrl}" 
                              class="w-full h-full object-cover"
                              onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
                         
-                        <!-- Status Overlays -->
-                        <div class="absolute top-2 left-2 right-2 flex justify-between items-start">
-                            ${item.isProtected ? '<div class="bg-purple-600/95 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[9px] font-semibold shadow-md"><i class="fa-solid fa-shield mr-1"></i>Protected</div>' : '<div></div>'}
-                            <div class="flex flex-col gap-1">
-                                ${item.status === 'approved' ? '<div class="bg-emerald-600/95 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[9px] font-semibold shadow-md"><i class="fa-solid fa-check mr-1"></i>Active</div>' : ''}
-                                ${item.status === 'pending_payment' ? '<div class="bg-orange-500/95 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[9px] font-semibold shadow-md"><i class="fa-solid fa-credit-card mr-1"></i>Pending</div>' : ''}
-                            </div>
-                        </div>
+                        <!-- Protected Badge if applicable -->
+                        ${item.isProtected ? '<div class="absolute top-1.5 left-1.5"><div class="bg-purple-600/95 backdrop-blur-sm text-white px-1.5 py-0.5 rounded text-[8px] font-semibold shadow-sm"><i class="fa-solid fa-shield mr-0.5 text-[7px]"></i>Protected</div></div>' : ''}
                     </div>
                     
                     <!-- Content Section -->
-                    <div class="p-3">
-                        <!-- Type Badge -->
-                        <div class="mb-2">
-                            <span class="inline-flex items-center gap-1 bg-emerald-600 text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase">
-                                <i class="fa-solid fa-box text-[8px]"></i>
-                                Inventory
+                    <div class="p-2">
+                        <!-- Type & Sector Badges -->
+                        <div class="flex gap-1 mb-1.5">
+                            <span class="inline-flex items-center gap-0.5 bg-emerald-600 text-white px-1.5 py-0.5 rounded text-[8px] font-bold uppercase">
+                                <i class="fa-solid fa-box text-[7px]"></i>
+                                Inv
                             </span>
-                        </div>
-                        
-                        <!-- Sector Badge -->
-                        <div class="mb-2">
-                            <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md text-[9px] font-semibold">
-                                <i class="fa-solid fa-tag text-[8px]"></i>
+                            <span class="inline-flex items-center gap-0.5 bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-[8px] font-semibold line-clamp-1 flex-1">
+                                <i class="fa-solid fa-tag text-[7px]"></i>
                                 ${sector.replace('_', ' ').toUpperCase()}
                             </span>
                         </div>
                         
                         <!-- Title -->
-                        <h3 class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-tight min-h-[2.5rem]">
+                        <h3 class="text-xs font-bold text-gray-900 mb-1.5 line-clamp-1 leading-tight">
                             ${resourceName}
                         </h3>
                         
                         <!-- Info Grid -->
-                        <div class="space-y-1.5 mb-3">
-                            <div class="flex justify-between items-center pb-1.5 border-b border-gray-100">
-                                <span class="text-gray-500 text-[10px] font-medium">Stock</span>
-                                <span class="font-bold text-gray-900 text-xs">${formatNumber(stockAvailable)} <span class="text-[10px] text-gray-500 font-normal">${unitOfMeasure}</span></span>
+                        <div class="space-y-0.5 mb-2">
+                            <div class="flex justify-between items-center pb-0.5 border-b border-gray-100">
+                                <span class="text-gray-500 text-[9px] font-medium">Stock</span>
+                                <span class="font-bold text-gray-900 text-[10px]">${formatNumber(stockAvailable)} <span class="text-[8px] text-gray-500 font-normal">${unitOfMeasure}</span></span>
                             </div>
-                            <div class="flex justify-between items-center pb-1.5 border-b border-gray-100">
-                                <span class="text-gray-500 text-[10px] font-medium">Property No.</span>
-                                <span class="font-semibold text-emerald-600 text-[10px]">${propertyNumber}</span>
+                            <div class="flex justify-between items-center pb-0.5 border-b border-gray-100">
+                                <span class="text-gray-500 text-[9px] font-medium">Property</span>
+                                <span class="font-semibold text-emerald-600 text-[9px]">${propertyNumber}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-500 text-[10px] font-medium">Source</span>
-                                <span class="font-medium text-gray-700 text-[10px] line-clamp-1 text-right max-w-[55%]">${sourceLocation}</span>
+                                <span class="text-gray-500 text-[9px] font-medium">Source</span>
+                                <span class="font-medium text-gray-700 text-[9px] line-clamp-1 text-right max-w-[60%]">${sourceLocation}</span>
                             </div>
                         </div>
                         
                         <!-- Action Button -->
-                        <button onclick="window.location.href='/user/inventory/info/${item.id}'" class="w-full mt-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-3 py-2 rounded-lg text-[10px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md">
-                            <span>View Details</span>
-                            <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                        <button onclick="window.location.href='/user/inventory/info/${item.id}'" class="w-full mt-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-2 py-1.5 rounded text-[9px] font-semibold transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md">
+                            <span>Details</span>
+                            <i class="fa-solid fa-arrow-right text-[8px]"></i>
                         </button>
                     </div>
                 </div>
@@ -255,97 +245,68 @@
             return `
                 <div class="card-hover bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md border border-gray-200 hover:border-emerald-300 transition-all">
                     <!-- Image Header -->
-                    <div class="h-32 overflow-hidden relative bg-gradient-to-br from-blue-50 via-emerald-50 to-teal-50">
+                    <div class="h-24 overflow-hidden relative bg-gradient-to-br from-blue-50 via-emerald-50 to-teal-50">
                         <img src="${imageUrl}" 
                              class="w-full h-full object-cover"
                              onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=1000&auto=format&fit=crop'">
-                        
-                        <!-- Category & Status Overlays -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
-                            <span class="bg-white/95 backdrop-blur-sm text-emerald-700 px-2 py-1 rounded-md text-[10px] font-semibold shadow-md">
-                                <i class="fa-solid fa-file-lines mr-1 text-[9px]"></i>${categoryLabel}
-                            </span>
-                            ${getStatusBadge(app.status)}
-                        </div>
                     </div>
                     
                     <!-- Content Section -->
-                    <div class="p-3">
-                        <!-- Type Badge -->
-                        <div class="mb-2">
-                            <span class="inline-flex items-center gap-1 bg-blue-600 text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase">
-                                <i class="fa-solid fa-file-alt text-[8px]"></i>
-                                Application
+                    <div class="p-2">
+                        <!-- Type & Category Badges -->
+                        <div class="flex gap-1 mb-1.5">
+                            <span class="inline-flex items-center gap-0.5 bg-blue-600 text-white px-1.5 py-0.5 rounded text-[8px] font-bold uppercase">
+                                <i class="fa-solid fa-file-alt text-[7px]"></i>
+                                App
+                            </span>
+                            <span class="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[8px] font-semibold line-clamp-1 flex-1">
+                                ${categoryLabel}
                             </span>
                         </div>
                         
-                        <!-- Header -->
-                        <div class="mb-2">
-                            <h3 class="text-sm font-bold text-gray-900 mb-1">
-                                ${categoryLabel}
-                            </h3>
-                            <p class="text-[9px] text-gray-400 font-medium flex items-center gap-1">
-                                <i class="fa-solid fa-fingerprint text-[8px]"></i>
-                                <span>ID: ${app.id?.substring(0, 10) || 'N/A'}</span>
-                            </p>
-                        </div>
+                        <!-- Title -->
+                        <h3 class="text-xs font-bold text-gray-900 mb-1.5 line-clamp-1">
+                            ${categoryLabel}
+                        </h3>
 
                         <!-- Stats Grid -->
-                        <div class="space-y-1.5 mb-3">
-                            <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-2 border border-blue-100">
-                                <div class="flex items-center gap-1.5 mb-1">
-                                    <div class="w-5 h-5 rounded bg-blue-600 flex items-center justify-center">
-                                        <i class="fa-solid fa-peso-sign text-white text-[8px]"></i>
+                        <div class="space-y-1 mb-1.5">
+                            <div class="bg-blue-50 rounded p-1.5">
+                                <div class="flex items-center gap-1 mb-0.5">
+                                    <div class="w-4 h-4 rounded bg-blue-600 flex items-center justify-center">
+                                        <i class="fa-solid fa-peso-sign text-white text-[7px]"></i>
                                     </div>
-                                    <p class="text-[9px] text-blue-700 font-semibold uppercase">Investment</p>
+                                    <p class="text-[8px] text-blue-700 font-semibold uppercase">Investment</p>
                                 </div>
-                                <p class="text-base font-bold text-blue-900 break-words">₱${formatNumber(app.investmentQty || 0)}</p>
+                                <p class="text-xs font-bold text-blue-900">₱${formatNumber(app.investmentQty || 0)}</p>
                             </div>
-                            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg p-2 border border-emerald-100">
-                                <div class="flex items-center gap-1.5 mb-1">
-                                    <div class="w-5 h-5 rounded bg-emerald-600 flex items-center justify-center">
-                                        <i class="fa-solid fa-seedling text-white text-[8px]"></i>
+                            <div class="bg-emerald-50 rounded p-1.5">
+                                <div class="flex items-center gap-1 mb-0.5">
+                                    <div class="w-4 h-4 rounded bg-emerald-600 flex items-center justify-center">
+                                        <i class="fa-solid fa-seedling text-white text-[7px]"></i>
                                     </div>
-                                    <p class="text-[9px] text-emerald-700 font-semibold uppercase">Est. Harvest</p>
+                                    <p class="text-[8px] text-emerald-700 font-semibold uppercase">Est. Harvest</p>
                                 </div>
-                                <p class="text-base font-bold text-emerald-900 break-words">${formatNumber(app.harvestQty || 0)} <span class="text-[10px] font-normal text-emerald-700">qty</span></p>
+                                <p class="text-xs font-bold text-emerald-900">${formatNumber(app.harvestQty || 0)} <span class="text-[8px] font-normal text-emerald-700">qty</span></p>
                             </div>
                         </div>
 
                         <!-- Meta Info -->
-                        <div class="space-y-1 mb-3">
-                            <div class="flex justify-between items-center pb-1 border-b border-gray-100">
-                                <span class="flex items-center gap-1 text-gray-500 text-[10px] font-medium">
-                                    <i class="fa-regular fa-calendar text-gray-400 text-[9px]"></i>
-                                    Submitted
-                                </span>
-                                <span class="font-semibold text-gray-700 text-[10px]">${submittedDate}</span>
-                            </div>
-                            ${app.landSize ? `
-                            <div class="flex justify-between items-center">
-                                <span class="flex items-center gap-1 text-gray-500 text-[10px] font-medium">
-                                    <i class="fa-solid fa-map-location-dot text-gray-400 text-[9px]"></i>
-                                    Land Size
-                                </span>
-                                <span class="font-semibold text-gray-700 text-[10px]">${formatNumber(app.landSize)} ha</span>
-                            </div>
-                            ` : ''}
+                        <div class="flex justify-between items-center text-[8px] text-gray-500 mb-1.5 pb-1 border-b border-gray-100">
+                            <span class="flex items-center gap-0.5">
+                                <i class="fa-regular fa-calendar text-[7px]"></i>
+                                ${submittedDate}
+                            </span>
+                            ${app.landSize ? `<span>${formatNumber(app.landSize)} ha</span>` : ''}
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex gap-2 mt-3">
+                        <div class="flex gap-1">
                             <button onclick="viewApplicationDetails('${app.id}')" 
-                                    class="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-3 py-2 rounded-lg text-[10px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md">
-                                <span>View Details</span>
-                                <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-2 py-1.5 rounded text-[9px] font-semibold transition-all flex items-center justify-center gap-1 shadow-sm hover:shadow-md">
+                                <span>Details</span>
+                                <i class="fa-solid fa-arrow-right text-[8px]"></i>
                             </button>
-                            ${app.status === 'pending' || app.status === 'under-review' ? `
-                            <button onclick="event.stopPropagation(); cancelApplication('${app.id}')" 
-                                    class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-[10px] font-semibold transition-all border border-red-200 hover:border-red-300">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -445,16 +406,20 @@
 
                 loadingState.classList.add('hidden');
 
-                // Combine and sort all items by date
+                // Filter only approved items
+                const approvedInventory = inventoryItems.filter(item => item.status === 'approved');
+                const approvedApplications = applications.filter(app => app.status === 'approved');
+
+                // Combine and sort all approved items by date
                 const allItems = [];
                 
-                // Add inventory items with type marker
-                inventoryItems.forEach(item => {
+                // Add approved inventory items with type marker
+                approvedInventory.forEach(item => {
                     allItems.push({ ...item, itemType: 'inventory', sortDate: item.createdAt?.toDate?.() || new Date(0) });
                 });
                 
-                // Add applications with type marker
-                applications.forEach(app => {
+                // Add approved applications with type marker
+                approvedApplications.forEach(app => {
                     allItems.push({ ...app, itemType: 'application', sortDate: app.submittedAt?.toDate?.() || new Date(0) });
                 });
                 
