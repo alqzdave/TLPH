@@ -90,20 +90,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Fallback for Mobile Menu if Bootstrap JS is not loading correctly
         const menu = document.getElementById('mobileMenu');
         const btn = document.getElementById('mobileMenuBtn');
 
         if (btn && menu) {
             btn.addEventListener('click', function () {
-                // If bootstrap is available, let it handle. If not, manual toggle.
                 if (typeof bootstrap === 'undefined') {
                     menu.classList.toggle('show');
                 }
             });
         }
 
-        // Close menu when clicking outside
         document.addEventListener('click', function (event) {
             if (menu && menu.classList.contains('show') && !menu.contains(event.target) && !btn.contains(event.target)) {
                 if (typeof bootstrap !== 'undefined') {
