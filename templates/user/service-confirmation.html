@@ -273,11 +273,9 @@
       <div class="summary-section">
         <h2 class="section-title">Request Summary</h2>
         <div id="requestSummary">
-          <!-- Dynamic content will be inserted here -->
         </div>
       </div>
 
-      <!-- Payment Info (if applicable) -->
       <div id="paymentSection" style="display: none;">
         <div class="payment-info">
           <i class="fa-solid fa-credit-card"></i>
@@ -287,7 +285,6 @@
         </div>
       </div>
 
-      <!-- Info Box -->
       <div class="info-box">
         <p>
           <strong><i class="fa-solid fa-circle-info"></i> What's Next?</strong><br>
@@ -298,7 +295,6 @@
         </p>
       </div>
 
-      <!-- Action Buttons -->
       <div class="action-buttons" id="actionButtons">
         <!-- Will be populated dynamically based on payment status -->
       </div>
@@ -310,34 +306,28 @@
 
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-    // Get service request data from localStorage
     const serviceData = JSON.parse(localStorage.getItem('pendingServiceRequest') || '{}');
     const paymentUrl = localStorage.getItem('servicePaymentUrl');
     
     if (Object.keys(serviceData).length === 0) {
-      // No pending service request, redirect to dashboard
       window.location.href = '/user/dashboard';
     }
 
-    // Display request summary
     displayRequestSummary(serviceData);
 
-    // Display appropriate action buttons
     displayActionButtons(serviceData, paymentUrl);
 
-    // Clear the pending service request after a delay
     setTimeout(() => {
       localStorage.removeItem('pendingServiceRequest');
       if (paymentUrl) {
         localStorage.removeItem('servicePaymentUrl');
       }
-    }, 30000); // Clear after 30 seconds
+    }, 30000);
 
     function displayRequestSummary(data) {
       const summaryDiv = document.getElementById('requestSummary');
       let html = '';
 
-      // Service Type
       html += `
         <div class="summary-item">
           <span class="summary-label">Service Type</span>
@@ -345,7 +335,6 @@
         </div>
       `;
 
-      // Status
       html += `
         <div class="summary-item">
           <span class="summary-label">Status</span>
@@ -353,7 +342,6 @@
         </div>
       `;
 
-      // Reference Number (if exists)
       if (data.externalId) {
         html += `
           <div class="summary-item">
@@ -363,7 +351,6 @@
         `;
       }
 
-      // Submission Date
       html += `
         <div class="summary-item">
           <span class="summary-label">Submitted On</span>
@@ -377,7 +364,6 @@
         </div>
       `;
 
-      // Payment Amount (if applicable)
       if (data.amount && data.amount > 0) {
         html += `
           <div class="summary-item">
@@ -386,12 +372,10 @@
           </div>
         `;
 
-        // Show payment section
         document.getElementById('paymentSection').style.display = 'block';
         document.getElementById('paymentAmount').textContent = peso.format(data.amount);
       }
 
-      // Additional details (excluding system fields)
       const excludeFields = ['userId', 'userEmail', 'serviceType', 'status', 'paymentStatus', 'createdAt', 'invoiceId', 'externalId', 'amount'];
       
       for (const [key, value] of Object.entries(data)) {
@@ -442,7 +426,6 @@
       const buttonContainer = document.getElementById('actionButtons');
       
       if (paymentUrl && data.amount && data.amount > 0) {
-        // Has payment - show "Proceed to Payment" as primary action
         buttonContainer.innerHTML = `
           <a href="${paymentUrl}" class="btn btn-primary">
             <i class="fa-solid fa-credit-card"></i>
@@ -454,10 +437,8 @@
           </a>
         `;
         
-        // Don't auto-redirect if payment is required
         clearInterval(autoRedirectTimer);
       } else {
-        // No payment - show "View My Requests" as primary action
         buttonContainer.innerHTML = `
           <a href="/user/history#services" class="btn btn-primary">
             <i class="fa-solid fa-history"></i>
@@ -471,13 +452,11 @@
       }
     }
 
-    // Auto-redirect to history page for free services (only if no payment required)
     let countdown = 15;
     const autoRedirectTimer = setInterval(() => {
       countdown--;
       if (countdown <= 0) {
         clearInterval(autoRedirectTimer);
-        // Only auto-redirect if no payment URL (free service)
         if (!paymentUrl || !serviceData.amount || serviceData.amount === 0) {
           window.location.href = '/user/history#services';
         }
