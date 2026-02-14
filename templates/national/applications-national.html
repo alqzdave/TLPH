@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TLPH | National Application Registry</title>
+  <title>TLPH | National Executive Registry</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,183 +17,175 @@
       --gov-border: #cbd5e1;
     }
     
-    /* Lock scroll for compact view */
     html, body { height: 100vh; overflow: hidden; }
     body { 
       font-family: "Inter", "Segoe UI", sans-serif; 
       background-color: var(--gov-bg); 
-      font-size: 0.72rem; 
+      font-size: 0.7rem; 
       color: #1e293b; 
     }
-    
-    .wrapper { display: flex; height: 100vh; overflow: hidden; }
-    main { flex: 1; min-width: 0; padding: 0.5rem 1rem; display: flex; flex-direction: column; overflow: hidden; }
+  
 
-    /* Executive Style Components */
-    .gov-card { 
-      background: #ffffff; 
-      border: 1px solid var(--gov-border); 
-      border-radius: 2px;
+    .gov-card { background: #ffffff; border: 1px solid var(--gov-border); border-radius: 4px; }
+
+    /* Layout for Equal Height */
+    .workspace-container {
+      display: flex;
+      flex: 1;
+      gap: 0.5rem;
+      min-height: 0; 
       margin-bottom: 0.5rem;
     }
 
-    /* Metric Cards with Side Border */
-    .metric-card { border: none; border-left: 5px solid var(--gov-navy); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .metric-title { font-size: 0.6rem; letter-spacing: 1px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .metric-value { font-size: 1.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
+    .sidebar-analytics {
+      width: 22%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
 
-    /* Table Styling & Sticky Header */
-    .table-responsive { flex-grow: 1; overflow-y: auto; background: white; border: 1px solid var(--gov-border); }
+    .chart-box {
+      flex: 1;
+      background: #fff;
+      border: 1px solid var(--gov-border);
+      border-radius: 4px;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chart-label {
+      font-size: 0.55rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      border-left: 3px solid var(--gov-navy);
+      padding-left: 6px;
+      margin-bottom: 5px;
+    }
+
+    .chart-container { flex: 1; position: relative; min-height: 0; }
+
+    /* Table Column */
+    .table-column { width: 78%; display: flex; flex-direction: column; }
+
+    .table-responsive { 
+      flex: 1; 
+      overflow-y: auto; 
+      background: white; 
+      border: 1px solid var(--gov-border); 
+      border-radius: 4px; 
+    }
+
     .table-registry thead th { 
-      background: #f8fafc; 
-      color: var(--gov-navy); 
-      font-weight: 700; 
+      background: var(--gov-navy); 
+      color: white; 
+      font-weight: 600; 
       text-transform: uppercase; 
-      font-size: 0.6rem;
-      border-bottom: 2px solid var(--gov-border);
+      font-size: 0.58rem;
       padding: 0.5rem !important;
       position: sticky; top: 0; z-index: 10;
     }
-    .table-registry td { padding: 0.4rem 0.6rem !important; vertical-align: middle; border-bottom: 1px solid #e2e8f0; font-size: 0.7rem; }
+    .table-registry td { padding: 0.4rem 0.5rem !important; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
 
-    /* Status Badges */
-    .status-pill {
-      font-size: 0.55rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 1px; text-transform: uppercase; border: 1px solid;
+    /* Metric Cards */
+    .metric-card { border: none; border-left: 4px solid var(--gov-navy); box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 0.5rem; }
+    .metric-title { font-size: 0.55rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .metric-value { font-size: 1.25rem; font-weight: 800; line-height: 1.1; }
+
+    /* Action Buttons with Hover Colors */
+    .btn-action {
+      width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 6px; transition: all 0.3s ease; border: 1px solid #e2e8f0; background: #f8fafc; color: #94a3b8;
     }
-    .st-approved { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
-    .st-pending { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
-    .st-rejected { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .btn-view:hover { color: white; background: var(--gov-navy); border-color: var(--gov-navy); }
+    .btn-approve:hover { color: white; background: #10b981; border-color: #059669; }
+    .btn-reject:hover { color: white; background: #bd0000; border-color: #bd0000; }
 
-    .chart-container { position: relative; height: 125px; width: 100%; }
-    .form-control-sm, .form-select-sm, .btn-sm { font-size: 0.65rem !important; border-radius: 1px !important; }
+    /* Status Pills */
+    .status-pill { font-size: 0.52rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 3px; text-transform: uppercase; border: 1px solid; }
+    .st-approved { background: #ecfdf5; color: #065f46; border-color: #34d399; }
+    .st-pending { background: #fffbeb; color: #92400e; border-color: #fbbf24; }
+    .st-review { background: #eff6ff; color: #1e40af; border-color: #60a5fa; }
+    .st-rejected { background: #fef2f2; color: #991b1b; border-color: #f87171; }
+    
+    .form-control-sm, .form-select-sm { font-size: 0.65rem !important; border-radius: 4px !important; }
   </style>
 </head>
 
-<body>
+<body class="text-slate-900">
 
-<div class="wrapper">
-  <div class="hidden lg:block w-64 bg-slate-900">
+<div class="flex h-screen overflow-hidden">
+  <div class="hidden lg:block w-64 bg-slate-900 h-full shrink-0">
     {% include 'national/sidenav-national.html' %}
   </div>
 
-  <main>
+  <main class="flex-1 flex flex-col p-3 space-y-3 overflow-hidden">
     <section class="gov-card p-2 px-3 border-0 border-b bg-white rounded-0 mb-2">
-      <div class="row g-2 align-items-center">
-        <div class="col-xl-4">
-          <h6 class="fw-bold m-0 text-uppercase" style="color: var(--gov-navy); letter-spacing: 0.5px;">National Application Registry</h6>
-          <div class="text-muted text-uppercase" style="font-size: 0.55rem;">Republic of the Philippines • Department of Agriculture</div>
-        </div>
-        <div class="col-xl-8 text-end">
-          <span class="badge bg-secondary rounded-0 p-2" style="font-size: 0.6rem;">FEBRUARY 14, 2026</span>
-        </div>
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold m-0 text-uppercase" style="color: var(--gov-navy); font-size: 0.8rem;">National Application Registry</h6>
+        <span class="badge bg-secondary rounded-1 p-1 px-3" style="font-size: 0.55rem;">FEB 14, 2026</span>
       </div>
     </section>
 
-    <div class="row g-2 mb-2">
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3">
-          <div class="d-flex justify-content-between align-items-start">
-            <div><div class="metric-title">Total Applications</div><div class="metric-value" style="color: var(--gov-navy);">12,480</div></div>
-            <span class="material-icons-round text-slate-300">analytics</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-muted"><b>62%</b> target reached for Q1</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #157347;">
-          <div class="d-flex justify-content-between align-items-start">
-            <div><div class="metric-title">Approved (Compliance)</div><div class="metric-value text-success">8,915</div></div>
-            <span class="material-icons-round text-success opacity-20">verified</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-muted"><b>71.4%</b> Approval Rate</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #e67e22;">
-          <div class="d-flex justify-content-between align-items-start">
-            <div><div class="metric-title">For Evaluation</div><div class="metric-value" style="color: #d35400;">1,320</div></div>
-            <span class="material-icons-round text-warning opacity-20">pending_actions</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-danger fw-bold">Avg Aging: 18 Days</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #b91c1c;">
-          <div class="d-flex justify-content-between align-items-start">
-            <div><div class="metric-title">Disapproved</div><div class="metric-value text-danger">1,487</div></div>
-            <span class="material-icons-round text-danger opacity-20">report_problem</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-muted">Top: Incomplete Docs</div>
-        </div>
-      </div>
+    <div class="row g-2 mb-1">
+      <div class="col-md-3"><div class="gov-card metric-card p-2 px-3"><div class="metric-title">Total Registry</div><div class="metric-value">12,480</div></div></div>
+      <div class="col-md-3"><div class="gov-card metric-card p-2 px-3" style="border-left-color: #10b981;"><div class="metric-title">Approved</div><div class="metric-value text-success">8,915</div></div></div>
+      <div class="col-md-3"><div class="gov-card metric-card p-2 px-3" style="border-left-color: #f59e0b;"><div class="metric-title">Pending / Review</div><div class="metric-value text-warning">1,320</div></div></div>
+      <div class="col-md-3"><div class="gov-card metric-card p-2 px-3" style="border-left-color: #ef4444;"><div class="metric-title">Rejected</div><div class="metric-value text-danger">1,487</div></div></div>
     </div>
 
-    <div class="row g-2 flex-grow-1 overflow-hidden">
-      <div class="col-lg-3 d-flex flex-column gap-1">
-        <div class="gov-card p-2 flex-grow-1"><div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Filing Trends</div><div class="chart-container"><canvas id="appsTrendChart"></canvas></div></div>
-        <div class="gov-card p-2 flex-grow-1"><div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Registry Distribution</div><div class="chart-container"><canvas id="appsStatusChart"></canvas></div></div>
-        <div class="gov-card p-2 flex-grow-1"><div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Regional Volume</div><div class="chart-container"><canvas id="appsRegionChart"></canvas></div></div>
-      </div>
+    <div class="workspace-container">
+      
+      <aside class="sidebar-analytics">
+        <div class="chart-box">
+          <div class="chart-label">Trend Analysis</div>
+          <div class="chart-container"><canvas id="appsTrendChart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-label">Status Breakdown</div>
+          <div class="chart-container"><canvas id="appsStatusChart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-label">Regional Volume</div>
+          <div class="chart-container"><canvas id="appsRegionChart"></canvas></div>
+        </div>
+      </aside>
 
-      <div class="col-lg-9 d-flex flex-column overflow-hidden">
-        <div class="gov-card flex-grow-1 d-flex flex-column overflow-hidden m-0">
+      <section class="table-column">
+        <div class="gov-card flex-grow-1 d-flex flex-column overflow-hidden h-full">
           
           <div class="p-2 px-3 bg-slate-50 border-b">
-            <div class="row g-2 align-items-center">
-              <div class="col-md-3">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white border-end-0 text-muted"><span class="material-icons-round fs-6">search</span></span>
-                  <input type="text" id="masterSearch" class="form-control border-start-0 ps-0" placeholder="Search Ref / Applicant...">
-                </div>
+            <div class="row g-1 align-items-center">
+              <div class="col-md-2">
+                <input type="text" id="masterSearch" class="form-control form-control-sm" placeholder="Search...">
               </div>
-              
               <div class="col-md-3">
                 <select id="regionFilter" class="form-select form-select-sm">
-                  <option value="ALL">All Regions (Philippines)</option>
-                  <option value="NCR">National Capital Region (NCR)</option>
-                  <option value="CAR">Cordillera Administrative Region (CAR)</option>
-                  <option value="REGION I">Region I - Ilocos Region</option>
-                  <option value="REGION II">Region II - Cagayan Valley</option>
-                  <option value="REGION III">Region III - Central Luzon</option>
-                  <option value="REGION IV-A">Region IV-A - CALABARZON</option>
-                  <option value="MIMAROPA">MIMAROPA Region</option>
-                  <option value="REGION V">Region V - Bicol Region</option>
-                  <option value="REGION VI">Region VI - Western Visayas</option>
-                  <option value="REGION VII">Region VII - Central Visayas</option>
-                  <option value="REGION VIII">Region VIII - Eastern Visayas</option>
-                  <option value="REGION IX">Region IX - Zamboanga Peninsula</option>
-                  <option value="REGION X">Region X - Northern Mindanao</option>
-                  <option value="REGION XI">Region XI - Davao Region</option>
-                  <option value="REGION XII">Region XII - SOCCSKSARGEN</option>
-                  <option value="REGION XIII">Region XIII - Caraga</option>
-                  <option value="BARMM">Bangsamoro (BARMM)</option>
+                  <option value="ALL">All 17 Regions</option>
+                  <option>NCR</option><option>CAR</option><option>REGION I</option><option>REGION II</option>
+                  <option>REGION III</option><option>REGION IV-A</option><option>MIMAROPA</option><option>REGION V</option>
+                  <option>REGION VI</option><option>REGION VII</option><option>REGION VIII</option><option>REGION IX</option>
+                  <option>REGION X</option><option>REGION XI</option><option>REGION XII</option><option>REGION XIII</option>
+                  <option>BARMM</option>
                 </select>
               </div>
-
-              <div class="col-md-2">
+              <div class="col-md-3">
                 <select id="categoryFilter" class="form-select form-select-sm">
                   <option value="ALL">All Categories</option>
-                  <option value="CROP & PLANT">Crop & Plant</option>
-                  <option value="LIVESTOCK">Livestock & Poultry</option>
-                  <option value="FISHERIES">Fisheries & Aquaculture</option>
-                  <option value="AGRIBUSINESS">Agribusiness & Processing</option>
-                  <option value="FOOD SAFETY">Food Safety & Quality</option>
-                  <option value="COMPLIANCE">Compliance & Enforcement</option>
-                  <option value="CLIMATE">Climate & Risk Mgmt</option>
+                  <option>CROP & PLANT</option><option>LIVESTOCK & POULTRY</option><option>FISHERIES</option>
+                  <option>AGRIBUSINESS</option><option>FOOD SAFETY</option><option>COMPLIANCE</option><option>CLIMATE RISK</option>
                 </select>
               </div>
-
               <div class="col-md-2">
                 <select id="statusFilter" class="form-select form-select-sm">
                   <option value="ALL">All Status</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="EVALUATION">Evaluation</option>
-                  <option value="REJECTED">Rejected</option>
+                  <option>APPROVED</option><option>TO REVIEW</option><option>PENDING</option><option>REJECTED</option>
                 </select>
               </div>
-              
               <div class="col-md-2 text-end">
-                <button onclick="clearFilters()" class="btn btn-light btn-sm border fw-bold w-100">RESET</button>
+                <button onclick="clearFilters()" class="btn btn-dark btn-sm fw-bold w-100 p-1" style="background-color: var(--gov-navy); font-size: 0.6rem;">RESET</button>
               </div>
             </div>
           </div>
@@ -205,40 +197,40 @@
                   <th>Date Filed</th>
                   <th>Reference ID</th>
                   <th>Applicant Name</th>
-                  <th>Service Category</th>
+                  <th>Category</th>
                   <th>Location</th>
                   <th>Status</th>
-                  <th class="text-center">Action</th>
+                  <th class="text-center">Manage</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="tbody">
                 <tr>
                   <td>Feb 12, 2026</td>
-                  <td class="fw-bold text-primary">APP-2026-001284</td>
+                  <td class="fw-bold text-primary">APP-001284</td>
                   <td>Dela Cruz, Juan</td>
-                  <td class="text-uppercase">Crop & Plant</td>
+                  <td>CROP & PLANT</td>
                   <td>NCR / Quezon City</td>
-                  <td><span class="status-pill st-pending">Evaluation</span></td>
+                  <td><span class="status-pill st-pending">Pending</span></td>
                   <td class="text-center">
-                    <div class="btn-group shadow-sm border rounded">
-                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-secondary">visibility</span></button>
-                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-success">check_circle</span></button>
-                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-danger">cancel</span></button>
+                    <div class="d-flex justify-content-center gap-2">
+                      <button class="btn-action btn-view" title="View"><span class="material-icons-round">visibility</span></button>
+                      <button class="btn-action btn-approve" title="Approve"><span class="material-icons-round">check_circle</span></button>
+                      <button class="btn-action btn-reject" title="Reject"><span class="material-icons-round">cancel</span></button>
                     </div>
                   </td>
                 </tr>
                 <tr>
-                  <td>Feb 11, 2026</td>
-                  <td class="fw-bold text-primary">APP-2026-001241</td>
-                  <td>Santos, Maria</td>
-                  <td class="text-uppercase">Food Safety</td>
-                  <td>Region IV-A / Calamba</td>
-                  <td><span class="status-pill st-approved">Approved</span></td>
+                  <td>Feb 14, 2026</td>
+                  <td class="fw-bold text-primary">APP-001299</td>
+                  <td>Rivera, Maria</td>
+                  <td>FISHERIES</td>
+                  <td>Region VII / Cebu</td>
+                  <td><span class="status-pill st-review">To Review</span></td>
                   <td class="text-center">
-                    <div class="btn-group shadow-sm border rounded">
-                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-secondary">visibility</span></button>
-                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-success">check_circle</span></button>
-                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-danger">cancel</span></button>
+                    <div class="d-flex justify-content-center gap-2">
+                      <button class="btn-action btn-view"><span class="material-icons-round">visibility</span></button>
+                      <button class="btn-action btn-approve"><span class="material-icons-round">check_circle</span></button>
+                      <button class="btn-action btn-reject"><span class="material-icons-round">cancel</span></button>
                     </div>
                   </td>
                 </tr>
@@ -247,14 +239,14 @@
           </div>
           
           <div class="p-1 px-3 bg-white border-top d-flex justify-content-between align-items-center">
-            <span id="rowCountLabel" class="text-muted" style="font-size: 0.6rem;">Showing: <b>2 records</b></span>
-            <button class="btn btn-outline-secondary btn-sm fw-bold px-2 py-0" style="font-size: 0.6rem;"><span class="material-icons-round fs-6 align-middle">file_download</span> EXPORT</button>
+            <span id="rowCountLabel" class="text-muted" style="font-size: 0.55rem;">Registry Count: <b>2 items</b></span>
+            <button class="btn btn-outline-secondary btn-sm fw-bold px-3 py-0" style="font-size: 0.55rem; height: 20px;">EXPORT CSV</button>
           </div>
         </div>
-      </div>
+      </section>
     </div>
 
-    <footer class="mt-2 text-center text-muted" style="font-size: 0.55rem;">REPUBLIC OF THE PHILIPPINES • NATIONAL APPLICATION DASHBOARD</footer>
+    <footer class="mt-1 text-center text-muted uppercase" style="font-size: 0.45rem;">Republic of the Philippines • v2.1-STABLE</footer>
   </main>
 </div>
 
@@ -262,15 +254,15 @@
   // --- CHART LOGIC ---
   const sharedOpts = {
     maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8, weight: 'bold' } } } },
-    scales: { y: { ticks: { font: { size: 8 } } }, x: { ticks: { font: { size: 8 } } } }
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 6, font: { size: 7, weight: 'bold' } } } },
+    scales: { y: { ticks: { font: { size: 7 } }, grid: { display: false } }, x: { ticks: { font: { size: 7 } }, grid: { display: false } } }
   };
 
   new Chart(document.getElementById('appsTrendChart'), {
     type: 'line',
     data: {
       labels: ['S', 'O', 'N', 'D', 'J', 'F'],
-      datasets: [{ label: 'Apps', data: [1800, 2050, 2200, 2400, 2600, 2480], borderColor: '#002e5f', backgroundColor: 'rgba(0,46,95,0.05)', fill: true, tension: 0.1 }]
+      datasets: [{ label: 'Apps', data: [18, 20, 22, 24, 26, 24], borderColor: '#002e5f', backgroundColor: 'rgba(0,46,95,0.1)', fill: true, tension: 0.3 }]
     },
     options: sharedOpts
   });
@@ -278,62 +270,57 @@
   new Chart(document.getElementById('appsStatusChart'), {
     type: 'doughnut',
     data: {
-      labels: ['Apprv', 'Pend', 'ToRev', 'Rej'],
-      datasets: [{ data: [8915, 3680, 1320, 1487], backgroundColor: ['#166534', '#854d0e', '#002e5f', '#991b1b'], borderWidth: 0 }]
+      labels: ['Apprv', 'Pend', 'Review', 'Rej'],
+      datasets: [{ data: [60, 20, 10, 10], backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'], borderWidth: 1 }]
     },
-    options: { ...sharedOpts, cutout: '70%', scales: { x: { display: false }, y: { display: false } } }
+    options: { ...sharedOpts, cutout: '75%', scales: { x: { display: false }, y: { display: false } } }
   });
 
   new Chart(document.getElementById('appsRegionChart'), {
     type: 'bar',
     data: {
       labels: ['NCR', 'R4A', 'R7', 'R3', 'BAR'],
-      datasets: [{ label: 'Volume', data: [2190, 1940, 1210, 990, 610], backgroundColor: '#475569' }]
+      datasets: [{ label: 'Volume', data: [21, 19, 12, 9, 6], backgroundColor: '#475569', borderRadius: 4 }]
     },
     options: { ...sharedOpts, indexAxis: 'y' }
   });
 
-  // --- FILTER & SEARCH LOGIC ---
-  const searchInput = document.getElementById('masterSearch');
-  const regionFilter = document.getElementById('regionFilter');
-  const categoryFilter = document.getElementById('categoryFilter');
-  const statusFilter = document.getElementById('statusFilter');
-  const tableRows = document.querySelectorAll('#masterTable tbody tr');
-  const rowCountLabel = document.getElementById('rowCountLabel');
-
+  // --- FILTER LOGIC ---
   function filterTable() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedRegion = regionFilter.value.toUpperCase();
-    const selectedCategory = categoryFilter.value.toUpperCase();
-    const selectedStatus = statusFilter.value.toUpperCase();
-    let visibleCount = 0;
+    const s = document.getElementById('masterSearch').value.toLowerCase();
+    const r = document.getElementById('regionFilter').value.toUpperCase();
+    const c = document.getElementById('categoryFilter').value.toUpperCase();
+    const st = document.getElementById('statusFilter').value.toUpperCase();
+    
+    const rows = document.querySelectorAll('#tbody tr');
+    let count = 0;
 
-    tableRows.forEach(row => {
-      const refId = row.cells[1].innerText.toLowerCase();
-      const applicant = row.cells[2].innerText.toLowerCase();
-      const category = row.cells[3].innerText.toUpperCase();
-      const location = row.cells[4].innerText.toUpperCase();
-      const status = row.cells[5].innerText.toUpperCase();
+    rows.forEach(row => {
+      const text = row.innerText.toUpperCase();
+      const matchS = text.includes(s.toUpperCase());
+      const matchR = r === 'ALL' || text.includes(r);
+      const matchC = c === 'ALL' || text.includes(c);
+      const matchST = st === 'ALL' || text.includes(st);
 
-      const matchesSearch = refId.includes(searchTerm) || applicant.includes(searchTerm);
-      const matchesRegion = selectedRegion === 'ALL' || location.includes(selectedRegion);
-      const matchesCategory = selectedCategory === 'ALL' || category.includes(selectedCategory);
-      const matchesStatus = selectedStatus === 'ALL' || status.includes(selectedStatus);
-
-      row.style.display = (matchesSearch && matchesRegion && matchesCategory && matchesStatus) ? "" : "none";
-      if (row.style.display === "") visibleCount++;
+      if (matchS && matchR && matchC && matchST) {
+        row.style.display = ""; count++;
+      } else { row.style.display = "none"; }
     });
-    rowCountLabel.innerHTML = `Showing: <b>${visibleCount} records</b>`;
+    document.getElementById('rowCountLabel').innerHTML = `Registry Count: <b>${count} items</b>`;
   }
+
+  ['masterSearch','regionFilter','categoryFilter','statusFilter'].forEach(id => {
+    document.getElementById(id).addEventListener('input', filterTable);
+    document.getElementById(id).addEventListener('change', filterTable);
+  });
 
   function clearFilters() {
-    searchInput.value = ""; regionFilter.value = "ALL"; categoryFilter.value = "ALL"; statusFilter.value = "ALL"; filterTable();
+    document.getElementById('masterSearch').value = "";
+    document.getElementById('regionFilter').value = "ALL";
+    document.getElementById('categoryFilter').value = "ALL";
+    document.getElementById('statusFilter').value = "ALL";
+    filterTable();
   }
-
-  searchInput.addEventListener('input', filterTable);
-  regionFilter.addEventListener('change', filterTable);
-  categoryFilter.addEventListener('change', filterTable);
-  statusFilter.addEventListener('change', filterTable);
 </script>
 
 </body>

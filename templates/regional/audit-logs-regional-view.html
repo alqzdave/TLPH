@@ -65,7 +65,7 @@
       <div>
         <h1 class="text-[10px] font-black uppercase tracking-[0.2em] text-govblue">Regional Audit Oversight</h1>
         <p class="mt-1 text-2xl font-black text-slate-900 uppercase">System Accountability Trail</p>
-        <p class="text-[10px] font-bold text-slate-500 uppercase italic">Region IV-A CALABARZON • Secure Logs</p>
+        <p class="text-[10px] font-bold text-slate-500 uppercase italic" id="regionHeader">Loading...</p>
       </div>
 
       <div class="flex flex-wrap gap-2 no-print">
@@ -144,22 +144,44 @@
       </table>
     </div>
 
-    <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.5em] mt-12 no-print italic">System Accountability Ledger • CALABARZON Oversight</p>
+    <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.5em] mt-12 no-print italic" id="footerText">Loading...</p>
   </main>
 
   <script type="module">
     import { auth, db } from '/static/js/firebase-config.js';
-    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
     let allLogs = [];
     let barChart, donutChart;
+    let userRegion = '';
+    let userRegionName = '';
+    let userProvinces = [];
 
-    // DUMMY LOGS FOR IMMEDIATE PREVIEW ROPA
+    async function loadUserRegion(user) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          userRegion = userData.region || 'IV-A';
+          userRegionName = userData.regionName || 'CALABARZON';
+          userProvinces = userData.provinces || [];
+          
+          document.getElementById('regionHeader').textContent = `Region ${userRegion} ${userRegionName} • Secure Logs`;
+          document.getElementById('footerText').textContent = `System Accountability Ledger • ${userRegionName} Oversight`;
+          
+          console.log('User region loaded:', userRegion, userRegionName, userProvinces);
+        }
+      } catch (error) {
+        console.error('Error loading user region:', error);
+      }
+    }
+
+    // DUMMY LOGS FOR IMMEDIATE PREVIEW - REGION 4B
     const dummyLogs = [
-        { timestamp: "Feb 12, 2026, 4:00 PM", actor: "Dave Alqzd", mun: "REGIONAL", prov: "CAVITE", action: "UPDATE", detail: "Approved Permit Status", target: "REG-9901" },
-        { timestamp: "Feb 12, 2026, 2:15 PM", actor: "Juan Dela Cruz", mun: "CALAMBA", prov: "LAGUNA", action: "DELETE", detail: "Removed User Account", target: "U-0042" },
-        { timestamp: "Feb 12, 2026, 9:00 AM", actor: "Maria Clara", mun: "CARMONA", prov: "CAVITE", action: "LOGIN", detail: "Authorized Access", target: "SYSTEM" }
+        { timestamp: "Feb 12, 2026, 4:00 PM", actor: "Dave Alqzd", mun: "REGIONAL", prov: "MARINDUQUE", action: "UPDATE", detail: "Approved Permit Status", target: "REG-9901" },
+        { timestamp: "Feb 12, 2026, 2:15 PM", actor: "Juan Dela Cruz", mun: "BOAC", prov: "MARINDUQUE", action: "DELETE", detail: "Removed User Account", target: "U-0042" },
+        { timestamp: "Feb 12, 2026, 9:00 AM", actor: "Maria Clara", mun: "PUERTO PRINCESA", prov: "PALAWAN", action: "LOGIN", detail: "Authorized Access", target: "SYSTEM" }
     ];
 
     async function loadLogs() {
@@ -176,20 +198,27 @@
         allLogs = [];
         snap.forEach(docSnap => {
           const d = docSnap.data();
+          const logProvince = (d.province || 'N/A').toUpperCase();
+          
           if (['user', 'municipal_admin', 'regional_admin'].includes(d.actorRole)) {
-            allLogs.push({
-              timestamp: d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A',
-              actor: d.actorName || 'Unknown',
-              mun: (d.municipality || 'N/A').toUpperCase(),
-              prov: (d.province || 'N/A').toUpperCase(),
-              action: d.action || 'N/A',
-              detail: d.detail || 'N/A',
-              target: d.targetId || 'N/A'
-            });
+            // Only include logs from user's provinces
+            if (userProvinces.length === 0 || userProvinces.includes(logProvince)) {
+              allLogs.push({
+                timestamp: d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A',
+                actor: d.actorName || 'Unknown',
+                mun: (d.municipality || 'N/A').toUpperCase(),
+                prov: logProvince,
+                action: d.action || 'N/A',
+                detail: d.detail || 'N/A',
+                target: d.targetId || 'N/A'
+              });
+            }
           }
         });
 
-        if (allLogs.length === 0) allLogs = [...dummyLogs];
+        if (allLogs.length === 0) {
+          allLogs = [...dummyLogs.filter(d => userProvinces.length === 0 || userProvinces.includes(d.prov))];
+        }
         render();
       } catch (e) { 
         allLogs = [...dummyLogs]; 
@@ -254,7 +283,14 @@
     document.getElementById("municipalityFilter").onchange = render;
     document.getElementById("searchInput").oninput = render;
 
-    onAuthStateChanged(auth, (user) => { if(user) loadLogs(); else window.location.href='/login'; });
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await loadUserRegion(user);
+        await loadLogs();
+      } else {
+        window.location.href = '/login';
+      }
+    });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>

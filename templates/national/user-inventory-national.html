@@ -3,618 +3,381 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TLPH | National Dashboard - User Inventory</title>
+  <title>TLPH | National Executive Registry</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --gov-font: Verdana, Arial, Tahoma, sans-serif;
-      --gov-bg: #f3f4f6;
-      --gov-panel: #ffffff;
-      --gov-border: #d1d5db;
-      --gov-focus: rgba(5,150,105,0.18);
+    :root { --gov-navy: #0f172a; --gov-bg: #f1f5f9; }
+    html, body { height: 100vh; overflow: hidden; background: var(--gov-bg); }
+    body { font-family: "Inter", sans-serif; font-size: 0.72rem; }
+
+    .card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .modal-bg { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); }
+    
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    .table-compact th { 
+      background: #f8fafc; text-transform: uppercase; font-size: 0.6rem; 
+      letter-spacing: 0.05em; color: #64748b; position: sticky; top: 0; z-index: 10; 
+      border-bottom: 2px solid #e2e8f0; padding: 0.5rem 0.6rem;
     }
-    html,body{ font-family: var(--gov-font); }
-    body{ background: var(--gov-bg); }
-    .card{ background: var(--gov-panel); border: 1px solid var(--gov-border); border-radius: 16px; }
-    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
-    .sticky-head thead th{ position: sticky; top: 0; z-index: 5; }
-    .modal-bg{ background: rgba(0,0,0,0.4); }
+    .table-compact td { padding: 0.4rem 0.6rem !important; border-bottom: 1px solid #f1f5f9; }
+
+    .chart-container { position: relative; height: 125px; width: 100%; }
   </style>
 </head>
 
-<body class="min-h-screen text-slate-900">
-  <div class="min-h-screen flex">
+<body class="text-slate-900">
+
+<div class="flex h-screen overflow-hidden">
+  <div class="hidden lg:block w-64 bg-slate-900 h-full shrink-0">
     {% include 'national/sidenav-national.html' %}
-
-    <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div class="w-full max-w-[1700px] space-y-6">
-
-        <section class="card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <div class="text-lg font-bold">User Inventory</div>
-            <div class="text-xs text-gray-600">Track inventory per owner (products, quantities, locations).</div>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              onclick="openUserInvModal('add')"
-              class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-              <span class="material-icons-round text-[18px]">add</span>
-              Add Item
-            </button>
-
-            <button
-              class="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm inline-flex items-center gap-2">
-              <span class="material-icons-round text-[18px]">download</span>
-              Export
-            </button>
-          </div>
-        </section>
-
-        <section class="card p-4">
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="filterCategory" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              <option value="ALL" selected>All Categories</option>
-              <option>Chemical Inventory</option>
-              <option>Natural Resources</option>
-              <option>Protected Area</option>
-              <option>Biodiversity Inventory</option>
-            </select>
-
-            <select id="filterRegion" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              <option value="ALL" selected>All Regions</option>
-              <option>NCR</option>
-              <option>Region IV-A</option>
-              <option>Region VII</option>
-              <option>BARMM</option>
-              <option>CAR</option>
-            </select>
-
-            <input
-              id="filterSearch"
-              type="text"
-              placeholder="Search product / owner / municipality…"
-              class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-72 focus-ring"
-            />
-
-            <button
-              onclick="applyUserInvFilters()"
-              class="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-              Apply
-            </button>
-
-            <button
-              onclick="resetUserInvFilters()"
-              class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm">
-              Reset
-            </button>
-          </div>
-        </section>
-
-        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Total User Inventory Items</div>
-            <div id="kpiTotalItems" class="text-2xl font-bold mt-1">—</div>
-            <div class="mt-2 text-xs text-gray-600">Records across all owners</div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Total Initial Quantity</div>
-            <div id="kpiTotalInitial" class="text-2xl font-bold mt-1">—</div>
-            <div class="mt-2 text-xs text-gray-600">Sum of all starting stock</div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Total Current Quantity</div>
-            <div id="kpiTotalCurrent" class="text-2xl font-bold mt-1">—</div>
-            <div class="mt-2 text-xs text-gray-600">Sum of current stock</div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Low Stock (≤ 10)</div>
-            <div id="kpiLowStock" class="text-2xl font-bold mt-1">—</div>
-            <div class="mt-2 text-xs text-gray-600">Based on current quantity</div>
-          </div>
-        </section>
-
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <div class="card p-4 xl:col-span-1">
-            <div class="font-bold">Current Quantity by Category</div>
-            <div class="text-xs text-gray-600">Distribution (sample, auto-updates)</div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="chartCategory"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4 xl:col-span-1">
-            <div class="font-bold">Current Quantity by Region</div>
-            <div class="text-xs text-gray-600">Where user stock is concentrated</div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="chartRegion"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4 xl:col-span-1">
-            <div class="font-bold">Top Owners (Current Quantity)</div>
-            <div class="text-xs text-gray-600">Top 6 owners by current stock</div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="chartOwners"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <section class="card overflow-hidden">
-          <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div>
-              <div class="font-bold">User Inventory List</div>
-              <div class="text-xs text-gray-600">
-                Product • Category • Owner • Initial • Current • Region • Municipality • Actions
-              </div>
-            </div>
-
-            <div class="text-xs text-gray-600">
-              Tip: “View” opens a quick preview modal.
-            </div>
-          </div>
-
-          <div class="overflow-x-auto max-h-[560px] sticky-head">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Product Name</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Category</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Owner</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Initial Qty</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Current Qty</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody id="userInvTbody" class="divide-y divide-gray-200">
-                <!-- Sample Row -->
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">Pesticide A (Sample)</td>
-                  <td class="py-3 px-4">Chemical Inventory</td>
-                  <td class="py-3 px-4">Dela Cruz, Juan</td>
-                  <td class="py-3 px-4 whitespace-nowrap">50</td>
-                  <td class="py-3 px-4 whitespace-nowrap">18</td>
-                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button onclick="viewUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button onclick="openUserInvModal('edit', this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                      <button onclick="removeUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">Watershed Kit</td>
-                  <td class="py-3 px-4">Natural Resources</td>
-                  <td class="py-3 px-4">Santos, Maria</td>
-                  <td class="py-3 px-4 whitespace-nowrap">25</td>
-                  <td class="py-3 px-4 whitespace-nowrap">9</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button onclick="viewUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button onclick="openUserInvModal('edit', this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                      <button onclick="removeUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 font-semibold">Species Tracker</td>
-                  <td class="py-3 px-4">Biodiversity Inventory</td>
-                  <td class="py-3 px-4">Rivera, Liza</td>
-                  <td class="py-3 px-4 whitespace-nowrap">14</td>
-                  <td class="py-3 px-4 whitespace-nowrap">2</td>
-                  <td class="py-3 px-4 whitespace-nowrap">BARMM</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Cotabato City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button onclick="viewUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-                      <button onclick="openUserInvModal('edit', this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-                      <button onclick="removeUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="p-4 border-t border-gray-100 text-xs text-gray-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>UI Draft: add backend integration later (DB)</div>
-            <div class="inline-flex items-center gap-2">
-              <span>CRUD-ready</span>
-              <span>Chart-ready</span>
-            </div>
-          </div>
-        </section>
-
-        <footer class="py-6 text-xs text-gray-600">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>© 2026 TLPH • User Inventory (UI Draft)</div>
-            <div class="inline-flex items-center gap-2">
-              <span>RBAC-ready</span>
-              <span>DB-ready</span>
-            </div>
-          </div>
-        </footer>
-
-      </div>
-    </main>
   </div>
 
-  <div id="userInvModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
-    <div class="bg-white rounded-2xl w-[560px] max-w-[92vw] p-6 space-y-4">
-      <div class="flex items-center justify-between">
-        <div class="font-bold text-lg" id="userInvModalTitle">Add User Inventory Item</div>
-        <button onclick="closeUserInvModal()" class="text-gray-500">
-          <span class="material-icons-round">close</span>
+  <main class="flex-1 flex flex-col p-3 space-y-3 overflow-hidden">
+    
+    <section class="card p-3 flex justify-between items-center shrink-0">
+      <div>
+        <h1 class="font-bold text-sm text-slate-800 tracking-tight flex items-center gap-2">
+          <span class="material-icons-round text-slate-400">inventory_2</span>
+          NATIONAL REGISTRY & INVENTORY SYSTEM
+        </h1>
+        <p class="text-[10px] text-slate-500 uppercase tracking-widest">Official Executive Dashboard • Feb 14, 2026</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="openModal('add')" class="px-3 py-1.5 bg-slate-900 text-white rounded text-[11px] font-bold flex items-center gap-1.5 shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all">
+          <span class="material-icons-round text-sm">add</span> ADD NEW RECORD
+        </button>
+        <button class="px-3 py-1.5 border bg-white rounded text-[11px] font-bold flex items-center gap-1.5 hover:bg-slate-50">
+          <span class="material-icons-round text-sm">file_download</span> EXPORT CSV
         </button>
       </div>
+    </section>
 
-      <form id="userInvForm" class="space-y-3">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <div class="text-xs text-gray-600 mb-1">Product Name</div>
-            <input id="fProduct" type="text" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm focus-ring" required />
-          </div>
+    <section class="grid grid-cols-4 gap-3 shrink-0">
+      <div class="card p-2 px-3 border-l-4 border-l-slate-900">
+        <div class="text-[9px] font-bold text-slate-500 uppercase">Total Records</div>
+        <div id="kpiTotal" class="text-xl font-black text-slate-900">0</div>
+      </div>
+      <div class="card p-2 px-3 border-l-4 border-l-blue-500">
+        <div class="text-[9px] font-bold text-slate-500 uppercase">Initial Qty Sum</div>
+        <div id="kpiInitial" class="text-xl font-black text-blue-600">0</div>
+      </div>
+      <div class="card p-2 px-3 border-l-4 border-l-emerald-500">
+        <div class="text-[9px] font-bold text-slate-500 uppercase">Current Qty Sum</div>
+        <div id="kpiCurrent" class="text-xl font-black text-emerald-600">0</div>
+      </div>
+      <div class="card p-2 px-3 border-l-4 border-l-rose-500">
+        <div class="text-[9px] font-bold text-slate-500 uppercase">Critical (Low Stock)</div>
+        <div id="kpiLow" class="text-xl font-black text-rose-600">0</div>
+      </div>
+    </section>
 
-          <div>
-            <div class="text-xs text-gray-600 mb-1">Category</div>
-            <select id="fCategory" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm focus-ring" required>
-              <option>Chemical Inventory</option>
-              <option>Natural Resources</option>
-              <option>Protected Area</option>
-              <option>Biodiversity Inventory</option>
-            </select>
-          </div>
+    <div class="flex-1 grid grid-cols-12 gap-3 min-h-0">
+      
+      <div class="col-span-12 xl:col-span-3 flex flex-col gap-2 overflow-y-auto custom-scroll pr-1">
+        <div class="card p-2">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Inventory Mix (Category)</p>
+          <div class="chart-container"><canvas id="chartType"></canvas></div>
+        </div>
+        <div class="card p-2">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Distribution by Region</p>
+          <div class="chart-container"><canvas id="chartReg"></canvas></div>
+        </div>
+        <div class="card p-2">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Top Owners (Stock)</p>
+          <div class="chart-container"><canvas id="chartOwner"></canvas></div>
+        </div>
+      </div>
 
-          <div>
-            <div class="text-xs text-gray-600 mb-1">Owner</div>
-            <input id="fOwner" type="text" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm focus-ring" required />
+      <section class="col-span-12 xl:col-span-9 card flex flex-col overflow-hidden">
+        <div class="p-2 px-3 bg-slate-50 border-b flex items-center justify-between">
+          <div class="flex gap-2">
+             <select id="filterReg" onchange="applyFilters()" class="border text-[10px] px-2 py-1 rounded bg-white outline-none">
+               <option value="ALL">All Regions (Philippines)</option>
+               <option>NCR</option><option>CAR</option><option>Region I</option><option>Region II</option>
+               <option>Region III</option><option>Region IV-A</option><option>MIMAROPA</option><option>Region V</option>
+               <option>Region VI</option><option>Region VII</option><option>Region VIII</option><option>Region IX</option>
+               <option>Region X</option><option>Region XI</option><option>Region XII</option><option>Region XIII</option>
+               <option>BARMM</option>
+             </select>
+             <input id="filterSearch" oninput="applyFilters()" type="text" placeholder="Search Master List..." class="border text-[10px] px-2 py-1 rounded w-56 outline-none">
           </div>
-
-          <div>
-            <div class="text-xs text-gray-600 mb-1">Region</div>
-            <input id="fRegion" type="text" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm focus-ring" required />
-          </div>
-
-          <div>
-            <div class="text-xs text-gray-600 mb-1">Municipality</div>
-            <input id="fMunicipality" type="text" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm focus-ring" required />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <div class="text-xs text-gray-600 mb-1">Initial Qty</div>
-              <input id="fInitial" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm focus-ring" required />
-            </div>
-            <div>
-              <div class="text-xs text-gray-600 mb-1">Current Qty</div>
-              <input id="fCurrent" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm focus-ring" required />
-            </div>
-          </div>
+          <span class="text-[10px] text-slate-400 font-bold uppercase" id="rowCount">Showing 0 Records</span>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeUserInvModal()" class="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-            Cancel
-          </button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-            <span class="material-icons-round text-[18px]">save</span>
-            Save
-          </button>
+        <div class="flex-1 overflow-auto custom-scroll">
+          <table class="min-w-full table-compact" id="mainTable">
+            <thead>
+              <tr class="text-left">
+                <th>Product / Item Description</th>
+                <th>Category</th>
+                <th>Owner / Applicant</th>
+                <th>Init / Curr Qty</th>
+                <th>Region (Municipality)</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody" class="divide-y divide-slate-100">
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="font-bold">Registered Pesticide 2026-A</td>
+                <td>Chemical Inventory</td>
+                <td>Dela Cruz, Juan</td>
+                <td>100 / <span class="text-blue-600 font-bold">45</span></td>
+                <td>NCR (Quezon City)</td>
+                <td class="flex justify-center gap-1">
+                  <button onclick="viewRow(this)" class="p-1 hover:bg-slate-100 rounded text-slate-400" title="View Details"><span class="material-icons-round text-sm">visibility</span></button>
+                  <button onclick="editRow(this)" class="p-1 hover:bg-slate-100 rounded text-slate-400" title="Edit"><span class="material-icons-round text-sm">edit</span></button>
+                  <button onclick="removeRow(this)" class="p-1 hover:bg-rose-50 rounded text-rose-400" title="Remove"><span class="material-icons-round text-sm">delete</span></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </form>
+      </section>
     </div>
-  </div>
 
-  <div id="userInvViewModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
-    <div class="bg-white rounded-2xl w-[560px] max-w-[92vw] p-6 space-y-4">
-      <div class="flex items-center justify-between">
-        <div class="font-bold text-lg">User Inventory Details</div>
-        <button onclick="closeUserInvView()" class="text-gray-500">
-          <span class="material-icons-round">close</span>
-        </button>
-      </div>
+    <footer class="text-[9px] text-center text-slate-400 font-bold uppercase py-1 border-t shrink-0">
+      © 2026 REPUBLIC OF THE PHILIPPINES • NATIONAL EXECUTIVE REGISTRY v2.1
+    </footer>
+  </main>
+</div>
 
-      <div id="viewContent" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-      </div>
-
-      <div class="flex justify-end">
-        <button onclick="closeUserInvView()" class="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-          Close
-        </button>
-      </div>
+<div id="modal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
+  <div class="bg-white rounded-md w-full max-w-md p-5 shadow-2xl">
+    <div class="flex justify-between items-center mb-4 border-b pb-2">
+      <h2 id="modalTitle" class="font-bold text-slate-800 uppercase text-xs">Record Form</h2>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><span class="material-icons-round">close</span></button>
     </div>
+    <form id="recordForm" class="grid grid-cols-2 gap-3">
+      <div class="col-span-2">
+        <label class="text-[9px] font-bold text-slate-400 uppercase">Product Name</label>
+        <input id="fName" type="text" class="w-full px-2 py-1.5 border rounded text-xs" required />
+      </div>
+      <div>
+        <label class="text-[9px] font-bold text-slate-400 uppercase">Category</label>
+        <select id="fCat" class="w-full px-2 py-1.5 border rounded text-xs">
+          <option>Chemical Inventory</option><option>Natural Resources</option><option>Protected Area</option><option>Biodiversity Inventory</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[9px] font-bold text-slate-400 uppercase">Owner</label>
+        <input id="fOwner" type="text" class="w-full px-2 py-1.5 border rounded text-xs" required />
+      </div>
+      <div>
+        <label class="text-[9px] font-bold text-slate-400 uppercase">Initial Qty</label>
+        <input id="fInit" type="number" class="w-full px-2 py-1.5 border rounded text-xs" required />
+      </div>
+      <div>
+        <label class="text-[9px] font-bold text-slate-400 uppercase">Current Qty</label>
+        <input id="fCurr" type="number" class="w-full px-2 py-1.5 border rounded text-xs" required />
+      </div>
+      <div>
+        <label class="text-[9px] font-bold text-slate-400 uppercase">Region</label>
+        <select id="fReg" onchange="updateMuniDropdown()" class="w-full px-2 py-1.5 border rounded text-xs outline-none" required>
+          <option value="" disabled selected>Select Region</option>
+          <option>NCR</option><option>CAR</option><option>Region I</option><option>Region II</option>
+          <option>Region III</option><option>Region IV-A</option><option>MIMAROPA</option><option>Region V</option>
+          <option>Region VI</option><option>Region VII</option><option>Region VIII</option><option>Region IX</option>
+          <option>Region X</option><option>Region XI</option><option>Region XII</option><option>Region XIII</option>
+          <option>BARMM</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[9px] font-bold text-slate-400 uppercase">Municipality</label>
+        <select id="fMuni" class="w-full px-2 py-1.5 border rounded text-xs outline-none" required disabled>
+          <option value="">Select Region first</option>
+        </select>
+      </div>
+      <div class="col-span-2 flex justify-end gap-2 mt-4 pt-3 border-t">
+        <button type="button" onclick="closeModal()" class="px-4 py-1.5 text-xs font-bold text-slate-500 rounded">CANCEL</button>
+        <button type="submit" class="px-5 py-1.5 text-xs font-bold bg-slate-900 text-white rounded">SAVE RECORD</button>
+      </div>
+    </form>
   </div>
+</div>
 
-  <script>
+<div id="viewModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
+  <div class="bg-white rounded-md w-full max-w-sm p-5 shadow-2xl">
+    <div class="flex justify-between items-center mb-4 border-b pb-2">
+      <h2 class="font-bold text-slate-800 uppercase text-[10px] flex items-center gap-1"><span class="material-icons-round text-sm">visibility</span> RECORD SUMMARY</h2>
+      <button onclick="closeViewModal()" class="text-slate-400 hover:text-slate-600"><span class="material-icons-round">close</span></button>
+    </div>
+    <div id="viewDetails" class="space-y-3"></div>
+    <div class="mt-6 flex justify-end"><button onclick="closeViewModal()" class="px-4 py-1.5 text-xs font-bold bg-slate-100 rounded">CLOSE</button></div>
+  </div>
+</div>
 
-    const tbody = document.getElementById('userInvTbody');
+<script>
+  let charts = {};
+  let editingRow = null;
 
-    const filterCategory = document.getElementById('filterCategory');
-    const filterRegion = document.getElementById('filterRegion');
-    const filterSearch = document.getElementById('filterSearch');
+  const muniData = {
+    "NCR": ["Quezon City", "Manila", "Makati", "Pasig", "Taguig"],
+    "CAR": ["Baguio City", "La Trinidad", "Tabuk"],
+    "Region I": ["Laoag", "Vigan", "San Fernando"],
+    "Region II": ["Tuguegarao", "Ilagan", "Santiago"],
+    "Region III": ["San Fernando", "Angeles", "Tarlac City"],
+    "Region IV-A": ["Calamba", "Lucena", "Batangas City", "Antipolo"],
+    "MIMAROPA": ["Calapan", "Puerto Princesa", "Mamburao"],
+    "Region V": ["Legazpi", "Naga", "Sorsogon"],
+    "Region VI": ["Iloilo City", "Bacolod", "Roxas City"],
+    "Region VII": ["Cebu City", "Tagbilaran", "Dumaguete"],
+    "Region VIII": ["Tacloban", "Ormoc", "Calbayog"],
+    "Region IX": ["Zamboanga City", "Dipolog", "Pagadian"],
+    "Region X": ["Cagayan de Oro", "Iligan", "Malaybalay"],
+    "Region XI": ["Davao City", "Tagum", "Digos"],
+    "Region XII": ["General Santos", "Koronadal", "Kidapawan"],
+    "Region XIII": ["Butuan", "Surigao City", "Bislig"],
+    "BARMM": ["Cotabato City", "Marawi", "Jolo"]
+  };
 
-    let editingRow = null;
-    let charts = {};
+  const chartColors = ['#0f172a', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#6366f1', '#475569', '#1e40af', '#065f46', '#92400e', '#b91c1c', '#5b21b6', '#9d174d'];
 
-    const fProduct = document.getElementById('fProduct');
-    const fCategory = document.getElementById('fCategory');
-    const fOwner = document.getElementById('fOwner');
-    const fInitial = document.getElementById('fInitial');
-    const fCurrent = document.getElementById('fCurrent');
-    const fRegion = document.getElementById('fRegion');
-    const fMunicipality = document.getElementById('fMunicipality');
-
-    function fmt(n){ return new Intl.NumberFormat('en-US').format(Number(n || 0)); }
-
-    function openUserInvModal(mode, btn){
-      const modal = document.getElementById('userInvModal');
-      const title = document.getElementById('userInvModalTitle');
-      document.getElementById('userInvForm').reset();
-
-      if(mode === 'edit' && btn){
-        editingRow = btn.closest('tr');
-        const cells = editingRow.cells;
-        // 0 product,1 cat,2 owner,3 init,4 curr,5 region,6 muni
-        fProduct.value = cells[0].innerText.trim();
-        fCategory.value = cells[1].innerText.trim();
-        fOwner.value = cells[2].innerText.trim();
-        fInitial.value = Number(cells[3].innerText.trim()) || 0;
-        fCurrent.value = Number(cells[4].innerText.trim()) || 0;
-        fRegion.value = cells[5].innerText.trim();
-        fMunicipality.value = cells[6].innerText.trim();
-        title.textContent = "Edit User Inventory Item";
-      } else {
-        editingRow = null;
-        title.textContent = "Add User Inventory Item";
-      }
-
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+  function updateMuniDropdown(selectedMuni = "") {
+    const reg = document.getElementById('fReg').value;
+    const muniSelect = document.getElementById('fMuni');
+    muniSelect.innerHTML = "";
+    if(muniData[reg]) {
+      muniSelect.disabled = false;
+      muniData[reg].forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m; opt.textContent = m;
+        if(m === selectedMuni) opt.selected = true;
+        muniSelect.appendChild(opt);
+      });
+    } else {
+      muniSelect.disabled = true;
+      muniSelect.innerHTML = '<option value="">Select Region first</option>';
     }
+  }
 
-    function closeUserInvModal(){
-      const modal = document.getElementById('userInvModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+  function openModal(mode) {
+    document.getElementById('modal').classList.replace('hidden', 'flex');
+    if(mode === 'add') {
+      document.getElementById('recordForm').reset();
+      document.getElementById('fMuni').disabled = true;
+      document.getElementById('modalTitle').innerText = "Add New Registry Entry";
       editingRow = null;
     }
+  }
 
-    // View modal
-    function viewUserInvRow(btn){
-      const tr = btn.closest('tr');
-      const cells = tr.cells;
-      const viewModal = document.getElementById('userInvViewModal');
-      const viewContent = document.getElementById('viewContent');
+  function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
 
-      const data = {
-        "Product Name": cells[0].innerText.trim(),
-        "Category": cells[1].innerText.trim(),
-        "Owner": cells[2].innerText.trim(),
-        "Initial Quantity": cells[3].innerText.trim(),
-        "Current Quantity": cells[4].innerText.trim(),
-        "Region": cells[5].innerText.trim(),
-        "Municipality": cells[6].innerText.trim()
-      };
+  function viewRow(btn) {
+    const tr = btn.closest('tr'); const cells = tr.cells; const qtyArr = cells[3].innerText.split(' / ');
+    const data = { "Item": cells[0].innerText, "Category": cells[1].innerText, "Owner": cells[2].innerText, "Stock": cells[3].innerText, "Location": cells[4].innerText };
+    document.getElementById('viewDetails').innerHTML = Object.entries(data).map(([k,v])=>`<div><p class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">${k}</p><p class="text-xs font-semibold text-slate-700">${v}</p></div>`).join('');
+    document.getElementById('viewModal').classList.replace('hidden', 'flex');
+  }
 
-      viewContent.innerHTML = Object.entries(data).map(([k,v]) => `
-        <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
-          <div class="text-xs text-gray-600">${k}</div>
-          <div class="font-semibold mt-1">${v}</div>
-        </div>
-      `).join('');
+  function closeViewModal() { document.getElementById('viewModal').classList.replace('flex', 'hidden'); }
 
-      viewModal.classList.remove('hidden');
-      viewModal.classList.add('flex');
+  function editRow(btn) {
+    editingRow = btn.closest('tr');
+    const cells = editingRow.cells;
+    document.getElementById('fName').value = cells[0].innerText;
+    document.getElementById('fCat').value = cells[1].innerText;
+    document.getElementById('fOwner').value = cells[2].innerText;
+    const qtyArr = cells[3].innerText.split(' / ');
+    document.getElementById('fInit').value = qtyArr[0];
+    document.getElementById('fCurr').value = qtyArr[1].trim();
+    const locArr = cells[4].innerText.split(' (');
+    document.getElementById('fReg').value = locArr[0].trim();
+    updateMuniDropdown(locArr[1]?.replace(')', ''));
+    document.getElementById('modalTitle').innerText = "Update Registry Record";
+    openModal('edit');
+  }
+
+  function removeRow(btn) { if(confirm("Permanently remove record?")) { btn.closest('tr').remove(); updateAnalytics(); } }
+
+  document.getElementById('recordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('fName').value;
+    const cat = document.getElementById('fCat').value;
+    const owner = document.getElementById('fOwner').value;
+    const init = document.getElementById('fInit').value;
+    const curr = document.getElementById('fCurr').value;
+    const reg = document.getElementById('fReg').value;
+    const muni = document.getElementById('fMuni').value;
+    const loc = `${reg} (${muni})`;
+
+    if(editingRow) {
+      editingRow.cells[0].innerText = name; editingRow.cells[1].innerText = cat;
+      editingRow.cells[2].innerText = owner; editingRow.cells[3].innerHTML = `${init} / <span class="text-blue-600 font-bold">${curr}</span>`;
+      editingRow.cells[4].innerText = loc;
+    } else {
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-slate-50 transition-colors";
+      tr.innerHTML = `<td class="font-bold">${name}</td><td>${cat}</td><td>${owner}</td>
+                      <td>${init} / <span class="text-blue-600 font-bold">${curr}</span></td><td>${loc}</td>
+                      <td class="flex justify-center gap-1">
+                        <button onclick="viewRow(this)" class="p-1 hover:bg-slate-100 rounded text-slate-400"><span class="material-icons-round text-sm">visibility</span></button>
+                        <button onclick="editRow(this)" class="p-1 hover:bg-slate-100 rounded text-slate-400"><span class="material-icons-round text-sm">edit</span></button>
+                        <button onclick="removeRow(this)" class="p-1 hover:bg-rose-50 rounded text-rose-400"><span class="material-icons-round text-sm">delete</span></button>
+                      </td>`;
+      document.getElementById('tbody').prepend(tr);
     }
+    closeModal(); updateAnalytics();
+  });
 
-    function closeUserInvView(){
-      const viewModal = document.getElementById('userInvViewModal');
-      viewModal.classList.add('hidden');
-      viewModal.classList.remove('flex');
-    }
+  function updateAnalytics() {
+    const rows = [...document.querySelectorAll('#tbody tr')].filter(r => r.style.display !== 'none');
+    let tInit = 0, tCurr = 0, tLow = 0;
+    const cats = {}, regs = {}, owns = {};
 
-    function removeUserInvRow(btn){
-      if(confirm("Remove this user inventory item?")){
-        btn.closest('tr').remove();
-        updateAllUserInvAnalytics();
-      }
-    }
-
-    document.getElementById('userInvForm').addEventListener('submit', function(e){
-      e.preventDefault();
-
-      const product = fProduct.value.trim();
-      const category = fCategory.value.trim();
-      const owner = fOwner.value.trim();
-      const initial = Number(fInitial.value || 0);
-      const current = Number(fCurrent.value || 0);
-      const region = fRegion.value.trim();
-      const municipality = fMunicipality.value.trim();
-
-      if(editingRow){
-        editingRow.cells[0].innerText = product;
-        editingRow.cells[1].innerText = category;
-        editingRow.cells[2].innerText = owner;
-        editingRow.cells[3].innerText = initial;
-        editingRow.cells[4].innerText = current;
-        editingRow.cells[5].innerText = region;
-        editingRow.cells[6].innerText = municipality;
-      } else {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-gray-50";
-        tr.innerHTML = `
-          <td class="py-3 px-4 font-semibold">${product}</td>
-          <td class="py-3 px-4">${category}</td>
-          <td class="py-3 px-4">${owner}</td>
-          <td class="py-3 px-4 whitespace-nowrap">${initial}</td>
-          <td class="py-3 px-4 whitespace-nowrap">${current}</td>
-          <td class="py-3 px-4 whitespace-nowrap">${region}</td>
-          <td class="py-3 px-4 whitespace-nowrap">${municipality}</td>
-          <td class="py-3 px-4 whitespace-nowrap">
-            <div class="flex flex-wrap gap-2">
-              <button onclick="viewUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">View</button>
-              <button onclick="openUserInvModal('edit', this)" class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs">Edit</button>
-              <button onclick="removeUserInvRow(this)" class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs">Remove</button>
-            </div>
-          </td>
-        `;
-        tbody.prepend(tr);
-      }
-
-      closeUserInvModal();
-      updateAllUserInvAnalytics();
+    rows.forEach((tr, index) => {
+      const cat = tr.cells[1].innerText;
+      const reg = tr.cells[4].innerText.split(' (')[0];
+      const own = tr.cells[2].innerText;
+      const qtyText = tr.cells[3].innerText.split(' / ');
+      const init = parseInt(qtyText[0]); const curr = parseInt(qtyText[1]);
+      tInit += init; tCurr += curr; if(curr <= 10) tLow++;
+      cats[cat] = (cats[cat] || 0) + curr; regs[reg] = (regs[reg] || 0) + curr; owns[own] = (owns[own] || 0) + curr;
     });
 
-    function applyUserInvFilters(){
-      const cat = filterCategory.value;
-      const reg = filterRegion.value;
-      const q = filterSearch.value.trim().toLowerCase();
+    document.getElementById('kpiTotal').innerText = rows.length;
+    document.getElementById('kpiInitial').innerText = tInit.toLocaleString();
+    document.getElementById('kpiCurrent').innerText = tCurr.toLocaleString();
+    document.getElementById('kpiLow').innerText = tLow;
+    document.getElementById('rowCount').innerText = `Showing ${rows.length} Total Records`;
+    
+    renderChart('chartType', 'doughnut', Object.keys(cats), Object.values(cats));
+    renderChart('chartReg', 'bar', Object.keys(regs), Object.values(regs));
+    const topO = Object.entries(owns).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    renderChart('chartOwner', 'bar', topO.map(x=>x[0]), topO.map(x=>x[1]), true);
+  }
 
-      [...tbody.querySelectorAll('tr')].forEach(tr => {
-        const cells = tr.cells;
-        const rowCat = cells[1].innerText.trim();
-        const rowReg = cells[5].innerText.trim();
-        const hay = (cells[0].innerText + " " + cells[2].innerText + " " + cells[6].innerText).toLowerCase();
+  function renderChart(id, type, labels, data, horizontal = false) {
+    if(charts[id]) charts[id].destroy();
+    charts[id] = new Chart(document.getElementById(id), {
+      type, data: { labels, datasets: [{ data, backgroundColor: chartColors }] },
+      options: { 
+        indexAxis: horizontal ? 'y' : 'x',
+        responsive: true, maintainAspectRatio: false, 
+        plugins: { legend: { display: type === 'doughnut', position: 'right', labels: { boxWidth: 8, font: { size: 8 } } } },
+        scales: type === 'bar' ? { y: { beginAtZero: true, ticks: { font: { size: 8 } }, grid: { display: false } }, x: { ticks: { font: { size: 8 } }, grid: { display: false } } } : {}
+      }
+    });
+  }
 
-        const okCat = (cat === "ALL") || (rowCat === cat);
-        const okReg = (reg === "ALL") || (rowReg === reg);
-        const okQ = (!q) || hay.includes(q);
+  function applyFilters() {
+    const s = document.getElementById('filterSearch').value.toLowerCase();
+    const r = document.getElementById('filterReg').value;
+    [...document.querySelectorAll('#tbody tr')].forEach(row => {
+      const matchS = row.innerText.toLowerCase().includes(s);
+      const matchR = r === 'ALL' || row.cells[4].innerText.includes(r);
+      row.style.display = matchS && matchR ? '' : 'none';
+    });
+    updateAnalytics();
+  }
 
-        tr.style.display = (okCat && okReg && okQ) ? "" : "none";
-      });
+  updateAnalytics();
+</script>
 
-      updateAllUserInvAnalytics();
-    }
-
-    function resetUserInvFilters(){
-      filterCategory.value = "ALL";
-      filterRegion.value = "ALL";
-      filterSearch.value = "";
-      [...tbody.querySelectorAll('tr')].forEach(tr => tr.style.display = "");
-      updateAllUserInvAnalytics();
-    }
-
-    function getVisibleRows(){
-      return [...tbody.querySelectorAll('tr')].filter(tr => tr.style.display !== "none");
-    }
-
-    function computeAggregates(){
-      const rows = getVisibleRows();
-      let totalItems = rows.length;
-      let totalInitial = 0;
-      let totalCurrent = 0;
-      let lowStock = 0;
-
-      const byCategory = {};
-      const byRegion = {};
-      const byOwner = {};
-
-      rows.forEach(tr => {
-        const c = tr.cells;
-        const category = c[1].innerText.trim();
-        const owner = c[2].innerText.trim();
-        const initial = Number(c[3].innerText.trim()) || 0;
-        const current = Number(c[4].innerText.trim()) || 0;
-        const region = c[5].innerText.trim();
-
-        totalInitial += initial;
-        totalCurrent += current;
-        if(current <= 10) lowStock += 1;
-
-        byCategory[category] = (byCategory[category] || 0) + current;
-        byRegion[region] = (byRegion[region] || 0) + current;
-        byOwner[owner] = (byOwner[owner] || 0) + current;
-      });
-
-      return { totalItems, totalInitial, totalCurrent, lowStock, byCategory, byRegion, byOwner };
-    }
-
-    function updateKPIs(agg){
-      document.getElementById('kpiTotalItems').textContent = fmt(agg.totalItems);
-      document.getElementById('kpiTotalInitial').textContent = fmt(agg.totalInitial);
-      document.getElementById('kpiTotalCurrent').textContent = fmt(agg.totalCurrent);
-      document.getElementById('kpiLowStock').textContent = fmt(agg.lowStock);
-    }
-
-    function upsertChart(id, type, labels, data, opts){
-      if(charts[id]) charts[id].destroy();
-      charts[id] = new Chart(document.getElementById(id), {
-        type,
-        data: { labels, datasets: [{ label: 'Current Qty', data }] },
-        options: Object.assign({
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } }
-        }, opts || {})
-      });
-    }
-
-    function updateCharts(agg){
-
-      const catEntries = Object.entries(agg.byCategory);
-      const catLabels = catEntries.map(x => x[0]);
-      const catData = catEntries.map(x => x[1]);
-      if(charts['chartCategory']) charts['chartCategory'].destroy();
-      charts['chartCategory'] = new Chart(document.getElementById('chartCategory'), {
-        type: 'doughnut',
-        data: { labels: catLabels, datasets: [{ data: catData }] },
-        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
-      });
-
-      const regEntries = Object.entries(agg.byRegion);
-      const regLabels = regEntries.map(x => x[0]);
-      const regData = regEntries.map(x => x[1]);
-      if(charts['chartRegion']) charts['chartRegion'].destroy();
-      charts['chartRegion'] = new Chart(document.getElementById('chartRegion'), {
-        type: 'bar',
-        data: { labels: regLabels, datasets: [{ label: 'Current Qty', data: regData }] },
-        options: {
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{ legend:{ position:'bottom' } },
-          scales:{ y:{ beginAtZero:true } }
-        }
-      });
-
-      const ownerEntries = Object.entries(agg.byOwner).sort((a,b)=>b[1]-a[1]).slice(0,6);
-      const oLabels = ownerEntries.map(x=>x[0]);
-      const oData = ownerEntries.map(x=>x[1]);
-      if(charts['chartOwners']) charts['chartOwners'].destroy();
-      charts['chartOwners'] = new Chart(document.getElementById('chartOwners'), {
-        type: 'bar',
-        data: { labels: oLabels, datasets: [{ label: 'Current Qty', data: oData }] },
-        options: {
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{ legend:{ position:'bottom' } },
-          scales:{ y:{ beginAtZero:true } }
-        }
-      });
-    }
-
-    function updateAllUserInvAnalytics(){
-      const agg = computeAggregates();
-      updateKPIs(agg);
-      updateCharts(agg);
-    }
-
-    // Initial render
-    updateAllUserInvAnalytics();
-  </script>
 </body>
 </html>

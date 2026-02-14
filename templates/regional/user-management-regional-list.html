@@ -49,7 +49,7 @@
     <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-6 border-b border-slate-300 pb-5">
       <div>
         <h1 class="text-2xl font-black uppercase tracking-tight text-govblue">Regional User Oversight</h1>
-        <p class="mt-1 text-sm font-bold text-slate-500 uppercase italic tracking-tighter">Region IV-A (CALABARZON) • Local & Regional Accounts Only</p>
+        <p class="mt-1 text-sm font-bold text-slate-500 uppercase italic tracking-tighter" id="regionHeader">Loading...</p>
       </div>
       <div class="flex flex-wrap gap-2">
         <div class="inline-flex items-center gap-2 border border-blue-200 bg-blue-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-blue-900">
@@ -132,10 +132,31 @@
 
   <script type="module">
     import { auth, db } from '/static/js/firebase-config.js';
-    import { collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
     let allUsers = [];
+    let userRegion = '';
+    let userRegionName = '';
+    let userProvinces = [];
+
+    async function loadUserRegion(user) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          userRegion = userData.region || 'IV-A';
+          userRegionName = userData.regionName || 'CALABARZON';
+          userProvinces = userData.provinces || [];
+          
+          document.getElementById('regionHeader').textContent = `Region ${userRegion} (${userRegionName}) • Local & Regional Accounts Only`;
+          
+          console.log('User region loaded:', userRegion, userRegionName, userProvinces);
+        }
+      } catch (error) {
+        console.error('Error loading user region:', error);
+      }
+    }
 
     async function loadRegionalUsers() {
       try {
@@ -149,15 +170,17 @@
         uSnap.forEach(dSnapshot => {
           const d = dSnapshot.data();
           const userRole = d.role || 'user';
+          const userProvince = (d.province || '').toUpperCase();
 
           // FUCK SHIT PROTECTOR: Huwag isama ang National at Superadmin
-          if (allowedRoles.includes(userRole)) {
+          // Also filter by user's provinces for regional accounts
+          if (allowedRoles.includes(userRole) && (userProvinces.length === 0 || userProvinces.includes(userProvince))) {
             const user = {
               id: dSnapshot.id,
               name: `${d.firstName || ''} ${d.lastName || ''}`.trim() || d.email || 'Unknown User',
               email: d.email || 'N/A',
               municipality: (d.municipality || '').toUpperCase(),
-              province: (d.province || '').toUpperCase(),
+              province: userProvince,
               status: d.status || 'Active',
               role: userRole
             };
@@ -244,7 +267,14 @@
     document.getElementById("municipalitySelect").onchange = render;
     document.getElementById("searchInput").oninput = render;
 
-    onAuthStateChanged(auth, (user) => { user ? loadRegionalUsers() : window.location.href = '/login'; });
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await loadUserRegion(user);
+        await loadRegionalUsers();
+      } else {
+        window.location.href = '/login';
+      }
+    });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
