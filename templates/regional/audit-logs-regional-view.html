@@ -177,25 +177,49 @@
       }
     }
 
-    // DUMMY LOGS FOR IMMEDIATE PREVIEW - REGION 4B
-    const dummyLogs = [
-        { timestamp: "Feb 12, 2026, 4:00 PM", actor: "Dave Alqzd", mun: "REGIONAL", prov: "MARINDUQUE", action: "UPDATE", detail: "Approved Permit Status", target: "REG-9901" },
-        { timestamp: "Feb 12, 2026, 2:15 PM", actor: "Juan Dela Cruz", mun: "BOAC", prov: "MARINDUQUE", action: "DELETE", detail: "Removed User Account", target: "U-0042" },
-        { timestamp: "Feb 12, 2026, 9:00 AM", actor: "Maria Clara", mun: "PUERTO PRINCESA", prov: "PALAWAN", action: "LOGIN", detail: "Authorized Access", target: "SYSTEM" }
-    ];
-
     async function loadLogs() {
       try {
+        // Get users to populate municipality filter and map user data
         const uSnap = await getDocs(collection(db, 'users'));
         const munSet = new Set();
-        uSnap.forEach(doc => { if(doc.data().municipality) munSet.add(doc.data().municipality.toUpperCase()); });
+        const provSet = new Set();
         
+        uSnap.forEach(doc => { 
+          const userData = doc.data();
+          const userProvince = (userData.province || '').toUpperCase();
+          const userMunicipality = (userData.municipality || '').toUpperCase();
+          
+          // Only add provinces and municipalities from user's region
+          if (userProvinces.length === 0 || userProvinces.includes(userProvince)) {
+            if (userMunicipality) munSet.add(userMunicipality);
+            if (userProvince) provSet.add(userProvince);
+          }
+        });
+        
+        // Populate province filter with user's provinces
+        const pFilter = document.getElementById("provinceFilter");
+        if (pFilter) {
+          pFilter.innerHTML = '<option value="all">All Provinces</option>';
+          if (userProvinces.length > 0) {
+            userProvinces.forEach(p => {
+              pFilter.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+          } else {
+            Array.from(provSet).sort().forEach(p => {
+              pFilter.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+          }
+        }
+        
+        // Populate municipality filter
         const mFilter = document.getElementById("municipalityFilter");
         mFilter.innerHTML = '<option value="all">All Municipalities</option>';
         Array.from(munSet).sort().forEach(m => mFilter.innerHTML += `<option value="${m}">${m}</option>`);
 
+        // Fetch real audit logs from Firebase only
         const snap = await getDocs(query(collection(db, 'auditLogs'), orderBy('timestamp', 'desc')));
-        allLogs = [];
+        allLogs = []; // Start with empty array - NO DUMMY DATA
+        
         snap.forEach(docSnap => {
           const d = docSnap.data();
           const logProvince = (d.province || 'N/A').toUpperCase();
@@ -205,23 +229,22 @@
             if (userProvinces.length === 0 || userProvinces.includes(logProvince)) {
               allLogs.push({
                 timestamp: d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A',
-                actor: d.actorName || 'Unknown',
+                actor: d.actorName || d.actor || 'Unknown',
                 mun: (d.municipality || 'N/A').toUpperCase(),
                 prov: logProvince,
                 action: d.action || 'N/A',
-                detail: d.detail || 'N/A',
-                target: d.targetId || 'N/A'
+                detail: d.detail || d.description || 'N/A',
+                target: d.targetId || d.target || 'N/A'
               });
             }
           }
         });
-
-        if (allLogs.length === 0) {
-          allLogs = [...dummyLogs.filter(d => userProvinces.length === 0 || userProvinces.includes(d.prov))];
-        }
+        
+        console.log(`Loaded ${allLogs.length} audit logs for region ${userRegion}`);
         render();
       } catch (e) { 
-        allLogs = [...dummyLogs]; 
+        console.error('Error loading audit logs:', e); 
+        allLogs = []; // Empty array if error - NO DUMMY DATA
         render(); 
       }
     }

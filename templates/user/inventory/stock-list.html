@@ -76,7 +76,6 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
-        <!-- Loading State -->
         <div id="loadingState" class="text-center py-12">
             <div class="inline-flex items-center justify-center w-12 h-12 bg-emerald-50 rounded-full mb-3">
                 <i class="fa-solid fa-spinner fa-spin text-xl text-emerald-600"></i>
@@ -84,7 +83,6 @@
             <p class="text-gray-500 font-medium text-xs">Loading your data...</p>
         </div>
 
-        <!-- Empty State -->
         <div id="emptyState" class="hidden text-center py-12">
             <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-full mb-3">
                 <i class="fa-solid fa-box-open text-3xl text-gray-300"></i>
@@ -93,7 +91,6 @@
             <p class="text-gray-500 text-xs">Only approved inventory and applications are displayed here</p>
         </div>
 
-        <!-- Combined Grid -->
         <div id="combinedGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 hidden"></div>
     </main>
 
@@ -112,8 +109,6 @@
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
         const combinedGrid = document.getElementById('combinedGrid');
-
-        // Category labels mapping
         const categoryLabels = {
             'farming': 'Crop & Plant',
             'livestock': 'Fisheries & Agriculture',
@@ -130,7 +125,6 @@
             'institutional': 'Cooperative Development'
         };
 
-        // Default images for categories
         const categoryImages = {
             'farming': 'https://images.unsplash.com/photo-1592534571990-285663673f3c?q=80&w=1000&auto=format&fit=crop',
             'livestock': 'https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=1000&auto=format&fit=crop',
@@ -316,8 +310,6 @@
         async function loadInventory(userId) {
             try {
                 console.log('Loading inventory for user:', userId);
-                
-                // Query inventory_registrations collection for the current user
                 const q = query(
                     collection(db, 'inventory_registrations'), 
                     where('userId', '==', userId)
@@ -338,7 +330,6 @@
                     items.push(data);
                 });
                 
-                // Sort by creation date (newest first)
                 items.sort((a, b) => {
                     const aTime = a.createdAt?.toDate?.() || 0;
                     const bTime = b.createdAt?.toDate?.() || 0;
@@ -377,7 +368,6 @@
                     apps.push(data);
                 });
                 
-                // Sort by submission date (newest first)
                 apps.sort((a, b) => {
                     const aTime = a.submittedAt?.toDate?.() || 0;
                     const bTime = b.submittedAt?.toDate?.() || 0;
@@ -398,7 +388,6 @@
                 emptyState.classList.add('hidden');
                 combinedGrid.classList.add('hidden');
 
-                // Load both inventory and applications
                 const [inventoryItems, applications] = await Promise.all([
                     loadInventory(userId),
                     loadApplications(userId)
@@ -406,33 +395,24 @@
 
                 loadingState.classList.add('hidden');
 
-                // Filter approved items
                 const approvedInventory = inventoryItems.filter(item => item.status === 'approved');
-                
-                // For applications: show those that are approved (including those pending payment or paid)
                 const approvedApplications = applications.filter(app => {
-                    // Show applications with status: approved, pending_payment, or PAID
                     const status = (app.status || '').toLowerCase();
                     return status === 'approved' || status === 'pending_payment' || status === 'paid';
                 });
 
-                // Combine and sort all approved items by date
                 const allItems = [];
                 
-                // Add approved inventory items with type marker
                 approvedInventory.forEach(item => {
                     allItems.push({ ...item, itemType: 'inventory', sortDate: item.createdAt?.toDate?.() || new Date(0) });
                 });
                 
-                // Add approved applications with type marker
                 approvedApplications.forEach(app => {
                     allItems.push({ ...app, itemType: 'application', sortDate: app.submittedAt?.toDate?.() || new Date(0) });
                 });
                 
-                // Sort by date (newest first)
                 allItems.sort((a, b) => b.sortDate - a.sortDate);
 
-                // Display combined items
                 if (allItems.length > 0) {
                     combinedGrid.innerHTML = allItems.map(item => {
                         return item.itemType === 'inventory' 
@@ -487,7 +467,6 @@
             }
         };
 
-        // Auth state observer
         onAuthStateChanged(auth, user => {
             if (user) {
                 loadAllData(user.uid);
@@ -496,14 +475,12 @@
             }
         });
 
-        // Check for payment success
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const paymentSuccess = urlParams.get('payment_success');
             
             if (paymentSuccess === 'true') {
                 alert('Payment successful! Your inventory registration has been submitted.');
-                // Clean up URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         });

@@ -20,12 +20,10 @@
             overflow-x: hidden;
         }
 
-        /* --- Header Fixes --- */
         .dropdown-menu:not(.show) { display: none !important; }
         .collapse:not(.show) { display: none !important; }
         header { z-index: 1050 !important; }
 
-        /* --- Compact Form Styles --- */
         .label-style { 
             font-size: 9px; 
             font-weight: 900; 
@@ -210,7 +208,6 @@
         const REGISTRATION_FEE = 150.00;
         let currentUser = null;
 
-        // Check authentication
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -221,14 +218,12 @@
             }
         });
 
-        // Toggle protected species fields
         window.toggleProtectedFields = function() {
             const isChecked = document.getElementById('protectedToggle').checked;
             const fields = document.getElementById('protectedFields');
             isChecked ? fields.classList.remove('hidden') : fields.classList.add('hidden');
         };
 
-        // Update file name display
         window.updateFileName = function(input, statusId) {
             if (input.files && input.files[0]) {
                 const fileName = input.files[0].name;
@@ -236,7 +231,6 @@
             }
         };
 
-        // Reset form display
         window.resetDisplay = function() {
             setTimeout(() => {
                 document.getElementById('protectedFields').classList.add('hidden');
@@ -246,7 +240,6 @@
             }, 10);
         };
 
-        // Upload file to Firebase Storage
         async function uploadFile(file, path) {
             if (!file) return null;
             
@@ -260,7 +253,6 @@
             return downloadURL;
         }
 
-        // Handle form submission
         document.getElementById('stockForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -274,11 +266,9 @@
             const originalText = submitBtn.innerHTML;
             
             try {
-                // Disable submit button
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
 
-                // Collect form data
                 const formData = {
                     resourceName: document.getElementById('resourceName').value,
                     propertyNumber: document.getElementById('propertyNumber').value,
@@ -297,14 +287,12 @@
                     updatedAt: serverTimestamp()
                 };
 
-                // Upload image if provided
                 const imageFile = document.getElementById('file_image').files[0];
                 if (imageFile) {
                     console.log('Uploading image...');
                     formData.imageUrl = await uploadFile(imageFile, `inventory/images/${currentUser.uid}`);
                 }
 
-                // Upload permit if protected species
                 if (formData.isProtected) {
                     const permitFile = document.getElementById('file_permit').files[0];
                     if (permitFile) {
@@ -313,12 +301,10 @@
                     }
                 }
 
-                // Save to Firestore
                 console.log('Saving to Firestore...');
                 const docRef = await addDoc(collection(db, 'inventory_registrations'), formData);
                 console.log('Document saved with ID:', docRef.id);
 
-                // Initiate Xendit payment
                 console.log('Initiating payment...');
                 const paymentData = {
                     amount: REGISTRATION_FEE,
@@ -350,11 +336,9 @@
                 const result = await response.json();
 
                 if (result.status === 'success' && result.invoice_url) {
-                    // Store inventory ID and transaction type in session
                     sessionStorage.setItem('pending_inventory_id', docRef.id);
                     sessionStorage.setItem('transaction_type', 'inventory-registration');
                     
-                    // Redirect to payment page
                     window.location.href = result.invoice_url;
                 } else {
                     throw new Error(result.message || 'Payment initiation failed');
@@ -364,13 +348,11 @@
                 console.error('Error submitting form:', error);
                 alert('Error: ' + error.message);
                 
-                // Re-enable submit button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             }
         });
 
-        // Dropdown Handlers
         document.addEventListener('click', function (e) {
             const dropdownBtn = e.target.closest('[data-bs-toggle="dropdown"]');
             if (dropdownBtn) {
@@ -381,7 +363,6 @@
             }
         });
 
-        // Check for payment success
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const paymentSuccess = urlParams.get('payment_success');
