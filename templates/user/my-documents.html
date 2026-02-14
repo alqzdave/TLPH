@@ -486,6 +486,50 @@
           console.error('Error loading inventory:', invError);
         }
 
+        // 2.5 Load from Firebase service_requests collection
+        try {
+          console.log('Querying service requests for user:', user.uid);
+          const svcQuery = query(
+            collection(db, 'service_requests'),
+            where('userId', '==', user.uid)
+          );
+          const svcSnapshot = await getDocs(svcQuery);
+          console.log('Service requests found:', svcSnapshot.size);
+
+          svcSnapshot.forEach((doc) => {
+            const svc = doc.data();
+            const status = (svc.status || '').toLowerCase();
+            const paymentStatus = (svc.paymentStatus || '').toLowerCase();
+            console.log('Service request:', svc.serviceType, 'Status:', status, 'PaymentStatus:', paymentStatus);
+            
+            // Show paid/completed service requests (matching service.html logic)
+            if (paymentStatus === 'completed' || paymentStatus === 'paid' || status === 'approved') {
+              const serviceLabel = svc.serviceType || svc.description || 'Service Request';
+              documents.push({
+                id: doc.id,
+                type: 'service',
+                title: 'Service: ' + serviceLabel,
+                category: svc.serviceType ? svc.serviceType.toLowerCase() : 'service',
+                documentType: 'certificate',
+                date: svc.createdAt ? svc.createdAt.toDate() : new Date(),
+                approvedDate: svc.approvedAt ? svc.approvedAt.toDate() : svc.createdAt ? svc.createdAt.toDate() : new Date(),
+                amount: svc.amount || svc.fee || 0,
+                status: 'approved',
+                reference: doc.id.substring(0, 12),
+                metadata: {
+                  serviceType: svc.serviceType,
+                  description: svc.description,
+                  fullId: doc.id
+                },
+                files: svc.files || {}
+              });
+            }
+          });
+          console.log('Loaded service requests, total documents now:', documents.length);
+        } catch (svcError) {
+          console.error('Error loading service requests:', svcError);
+        }
+
         // 3. Load from payment transactions API
         try {
           console.log('Loading transactions for email:', userEmail);

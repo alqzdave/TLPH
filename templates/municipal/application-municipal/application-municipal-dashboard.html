@@ -156,7 +156,7 @@
     console.log('Script started');
     
     import { auth, db } from '/static/js/firebase-config.js';
-    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
     
     console.log('Firebase modules loaded', db);
@@ -166,7 +166,7 @@
 
     async function loadApplications() {
       try {
-        console.log('Loading applications...');
+        console.log('Loading all data...');
         
         const currentUser = auth.currentUser;
         if (!currentUser) {
@@ -179,16 +179,12 @@
           const adminData = adminDoc.data();
           currentAdminMunicipality = adminData.municipality;
           console.log('Current admin municipality:', currentAdminMunicipality);
-          console.log('Admin full data:', adminData);
+          console.log('Admin data:', adminData);
+        } else {
+          console.warn('Admin document not found');
         }
         
-        const applicationsRef = collection(db, 'applications');
-        const querySnapshot = await getDocs(applicationsRef);
-        
-        console.log('Total applications found:', querySnapshot.size);
-        
-        applicants = [];
-        
+        // Create users map for name lookups
         const usersRef = collection(db, 'users');
         const usersSnapshot = await getDocs(usersRef);
         const usersMap = {};
@@ -202,103 +198,310 @@
         });
         
         console.log('Users loaded:', Object.keys(usersMap).length);
+        console.log('Users map sample:', Object.entries(usersMap).slice(0, 3));
+        applicants = [];
         
-        querySnapshot.forEach(doc => {
-          const data = doc.data();
-          console.log('Application data:', doc.id, data);
+        // 1. Load Applications
+        try {
+          console.log('Loading applications...');
+          const applicationsRef = collection(db, 'applications');
+          const querySnapshot = await getDocs(applicationsRef);
+          console.log('Applications found:', querySnapshot.size);
           
-          const userInfo = usersMap[data.userId];
-          const userName = userInfo?.name || 'Unknown User';
-          const userMunicipality = userInfo?.municipality;
+          const categoryLabels = {
+            'farming': 'Crop & Plant',
+            'livestock': 'Fisheries & Agriculture',
+            'agribusiness': 'Agribusiness & Agro-Processing',
+            'trade': 'Agricultural Trade',
+            'infrastructure': 'Infrastructure',
+            'research': 'Research & Innovation',
+            'support': 'Support & Insurance',
+            'safety': 'Food Safety',
+            'extension': 'Extension Services',
+            'climate': 'Climate & Risk',
+            'data': 'Digital Agriculture',
+            'compliance': 'Compliance & Enforcement',
+            'institutional': 'Cooperative Development'
+          };
           
-          console.log(`Application ${doc.id}: User municipality="${userMunicipality}", Admin municipality="${currentAdminMunicipality}"`);
-          if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
-            console.log(`⛔ SKIPPED: Application ${doc.id} - municipality mismatch`);
-            return;
-          }
+          let appCount = 0;
+          let skippedCount = 0;
           
-          console.log(`✅ INCLUDED: Application ${doc.id}`);
-          let filedDate = 'N/A';
-          let dateObj = new Date();
-          const dateField = data.createdAt || data.submittedAt;
-          if (dateField) {
-            // Handle both Firebase Timestamp and ISO string dates
-            if (typeof dateField.toDate === 'function') {
-              dateObj = dateField.toDate();
-            } else if (typeof dateField === 'string') {
-              dateObj = new Date(dateField);
-            } else if (dateField.seconds) {
-              dateObj = new Date(dateField.seconds * 1000);
+          querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const userInfo = usersMap[data.userId];
+            const userName = userInfo?.name || 'Unknown User';
+            const userMunicipality = userInfo?.municipality;
+            
+            console.log(`App ${doc.id}: userId=${data.userId}, userMun=${userMunicipality}, adminMun=${currentAdminMunicipality}`);
+            
+            // Only filter if BOTH municipalities are set, and they don't match
+            if (currentAdminMunicipality && userMunicipality) {
+              if (userMunicipality.toLowerCase() !== currentAdminMunicipality.toLowerCase()) {
+                console.log(`  Skipping - municipality mismatch (${userMunicipality} !== ${currentAdminMunicipality})`);
+                skippedCount++;
+                return;
+              }
+            } else {
+              console.log(`  Including despite incomplete municipality data`);
             }
-            filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
-          }
-          
-          let statusKey = 'pending';
-          let statusText = 'Pending Review';
-          if (data.status === 'approved') {
-            statusKey = 'accepted';
-            statusText = 'Accepted';
-          } else if (data.status === 'rejected') {
-            statusKey = 'rejected';
-            statusText = 'Rejected';
-          } else if (data.status === 'under-review') {
-            statusKey = 'pending';
-            statusText = 'Under Review';
-          } else if (data.status === 'cancelled') {
-            statusKey = 'cancelled';
-            statusText = 'Cancelled';
-          }
-          
-          applicants.push({
-            id: doc.id,
-            name: userName,
-            reference: `DENR-${dateObj.getFullYear()}-${doc.id.substring(0, 4).toUpperCase()}`,
-            categoryLabel: data.category || 'N/A',
-            categoryValue: data.category || '',
-            filedDate: filedDate,
-            status: statusText,
-            statusKey: statusKey,
-            timestamp: dateField ? (typeof dateField.toDate === 'function' ? dateField.toDate() : (typeof dateField === 'string' ? new Date(dateField) : new Date(dateField.seconds * 1000))) : new Date()
+            
+            let filedDate = 'N/A';
+            let dateObj = new Date();
+            const dateField = data.createdAt || data.submittedAt;
+            if (dateField) {
+              if (typeof dateField.toDate === 'function') {
+                dateObj = dateField.toDate();
+              } else if (typeof dateField === 'string') {
+                dateObj = new Date(dateField);
+              } else if (dateField.seconds) {
+                dateObj = new Date(dateField.seconds * 1000);
+              }
+              filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+            }
+            
+            let statusKey = 'pending';
+            let statusText = 'Pending Review';
+            if (data.status === 'approved') {
+              statusKey = 'accepted';
+              statusText = 'Accepted';
+            } else if (data.status === 'rejected') {
+              statusKey = 'rejected';
+              statusText = 'Rejected';
+            } else if (data.status === 'under-review') {
+              statusKey = 'pending';
+              statusText = 'Under Review';
+            }
+            
+            const categoryLabel = categoryLabels[data.category] || data.category || 'Application';
+            
+            applicants.push({
+              id: doc.id,
+              type: 'application',
+              name: userName,
+              reference: doc.id.substring(0, 12),
+              filedDate,
+              status: data.status,
+              statusKey,
+              categoryLabel,
+              categoryValue: data.category || 'other',
+              category: data.category
+            });
+            appCount++;
           });
-        });
-        applicants.sort((a, b) => b.timestamp - a.timestamp);
+          console.log(`Applications processed: ${appCount} added, ${skippedCount} skipped`);
+          console.log('Applications loaded:', applicants.length);
+        } catch (err) {
+          console.error('Error loading applications:', err);
+        }
         
+        // 2. Load Inventory Registrations
+        try {
+          console.log('Loading inventory...');
+          const invRef = collection(db, 'inventory_registrations');
+          const invSnapshot = await getDocs(invRef);
+          console.log('Inventory items found:', invSnapshot.size);
+          
+          const categoryLabels = {
+            'farming': 'Farm Inventory',
+            'livestock': 'Livestock Inventory',
+            'fisheries': 'Fisheries Inventory',
+            'aquaculture': 'Aquaculture Inventory'
+          };
+          
+          let invCount = 0;
+          let invSkipped = 0;
+          
+          invSnapshot.forEach(doc => {
+            const data = doc.data();
+            const userInfo = usersMap[data.userId];
+            const userName = userInfo?.name || 'Unknown User';
+            const userMunicipality = userInfo?.municipality;
+            
+            console.log(`Inv ${doc.id}: userId=${data.userId}, userMun=${userMunicipality}, adminMun=${currentAdminMunicipality}`);
+            
+            // Only filter if BOTH municipalities are set, and they don't match
+            if (currentAdminMunicipality && userMunicipality) {
+              if (userMunicipality.toLowerCase() !== currentAdminMunicipality.toLowerCase()) {
+                console.log(`  Skipping - municipality mismatch (${userMunicipality} !== ${currentAdminMunicipality})`);
+                invSkipped++;
+                return;
+              }
+            } else {
+              console.log(`  Including despite incomplete municipality data`);
+            }
+            
+            let filedDate = 'N/A';
+            let dateObj = new Date();
+            const dateField = data.submittedAt;
+            if (dateField) {
+              if (typeof dateField.toDate === 'function') {
+                dateObj = dateField.toDate();
+              } else if (typeof dateField === 'string') {
+                dateObj = new Date(dateField);
+              } else if (dateField.seconds) {
+                dateObj = new Date(dateField.seconds * 1000);
+              }
+              filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+            }
+            
+            const status = data.status || 'pending';
+            let statusKey = 'pending';
+            if (status === 'approved') statusKey = 'accepted';
+            else if (status === 'rejected') statusKey = 'rejected';
+            
+            const categoryLabel = categoryLabels[data.category] || data.category || 'Inventory';
+            
+            applicants.push({
+              id: doc.id,
+              type: 'inventory',
+              name: userName,
+              reference: doc.id.substring(0, 12),
+              filedDate,
+              status: status,
+              statusKey,
+              categoryLabel,
+              categoryValue: data.category || 'other',
+              category: data.category
+            });
+            invCount++;
+          });
+          console.log(`Inventory processed: ${invCount} added, ${invSkipped} skipped`);
+          console.log('Inventory loaded, total now:', applicants.length);
+        } catch (err) {
+          console.error('Error loading inventory:', err);
+        }
+        
+        // 3. Load Service Requests
+        try {
+          console.log('Loading service requests...');
+          const serviceRef = collection(db, 'service_requests');
+          const serviceSnapshot = await getDocs(serviceRef);
+          console.log('Service requests found:', serviceSnapshot.size);
+          
+          let svcCount = 0;
+          let svcSkipped = 0;
+          
+          serviceSnapshot.forEach(doc => {
+            const data = doc.data();
+            const userInfo = usersMap[data.userId];
+            const userName = userInfo?.name || 'Unknown User';
+            const userMunicipality = userInfo?.municipality;
+            
+            console.log(`Svc ${doc.id}: userId=${data.userId}, userMun=${userMunicipality}, adminMun=${currentAdminMunicipality}`);
+            
+            // Only filter if BOTH municipalities are set, and they don't match
+            if (currentAdminMunicipality && userMunicipality) {
+              if (userMunicipality.toLowerCase() !== currentAdminMunicipality.toLowerCase()) {
+                console.log(`  Skipping - municipality mismatch (${userMunicipality} !== ${currentAdminMunicipality})`);
+                svcSkipped++;
+                return;
+              }
+            } else {
+              console.log(`  Including despite incomplete municipality data`);
+            }
+            
+            let filedDate = 'N/A';
+            let dateObj = new Date();
+            const dateField = data.createdAt;
+            if (dateField) {
+              if (typeof dateField.toDate === 'function') {
+                dateObj = dateField.toDate();
+              } else if (typeof dateField === 'string') {
+                dateObj = new Date(dateField);
+              } else if (dateField.seconds) {
+                dateObj = new Date(dateField.seconds * 1000);
+              }
+              filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+            }
+            
+            // Filter by paymentStatus (matching service.html logic)
+            const status = (data.status || 'pending').toLowerCase();
+            const paymentStatus = (data.paymentStatus || '').toLowerCase();
+            
+            // Include if paymentStatus is completed/paid, or status is approved
+            const shouldInclude = 
+              paymentStatus === 'completed' || 
+              paymentStatus === 'paid' ||
+              status === 'approved';
+            
+            if (!shouldInclude) {
+              console.log(`  Skipping - not completed/paid (status: ${status}, paymentStatus: ${paymentStatus})`);
+              svcSkipped++;
+              return;
+            }
+            
+            let statusKey = paymentStatus === 'completed' || paymentStatus === 'paid' ? 'accepted' : 'pending';
+            if (status === 'rejected') statusKey = 'rejected';
+            
+            const categoryLabel = data.serviceType || data.description || 'Service Request';
+            
+            applicants.push({
+              id: doc.id,
+              type: 'service',
+              name: userName,
+              reference: doc.id.substring(0, 12),
+              filedDate,
+              status: paymentStatus || status,
+              statusKey,
+              categoryLabel,
+              categoryValue: 'other',
+              category: 'service'
+            });
+            svcCount++;
+          });
+          console.log(`Services processed: ${svcCount} added, ${svcSkipped} skipped`);
+          console.log('Services loaded, total now:', applicants.length);
+        } catch (err) {
+          console.error('Error loading services:', err);
+        }
+        
+        // 4. Load from payment transactions API (permits, licenses)
+        try {
+          console.log('Loading permits/licenses from payment API...');
+          
+          // Get all transaction names related to permits/licenses
+          const transactionNames = [];
+          for (const [userId, userInfo] of Object.entries(usersMap)) {
+            if (currentAdminMunicipality && userInfo.municipality && 
+                userInfo.municipality.toLowerCase() === currentAdminMunicipality.toLowerCase()) {
+              // This user is in the same municipality, fetch their transactions
+              // We'll fetch all and filter by name instead of email for better coverage
+            }
+          }
+          
+          // For now, skip payment API as it requires email lookup
+          // and we don't have reliable email-to-municipality mapping
+          console.log('Payment API loading skipped for municipality view (use email mapping if available)');
+        } catch (err) {
+          console.error('Error loading payment transactions:', err);
+        }
+        
+        console.log('Total items loaded:', applicants.length);
         console.log('Final applicants array:', applicants);
         
-        render(applicants);
-        updateStats();
+        if (applicants.length === 0) {
+          console.warn('No data loaded. Check:');
+          console.warn('1. Is currentAdminMunicipality set?', currentAdminMunicipality);
+          console.warn('2. Do users have municipality field set?');
+          console.warn('3. Do the collections have data?');
+        }
+        
+        // Update statistics
+        const acceptedCount = applicants.filter(a => a.statusKey === 'accepted').length;
+        const rejectedCount = applicants.filter(a => a.statusKey === 'rejected').length;
+        const pendingCount = applicants.filter(a => a.statusKey === 'pending').length;
+        
+        document.getElementById('statAccepted').textContent = acceptedCount;
+        document.getElementById('statRejected').textContent = rejectedCount;
+        document.getElementById('statPending').textContent = pendingCount;
+        
+        applyFilters();
+        
       } catch (error) {
-        console.error('Error loading applications:', error);
-        alert('Failed to load applications: ' + error.message);
+        console.error('Error in loadApplications:', error);
       }
     }
-
-    function updateStats() {
-      const today = new Date().toDateString();
-      
-      const acceptedToday = applicants.filter(a => {
-        return a.statusKey === 'accepted' && new Date(a.filedDate).toDateString() === today;
-      }).length;
-      
-      const rejectedToday = applicants.filter(a => {
-        return a.statusKey === 'rejected' && new Date(a.filedDate).toDateString() === today;
-      }).length;
-      
-      const pending = applicants.filter(a => a.statusKey === 'pending').length;
-      
-      document.getElementById('statAccepted').textContent = acceptedToday;
-      document.getElementById('statRejected').textContent = rejectedToday;
-      document.getElementById('statPending').textContent = pending;
-    }
-
-    const rowsEl = document.getElementById("rows");
-    const emptyEl = document.getElementById("emptyState");
-    const resultCountEl = document.getElementById("resultCount");
-    const categorySelect = document.getElementById("categorySelect");
-    const searchInput = document.getElementById("searchInput");
-    const btnSearch = document.getElementById("btnSearch");
-    const btnAll = document.getElementById("btnAllTypes");
-    const btnClear = document.getElementById("btnClear");
 
     function normalize(str) {
       return (str || "").toString().toLowerCase().trim();
@@ -371,6 +574,15 @@
         </div>
       `;
     }
+
+    const rowsEl = document.getElementById("rows");
+    const emptyEl = document.getElementById("emptyState");
+    const resultCountEl = document.getElementById("resultCount");
+    const categorySelect = document.getElementById("categorySelect");
+    const searchInput = document.getElementById("searchInput");
+    const btnSearch = document.getElementById("btnSearch");
+    const btnAll = document.getElementById("btnAllTypes");
+    const btnClear = document.getElementById("btnClear");
 
     function applyFilters() {
       const q = normalize(searchInput.value);
