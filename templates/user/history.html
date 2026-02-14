@@ -1134,117 +1134,218 @@
 
     async function loadApplicationsData(user) {
       try {
-        let userEmail = null;
+        const applications = [];
 
-        await new Promise((resolve) => {
-          const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user && user.email) {
-              userEmail = user.email;
-            }
-            unsubscribe();
-            resolve();
-          });
-        });
-
-        if (!userEmail) {
-          userEmail = (localStorage.getItem('denr_user_email') || '').trim();
-        }
-
-        console.log('Loading applications for email:', userEmail);
-
-        if (!userEmail) {
-          console.warn('No user email found');
-          return [];
-        }
-
-        const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
-        const result = await response.json();
-
-        console.log('API Response:', result);
-
-        if (result.status === 'success' && result.transactions && Array.isArray(result.transactions)) {
-          console.log('All transactions:', result.transactions);
+        // Load from Firebase applications collection
+        try {
+          console.log('Loading applications from Firebase for user:', user.uid);
+          const appsQuery = query(
+            collection(db, 'applications'),
+            where('userId', '==', user.uid)
+          );
+          const appsSnapshot = await getDocs(appsQuery);
           
-          const approvedApps = result.transactions.filter(t => {
-            // Check for multiple status fields that might contain approval info
-            const displayStatus = (t.display_status || '').toLowerCase();
-            const status = (t.status || '').toLowerCase();
-            const approvalStatus = (t.approval_status || '').toLowerCase();
-            const combined = displayStatus || status || approvalStatus;
-            
-            // Include records that are: approved, paid, completed, or have paid_at timestamp
-            const isApproved = 
-              combined === 'approved' || 
-              combined === 'paid' || 
-              combined === 'completed' || 
-              combined === 'success' ||
-              combined === 'pending_payment' ||
-              combined === 'paid_at' ||
-              t.paid_at !== null || 
-              t.paid_at !== undefined ||
-              t.amount > 0; // Include any transaction with amount
-            
-            const isNotService = !isServiceTransaction(t);
-            console.log(`Transaction: ${t.transaction_name} | Status: ${combined} | Amount: ${t.amount} | Approved: ${isApproved} | NotService: ${isNotService}`);
-            return isApproved && isNotService;
-          });
+          console.log('Firebase applications found:', appsSnapshot.size);
 
-          console.log('Filtered applications:', approvedApps.length);
+          const categoryLabels = {
+            'farming': 'Crop & Plant',
+            'livestock': 'Fisheries & Agriculture',
+            'agribusiness': 'Agribusiness & Agro-Processing',
+            'trade': 'Agricultural Trade',
+            'infrastructure': 'Infrastructure',
+            'research': 'Research & Innovation',
+            'support': 'Support & Insurance',
+            'safety': 'Food Safety',
+            'extension': 'Extension Services',
+            'climate': 'Climate & Risk',
+            'data': 'Digital Agriculture',
+            'compliance': 'Compliance & Enforcement',
+            'institutional': 'Cooperative Development'
+          };
 
-          return approvedApps.map(t => {
-            const date = t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A';
-            const updated = t.updated_at ? new Date(t.updated_at).toLocaleString() : 'N/A';
-            const appType = t.transaction_type || extractAppType(t.transaction_name) || 'License/Permit';
-            const appDescription = t.transaction_name || 'Unknown Application';
-            const appAmount = peso.format(t.amount || 0);
+          appsSnapshot.forEach((doc) => {
+            const app = doc.data();
+            console.log(`Application: ${app.category} | Status: ${app.status}`);
             
-            return {
-              date: t.created_at || new Date(),
+            // Show all applications regardless of status
+            const categoryLabel = categoryLabels[app.category] || app.category || 'Application';
+            const date = app.submittedAt ? new Date(app.submittedAt.toDate()).toLocaleDateString('en-PH', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            }) : 'N/A';
+            
+            const statusInfo = getStatusInfo(app.status);
+            
+            applications.push({
+              date: app.submittedAt || new Date(),
               html: `
                 <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-blue-500 transition-all">
                   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 pb-3 border-b border-gray-100">
                     <div class="flex items-center gap-2">
-                      <span class="status-badge bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded">${appType}</span>
+                      <span class="status-badge ${statusInfo.bgClass} ${statusInfo.textClass} text-xs font-bold px-2.5 py-1 rounded">${categoryLabel}</span>
                       <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">${date}</span>
                     </div>
-                    <button onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition">
-                      <i class="fa-solid fa-receipt mr-1"></i> Receipt
-                    </button>
+                    <a href="/user/inventory/stock-info?id=${doc.id}" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition">
+                      <i class="fa-solid fa-eye mr-1"></i> View Details
+                    </a>
                   </div>
                   <div class="space-y-2">
                     <div>
-                      <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Description</p>
-                      <p class="text-sm font-bold text-gray-800">${appDescription}</p>
+                      <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Category</p>
+                      <p class="text-sm font-bold text-gray-800">${categoryLabel}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-3 sm:gap-4">
                       <div>
-                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Amount</p>
-                        <p class="text-sm font-bold text-blue-700">${appAmount}</p>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Investment</p>
+                        <p class="text-sm font-bold text-blue-700">₱${Number(app.investmentQty || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Reference</p>
-                        <p class="text-xs font-mono text-gray-700 break-all">${t.reference || t.external_id || 'N/A'}</p>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Harvest Qty</p>
+                        <p class="text-xs font-mono text-gray-700">${Number(app.harvestQty || 0).toLocaleString()} units</p>
                       </div>
                       <div>
                         <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Status</p>
-                        <p class="text-xs font-bold text-green-700">APPROVED</p>
+                        <p class="text-xs font-bold ${statusInfo.textClass}">${statusInfo.label}</p>
                       </div>
                       <div>
-                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Method</p>
-                        <p class="text-xs font-semibold text-gray-700">${t.payment_method || 'Online'}</p>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">ID</p>
+                        <p class="text-xs font-semibold text-gray-700">${doc.id.substring(0, 8)}</p>
                       </div>
                     </div>
                   </div>
                 </div>
               `
-            };
+            });
           });
+        } catch (fbError) {
+          console.error('Error loading from Firebase applications:', fbError);
         }
-        return [];
+
+        // Also load from payment transactions API
+        try {
+          let userEmail = null;
+
+          await new Promise((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+              if (user && user.email) {
+                userEmail = user.email;
+              }
+              unsubscribe();
+              resolve();
+            });
+          });
+
+          if (!userEmail) {
+            userEmail = (localStorage.getItem('denr_user_email') || '').trim();
+          }
+
+          console.log('Loading payment transactions for email:', userEmail);
+
+          if (userEmail) {
+            const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+            const result = await response.json();
+
+            console.log('API Response:', result);
+
+            if (result.status === 'success' && result.transactions && Array.isArray(result.transactions)) {
+              console.log('All transactions:', result.transactions);
+              
+              const approvedApps = result.transactions.filter(t => {
+                const displayStatus = (t.display_status || '').toLowerCase();
+                const status = (t.status || '').toLowerCase();
+                const approvalStatus = (t.approval_status || '').toLowerCase();
+                const combined = displayStatus || status || approvalStatus;
+                
+                const isApproved = 
+                  combined === 'approved' || 
+                  combined === 'paid' || 
+                  combined === 'completed' || 
+                  combined === 'success' ||
+                  combined === 'pending_payment' ||
+                  combined === 'paid_at' ||
+                  t.paid_at !== null || 
+                  t.paid_at !== undefined ||
+                  t.amount > 0;
+                
+                const isNotService = !isServiceTransaction(t);
+                console.log(`Transaction: ${t.transaction_name} | Status: ${combined} | Amount: ${t.amount} | Approved: ${isApproved} | NotService: ${isNotService}`);
+                return isApproved && isNotService;
+              });
+
+              console.log('Filtered payment transactions:', approvedApps.length);
+
+              approvedApps.forEach(t => {
+                const date = t.created_at ? new Date(t.created_at).toISOString().split('T')[0] : 'N/A';
+                const updated = t.updated_at ? new Date(t.updated_at).toLocaleString() : 'N/A';
+                const appType = t.transaction_type || extractAppType(t.transaction_name) || 'License/Permit';
+                const appDescription = t.transaction_name || 'Unknown Application';
+                const appAmount = peso.format(t.amount || 0);
+                
+                applications.push({
+                  date: t.created_at || new Date(),
+                  html: `
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-blue-500 transition-all">
+                      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 pb-3 border-b border-gray-100">
+                        <div class="flex items-center gap-2">
+                          <span class="status-badge bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded">${appType}</span>
+                          <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">${date}</span>
+                        </div>
+                        <button onclick="viewReceipt('${t.reference || t.external_id}', '${(t.transaction_name || 'Unknown').replace(/'/g, "\\'")}', '${date}', '${peso.format(t.amount || 0)}', '${(t.description || '').replace(/'/g, "\\'")}', '${t.invoice_id || 'N/A'}', '${t.payment_method || 'Online Payment'}', '${updated}')" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition">
+                          <i class="fa-solid fa-receipt mr-1"></i> Receipt
+                        </button>
+                      </div>
+                      <div class="space-y-2">
+                        <div>
+                          <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Description</p>
+                          <p class="text-sm font-bold text-gray-800">${appDescription}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                          <div>
+                            <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Amount</p>
+                            <p class="text-sm font-bold text-blue-700">${appAmount}</p>
+                          </div>
+                          <div>
+                            <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Reference</p>
+                            <p class="text-xs font-mono text-gray-700 break-all">${t.reference || t.external_id || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Status</p>
+                            <p class="text-xs font-bold text-green-700">PAID</p>
+                          </div>
+                          <div>
+                            <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Method</p>
+                            <p class="text-xs font-semibold text-gray-700">${t.payment_method || 'Online'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `
+                });
+              });
+            }
+          }
+        } catch (apiError) {
+          console.error('Error loading from payment API:', apiError);
+        }
+
+        console.log('Total applications loaded:', applications.length);
+        return applications;
       } catch (error) {
         console.error('Error loading applications:', error);
         return [];
       }
+    }
+
+    function getStatusInfo(status) {
+      const statusMap = {
+        'approved': { label: 'APPROVED', bgClass: 'bg-green-100', textClass: 'text-green-700' },
+        'pending': { label: 'PENDING', bgClass: 'bg-yellow-100', textClass: 'text-yellow-700' },
+        'under-review': { label: 'UNDER REVIEW', bgClass: 'bg-blue-100', textClass: 'text-blue-700' },
+        'rejected': { label: 'REJECTED', bgClass: 'bg-red-100', textClass: 'text-red-700' },
+        'cancelled': { label: 'CANCELLED', bgClass: 'bg-gray-100', textClass: 'text-gray-700' }
+      };
+      return statusMap[status] || { label: status?.toUpperCase() || 'UNKNOWN', bgClass: 'bg-gray-100', textClass: 'text-gray-700' };
     }
 
     async function loadServiceRequestsData(user) {
@@ -1511,45 +1612,103 @@
 
     window.downloadApplicationsPDF = async function() {
       try {
-        const downloadBtn = document.getElementById('downloadPdfBtn');
-        if (downloadBtn) {
-          downloadBtn.disabled = true;
-          downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please sign in to download applications.');
+          return;
         }
 
-        let userEmail = localStorage.getItem('denr_user_email') || '';
-        
-        if (!userEmail) {
-          await new Promise((resolve) => {
-            const unsubscribe = onAuthStateChanged(auth, (user) => {
-              if (user && user.email) {
-                userEmail = user.email;
-              }
-              unsubscribe();
-              resolve();
+        const approvedApps = [];
+
+        // Load from Firebase applications collection
+        try {
+          const appsQuery = query(
+            collection(db, 'applications'),
+            where('userId', '==', user.uid)
+          );
+          const appsSnapshot = await getDocs(appsQuery);
+          
+          const categoryLabels = {
+            'farming': 'Crop & Plant',
+            'livestock': 'Fisheries & Agriculture',
+            'agribusiness': 'Agribusiness & Agro-Processing',
+            'trade': 'Agricultural Trade',
+            'infrastructure': 'Infrastructure',
+            'research': 'Research & Innovation',
+            'support': 'Support & Insurance',
+            'safety': 'Food Safety',
+            'extension': 'Extension Services',
+            'climate': 'Climate & Risk',
+            'data': 'Digital Agriculture',
+            'compliance': 'Compliance & Enforcement',
+            'institutional': 'Cooperative Development'
+          };
+
+          appsSnapshot.forEach((doc) => {
+            const app = doc.data();
+            const categoryLabel = categoryLabels[app.category] || app.category || 'Application';
+            const date = app.submittedAt ? new Date(app.submittedAt.toDate()).toLocaleDateString('en-PH') : 'N/A';
+            const status = (app.status || 'Unknown').toUpperCase();
+            
+            approvedApps.push({
+              date: app.submittedAt || new Date(),
+              type: categoryLabel,
+              description: categoryLabel + ' Application',
+              amount: app.investmentQty || 0,
+              status: status,
+              source: 'firebase',
+              harvestQty: app.harvestQty || 0
             });
           });
+        } catch (fbError) {
+          console.error('Error loading from Firebase:', fbError);
         }
 
-        const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
-        const result = await response.json();
+        // Also load from payment transactions API
+        try {
+          let userEmail = user.email || localStorage.getItem('denr_user_email') || '';
+          
+          if (userEmail) {
+            const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+            const result = await response.json();
 
-        const approvedApps = result.status === 'success' && result.transactions ? 
-          result.transactions.filter(t => {
-            const status = (t.display_status || t.status || t.approval_status || '').toLowerCase();
-            const isApproved = status === 'approved' || status === 'paid' || status === 'pending_payment';
-            const isNotService = !isServiceTransaction(t);
-            return isApproved && isNotService;
-          }) : [];
+            if (result.status === 'success' && result.transactions && Array.isArray(result.transactions)) {
+              const paymentApps = result.transactions.filter(t => {
+                const status = (t.display_status || t.status || t.approval_status || '').toLowerCase();
+                const isApproved = status === 'approved' || status === 'paid' || status === 'pending_payment';
+                const isNotService = !isServiceTransaction(t);
+                return isApproved && isNotService;
+              });
+
+              paymentApps.forEach(t => {
+                const appType = extractAppType(t.transaction_name) || 'License/Permit';
+                approvedApps.push({
+                  date: t.created_at || new Date(),
+                  type: appType,
+                  description: t.transaction_name || 'Unknown Application',
+                  amount: t.amount || 0,
+                  status: 'PAID',
+                  source: 'payment',
+                  reference: t.reference || t.external_id
+                });
+              });
+            }
+          }
+        } catch (apiError) {
+          console.error('Error loading from payment API:', apiError);
+        }
 
         if (approvedApps.length === 0) {
           alert('No applications to download.');
-          if (downloadBtn) {
-            downloadBtn.disabled = false;
-            downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Applications Report';
-          }
           return;
         }
+
+        // Sort by date
+        approvedApps.sort((a, b) => {
+          const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+          const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+          return dateB - dateA;
+        });
 
         const pdfContainer = document.createElement('div');
         pdfContainer.style.padding = '20px';
