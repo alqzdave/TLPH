@@ -276,7 +276,7 @@
         console.log('Users loaded:', Object.keys(usersMap).length);
         
         // Fetch service requests
-        const serviceRequestsRef = collection(db, 'serviceRequests');
+        const serviceRequestsRef = collection(db, 'service_requests');
         const serviceRequestsSnapshot = await getDocs(serviceRequestsRef);
         
         console.log('Total service requests found:', serviceRequestsSnapshot.size);
@@ -292,30 +292,56 @@
           const userName = userInfo?.name || 'Unknown User';
           const userMunicipality = userInfo?.municipality;
           
-          // Filter by municipality
+          // Filter by municipality - only filter if BOTH are set and don't match
           console.log(`Service Request ${docSnapshot.id}: User municipality="${userMunicipality}", Admin municipality="${currentAdminMunicipality}"`);
-          if (currentAdminMunicipality && userMunicipality !== currentAdminMunicipality) {
-            console.log(`⛔ SKIPPED: Service Request ${docSnapshot.id} - municipality mismatch`);
-            return;
+          if (currentAdminMunicipality && userMunicipality) {
+            if (userMunicipality.toLowerCase() !== currentAdminMunicipality.toLowerCase()) {
+              console.log(`⛔ SKIPPED: Service Request ${docSnapshot.id} - municipality mismatch`);
+              return;
+            }
+          } else {
+            console.log(`⚠️ Including despite incomplete municipality data`);
           }
           
           console.log(`✅ INCLUDED: Service Request ${docSnapshot.id}`);
           
           let filedDate = 'N/A';
           let dateObj = new Date();
-          if (data.createdAt) {
-            dateObj = data.createdAt.toDate();
+          const dateField = data.createdAt;
+          if (dateField) {
+            if (typeof dateField.toDate === 'function') {
+              dateObj = dateField.toDate();
+            } else if (typeof dateField === 'string') {
+              dateObj = new Date(dateField);
+            } else if (dateField.seconds) {
+              dateObj = new Date(dateField.seconds * 1000);
+            }
             filedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
           }
           
-          let statusKey = 'pending';
+          // Filter by paymentStatus (matching service.html logic)
+          const status = (data.status || 'pending').toLowerCase();
+          const paymentStatus = (data.paymentStatus || '').toLowerCase();
+          
+          // Include if paymentStatus is completed/paid, or status is approved
+          const shouldInclude = 
+            paymentStatus === 'completed' || 
+            paymentStatus === 'paid' ||
+            status === 'approved';
+          
+          if (!shouldInclude) {
+            console.log(`⛔ SKIPPED: Service Request ${docSnapshot.id} - paymentStatus: ${paymentStatus}, status: ${status}`);
+            return;
+          }
+          
+          let statusKey = paymentStatus === 'completed' || paymentStatus === 'paid' ? 'accepted' : 'pending';
+          if (status === 'rejected') statusKey = 'rejected';
+          
           let statusText = 'Pending Review';
-          if (data.status === 'approved' || data.status === 'accepted') {
-            statusKey = 'accepted';
+          if (statusKey === 'accepted') {
             statusText = 'Accepted';
             acceptedCount++;
-          } else if (data.status === 'rejected') {
-            statusKey = 'rejected';
+          } else if (statusKey === 'rejected') {
             statusText = 'Rejected';
             rejectedCount++;
           } else {
@@ -326,7 +352,7 @@
             id: docSnapshot.id,
             name: userName,
             reference: `DENR-${dateObj.getFullYear()}-${docSnapshot.id.substring(0, 4).toUpperCase()}`,
-            categoryLabel: data.serviceType || 'N/A',
+            categoryLabel: data.serviceType || data.description || 'N/A',
             categoryValue: data.serviceType || '',
             filedDate: filedDate,
             status: statusText,
