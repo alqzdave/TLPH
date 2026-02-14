@@ -19,15 +19,30 @@
       --gov-primary: #0f172a;
       --gov-focus: rgba(5, 150, 105, 0.18);
     }
-    html, body{ font-family: var(--gov-font); color: var(--gov-text); }
+    html, body{ 
+      font-family: var(--gov-font); 
+      color: var(--gov-text); 
+    }
+
     body{ background: var(--gov-bg); }
+
     .card{
       background: var(--gov-panel);
       border: 1px solid var(--gov-border);
       border-radius: 16px;
     }
-    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
-    .sticky-head thead th{ position: sticky; top: 0; z-index: 5; }
+    
+    .focus-ring:focus{ 
+      outline: 3px solid var(--gov-focus); 
+      outline-offset: 2px; 
+    }
+    
+    .sticky-head thead th{
+      position: sticky; 
+      top: 0; 
+      z-index: 5; 
+    }
+    
   </style>
 </head>
 
