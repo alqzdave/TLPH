@@ -229,14 +229,19 @@
                     { ref: 'APP-REG-001', province: 'CAVITE', municipality: 'DASMARIÑAS', applicant: 'PAOLO DAVE ALQZD', status: 'PENDING' },
                     { ref: 'APP-REG-002', province: 'LAGUNA', municipality: 'CALAMBA', applicant: 'MARIA CLARA', status: 'APPROVED' },
                     { ref: 'APP-REG-003', province: 'BATANGAS', municipality: 'NASUGBU', applicant: 'JOSE RIZAL', status: 'PENDING' },
-                    { ref: 'APP-REG-004', province: 'RIZAL', municipality: 'ANTIPOLO', applicant: 'ANDRES BONIFACIO', status: 'REJECTED' }
+                    { ref: 'APP-REG-004', province: 'RIZAL', municipality: 'ANTIPOLO', applicant: 'ANDRES BONIFACIO', status: 'REJECTED' },
+                    { ref: 'APP-REG-005', province: 'MARINDUQUE', municipality: 'BOAC', applicant: 'JUAN DELA CRUZ', status: 'PENDING' },
+                    { ref: 'APP-REG-006', province: 'PALAWAN', municipality: 'PUERTO PRINCESA', applicant: 'MARIA SANTOS', status: 'APPROVED' },
+                    { ref: 'APP-REG-007', province: 'ORIENTAL MINDORO', municipality: 'CALAPAN', applicant: 'PEDRO REYES', status: 'PENDING' }
                 ],
                 get filteredApps() {
                     return this.apps.filter(i => {
                         const s = this.searchQuery.toLowerCase();
+                        // Only show apps from user's provinces
+                        const matchesUserRegion = this.userProvinces.includes(i.province);
                         const matchesSearch = i.ref.toLowerCase().includes(s) || i.applicant.toLowerCase().includes(s) || i.municipality.toLowerCase().includes(s);
                         const matchesProv = this.filterProvince === 'ALL' || i.province === this.filterProvince;
-                        return matchesSearch && matchesProv;
+                        return matchesUserRegion && matchesSearch && matchesProv;
                     });
                 }
             }));
