@@ -4,445 +4,347 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TLPH | National Dashboard - Service Requests</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --gov-font: Verdana, Arial, Tahoma, sans-serif;
-      --gov-text: #111827;
-      --gov-muted: #4b5563;
-      --gov-border: #d1d5db;
-      --gov-bg: #f3f4f6;
-      --gov-panel: #ffffff;
-      --gov-primary: #0f172a;
-      --gov-focus: rgba(5, 150, 105, 0.18);
+    :root {
+      --gov-navy: #002e5f;
+      --gov-bg: #f1f5f9;
+      --gov-border: #cbd5e1;
     }
-    html, body{ 
-      font-family: var(--gov-font); 
-      color: var(--gov-text); 
+    
+    /* Layout Reset para sa Compact One-View */
+    html, body { height: 100vh; overflow: hidden; }
+    body { 
+      font-family: "Inter", Verdana, sans-serif; 
+      background-color: var(--gov-bg); 
+      font-size: 0.72rem; 
+      color: #1e293b; 
+    }
+    
+    .wrapper { display: flex; height: 100vh; overflow: hidden; }
+    main { flex: 1; min-width: 0; padding: 0.5rem 1rem; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Government Style Components */
+    .gov-card { 
+      background: #ffffff; 
+      border: 1px solid var(--gov-border); 
+      border-radius: 2px;
+      margin-bottom: 0.5rem;
     }
 
-    body{ background: var(--gov-bg); }
+    /* Side-Border Metric Cards */
+    .metric-card { border: none; border-left: 5px solid var(--gov-navy); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .metric-title { font-size: 0.6rem; letter-spacing: 1px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .metric-value { font-size: 1.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
 
-    .card{
-      background: var(--gov-panel);
-      border: 1px solid var(--gov-border);
-      border-radius: 16px;
+    /* Table Density & Sticky Header */
+    .table-responsive { flex-grow: 1; overflow-y: auto; background: white; border: 1px solid var(--gov-border); }
+    .table-registry thead th { 
+      background: #f8fafc; 
+      color: var(--gov-navy); 
+      font-weight: 700; 
+      text-transform: uppercase; 
+      font-size: 0.6rem;
+      border-bottom: 2px solid var(--gov-border);
+      padding: 0.5rem !important;
+      position: sticky; top: 0; z-index: 10;
     }
-    
-    .focus-ring:focus{ 
-      outline: 3px solid var(--gov-focus); 
-      outline-offset: 2px; 
+    .table-registry td { padding: 0.4rem 0.6rem !important; vertical-align: middle; border-bottom: 1px solid #e2e8f0; font-size: 0.7rem; }
+
+    .status-pill {
+      font-size: 0.55rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 1px; text-transform: uppercase; border: 1px solid;
     }
+
+    /* Compact Chart container */
+    .chart-container { position: relative; height: 125px; width: 100%; }
     
-    .sticky-head thead th{
-      position: sticky; 
-      top: 0; 
-      z-index: 5; 
-    }
-    
+    .form-control-sm, .form-select-sm, .btn-sm { font-size: 0.65rem !important; border-radius: 1px !important; }
   </style>
 </head>
 
-<body class="min-h-screen text-slate-900">
-  <div class="min-h-screen flex">
+<body>
+
+<div class="wrapper">
+  <div class="hidden lg:block w-64 bg-slate-900">
     {% include 'national/sidenav-national.html' %}
+  </div>
 
-    <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div class="w-full max-w-[1700px] space-y-6">
+  <main>
+    <section class="gov-card p-2 px-3 border-0 border-b bg-white rounded-0 mb-2">
+      <div class="row g-2 align-items-center">
+        <div class="col-xl-4">
+          <h6 class="fw-bold m-0" style="color: var(--gov-navy); letter-spacing: 0.5px;">SERVICE REQUESTS REGISTRY</h6>
+          <div class="text-muted text-uppercase" style="font-size: 0.55rem;">Republic of the Philippines • National Management Dashboard</div>
+        </div>
+        <div class="col-xl-8">
+          <div class="row g-1 justify-content-end">
+            <div class="col-auto"><input type="date" class="form-control form-control-sm"></div>
+            <div class="col-auto">
+               <button class="btn btn-outline-secondary btn-sm fw-bold h-full px-3">
+                 <span class="material-icons-round fs-6 align-middle">file_download</span> EXPORT
+               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <section class="card p-4">
-          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+    <div class="row g-2 mb-2">
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3">
+          <div class="d-flex justify-content-between align-items-start">
             <div>
-              <div class="text-lg font-bold">Service Requests</div>
-              <div class="text-xs text-gray-600">
-                National view of all service requests. Filter by region, status, and request type.
-              </div>
+              <div class="metric-title">Total Submissions</div>
+              <div class="metric-value" style="color: var(--gov-navy);">4,235</div>
             </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">From</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">To</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Regions</option>
-                <option>NCR</option>
-                <option>Region I</option>
-                <option>Region II</option>
-                <option>Region III</option>
-                <option>Region IV-A</option>
-                <option>Region V</option>
-                <option>Region VI</option>
-                <option>Region VII</option>
-                <option>Region VIII</option>
-                <option>Region IX</option>
-                <option>Region X</option>
-                <option>Region XI</option>
-                <option>Region XII</option>
-                <option>CAR</option>
-                <option>BARMM</option>
-              </select>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Status</option>
-                <option>Approved</option>
-                <option>Pending</option>
-                <option>To Review</option>
-                <option>Reject</option>
-              </select>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Request Types</option>
-                <option>Initial farm visit</option>
-                <option>Compliance inspection</option>
-                <option>Disease/pest investigation</option>
-                <option>Agribusiness & agro-processing</option>
-                <option>Soil/crop evaluation</option>
-                <option>Follow up visit</option>
-                <option>Good Agricultural Practice (GAP) training</option>
-              </select>
-
-              <input
-                type="text"
-                placeholder="Search ref # / applicant…"
-                class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-64 focus-ring"
-              />
-
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-                Apply
-              </button>
-
-              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">download</span>
-                Export
-              </button>
-            </div>
+            <span class="material-icons-round text-slate-300">summarize</span>
           </div>
-        </section>
-
-        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Total Service Requests</div>
-            <div class="text-2xl font-bold mt-1">4,235</div>
-            <div class="mt-2 text-xs text-gray-600">This month: <span class="font-semibold">820</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[58%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Month progress: <span class="font-semibold">58%</span></div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Completed</div>
-            <div class="text-2xl font-bold mt-1">2,910</div>
-            <div class="mt-2 text-xs text-gray-600">Completion rate: <span class="font-semibold">68.7%</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[69%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Avg. completion time: <span class="font-semibold">6.1 days</span></div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">To Review</div>
-            <div class="text-2xl font-bold mt-1">612</div>
-            <div class="mt-2 text-xs text-gray-600">Review rate: <span class="font-semibold">14.5%</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[15%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Oldest in queue: <span class="font-semibold">12 days</span></div>
-          </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Rejected / Cancelled</div>
-            <div class="text-2xl font-bold mt-1">410</div>
-            <div class="mt-2 text-xs text-gray-600">Rejection rate: <span class="font-semibold">9.7%</span></div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">Top reason</div>
-                <div class="font-bold">No-show</div>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">2nd reason</div>
-                <div class="font-bold">Invalid</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <!-- Trend -->
-          <div class="card p-4 xl:col-span-2">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Service Requests Trend</div>
-                <div class="text-xs text-gray-600">Submitted vs Completed vs Rejected (sample last 6 months)</div>
-              </div>
-              <div class="text-xs text-gray-600">Last 6 months</div>
-            </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="srTrendChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4">
+          <div class="mt-1 border-t pt-1 text-[10px] text-muted">Month: <b>820</b> requests filed</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #157347;">
+          <div class="d-flex justify-content-between align-items-start">
             <div>
-              <div class="font-bold">Status Breakdown</div>
-              <div class="text-xs text-gray-600">Completed • Pending • To Review • Rejected</div>
+              <div class="metric-title">Completed/Resolved</div>
+              <div class="metric-value text-success">2,910</div>
             </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="srStatusChart"></canvas>
-            </div>
+            <span class="material-icons-round text-success opacity-20">check_circle</span>
           </div>
-        </section>
-
-        <section class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Requests by Type</div>
-                <div class="text-xs text-gray-600">Top request types (sample)</div>
-              </div>
-              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
-                View all types
-              </button>
-            </div>
-            <div class="mt-3 h-[340px]">
-              <canvas id="srTypeChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Requests by Region</div>
-                <div class="text-xs text-gray-600">Volume per region (sample)</div>
-              </div>
-              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
-                Top N
-              </button>
-            </div>
-            <div class="mt-3 h-[340px]">
-              <canvas id="srRegionChart"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <section class="card overflow-hidden">
-          <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div class="mt-1 border-t pt-1 text-[10px] text-muted"><b>68.7%</b> Success Rate</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #e67e22;">
+          <div class="d-flex justify-content-between align-items-start">
             <div>
-              <div class="font-bold">Service Requests List</div>
-              <div class="text-xs text-gray-600">
-                Date • Reference & Applicant • Request Type • Region • Municipality • Status • Actions
+              <div class="metric-title">For Evaluation</div>
+              <div class="metric-value" style="color: #d35400;">612</div>
+            </div>
+            <span class="material-icons-round text-warning opacity-20">pending_actions</span>
+          </div>
+          <div class="mt-1 border-t pt-1 text-[10px] text-danger fw-bold">Queue: 12 Days Average</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #b91c1c;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="metric-title">Rejected / Cancelled</div>
+              <div class="metric-value text-danger">410</div>
+            </div>
+            <span class="material-icons-round text-danger opacity-20">cancel</span>
+          </div>
+          <div class="mt-1 border-t pt-1 text-[10px] text-muted"><b>9.6%</b> Invalidation Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-2 flex-grow-1 overflow-hidden">
+      <div class="col-lg-3 d-flex flex-column gap-1">
+        <div class="gov-card p-2 flex-grow-1">
+          <div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">6-Month Filing Trend</div>
+          <div class="chart-container"><canvas id="srTrendChart"></canvas></div>
+        </div>
+        <div class="gov-card p-2 flex-grow-1">
+          <div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Requests by Service</div>
+          <div class="chart-container"><canvas id="srTypeChart"></canvas></div>
+        </div>
+        <div class="gov-card p-2 flex-grow-1">
+          <div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Resolution Mix</div>
+          <div class="chart-container"><canvas id="srStatusChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="col-lg-9 d-flex flex-column overflow-hidden">
+        <div class="gov-card flex-grow-1 d-flex flex-column overflow-hidden m-0">
+          
+          <div class="p-2 px-3 bg-slate-50 border-b">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white border-end-0 text-muted">
+                    <span class="material-icons-round fs-6">search</span>
+                  </span>
+                  <input type="text" id="masterSearch" class="form-control border-start-0 ps-0" placeholder="Search Ref ID or Applicant...">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select id="typeFilter" class="form-select form-select-sm">
+                  <option value="ALL">All Service Types</option>
+                  <option value="FARM VISIT">Farm Visit</option>
+                  <option value="GAP TRAINING">GAP Training</option>
+                  <option value="INSPECTION">Inspection</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select id="statusFilter" class="form-select form-select-sm">
+                  <option value="ALL">All Status</option>
+                  <option value="TO REVIEW">To Review</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="COMPLETED">Completed</option>
+                </select>
+              </div>
+              <div class="col-md-2 text-end">
+                <button onclick="clearFilters()" class="btn btn-light btn-sm border fw-bold w-100">RESET</button>
               </div>
             </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">tune</span>
-                Advanced Filters
-              </button>
-              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">download</span>
-                Export Table
-              </button>
-            </div>
           </div>
-
-          <div class="overflow-x-auto max-h-[560px] sticky-head">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Request Type</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+          
+          <div class="table-responsive">
+            <table id="masterTable" class="table table-sm table-hover table-registry mb-0">
+              <thead>
+                <tr>
+                  <th>Date Filed</th>
+                  <th>Reference ID</th>
+                  <th>Applicant</th>
+                  <th>Service Type</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th class="text-center">Actions</th>
                 </tr>
               </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">SR-2026-000442</div>
-                    <div class="text-xs text-gray-600">Rivera, Liza</div>
-                  </td>
-                  <td class="py-3 px-4">Initial farm visit</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region VII</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Cebu City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-sky-200 bg-sky-50 text-sky-800">To Review</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">check</span> Approve
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">close</span> Reject
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
+              <tbody>
+                <tr>
+                  <td>Feb 12, 2026</td>
+                  <td class="fw-bold text-primary">SR-2026-000442</td>
+                  <td>Rivera, Liza</td>
+                  <td class="text-uppercase">Initial farm visit</td>
+                  <td>Region VII / Cebu</td>
+                  <td><span class="status-pill border-info bg-info bg-opacity-10 text-info">To Review</span></td>
+                  <td class="text-center">
+                    <div class="btn-group shadow-sm border rounded">
+                      <button class="btn btn-sm btn-light p-1" title="View"><span class="material-icons-round fs-6 text-secondary">visibility</span></button>
+                      <button class="btn btn-sm btn-light p-1" title="Approve"><span class="material-icons-round fs-6 text-success">check_circle</span></button>
+                      <button class="btn btn-sm btn-light p-1" title="Reject"><span class="material-icons-round fs-6 text-danger">cancel</span></button>
                     </div>
                   </td>
                 </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">SR-2026-000429</div>
-                    <div class="text-xs text-gray-600">Garcia, Noel</div>
-                  </td>
-                  <td class="py-3 px-4">Good Agricultural Practice (GAP) training</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">San Pablo</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 10, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">SR-2026-000401</div>
-                    <div class="text-xs text-gray-600">Santos, Maria</div>
-                  </td>
-                  <td class="py-3 px-4">Compliance inspection</td>
-                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Manila</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Completed</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
+                <tr>
+                  <td>Feb 11, 2026</td>
+                  <td class="fw-bold text-primary">SR-2026-000429</td>
+                  <td>Garcia, Noel</td>
+                  <td class="text-uppercase">GAP training</td>
+                  <td>Region IV-A / San Pablo</td>
+                  <td><span class="status-pill border-warning bg-warning bg-opacity-10 text-warning">Pending</span></td>
+                  <td class="text-center">
+                    <div class="btn-group shadow-sm border rounded">
+                      <button class="btn btn-sm btn-light p-1" title="View"><span class="material-icons-round fs-6 text-secondary">visibility</span></button>
+                      <button class="btn btn-sm btn-light p-1" title="Approve"><span class="material-icons-round fs-6 text-success">check_circle</span></button>
+                      <button class="btn btn-sm btn-light p-1" title="Reject"><span class="material-icons-round fs-6 text-danger">cancel</span></button>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          <div class="p-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-600">
-            <div>Showing <span class="font-semibold">1–3</span> of <span class="font-semibold">4,235</span> service requests (sample)</div>
-            <div class="flex items-center gap-2">
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Prev</button>
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Next</button>
-            </div>
+          
+          <div class="p-1 px-3 bg-white border-top d-flex justify-content-between align-items-center">
+            <span id="rowCountLabel" class="text-muted" style="font-size: 0.6rem;">Showing: <b>2 records</b></span>
+            <nav>
+              <ul class="pagination pagination-sm m-0" style="--bs-pagination-font-size: 0.6rem;">
+                <li class="page-item disabled"><a class="page-link" href="#">Prev</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+              </ul>
+            </nav>
           </div>
-        </section>
-
-        <footer class="py-6 text-xs text-gray-600">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>© 2026 TLPH • Service Requests (UI Draft)</div>
-            <div class="inline-flex items-center gap-2">
-              <span>RBAC-ready</span>
-              <span>DB-ready</span>
-            </div>
-          </div>
-        </footer>
-
+        </div>
       </div>
-    </main>
-  </div>
+    </div>
 
-  <script>
-    new Chart(document.getElementById('srTrendChart'), {
-      type: 'line',
-      data: {
-        labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
-        datasets: [
-          { label: 'Submitted', data: [520, 610, 700, 680, 740, 735], tension: 0.25 },
-          { label: 'Completed', data: [340, 410, 480, 455, 520, 515], tension: 0.25 },
-          { label: 'Rejected', data: [45, 52, 60, 58, 66, 64], tension: 0.25 }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        interaction: { mode: 'index', intersect: false },
-        scales: { y: { beginAtZero: true } }
+    <footer class="mt-2 text-center text-muted" style="font-size: 0.55rem;">
+      REPUBLIC OF THE PHILIPPINES • NATIONAL SERVICE REGISTRY • CONFIDENTIAL DATA
+    </footer>
+  </main>
+</div>
+
+<script>
+  // --- CHART LOGIC ---
+  const sharedOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } } },
+    scales: { y: { ticks: { font: { size: 8 } } }, x: { ticks: { font: { size: 8 } } } }
+  };
+
+  new Chart(document.getElementById('srTrendChart'), {
+    type: 'line',
+    data: {
+      labels: ['S', 'O', 'N', 'D', 'J', 'F'],
+      datasets: [{ label: 'Filed', data: [520, 610, 700, 680, 740, 735], borderColor: '#002e5f', tension: 0.2, fill: true, backgroundColor: 'rgba(0,46,95,0.03)' }]
+    },
+    options: sharedOpts
+  });
+
+  new Chart(document.getElementById('srTypeChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Visit', 'Insp', 'GAP', 'Soil', 'Pest'],
+      datasets: [{ label: 'Requests', data: [920, 760, 480, 540, 610], backgroundColor: '#475569' }]
+    },
+    options: { ...sharedOpts, indexAxis: 'y' }
+  });
+
+  new Chart(document.getElementById('srStatusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['App', 'Pend', 'Rev', 'Rej'],
+      datasets: [{ data: [2910, 303, 612, 410], backgroundColor: ['#157347', '#e67e22', '#002e5f', '#b91c1c'], borderWidth: 0 }]
+    },
+    options: { ...sharedOpts, cutout: '75%', scales: { x: { display: false }, y: { display: false } } }
+  });
+
+  // --- FILTER & SEARCH LOGIC ---
+  const searchInput = document.getElementById('masterSearch');
+  const typeFilter = document.getElementById('typeFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  const tableRows = document.querySelectorAll('#masterTable tbody tr');
+  const rowCountLabel = document.getElementById('rowCountLabel');
+
+  function filterTable() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedType = typeFilter.value.toUpperCase();
+    const selectedStatus = statusFilter.value.toUpperCase();
+    let visibleCount = 0;
+
+    tableRows.forEach(row => {
+      const refId = row.cells[1].innerText.toLowerCase();
+      const applicant = row.cells[2].innerText.toLowerCase();
+      const serviceType = row.cells[3].innerText.toUpperCase();
+      const status = row.cells[5].innerText.toUpperCase();
+
+      const matchesSearch = refId.includes(searchTerm) || applicant.includes(searchTerm);
+      const matchesType = selectedType === 'ALL' || serviceType.includes(selectedType);
+      const matchesStatus = selectedStatus === 'ALL' || status.includes(selectedStatus);
+
+      if (matchesSearch && matchesType && matchesStatus) {
+        row.style.display = "";
+        visibleCount++;
+      } else {
+        row.style.display = "none";
       }
     });
+    
+    rowCountLabel.innerHTML = `Showing: <b>${visibleCount} records</b>`;
+  }
 
-    new Chart(document.getElementById('srStatusChart'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Completed', 'Pending', 'To Review', 'Rejected'],
-        datasets: [{ data: [2910, 303, 612, 410] }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
+  function clearFilters() {
+    searchInput.value = "";
+    typeFilter.value = "ALL";
+    statusFilter.value = "ALL";
+    filterTable();
+  }
 
-    new Chart(document.getElementById('srTypeChart'), {
-      type: 'bar',
-      data: {
-        labels: [
-          'Initial farm visit',
-          'Compliance inspection',
-          'Disease/pest investigation',
-          'Soil/crop evaluation',
-          'Follow up visit',
-          'GAP training'
-        ],
-        datasets: [{ label: 'Requests', data: [920, 760, 610, 540, 480, 395] }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        scales: { x: { beginAtZero: true } }
-      }
-    });
+  // Event Listeners for real-time update
+  searchInput.addEventListener('input', filterTable);
+  typeFilter.addEventListener('change', filterTable);
+  statusFilter.addEventListener('change', filterTable);
+</script>
 
-    new Chart(document.getElementById('srRegionChart'), {
-      type: 'bar',
-      data: {
-        labels: ['Region IV-A', 'NCR', 'Region VII', 'Region III', 'BARMM', 'CAR'],
-        datasets: [{ label: 'Requests', data: [720, 640, 510, 430, 260, 240] }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  </script>
 </body>
 </html>
