@@ -173,7 +173,7 @@
     async function loadData() {
       try {
         const uSnap = await getDocs(collection(db, 'users'));
-        const uMap = {}; const munSet = new Set();
+        const uMap = {}; 
         uSnap.forEach(doc => {
           const d = doc.data();
           uMap[doc.id] = { 
@@ -181,15 +181,20 @@
             municipality: (d.municipality || '').toUpperCase(), 
             province: (d.province || '').toUpperCase() 
           };
-          if (d.municipality) munSet.add(d.municipality.toUpperCase());
         });
 
-        // Add dummy municipalities to filter
+        // Collect municipalities and provinces from dummy data
         const munSet = new Set();
         const provSet = new Set();
         dummyData.forEach(d => {
           munSet.add(d.municipality);
           provSet.add(d.province);
+        });
+        
+        // Add user municipalities from Firebase
+        uSnap.forEach(doc => {
+          const d = doc.data();
+          if (d.municipality) munSet.add(d.municipality.toUpperCase());
         });
         
         // Populate province dropdown with user's provinces
