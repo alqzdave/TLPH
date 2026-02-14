@@ -93,11 +93,6 @@
           <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Province</label>
           <select id="provinceFilter" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-[11px] font-black uppercase outline-none focus:border-govblue">
             <option value="all">All Provinces</option>
-            <option value="CAVITE">CAVITE</option>
-            <option value="LAGUNA">LAGUNA</option>
-            <option value="BATANGAS">BATANGAS</option>
-            <option value="RIZAL">RIZAL</option>
-            <option value="QUEZON">QUEZON</option>
           </select>
         </div>
         <div>
@@ -190,7 +185,26 @@
         });
 
         // Add dummy municipalities to filter
-        dummyData.forEach(d => munSet.add(d.municipality));
+        const munSet = new Set();
+        const provSet = new Set();
+        dummyData.forEach(d => {
+          munSet.add(d.municipality);
+          provSet.add(d.province);
+        });
+        
+        // Populate province dropdown with user's provinces
+        const provFilter = document.getElementById("provinceFilter");
+        provFilter.innerHTML = '<option value="all">All Provinces</option>';
+        if (userProvinces.length > 0) {
+          userProvinces.forEach(p => {
+            provFilter.innerHTML += `<option value="${p}">${p}</option>`;
+          });
+        } else {
+          Array.from(provSet).sort().forEach(p => {
+            provFilter.innerHTML += `<option value="${p}">${p}</option>`;
+          });
+        }
+        
         const munFilter = document.getElementById("municipalityFilter");
         munFilter.innerHTML = '<option value="all">All Municipalities</option>';
         Array.from(munSet).sort().forEach(m => munFilter.innerHTML += `<option value="${m}">${m}</option>`);
@@ -257,13 +271,112 @@
     }
 
     function updateCharts(data) {
-      const typeMap = {}; data.forEach(t => typeMap[t.type] = (typeMap[t.type] || 0) + 1);
+      // Update Volume per Permit Category chart
+      const typeMap = {}; 
+      data.forEach(t => typeMap[t.type] = (typeMap[t.type] || 0) + 1);
+      
       if (barChart) barChart.destroy();
-      barChart = new Chart(document.getElementById("typeBar"), { type: 'bar', data: { labels: Object.keys(typeMap), datasets: [{ data: Object.values(typeMap), backgroundColor: '#1e3a8a' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+      const typeLabels = Object.keys(typeMap);
+      const typeData = Object.values(typeMap);
+      
+      if (typeLabels.length === 0) {
+        typeLabels.push('No Data');
+        typeData.push(0);
+      }
+      
+      barChart = new Chart(document.getElementById("typeBar"), { 
+        type: 'bar', 
+        data: { 
+          labels: typeLabels, 
+          datasets: [{ 
+            data: typeData, 
+            backgroundColor: '#1e3a8a',
+            label: 'Transaction Count'
+          }] 
+        }, 
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false, 
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.parsed.y + ' transactions';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        } 
+      });
 
-      const provMap = {}; data.forEach(t => { if(t.status === 'Paid') provMap[t.province] = (provMap[t.province] || 0) + t.amount; });
+      // Update Provincial Revenue Distribution chart
+      const provMap = {}; 
+      data.forEach(t => { 
+        if(t.status === 'Paid' && t.amount > 0) {
+          provMap[t.province] = (provMap[t.province] || 0) + t.amount; 
+        }
+      });
+      
       if (donutChart) donutChart.destroy();
-      donutChart = new Chart(document.getElementById("provDonut"), { type: 'doughnut', data: { labels: Object.keys(provMap), datasets: [{ data: Object.values(provMap), backgroundColor: ['#1e3a8a', '#059669', '#d97706', '#be123c', '#4338ca'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } } });
+      const provLabels = Object.keys(provMap);
+      const provData = Object.values(provMap);
+      
+      if (provLabels.length === 0) {
+        provLabels.push('No Revenue Data');
+        provData.push(0);
+      }
+      
+      donutChart = new Chart(document.getElementById("provDonut"), { 
+        type: 'doughnut', 
+        data: { 
+          labels: provLabels, 
+          datasets: [{ 
+            data: provData, 
+            backgroundColor: ['#1e3a8a', '#059669', '#d97706', '#be123c', '#4338ca', '#7c2d12', '#0f766e']
+          }] 
+        }, 
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false, 
+          plugins: { 
+            legend: { 
+              position: 'bottom', 
+              labels: { 
+                boxWidth: 10, 
+                font: { size: 9 },
+                generateLabels: function(chart) {
+                  const data = chart.data;
+                  if (data.labels.length && data.datasets.length) {
+                    return data.labels.map((label, i) => ({
+                      text: label + ': ' + peso.format(data.datasets[0].data[i]),
+                      fillStyle: data.datasets[0].backgroundColor[i],
+                      StrokeStyle: data.datasets[0].backgroundColor[i],
+                      index: i
+                    }));
+                  }
+                  return [];
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + peso.format(context.parsed);
+                }
+              }
+            }
+          } 
+        } 
+      });
     }
 
     document.getElementById("provinceFilter").onchange = render;
