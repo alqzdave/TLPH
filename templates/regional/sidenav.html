@@ -176,15 +176,30 @@
     }
 </style>
 
-<script type="module">
-    import { auth, db } from '/static/js/firebase-config.js';
-    import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+    // Initialize Firebase if not already initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp({
+            apiKey: "AIzaSyC356fW5fDs62lcdEDU7nB7ws_tgUA_AyM",
+            authDomain: "denr-4b.firebaseapp.com",
+            projectId: "denr-4b",
+            storageBucket: "denr-4b.firebasestorage.app",
+            messagingSenderId: "878401891068",
+            appId: "1:878401891068:web:75e3ce41ab115d3e644e86"
+        });
+    }
+    
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
     window.handleLogout = async function() {
         try {
             console.log('Logging out...');
-            await signOut(auth);
+            await auth.signOut();
             console.log('Successfully logged out');
             window.location.href = '/login';
         } catch (error) {
@@ -193,7 +208,7 @@
         }
     };
     
-    // Register Alpine component with direct Firebase imports
+    // Register Alpine component
     document.addEventListener('alpine:init', () => {
         console.log('Sidenav Alpine init executing...');
         Alpine.data('regionalSideNav', () => ({
@@ -210,12 +225,12 @@
             async loadUserData() {
                 console.log('Sidenav loadUserData() called');
                 return new Promise((resolve) => {
-                    onAuthStateChanged(auth, async (user) => {
+                    auth.onAuthStateChanged(async (user) => {
                         if (user) {
                             console.log('Sidenav: User authenticated:', user.uid);
                             try {
-                                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                                if (userDoc.exists()) {
+                                const userDoc = await db.collection('users').doc(user.uid).get();
+                                if (userDoc.exists) {
                                     const userData = userDoc.data();
                                     this.userRegion = userData.region || '';
                                     this.userRegionName = userData.regionName || '';
