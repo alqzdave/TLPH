@@ -162,14 +162,8 @@
         }
 
         function getApplicationId() {
-<<<<<<< HEAD
             const pathParts = window.location.pathname.split('/');
             return pathParts[pathParts.length - 1];
-=======
-            // Extract ID from URL query parameter: ?id=xxx
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('id');
->>>>>>> d9c9dde3aae0228498cd7969e4bf37e0b9304fab
         }
 
         async function loadProductDetails(appId) {
