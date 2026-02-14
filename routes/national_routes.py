@@ -28,7 +28,7 @@ def transaction_national_view():
 
 @bp.route('/user-management-national')
 def user_management_national_view():
-    return render_template('national/transaction-national.html')
+    return render_template('national/user-national.html')
 
 @bp.route('/profile-national')
 def profile_national_view():

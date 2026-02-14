@@ -56,7 +56,7 @@
       <div>
         <h1 class="text-[10px] font-black uppercase tracking-[0.2em] text-govblue">Regional Analytics Hub</h1>
         <p class="mt-1 text-2xl font-black text-slate-900 uppercase">Consolidated Transactions Oversight</p>
-        <p class="text-[10px] font-bold text-slate-500 uppercase italic">Region IV-A CALABARZON • System Demo View</p>
+        <p class="text-[10px] font-bold text-slate-500 uppercase italic" id="regionHeader">Loading...</p>
       </div>
 
       <div class="flex flex-wrap gap-2 no-print">
@@ -132,25 +132,47 @@
       </table>
     </div>
 
-    <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.5em] mt-12 no-print">DENR CALABARZON Regional Management Information System • 2026</p>
+    <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.5em] mt-12 no-print" id="footerText">Loading...</p>
   </div>
 
   <script type="module">
     import { auth, db } from '/static/js/firebase-config.js';
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
     let allTransactions = [];
     let barChart, donutChart;
+    let userRegion = '';
+    let userRegionName = '';
+    let userProvinces = [];
     const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
-    // DUMMY DATA FOR DEMO ROPA
+    async function loadUserRegion(user) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          userRegion = userData.region || 'IV-A';
+          userRegionName = userData.regionName || 'CALABARZON';
+          userProvinces = userData.provinces || [];
+          
+          document.getElementById('regionHeader').textContent = `Region ${userRegion} ${userRegionName} • System Demo View`;
+          document.getElementById('footerText').textContent = `DENR ${userRegionName} Regional Management Information System • 2026`;
+          
+          console.log('User region loaded:', userRegion, userRegionName, userProvinces);
+        }
+      } catch (error) {
+        console.error('Error loading user region:', error);
+      }
+    }
+
+    // DUMMY DATA FOR DEMO - REGION 4B
     const dummyData = [
-        { id: "TX-9901", payer: "Juan Dela Cruz", municipality: "CALAMBA", province: "LAGUNA", type: "Tree Cutting Permit", status: "Paid", amount: 1500, date: "Feb 10, 2026" },
-        { id: "TX-9902", payer: "Maria Clara", municipality: "CARMONA", province: "CAVITE", type: "Wildlife Trade Permit", status: "Paid", amount: 2500, date: "Feb 11, 2026" },
-        { id: "TX-9903", payer: "Jose Rizal", municipality: "LUCENA", province: "QUEZON", type: "Import Permit", status: "Pending", amount: 4200, date: "Feb 12, 2026" },
-        { id: "TX-9904", payer: "Antonio Luna", municipality: "ANTIPOLO", province: "RIZAL", type: "Tree Cutting Permit", status: "Paid", amount: 1200, date: "Feb 09, 2026" },
-        { id: "TX-9905", payer: "Melchora Aquino", municipality: "BACOOR", province: "CAVITE", type: "Fisheries License", status: "Paid", amount: 5500, date: "Feb 08, 2026" }
+        { id: "TX-9901", payer: "Juan Dela Cruz", municipality: "BOAC", province: "MARINDUQUE", type: "Tree Cutting Permit", status: "Paid", amount: 1500, date: "Feb 10, 2026" },
+        { id: "TX-9902", payer: "Maria Clara", municipality: "PUERTO PRINCESA", province: "PALAWAN", type: "Wildlife Trade Permit", status: "Paid", amount: 2500, date: "Feb 11, 2026" },
+        { id: "TX-9903", payer: "Jose Rizal", municipality: "CALAPAN", province: "ORIENTAL MINDORO", type: "Import Permit", status: "Pending", amount: 4200, date: "Feb 12, 2026" },
+        { id: "TX-9904", payer: "Antonio Luna", municipality: "MAMBURAO", province: "OCCIDENTAL MINDORO", type: "Tree Cutting Permit", status: "Paid", amount: 1200, date: "Feb 09, 2026" },
+        { id: "TX-9905", payer: "Melchora Aquino", municipality: "FERROL", province: "ROMBLON", type: "Fisheries License", status: "Paid", amount: 5500, date: "Feb 08, 2026" }
     ];
 
     async function loadData() {
@@ -174,16 +196,21 @@
         Array.from(munSet).sort().forEach(m => munFilter.innerHTML += `<option value="${m}">${m}</option>`);
 
         const tSnap = await getDocs(collection(db, 'transactions'));
-        allTransactions = [...dummyData]; // Start with Dummy Data
+        allTransactions = [...dummyData.filter(d => userProvinces.length === 0 || userProvinces.includes(d.province))]; // Filter dummy data by user provinces
         
         tSnap.forEach(doc => {
           const d = doc.data();
           const user = uMap[d.userId] || { name: 'Unknown', municipality: 'N/A', province: 'N/A' };
-          allTransactions.push({
-            id: doc.id, payer: user.name, municipality: user.municipality, province: user.province,
-            type: d.transactionType || d.type || 'Other', status: d.status || 'Pending',
-            amount: Number(d.amount) || 0, date: d.createdAt ? d.createdAt.toDate().toLocaleDateString() : 'N/A'
-          });
+          const itemProvince = user.province.toUpperCase();
+          
+          // Only include transactions from user's provinces
+          if (userProvinces.length === 0 || userProvinces.includes(itemProvince)) {
+            allTransactions.push({
+              id: doc.id, payer: user.name, municipality: user.municipality, province: itemProvince,
+              type: d.transactionType || d.type || 'Other', status: d.status || 'Pending',
+              amount: Number(d.amount) || 0, date: d.createdAt ? d.createdAt.toDate().toLocaleDateString() : 'N/A'
+            });
+          }
         });
         render();
       } catch (e) { 
@@ -243,7 +270,14 @@
     document.getElementById("municipalityFilter").onchange = render;
     document.getElementById("searchInput").oninput = render;
 
-    onAuthStateChanged(auth, (user) => { if(user) loadData(); else window.location.href='/login'; });
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await loadUserRegion(user);
+        await loadData();
+      } else {
+        window.location.href = '/login';
+      }
+    });
   </script>
 </body>
 </html>
