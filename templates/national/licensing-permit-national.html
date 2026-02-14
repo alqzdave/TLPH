@@ -3,438 +3,271 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TLPH | National Dashboard - Licensing / Permits</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>TLPH | Compact National Dashboard</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --gov-font: Verdana, Arial, Tahoma, sans-serif;
-      --gov-text: #111827;
-      --gov-muted: #4b5563;
-      --gov-border: #d1d5db;
-      --gov-bg: #f3f4f6;
-      --gov-panel: #ffffff;
-      --gov-primary: #0f172a;
-      --gov-focus: rgba(5, 150, 105, 0.18);
+    :root { --gov-navy: #002e5f; --gov-steel: #475569; --gov-bg: #f1f5f9; }
+    
+    /* Full Height / No Scroll Body */
+    html, body { height: 100vh; overflow: hidden; } 
+    body { 
+      font-family: "Inter", sans-serif; 
+      font-size: 0.72rem; 
+      background-color: var(--gov-bg);
+      color: #1e293b;
     }
-    html, body{ font-family: var(--gov-font); color: var(--gov-text); }
-    body{ background: var(--gov-bg); }
-    .card{
-      background: var(--gov-panel);
-      border: 1px solid var(--gov-border);
-      border-radius: 16px;
+
+    .wrapper { display: flex; height: 100vh; overflow: hidden; }
+    main { flex: 1; display: flex; flex-direction: column; padding: 0.5rem 1rem; overflow: hidden; min-width: 0; }
+
+    /* Cards - Compact Style */
+    .card { border-radius: 2px; border: 1px solid #cbd5e1; background: #fff; margin-bottom: 0.5rem; box-shadow: none; }
+    .card-header {
+      background: #f8fafc; font-weight: 700; font-size: 0.62rem;
+      text-transform: uppercase; color: var(--gov-navy);
+      padding: 0.3rem 0.6rem; border-bottom: 1px solid #cbd5e1;
     }
-    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
-    .sticky-head thead th{ position: sticky; top: 0; z-index: 5; }
+
+    /* Table Density */
+    .table-responsive { flex-grow: 1; overflow-y: auto; border: 1px solid #cbd5e1; background: #fff; }
+    .table-registry thead th {
+      position: sticky; top: 0; background: #f1f5f9; z-index: 10;
+      font-size: 0.6rem; padding: 0.5rem !important; border-bottom: 2px solid #cbd5e1;
+    }
+    .table-registry td { padding: 0.35rem 0.6rem !important; vertical-align: middle; border-bottom: 1px solid #e2e8f0; }
+
+    /* Chart Heights */
+    .chart-container { position: relative; height: 120px; width: 100%; }
+
+    /* Form Elements */
+    .form-control-sm, .form-select-sm { font-size: 0.7rem; border-radius: 2px; height: 28px; }
+    .badge { font-size: 0.58rem !important; border-radius: 2px; }
   </style>
 </head>
 
-<body class="min-h-screen text-slate-900">
-  <div class="min-h-screen flex">
+<body>
+
+<div class="wrapper">
+  <div class="hidden lg:block w-64 bg-slate-900">
     {% include 'national/sidenav-national.html' %}
+  </div>
 
-    <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div class="w-full max-w-[1700px] space-y-6">
+  <main>
+    <div class="d-flex justify-content-between align-items-end mb-2 border-bottom border-2 border-dark pb-1">
+      <div>
+        <h6 class="fw-bold m-0 text-uppercase" style="color: var(--gov-navy); font-size: 0.85rem;">National Licensing & Permits Registry</h6>
+        <div style="font-size: 0.6rem;" class="text-muted">Republic of the Philippines • Centralized Management System</div>
+      </div>
+      <div class="badge bg-secondary rounded-0">As of Feb 14, 2026</div>
+    </div>
 
-        <section class="card p-4">
-          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-            <div>
-              <div class="text-lg font-bold">Licensing / Permits</div>
-              <div class="text-xs text-gray-600">
-                National view of permits & licenses. Track approvals, expiries, and pending items.
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">From</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">To</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Regions</option>
-                <option>NCR</option>
-                <option>Region I</option>
-                <option>Region II</option>
-                <option>Region III</option>
-                <option>Region IV-A</option>
-                <option>Region V</option>
-                <option>Region VI</option>
-                <option>Region VII</option>
-                <option>Region VIII</option>
-                <option>Region IX</option>
-                <option>Region X</option>
-                <option>Region XI</option>
-                <option>Region XII</option>
-                <option>CAR</option>
-                <option>BARMM</option>
-              </select>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Status</option>
-                <option>Approved</option>
-                <option>Pending</option>
-                <option>To Review</option>
-                <option>Reject</option>
-                <option>Expired</option>
-              </select>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Permit Types</option>
-                <option>Environment Compliance Certificate (ECC)</option>
-                <option>Permit to Operate</option>
-                <option>Waste Transport Permit</option>
-                <option>Hazardous Waste ID Registration</option>
-                <option>Water Discharge Permit</option>
-                <option>Tree Cutting Permit</option>
-              </select>
-
-              <input
-                type="text"
-                placeholder="Search ref # / applicant…"
-                class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-64 focus-ring"
-              />
-
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-                Apply
-              </button>
-
-              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">download</span>
-                Export
-              </button>
-            </div>
+<div class="row g-2 mb-3">
+  <div class="col-md-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 5px solid #002e5f; background: #fff;">
+      <div class="card-body p-2 px-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-uppercase fw-bold text-muted" style="font-size: 0.6rem; letter-spacing: 1px;">Total Registered Records</div>
+            <div class="h3 fw-bold m-0" style="color: #002e5f; font-family: 'Inter', sans-serif; letter-spacing: -1px;">3,102</div>
           </div>
-        </section>
+          <span class="material-icons-round text-secondary opacity-25" style="font-size: 1.5rem;">account_balance</span>
+        </div>
+        <div class="mt-2 pt-1 border-top" style="font-size: 0.6rem;">
+          <span class="fw-bold text-dark">61%</span> <span class="text-muted">of annual target reached</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Total Licenses / Permits</div>
-            <div class="text-2xl font-bold mt-1">3,102</div>
-            <div class="mt-2 text-xs text-gray-600">Issued this month: <span class="font-semibold">510</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[61%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Month progress: <span class="font-semibold">61%</span></div>
+  <div class="col-md-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 5px solid #157347; background: #fff;">
+      <div class="card-body p-2 px-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-uppercase fw-bold text-muted" style="font-size: 0.6rem; letter-spacing: 1px;">Approved Issuances</div>
+            <div class="h3 fw-bold m-0 text-success" style="font-family: 'Inter', sans-serif; letter-spacing: -1px;">2,065</div>
           </div>
+          <span class="material-icons-round text-success opacity-25" style="font-size: 1.5rem;">verified_user</span>
+        </div>
+        <div class="mt-2 pt-1 border-top" style="font-size: 0.6rem;">
+          <span class="fw-bold text-success">66.6%</span> <span class="text-muted">Total compliance rate</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Approved</div>
-            <div class="text-2xl font-bold mt-1">2,065</div>
-            <div class="mt-2 text-xs text-gray-600">Approval rate: <span class="font-semibold">66.6%</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[67%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Avg. time to approve: <span class="font-semibold">5.6 days</span></div>
+  <div class="col-md-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 5px solid #e67e22; background: #fff;">
+      <div class="card-body p-2 px-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-uppercase fw-bold text-muted" style="font-size: 0.6rem; letter-spacing: 1px;">Pending Evaluation</div>
+            <div class="h3 fw-bold m-0" style="color: #d35400; font-family: 'Inter', sans-serif; letter-spacing: -1px;">788</div>
           </div>
+          <span class="material-icons-round text-warning opacity-25" style="font-size: 1.5rem;">pending_actions</span>
+        </div>
+        <div class="mt-2 pt-1 border-top" style="font-size: 0.6rem;">
+          <span class="fw-bold text-danger">22 Days</span> <span class="text-muted">Ave. processing time</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Pending</div>
-            <div class="text-2xl font-bold mt-1">788</div>
-            <div class="mt-2 text-xs text-gray-600">Pending rate: <span class="font-semibold">25.4%</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[25%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Oldest pending: <span class="font-semibold">22 days</span></div>
+  <div class="col-md-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 5px solid #b91c1c; background: #fff;">
+      <div class="card-body p-2 px-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-uppercase fw-bold text-muted" style="font-size: 0.6rem; letter-spacing: 1px;">Expired / Delinquent</div>
+            <div class="h3 fw-bold m-0 text-danger" style="font-family: 'Inter', sans-serif; letter-spacing: -1px;">214</div>
           </div>
+          <span class="material-icons-round text-danger opacity-25" style="font-size: 1.5rem;">gavel</span>
+        </div>
+        <div class="mt-2 pt-1 border-top" style="font-size: 0.6rem;">
+          <span class="fw-bold text-dark">98</span> <span class="text-muted">Urgent action required</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Expiring Soon (30 days)</div>
-            <div class="text-2xl font-bold mt-1">214</div>
-            <div class="mt-2 text-xs text-gray-600">Expired: <span class="font-semibold">98</span></div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">Top type expiring</div>
-                <div class="font-bold">Permit to Operate</div>
+    <div class="row g-2 flex-grow-1 overflow-hidden">
+      <div class="col-md-3 d-flex flex-column gap-1">
+        <div class="card flex-grow-1 mb-0">
+          <div class="card-header">Filing Trend</div>
+          <div class="card-body"><div class="chart-container"><canvas id="lpTrendChart"></canvas></div></div>
+        </div>
+        <div class="card flex-grow-1 mb-0">
+          <div class="card-header">By Status</div>
+          <div class="card-body"><div class="chart-container"><canvas id="lpStatusChart"></canvas></div></div>
+        </div>
+        <div class="card flex-grow-1 mb-0">
+          <div class="card-header">By Region</div>
+          <div class="card-body"><div class="chart-container"><canvas id="lpRegionChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="col-md-9 d-flex flex-column overflow-hidden">
+        <div class="card flex-grow-1 d-flex flex-column m-0">
+          <div class="card-header bg-light p-2">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white border-end-0"><span class="material-icons-round fs-6 text-muted">search</span></span>
+                  <input type="text" id="liveSearchInput" class="form-control border-start-0 ps-0" placeholder="Search registry...">
+                </div>
               </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">Top region expiring</div>
-                <div class="font-bold">Region IV-A</div>
+              <div class="col-md-3">
+                <select id="regionLiveFilter" class="form-select form-select-sm">
+                  <option selected>All Regions</option><option>NCR</option><option>Region I</option><option>Region II</option>
+                  <option>Region III</option><option>Region IV-A</option><option>BARMM</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select id="statusLiveFilter" class="form-select form-select-sm">
+                  <option selected>All Status</option><option>Approved</option><option>Pending</option><option>Expired</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button id="btnRunQuery" class="btn btn-dark btn-sm w-100 fw-bold" style="background: var(--gov-navy);">RUN QUERY</button>
               </div>
             </div>
           </div>
-        </section>
 
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <!-- Trend -->
-          <div class="card p-4 xl:col-span-2">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Licenses / Permits Trend</div>
-                <div class="text-xs text-gray-600">Issued vs Approved vs Expired (sample last 6 months)</div>
-              </div>
-              <div class="text-xs text-gray-600">Last 6 months</div>
-            </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="lpTrendChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div>
-              <div class="font-bold">Status Breakdown</div>
-              <div class="text-xs text-gray-600">Approved • Pending • To Review • Rejected • Expired</div>
-            </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="lpStatusChart"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <section class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Permits by Type</div>
-                <div class="text-xs text-gray-600">Most common permit types (sample)</div>
-              </div>
-              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
-                View all types
-              </button>
-            </div>
-            <div class="mt-3 h-[340px]">
-              <canvas id="lpTypeChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Permits by Region</div>
-                <div class="text-xs text-gray-600">Volume per region (sample)</div>
-              </div>
-              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
-                Top N
-              </button>
-            </div>
-            <div class="mt-3 h-[340px]">
-              <canvas id="lpRegionChart"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <section class="card overflow-hidden">
-          <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div>
-              <div class="font-bold">Licensing / Permits List</div>
-              <div class="text-xs text-gray-600">
-                Reference & Applicant • Type • Region • Municipality • Status • Issued • Expiry • Actions
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">tune</span>
-                Advanced Filters
-              </button>
-              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">download</span>
-                Export Table
-              </button>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto max-h-[560px] sticky-head">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Permit Type</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Issued</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Expiry</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+ <div class="table-responsive">
+            <table id="registryTable" class="table table-sm table-hover mb-0 table-registry">
+              <thead>
+                <tr class="text-uppercase text-muted">
+                  <th>Reference & Applicant</th>
+                  <th>Classification</th>
+                  <th>Location</th>
+                  <th class="text-center">Status</th>
+                  <th>Issued/Expiry</th>
+                  <th class="text-center">Actions</th>
                 </tr>
               </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">LIC-2026-000118</div>
-                    <div class="text-xs text-gray-600">Santos, Maria</div>
-                  </td>
-                  <td class="py-3 px-4">Environment Compliance Certificate (ECC)</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">—</td>
-                  <td class="py-3 px-4 whitespace-nowrap">—</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">check</span> Approve
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">close</span> Reject
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
+              <tbody>
+                <tr>
+                  <td><div class="fw-bold text-primary">LIC-2026-001284</div><div class="text-muted" style="font-size: 0.6rem;">Santos, Maria Clara</div></td>
+                  <td class="text-uppercase fw-semibold">ECC Permit</td>
+                  <td>Region IV-A / Laguna</td>
+                  <td class="text-center"><span class="badge border" style="background: #fffbeb; color: #92400e; border-color: #fde68a;">EVALUATION PENDING</span></td>
+                  <td class="text-muted small">— / —</td>
+                  <td class="text-center">
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-outline-secondary p-0 px-1 border-0"><span class="material-icons-round fs-6">visibility</span></button>
+                      <button class="btn btn-sm btn-outline-success p-0 px-1 border-0"><span class="material-icons-round fs-6">check_circle</span></button>
+                      <button class="btn btn-sm btn-outline-danger p-0 px-1 border-0"><span class="material-icons-round fs-6">cancel</span></button>
                     </div>
                   </td>
                 </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">LIC-2026-000104</div>
-                    <div class="text-xs text-gray-600">Dela Cruz, Juan</div>
-                  </td>
-                  <td class="py-3 px-4">Permit to Operate</td>
-                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Approved</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 05, 2026</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 05, 2027</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
-                    </div>
-                  </td>
+                <tr>
+                  <td><div class="fw-bold text-primary">LIC-2026-001042</div><div class="text-muted" style="font-size: 0.6rem;">Dela Cruz, Juan</div></td>
+                  <td class="text-uppercase fw-semibold">Permit to Operate</td>
+                  <td>NCR / Quezon City</td>
+                  <td class="text-center"><span class="badge border" style="background: #ecfdf5; color: #065f46; border-color: #a7f3d0;">OFFICIALLY APPROVED</span></td>
+                  <td class="fw-semibold small">Feb 05, 2026 / 2027</td>
+                  <td class="text-center"><button class="btn btn-outline-dark btn-sm py-0 px-2 fw-bold" style="font-size: 0.6rem;">MANAGE</button></td>
                 </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">LIC-2025-009981</div>
-                    <div class="text-xs text-gray-600">Rivera, Liza</div>
-                  </td>
-                  <td class="py-3 px-4">Water Discharge Permit</td>
-                  <td class="py-3 px-4 whitespace-nowrap">BARMM</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Cotabato City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-gray-200 bg-gray-50 text-gray-700">Expired</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">Jan 08, 2025</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Jan 08, 2026</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">autorenew</span> Renew
-                      </button>
-                    </div>
-                  </td>
+                <tr>
+                  <td><div class="fw-bold text-muted">LIC-2025-009981</div><div class="text-muted" style="font-size: 0.6rem;">Rivera, Liza</div></td>
+                  <td class="text-uppercase fw-semibold">Water Discharge</td>
+                  <td>BARMM / Cotabato</td>
+                  <td class="text-center"><span class="badge border" style="background: #fef2f2; color: #991b1b; border-color: #fecaca;">EXPIRED</span></td>
+                  <td class="text-danger fw-bold small">Jan 08, 2026</td>
+                  <td class="text-center"><button class="btn btn-warning btn-sm py-0 px-2 fw-bold" style="font-size: 0.6rem;">RENEW</button></td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          <div class="p-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-600">
-            <div>Showing <span class="font-semibold">1–3</span> of <span class="font-semibold">3,102</span> permits (sample)</div>
-            <div class="flex items-center gap-2">
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Prev</button>
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Next</button>
-            </div>
+          
+          <div class="p-2 px-3 bg-white border-top d-flex justify-content-between align-items-center">
+            <span class="text-muted" style="font-size: 0.6rem;">Total: <strong>3,102 Records</strong></span>
+            <button class="btn btn-outline-secondary btn-sm fw-bold px-2 d-flex align-items-center gap-1" style="font-size: 0.6rem;"><span class="material-icons-round fs-6">file_download</span> CSV</button>
           </div>
-        </section>
 
-        <footer class="py-6 text-xs text-gray-600">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>© 2026 TLPH • Licensing / Permits (UI Draft)</div>
-            <div class="inline-flex items-center gap-2">
-              <span>RBAC-ready</span>
-              <span>DB-ready</span>
-            </div>
-          </div>
-        </footer>
+    <footer class="mt-2 text-center text-muted" style="font-size: 0.55rem; border-top: 1px solid #cbd5e1;">
+      OFFICIAL USE ONLY • Republic of the Philippines • v2.1
+    </footer>
+  </main>
+</div>
 
-      </div>
-    </main>
-  </div>
+<script>
+  // Parehong logic, compact version charts
+  const sharedOpts = { 
+    maintainAspectRatio: false, 
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 6, font: { size: 8 } } } }, 
+    scales: { y: { ticks: { font: { size: 8 } } }, x: { ticks: { font: { size: 8 } } } } 
+  };
+  
+  new Chart(document.getElementById('lpTrendChart'), { type: 'line', data: { labels: ['S', 'O', 'N', 'D', 'J', 'F'], datasets: [{ label: 'Issued', data: [43, 48, 52, 61, 54, 55], borderColor: '#002e5f', tension: 0.2 }] }, options: sharedOpts });
+  new Chart(document.getElementById('lpStatusChart'), { type: 'pie', data: { labels: ['Apprv', 'Pend', 'Exp'], datasets: [{ data: [2065, 788, 98], backgroundColor: ['#166534', '#854d0e', '#991b1b'] }] }, options: sharedOpts });
+  new Chart(document.getElementById('lpRegionChart'), { type: 'bar', data: { labels: ['R4A', 'NCR', 'R7', 'R3', 'BAR'], datasets: [{ data: [68, 61, 39, 30, 18], backgroundColor: '#475569' }] }, options: sharedOpts });
 
-  <script>
-    new Chart(document.getElementById('lpTrendChart'), {
-      type: 'line',
-      data: {
-        labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
-        datasets: [
-          { label: 'Issued',   data: [430, 480, 520, 610, 540, 552], tension: 0.25 },
-          { label: 'Approved', data: [260, 310, 340, 420, 380, 395], tension: 0.25 },
-          { label: 'Expired',  data: [12,  14,  16,  20,  18,  19], tension: 0.25 }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        interaction: { mode: 'index', intersect: false },
-        scales: { y: { beginAtZero: true } }
-      }
+  function runLiveRegistryFilter() {
+    const searchVal = document.getElementById('liveSearchInput').value.toLowerCase();
+    const regionVal = document.getElementById('regionLiveFilter').value;
+    const statusVal = document.getElementById('statusLiveFilter').value;
+    const rows = document.querySelectorAll('#registryTable tbody tr');
+
+    rows.forEach(row => {
+      const content = row.innerText.toLowerCase();
+      const matchesSearch = content.includes(searchVal);
+      const matchesRegion = (regionVal === "All Regions" || content.includes(regionVal.toLowerCase()));
+      const matchesStatus = (statusVal === "All Status" || content.includes(statusVal.toLowerCase()));
+      row.style.display = (matchesSearch && matchesRegion && matchesStatus) ? "" : "none";
     });
+  }
 
-    new Chart(document.getElementById('lpStatusChart'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Approved', 'Pending', 'To Review', 'Rejected', 'Expired'],
-        datasets: [{ data: [2065, 788, 120, 31, 98] }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
+  document.getElementById('liveSearchInput').addEventListener('input', runLiveRegistryFilter);
+  document.getElementById('regionLiveFilter').addEventListener('change', runLiveRegistryFilter);
+  document.getElementById('statusLiveFilter').addEventListener('change', runLiveRegistryFilter);
+  document.getElementById('btnRunQuery').addEventListener('click', runLiveRegistryFilter);
+</script>
 
-    new Chart(document.getElementById('lpTypeChart'), {
-      type: 'bar',
-      data: {
-        labels: [
-          'Permit to Operate',
-          'ECC',
-          'Waste Transport Permit',
-          'Water Discharge Permit',
-          'Hazardous Waste ID',
-          'Tree Cutting Permit'
-        ],
-        datasets: [{ label: 'Permits', data: [880, 740, 520, 410, 300, 252] }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        scales: { x: { beginAtZero: true } }
-      }
-    });
-
-    new Chart(document.getElementById('lpRegionChart'), {
-      type: 'bar',
-      data: {
-        labels: ['Region IV-A', 'NCR', 'Region VII', 'Region III', 'BARMM', 'CAR'],
-        datasets: [{ label: 'Permits', data: [680, 610, 390, 300, 180, 210] }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  </script>
 </body>
 </html>

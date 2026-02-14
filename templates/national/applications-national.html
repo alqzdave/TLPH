@@ -3,484 +3,338 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TLPH | National Dashboard - Applications</title>
+  <title>TLPH | National Application Registry</title>
 
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --gov-font: Verdana, Arial, Tahoma, sans-serif;
-      --gov-text: #111827;
-      --gov-muted: #4b5563;
-      --gov-border: #d1d5db;
-      --gov-bg: #f3f4f6;
-      --gov-panel: #ffffff;
-      --gov-primary: #0f172a;
-      --gov-focus: rgba(5, 150, 105, 0.18);
+    :root {
+      --gov-navy: #002e5f;
+      --gov-bg: #f1f5f9;
+      --gov-border: #cbd5e1;
     }
-    html, body{ font-family: var(--gov-font); color: var(--gov-text); }
-    body{ background: var(--gov-bg); }
-    .card{
-      background: var(--gov-panel);
-      border: 1px solid var(--gov-border);
-      border-radius: 16px;
+    
+    /* Lock scroll for compact view */
+    html, body { height: 100vh; overflow: hidden; }
+    body { 
+      font-family: "Inter", "Segoe UI", sans-serif; 
+      background-color: var(--gov-bg); 
+      font-size: 0.72rem; 
+      color: #1e293b; 
     }
-    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
+    
+    .wrapper { display: flex; height: 100vh; overflow: hidden; }
+    main { flex: 1; min-width: 0; padding: 0.5rem 1rem; display: flex; flex-direction: column; overflow: hidden; }
 
-    .sticky-head thead th{
-      position: sticky;
-      top: 0;
-      z-index: 5;
+    /* Executive Style Components */
+    .gov-card { 
+      background: #ffffff; 
+      border: 1px solid var(--gov-border); 
+      border-radius: 2px;
+      margin-bottom: 0.5rem;
     }
+
+    /* Metric Cards with Side Border */
+    .metric-card { border: none; border-left: 5px solid var(--gov-navy); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .metric-title { font-size: 0.6rem; letter-spacing: 1px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .metric-value { font-size: 1.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
+
+    /* Table Styling & Sticky Header */
+    .table-responsive { flex-grow: 1; overflow-y: auto; background: white; border: 1px solid var(--gov-border); }
+    .table-registry thead th { 
+      background: #f8fafc; 
+      color: var(--gov-navy); 
+      font-weight: 700; 
+      text-transform: uppercase; 
+      font-size: 0.6rem;
+      border-bottom: 2px solid var(--gov-border);
+      padding: 0.5rem !important;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .table-registry td { padding: 0.4rem 0.6rem !important; vertical-align: middle; border-bottom: 1px solid #e2e8f0; font-size: 0.7rem; }
+
+    /* Status Badges */
+    .status-pill {
+      font-size: 0.55rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 1px; text-transform: uppercase; border: 1px solid;
+    }
+    .st-approved { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .st-pending { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+    .st-rejected { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+
+    .chart-container { position: relative; height: 125px; width: 100%; }
+    .form-control-sm, .form-select-sm, .btn-sm { font-size: 0.65rem !important; border-radius: 1px !important; }
   </style>
 </head>
 
-<body class="min-h-screen text-slate-900">
-  <div class="min-h-screen flex">
+<body>
+
+<div class="wrapper">
+  <div class="hidden lg:block w-64 bg-slate-900">
     {% include 'national/sidenav-national.html' %}
+  </div>
 
-    <main class="flex-1 min-w-0 px-5 sm:px-6 lg:px-8 py-6 space-y-6">
-      <div class="w-full max-w-[1700px] space-y-6">
+  <main>
+    <section class="gov-card p-2 px-3 border-0 border-b bg-white rounded-0 mb-2">
+      <div class="row g-2 align-items-center">
+        <div class="col-xl-4">
+          <h6 class="fw-bold m-0 text-uppercase" style="color: var(--gov-navy); letter-spacing: 0.5px;">National Application Registry</h6>
+          <div class="text-muted text-uppercase" style="font-size: 0.55rem;">Republic of the Philippines • Department of Agriculture</div>
+        </div>
+        <div class="col-xl-8 text-end">
+          <span class="badge bg-secondary rounded-0 p-2" style="font-size: 0.6rem;">FEBRUARY 14, 2026</span>
+        </div>
+      </div>
+    </section>
 
-        <section class="card p-4">
-          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-            <div>
-              <div class="text-lg font-bold">Applications</div>
-              <div class="text-xs text-gray-600">
-                National view of all submitted applications. Use filters to narrow results.
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">From</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">To</label>
-                <input type="date" class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-              </div>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Regions</option>
-                <option>NCR</option>
-                <option>Region I</option>
-                <option>Region II</option>
-                <option>Region III</option>
-                <option>Region IV-A</option>
-                <option>Region V</option>
-                <option>Region VI</option>
-                <option>Region VII</option>
-                <option>Region VIII</option>
-                <option>Region IX</option>
-                <option>Region X</option>
-                <option>Region XI</option>
-                <option>Region XII</option>
-                <option>CAR</option>
-                <option>BARMM</option>
-              </select>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Status</option>
-                <option>Approved</option>
-                <option>Pending</option>
-                <option>To Review</option>
-                <option>Reject</option>
-              </select>
-
-              <select class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus-ring">
-                <option selected>All Categories</option>
-                <option>Crop & Plant</option>
-                <option>Livestock & Poultry</option>
-                <option>Fisheries & Aquaculture</option>
-                <option>Agribusiness & Agro-Processing</option>
-                <option>Agricultural Trade (Import & Export)</option>
-                <option>Land Use & Farm Development infrastructure</option>
-                <option>Research, Technology & Innovation</option>
-                <option>Farmer Support, Subsidies & Insurance</option>
-                <option>Food Safety & Quality Regulation</option>
-                <option>Extension Services & Capacity Building</option>
-                <option>Climate Change, Disaster & Risk Management</option>
-                <option>Data, Monitoring & Digital Agriculture</option>
-                <option>Compliance, Inspection & Enforcement</option>
-                <option>Institutional & Cooperative Development</option>
-              </select>
-
-              <input
-                type="text"
-                placeholder="Search ref # / applicant…"
-                class="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white w-64 focus-ring"
-              />
-
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm">
-                Apply
-              </button>
-
-              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">download</span>
-                Export
-              </button>
-            </div>
+    <div class="row g-2 mb-2">
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div><div class="metric-title">Total Applications</div><div class="metric-value" style="color: var(--gov-navy);">12,480</div></div>
+            <span class="material-icons-round text-slate-300">analytics</span>
           </div>
-        </section>
-
-        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Total Applications</div>
-            <div class="text-2xl font-bold mt-1">12,480</div>
-            <div class="mt-2 text-xs text-gray-600">This month: <span class="font-semibold">2,455</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[62%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Month progress: <span class="font-semibold">62%</span></div>
+          <div class="mt-1 border-t pt-1 text-[10px] text-muted"><b>62%</b> target reached for Q1</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #157347;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div><div class="metric-title">Approved (Compliance)</div><div class="metric-value text-success">8,915</div></div>
+            <span class="material-icons-round text-success opacity-20">verified</span>
           </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Approved</div>
-            <div class="text-2xl font-bold mt-1">8,915</div>
-            <div class="mt-2 text-xs text-gray-600">Approval rate: <span class="font-semibold">71.4%</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[71%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Avg. time to approve: <span class="font-semibold">4.2 days</span></div>
+          <div class="mt-1 border-t pt-1 text-[10px] text-muted"><b>71.4%</b> Approval Rate</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #e67e22;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div><div class="metric-title">For Evaluation</div><div class="metric-value" style="color: #d35400;">1,320</div></div>
+            <span class="material-icons-round text-warning opacity-20">pending_actions</span>
           </div>
-
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">To Review</div>
-            <div class="text-2xl font-bold mt-1">1,320</div>
-            <div class="mt-2 text-xs text-gray-600">Review rate: <span class="font-semibold">10.6%</span></div>
-            <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full w-[11%] bg-slate-900 rounded-full"></div>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">Oldest in queue: <span class="font-semibold">18 days</span></div>
+          <div class="mt-1 border-t pt-1 text-[10px] text-danger fw-bold">Avg Aging: 18 Days</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #b91c1c;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div><div class="metric-title">Disapproved</div><div class="metric-value text-danger">1,487</div></div>
+            <span class="material-icons-round text-danger opacity-20">report_problem</span>
           </div>
+          <div class="mt-1 border-t pt-1 text-[10px] text-muted">Top: Incomplete Docs</div>
+        </div>
+      </div>
+    </div>
 
-          <div class="card p-4">
-            <div class="text-xs text-gray-600">Rejected</div>
-            <div class="text-2xl font-bold mt-1">1,487</div>
-            <div class="mt-2 text-xs text-gray-600">Rejection rate: <span class="font-semibold">11.9%</span></div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">Top reason</div>
-                <div class="font-bold">Incomplete</div>
+    <div class="row g-2 flex-grow-1 overflow-hidden">
+      <div class="col-lg-3 d-flex flex-column gap-1">
+        <div class="gov-card p-2 flex-grow-1"><div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Filing Trends</div><div class="chart-container"><canvas id="appsTrendChart"></canvas></div></div>
+        <div class="gov-card p-2 flex-grow-1"><div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Registry Distribution</div><div class="chart-container"><canvas id="appsStatusChart"></canvas></div></div>
+        <div class="gov-card p-2 flex-grow-1"><div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Regional Volume</div><div class="chart-container"><canvas id="appsRegionChart"></canvas></div></div>
+      </div>
+
+      <div class="col-lg-9 d-flex flex-column overflow-hidden">
+        <div class="gov-card flex-grow-1 d-flex flex-column overflow-hidden m-0">
+          
+          <div class="p-2 px-3 bg-slate-50 border-b">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white border-end-0 text-muted"><span class="material-icons-round fs-6">search</span></span>
+                  <input type="text" id="masterSearch" class="form-control border-start-0 ps-0" placeholder="Search Ref / Applicant...">
+                </div>
               </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 p-2">
-                <div class="text-[11px] text-gray-600">2nd reason</div>
-                <div class="font-bold">Non-compliant</div>
+              
+              <div class="col-md-3">
+                <select id="regionFilter" class="form-select form-select-sm">
+                  <option value="ALL">All Regions (Philippines)</option>
+                  <option value="NCR">National Capital Region (NCR)</option>
+                  <option value="CAR">Cordillera Administrative Region (CAR)</option>
+                  <option value="REGION I">Region I - Ilocos Region</option>
+                  <option value="REGION II">Region II - Cagayan Valley</option>
+                  <option value="REGION III">Region III - Central Luzon</option>
+                  <option value="REGION IV-A">Region IV-A - CALABARZON</option>
+                  <option value="MIMAROPA">MIMAROPA Region</option>
+                  <option value="REGION V">Region V - Bicol Region</option>
+                  <option value="REGION VI">Region VI - Western Visayas</option>
+                  <option value="REGION VII">Region VII - Central Visayas</option>
+                  <option value="REGION VIII">Region VIII - Eastern Visayas</option>
+                  <option value="REGION IX">Region IX - Zamboanga Peninsula</option>
+                  <option value="REGION X">Region X - Northern Mindanao</option>
+                  <option value="REGION XI">Region XI - Davao Region</option>
+                  <option value="REGION XII">Region XII - SOCCSKSARGEN</option>
+                  <option value="REGION XIII">Region XIII - Caraga</option>
+                  <option value="BARMM">Bangsamoro (BARMM)</option>
+                </select>
+              </div>
+
+              <div class="col-md-2">
+                <select id="categoryFilter" class="form-select form-select-sm">
+                  <option value="ALL">All Categories</option>
+                  <option value="CROP & PLANT">Crop & Plant</option>
+                  <option value="LIVESTOCK">Livestock & Poultry</option>
+                  <option value="FISHERIES">Fisheries & Aquaculture</option>
+                  <option value="AGRIBUSINESS">Agribusiness & Processing</option>
+                  <option value="FOOD SAFETY">Food Safety & Quality</option>
+                  <option value="COMPLIANCE">Compliance & Enforcement</option>
+                  <option value="CLIMATE">Climate & Risk Mgmt</option>
+                </select>
+              </div>
+
+              <div class="col-md-2">
+                <select id="statusFilter" class="form-select form-select-sm">
+                  <option value="ALL">All Status</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="EVALUATION">Evaluation</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+              </div>
+              
+              <div class="col-md-2 text-end">
+                <button onclick="clearFilters()" class="btn btn-light btn-sm border fw-bold w-100">RESET</button>
               </div>
             </div>
           </div>
-        </section>
-
-        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <div class="card p-4 xl:col-span-2">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Applications Trend</div>
-                <div class="text-xs text-gray-600">Submitted vs Approved vs Rejected (sample last 6 months)</div>
-              </div>
-              <div class="text-xs text-gray-600">Last 6 months</div>
-            </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="appsTrendChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div>
-              <div class="font-bold">Status Breakdown</div>
-              <div class="text-xs text-gray-600">Approved • Pending • To Review • Reject</div>
-            </div>
-            <div class="mt-3 h-[320px]">
-              <canvas id="appsStatusChart"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <section class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <!-- By Category -->
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Applications by Category</div>
-                <div class="text-xs text-gray-600">Top categories (sample)</div>
-              </div>
-              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
-                View all categories
-              </button>
-            </div>
-            <div class="mt-3 h-[340px]">
-              <canvas id="appsCategoryChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-bold">Applications by Region</div>
-                <div class="text-xs text-gray-600">Volume per region (sample)</div>
-              </div>
-              <button class="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">
-                Top N
-              </button>
-            </div>
-            <div class="mt-3 h-[340px]">
-              <canvas id="appsRegionChart"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <section class="card overflow-hidden">
-          <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div>
-              <div class="font-bold">Applications List</div>
-              <div class="text-xs text-gray-600">
-                Date • Reference & Applicant • Category • Region • Municipality • Status • Actions
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">tune</span>
-                Advanced Filters
-              </button>
-              <button class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm inline-flex items-center gap-2">
-                <span class="material-icons-round text-[18px]">download</span>
-                Export Table
-              </button>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto max-h-[560px] sticky-head">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 border-y border-gray-200">
-                <tr class="text-left text-gray-600">
-                  <th class="py-3 px-4 whitespace-nowrap">Date</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Reference &amp; Applicant</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Applicant Category</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Region</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Municipality</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th class="py-3 px-4 whitespace-nowrap">Actions</th>
+          
+          <div class="table-responsive">
+            <table id="masterTable" class="table table-sm table-hover table-registry mb-0">
+              <thead>
+                <tr>
+                  <th>Date Filed</th>
+                  <th>Reference ID</th>
+                  <th>Applicant Name</th>
+                  <th>Service Category</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th class="text-center">Action</th>
                 </tr>
               </thead>
-
-              <tbody class="divide-y divide-gray-200">
-                <!-- Row 1 -->
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 12, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">APP-2026-001284</div>
-                    <div class="text-xs text-gray-600">Dela Cruz, Juan</div>
-                  </td>
-                  <td class="py-3 px-4">Crop &amp; Plant</td>
-                  <td class="py-3 px-4 whitespace-nowrap">NCR</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Quezon City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-amber-200 bg-amber-50 text-amber-800">Pending</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">check</span> Approve
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">close</span> Reject
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
+              <tbody>
+                <tr>
+                  <td>Feb 12, 2026</td>
+                  <td class="fw-bold text-primary">APP-2026-001284</td>
+                  <td>Dela Cruz, Juan</td>
+                  <td class="text-uppercase">Crop & Plant</td>
+                  <td>NCR / Quezon City</td>
+                  <td><span class="status-pill st-pending">Evaluation</span></td>
+                  <td class="text-center">
+                    <div class="btn-group shadow-sm border rounded">
+                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-secondary">visibility</span></button>
+                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-success">check_circle</span></button>
+                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-danger">cancel</span></button>
                     </div>
                   </td>
                 </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 11, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">APP-2026-001241</div>
-                    <div class="text-xs text-gray-600">Santos, Maria</div>
-                  </td>
-                  <td class="py-3 px-4">Food Safety &amp; Quality Regulation</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region IV-A</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Calamba</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-emerald-200 bg-emerald-50 text-emerald-800">Approved</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 10, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">APP-2026-001199</div>
-                    <div class="text-xs text-gray-600">Garcia, Noel</div>
-                  </td>
-                  <td class="py-3 px-4">Compliance, Inspection &amp; Enforcement</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Region VII</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Cebu City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-sky-200 bg-sky-50 text-sky-800">To Review</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">check</span> Approve
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-900 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">close</span> Reject
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50">
-                  <td class="py-3 px-4 whitespace-nowrap">Feb 09, 2026</td>
-                  <td class="py-3 px-4">
-                    <div class="font-semibold">APP-2026-001144</div>
-                    <div class="text-xs text-gray-600">Rivera, Liza</div>
-                  </td>
-                  <td class="py-3 px-4">Climate Change, Disaster &amp; Risk Management</td>
-                  <td class="py-3 px-4 whitespace-nowrap">BARMM</td>
-                  <td class="py-3 px-4 whitespace-nowrap">Cotabato City</td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-rose-200 bg-rose-50 text-rose-800">Reject</span>
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-2">
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">visibility</span> View
-                      </button>
-                      <button class="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs inline-flex items-center gap-1">
-                        <span class="material-icons-round text-[16px]">download</span> Export
-                      </button>
+                <tr>
+                  <td>Feb 11, 2026</td>
+                  <td class="fw-bold text-primary">APP-2026-001241</td>
+                  <td>Santos, Maria</td>
+                  <td class="text-uppercase">Food Safety</td>
+                  <td>Region IV-A / Calamba</td>
+                  <td><span class="status-pill st-approved">Approved</span></td>
+                  <td class="text-center">
+                    <div class="btn-group shadow-sm border rounded">
+                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-secondary">visibility</span></button>
+                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-success">check_circle</span></button>
+                      <button class="btn btn-sm btn-light p-1"><span class="material-icons-round fs-6 text-danger">cancel</span></button>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          <div class="p-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-600">
-            <div>Showing <span class="font-semibold">1–4</span> of <span class="font-semibold">12,480</span> applications (sample)</div>
-            <div class="flex items-center gap-2">
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Prev</button>
-              <button class="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50">Next</button>
-            </div>
+          
+          <div class="p-1 px-3 bg-white border-top d-flex justify-content-between align-items-center">
+            <span id="rowCountLabel" class="text-muted" style="font-size: 0.6rem;">Showing: <b>2 records</b></span>
+            <button class="btn btn-outline-secondary btn-sm fw-bold px-2 py-0" style="font-size: 0.6rem;"><span class="material-icons-round fs-6 align-middle">file_download</span> EXPORT</button>
           </div>
-        </section>
-
-        <footer class="py-6 text-xs text-gray-600">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>© 2026 TLPH • Applications (UI Draft)</div>
-            <div class="inline-flex items-center gap-2">
-              <span>RBAC-ready</span>
-              <span>DB-ready</span>
-            </div>
-          </div>
-        </footer>
-
+        </div>
       </div>
-    </main>
-  </div>
+    </div>
 
-  <script>
-    new Chart(document.getElementById('appsTrendChart'), {
-      type: 'line',
-      data: {
-        labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
-        datasets: [
-          { label: 'Submitted', data: [1800, 2050, 2200, 2400, 2600, 2480], tension: 0.25 },
-          { label: 'Approved', data: [1250, 1490, 1610, 1750, 1910, 1840], tension: 0.25 },
-          { label: 'Rejected', data: [220, 260, 240, 280, 310, 295], tension: 0.25 }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        interaction: { mode: 'index', intersect: false },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
+    <footer class="mt-2 text-center text-muted" style="font-size: 0.55rem;">REPUBLIC OF THE PHILIPPINES • NATIONAL APPLICATION DASHBOARD</footer>
+  </main>
+</div>
 
-    new Chart(document.getElementById('appsStatusChart'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Approved', 'Pending', 'To Review', 'Reject'],
-        datasets: [{ data: [8915, 3680, 1320, 1487] }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
+<script>
+  // --- CHART LOGIC ---
+  const sharedOpts = {
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8, weight: 'bold' } } } },
+    scales: { y: { ticks: { font: { size: 8 } } }, x: { ticks: { font: { size: 8 } } } }
+  };
 
-    new Chart(document.getElementById('appsCategoryChart'), {
-      type: 'bar',
-      data: {
-        labels: [
-          'Crop & Plant',
-          'Food Safety & Quality',
-          'Compliance & Enforcement',
-          'Agribusiness & Agro-Processing',
-          'Livestock & Poultry',
-          'Data & Digital Agriculture'
-        ],
-        datasets: [
-          { label: 'Applications', data: [2650, 1980, 1520, 1340, 1210, 980] }
-        ]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
-        scales: { x: { beginAtZero: true } }
-      }
-    });
+  new Chart(document.getElementById('appsTrendChart'), {
+    type: 'line',
+    data: {
+      labels: ['S', 'O', 'N', 'D', 'J', 'F'],
+      datasets: [{ label: 'Apps', data: [1800, 2050, 2200, 2400, 2600, 2480], borderColor: '#002e5f', backgroundColor: 'rgba(0,46,95,0.05)', fill: true, tension: 0.1 }]
+    },
+    options: sharedOpts
+  });
 
-    new Chart(document.getElementById('appsRegionChart'), {
-      type: 'bar',
-      data: {
-        labels: ['NCR', 'Region IV-A', 'Region VII', 'Region III', 'BARMM', 'CAR', 'Region I'],
-        datasets: [
-          { label: 'Applications', data: [2190, 1940, 1210, 990, 610, 540, 505] }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom' },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: { y: { beginAtZero: true } }
-      }
+  new Chart(document.getElementById('appsStatusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Apprv', 'Pend', 'ToRev', 'Rej'],
+      datasets: [{ data: [8915, 3680, 1320, 1487], backgroundColor: ['#166534', '#854d0e', '#002e5f', '#991b1b'], borderWidth: 0 }]
+    },
+    options: { ...sharedOpts, cutout: '70%', scales: { x: { display: false }, y: { display: false } } }
+  });
+
+  new Chart(document.getElementById('appsRegionChart'), {
+    type: 'bar',
+    data: {
+      labels: ['NCR', 'R4A', 'R7', 'R3', 'BAR'],
+      datasets: [{ label: 'Volume', data: [2190, 1940, 1210, 990, 610], backgroundColor: '#475569' }]
+    },
+    options: { ...sharedOpts, indexAxis: 'y' }
+  });
+
+  // --- FILTER & SEARCH LOGIC ---
+  const searchInput = document.getElementById('masterSearch');
+  const regionFilter = document.getElementById('regionFilter');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  const tableRows = document.querySelectorAll('#masterTable tbody tr');
+  const rowCountLabel = document.getElementById('rowCountLabel');
+
+  function filterTable() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedRegion = regionFilter.value.toUpperCase();
+    const selectedCategory = categoryFilter.value.toUpperCase();
+    const selectedStatus = statusFilter.value.toUpperCase();
+    let visibleCount = 0;
+
+    tableRows.forEach(row => {
+      const refId = row.cells[1].innerText.toLowerCase();
+      const applicant = row.cells[2].innerText.toLowerCase();
+      const category = row.cells[3].innerText.toUpperCase();
+      const location = row.cells[4].innerText.toUpperCase();
+      const status = row.cells[5].innerText.toUpperCase();
+
+      const matchesSearch = refId.includes(searchTerm) || applicant.includes(searchTerm);
+      const matchesRegion = selectedRegion === 'ALL' || location.includes(selectedRegion);
+      const matchesCategory = selectedCategory === 'ALL' || category.includes(selectedCategory);
+      const matchesStatus = selectedStatus === 'ALL' || status.includes(selectedStatus);
+
+      row.style.display = (matchesSearch && matchesRegion && matchesCategory && matchesStatus) ? "" : "none";
+      if (row.style.display === "") visibleCount++;
     });
-  </script>
+    rowCountLabel.innerHTML = `Showing: <b>${visibleCount} records</b>`;
+  }
+
+  function clearFilters() {
+    searchInput.value = ""; regionFilter.value = "ALL"; categoryFilter.value = "ALL"; statusFilter.value = "ALL"; filterTable();
+  }
+
+  searchInput.addEventListener('input', filterTable);
+  regionFilter.addEventListener('change', filterTable);
+  categoryFilter.addEventListener('change', filterTable);
+  statusFilter.addEventListener('change', filterTable);
+</script>
+
 </body>
 </html>
