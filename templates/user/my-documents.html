@@ -502,8 +502,8 @@
             const paymentStatus = (svc.paymentStatus || '').toLowerCase();
             console.log('Service request:', svc.serviceType, 'Status:', status, 'PaymentStatus:', paymentStatus);
             
-            // Show paid/completed service requests (matching service.html logic)
-            if (paymentStatus === 'completed' || paymentStatus === 'paid' || status === 'approved') {
+            // Show all service requests including free ones
+            if (paymentStatus === 'completed' || paymentStatus === 'paid' || paymentStatus === 'free' || status === 'approved' || status === 'submitted' || status === 'pending') {
               const serviceLabel = svc.serviceType || svc.description || 'Service Request';
               documents.push({
                 id: doc.id,

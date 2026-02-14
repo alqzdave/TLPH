@@ -2164,7 +2164,7 @@
           const item = doc.data();
           const status = (item.status || '').toLowerCase();
           const paymentStatus = (item.paymentStatus || '').toLowerCase();
-          if (status === 'approved' || paymentStatus === 'completed') {
+          if (status === 'approved' || paymentStatus === 'completed' || paymentStatus === 'paid' || paymentStatus === 'free') {
             services.push({id: doc.id, ...item});
           }
         });
