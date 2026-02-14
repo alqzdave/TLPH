@@ -108,7 +108,9 @@
         <p class="text-center text-[8px] text-gray-300 uppercase tracking-[0.4em] mb-6">DENR • Calabarzon Regional Office 2026</p>
     </div>
 
-    <script>
+    <script type="module">
+        import { submitFreeServiceRequest } from '/static/js/service-request-handler.js';
+
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('gapForm');
             const submitBtn = document.getElementById('submitBtn');
@@ -136,10 +138,12 @@
             [participants, datetime].forEach(input => input.addEventListener('input', checkValidation));
             [participationType, trainingMode].forEach(select => select.addEventListener('change', checkValidation));
 
-            // Standard Xendit Integration (Placeholder for your fetch logic)
-            form.addEventListener('submit', async (e) => {
-                // e.preventDefault();
-                // Add your fetch logic here as per original
+            // Setup service request submission with dashboard redirect
+            submitFreeServiceRequest({
+                formId: 'gapForm',
+                submitBtnId: 'submitBtn',
+                serviceType: 'Good Agricultural Practices Training',
+                redirectUrl: '/user/dashboard'
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => {
