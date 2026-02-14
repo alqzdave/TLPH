@@ -236,8 +236,9 @@ export async function submitFreeServiceRequest(config) {
         await config.onSuccess();
       }
 
-      // Redirect to confirmation page
-      window.location.href = '/user/service-confirmation';
+      // Redirect to specified URL or confirmation page
+      const redirectUrl = config.redirectUrl || '/user/service-confirmation';
+      window.location.href = redirectUrl;
 
     } catch (error) {
       console.error('Error submitting service request:', error);

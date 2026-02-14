@@ -102,7 +102,17 @@
         <p class="text-center text-[8px] text-gray-300 uppercase tracking-[0.4em] mb-6">DENR • Compliance Monitoring 2026</p>
     </div>
 
-    <script>
+    <script type="module">
+        import { auth, db } from "{{ url_for('static', filename='js/firebase-config.js') }}";
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+        });
+
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById('followUpForm');
             const submitBtn = document.getElementById('submitBtn');
@@ -139,9 +149,41 @@
                 checkValidation();
             });
 
-            // Payment Integration Placeholder
+            // Form submission with Firebase
             form.addEventListener('submit', async (e) => {
-                // Keep your original fetch logic here
+                e.preventDefault();
+                
+                if (!currentUser) {
+                    alert('Please log in first');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                try {
+                    // Create service request document
+                    const serviceData = {
+                        userId: currentUser.uid,
+                        serviceType: 'Follow-up / Visit',
+                        referenceNumber: refNum.value.trim(),
+                        status: 'submitted',
+                        paymentStatus: 'free',
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        fee: 200,
+                        description: 'Farm follow-up / compliance visit request'
+                    };
+
+                    const docRef = await addDoc(collection(db, 'service_requests'), serviceData);
+                    console.log('Service request created:', docRef.id);
+                    
+                    // Redirect to dashboard after successful submission
+                    setTimeout(() => {
+                        window.location.href = '/user/dashboard';
+                    }, 500);
+                } catch (error) {
+                    console.error('Error submitting service request:', error);
+                    alert('Failed to submit service request: ' + error.message);
+                }
             });
 
             document.getElementById('resetBtn').addEventListener('click', () => {
