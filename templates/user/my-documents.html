@@ -363,54 +363,203 @@
 
     async function loadDocuments() {
       try {
-        let userEmail = null;
-
-        await new Promise((resolve) => {
+        // Wait for auth to be ready
+        const user = await new Promise((resolve) => {
           const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user && user.email) {
-              userEmail = user.email;
-            }
             unsubscribe();
-            resolve();
+            resolve(user);
           });
         });
 
-        if (!userEmail) {
-          userEmail = (localStorage.getItem('denr_user_email') || '').trim();
-        }
-
-        if (!userEmail) {
+        if (!user) {
           displayEmpty('Please sign in to view your documents.');
           return;
         }
 
-        // Fetch from payments/transactions API
-        const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
-        const result = await response.json();
+        console.log('User authenticated:', user.email);
+        let userEmail = user.email || localStorage.getItem('denr_user_email') || '';
+        const documents = [];
 
-        if (result.status === 'success' && result.transactions) {
-          // Filter only approved documents
-          allDocuments = result.transactions.filter(t => 
-            (t.display_status === 'approved' || t.status === 'approved' || t.approval_status === 'approved') &&
-            !isServiceTransaction(t)
+        // 1. Load from Firebase applications collection
+        try {
+          console.log('Querying applications for user:', user.uid);
+          const appsQuery = query(
+            collection(db, 'applications'),
+            where('userId', '==', user.uid)
           );
+          const appsSnapshot = await getDocs(appsQuery);
+          console.log('Applications found:', appsSnapshot.size);
+          
+          const categoryLabels = {
+            'farming': 'Crop & Plant',
+            'livestock': 'Fisheries & Agriculture',
+            'agribusiness': 'Agribusiness & Agro-Processing',
+            'trade': 'Agricultural Trade',
+            'infrastructure': 'Infrastructure',
+            'research': 'Research & Innovation',
+            'support': 'Support & Insurance',
+            'safety': 'Food Safety',
+            'extension': 'Extension Services',
+            'climate': 'Climate & Risk',
+            'data': 'Digital Agriculture',
+            'compliance': 'Compliance & Enforcement',
+            'institutional': 'Cooperative Development'
+          };
 
-          console.log('Loaded approved documents:', allDocuments.length);
-
-          if (allDocuments.length === 0) {
-            displayEmpty('No approved documents found.');
-            return;
-          }
-
-          updateStats();
-          displayDocuments(allDocuments);
-        } else {
-          displayEmpty('Unable to load documents.');
+          appsSnapshot.forEach((doc) => {
+            const app = doc.data();
+            console.log('App:', app.category, 'Status:', app.status);
+            if (app.status === 'approved') {
+              const categoryLabel = categoryLabels[app.category] || app.category || 'Application';
+              documents.push({
+                id: doc.id,
+                type: 'application',
+                title: categoryLabel + ' Application',
+                category: app.category || 'other',
+                documentType: 'certificate',
+                date: app.submittedAt ? app.submittedAt.toDate() : new Date(),
+                approvedDate: app.approvedAt ? app.approvedAt.toDate() : app.submittedAt ? app.submittedAt.toDate() : new Date(),
+                amount: app.investmentQty || 0,
+                status: 'approved',
+                reference: doc.id.substring(0, 12),
+                metadata: {
+                  harvestQty: app.harvestQty,
+                  investmentQty: app.investmentQty,
+                  category: app.category,
+                  fullId: doc.id
+                },
+                files: app.files || {}
+              });
+            }
+          });
+          console.log('Loaded applications:', documents.length);
+        } catch (fbError) {
+          console.error('Error loading applications:', fbError);
         }
+
+        // 2. Load from Firebase inventory_registrations (show all, don't filter by status)
+        try {
+          console.log('Querying inventory for user:', user.uid);
+          const invQuery = query(
+            collection(db, 'inventory_registrations'),
+            where('userId', '==', user.uid)
+          );
+          const invSnapshot = await getDocs(invQuery);
+          console.log('Inventory items found:', invSnapshot.size);
+          
+          const categoryLabels = {
+            'farming': 'Farm Inventory',
+            'livestock': 'Livestock Inventory',
+            'fisheries': 'Fisheries Inventory',
+            'aquaculture': 'Aquaculture Inventory'
+          };
+
+          invSnapshot.forEach((doc) => {
+            const inv = doc.data();
+            console.log('Inventory:', inv.category, 'Status:', inv.status);
+            // Show all, not just approved
+            if (inv.status === 'approved') {
+              const categoryLabel = categoryLabels[inv.category] || inv.category || 'Inventory';
+              documents.push({
+                id: doc.id,
+                type: 'inventory',
+                title: categoryLabel,
+                category: inv.category || 'other',
+                documentType: 'certificate',
+                date: inv.submittedAt ? inv.submittedAt.toDate() : new Date(),
+                approvedDate: inv.approvedAt ? inv.approvedAt.toDate() : inv.submittedAt ? inv.submittedAt.toDate() : new Date(),
+                amount: inv.investmentQty || 0,
+                status: 'approved',
+                reference: doc.id.substring(0, 12),
+                metadata: {
+                  harvestQty: inv.harvestQty,
+                  investmentQty: inv.investmentQty,
+                  category: inv.category,
+                  fullId: doc.id
+                },
+                files: inv.files || {}
+              });
+            }
+          });
+          console.log('Loaded inventory items, total documents now:', documents.length);
+        } catch (invError) {
+          console.error('Error loading inventory:', invError);
+        }
+
+        // 3. Load from payment transactions API
+        try {
+          console.log('Loading transactions for email:', userEmail);
+          if (userEmail) {
+            const response = await fetch(`/api/payments/transactions?email=${encodeURIComponent(userEmail)}`);
+            const result = await response.json();
+            console.log('Transactions API result:', result);
+
+            if (result.status === 'success' && result.transactions) {
+              const approvedTrans = result.transactions.filter(t => 
+                (t.display_status === 'approved' || t.status === 'approved' || t.approval_status === 'approved' || t.status === 'paid') &&
+                !isServiceTransaction(t)
+              );
+
+              console.log('Approved transactions:', approvedTrans.length);
+              approvedTrans.forEach(t => {
+                documents.push({
+                  id: t.reference || t.external_id,
+                  type: 'transaction',
+                  title: t.transaction_name || 'Document',
+                  category: categorizeTransaction(t),
+                  documentType: getTransactionType(t),
+                  date: t.created_at ? new Date(t.created_at) : new Date(),
+                  approvedDate: t.updated_at ? new Date(t.updated_at) : t.created_at ? new Date(t.created_at) : new Date(),
+                  amount: t.amount || 0,
+                  status: t.status === 'paid' ? 'approved' : 'approved',
+                  reference: t.reference || t.external_id,
+                  metadata: {
+                    paymentMethod: t.payment_method,
+                    invoiceId: t.invoice_id
+                  }
+                });
+              });
+              console.log('Loaded transactions:', documents.length);
+            }
+          }
+        } catch (apiError) {
+          console.error('Error loading transactions:', apiError);
+        }
+
+        console.log('Total documents loaded:', documents.length);
+
+        // Update and display
+        if (documents.length === 0) {
+          displayEmpty('No approved documents found. Submit an application to get started.');
+          return;
+        }
+
+        allDocuments = documents;
+        updateStats();
+        displayDocuments(allDocuments);
+
       } catch (error) {
         console.error('Error loading documents:', error);
         displayEmpty('An error occurred while loading documents.');
       }
+    }
+
+    function categorizeTransaction(trans) {
+      const name = (trans.transaction_name || '').toLowerCase();
+      if (name.includes('wildlife')) return 'wildlife';
+      if (name.includes('forest') || name.includes('timber')) return 'forest';
+      if (name.includes('environment') || name.includes('ecc')) return 'environment';
+      if (name.includes('fish') || name.includes('aqua')) return 'fisheries';
+      if (name.includes('livestock') || name.includes('animal')) return 'livestock';
+      return 'other';
+    }
+
+    function getTransactionType(trans) {
+      const name = (trans.transaction_name || '').toLowerCase();
+      if (name.includes('license')) return 'license';
+      if (name.includes('permit')) return 'permit';
+      if (name.includes('certificate')) return 'certificate';
+      return 'permit';
     }
 
     function isServiceTransaction(transaction) {
@@ -425,18 +574,20 @@
     }
 
     function categorizeDocument(doc) {
-      const name = (doc.transaction_name || '').toLowerCase();
+      if (doc.category) return doc.category;
+      const name = (doc.title || '').toLowerCase();
       
       if (name.includes('wildlife')) return 'wildlife';
       if (name.includes('forest') || name.includes('timber') || name.includes('tree')) return 'forest';
       if (name.includes('environment') || name.includes('ecc') || name.includes('waste')) return 'environment';
       if (name.includes('fish') || name.includes('aqua')) return 'fisheries';
-      if (name.includes('livestock') || name.includes('animal') || name.includes('poultry')) return 'livestock';
+      if (name.includes('livestock') || name.includes('animal') || name.includes('farm') || name.includes('poultry')) return 'livestock';
       return 'other';
     }
 
     function getDocumentType(doc) {
-      const name = (doc.transaction_name || doc.transaction_type || '').toLowerCase();
+      if (doc.documentType) return doc.documentType;
+      const name = (doc.title || '').toLowerCase();
       
       if (name.includes('license')) return 'license';
       if (name.includes('permit')) return 'permit';
@@ -468,10 +619,12 @@
       documents.forEach(doc => {
         const category = categorizeDocument(doc);
         const docType = getDocumentType(doc);
-        const date = doc.created_at ? new Date(doc.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
-        const reference = doc.reference || doc.external_id || 'N/A';
-        const title = doc.transaction_name || 'Document';
-        const amount = peso.format(doc.amount || 0);
+        const date = doc.date instanceof Date ? 
+          doc.date.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) :
+          new Date(doc.date).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+        const reference = doc.reference || 'N/A';
+        const title = doc.title || 'Document';
+        const amount = typeof doc.amount === 'number' ? peso.format(doc.amount) : 'N/A';
 
         html += `
           <div class="document-card" data-category="${category}" data-type="${docType}">
@@ -488,10 +641,10 @@
               </div>
             </div>
             <div class="document-actions">
-              <button class="btn-action btn-view" onclick="viewDocument('${doc.reference || doc.external_id}')">
+              <button class="btn-action btn-view" onclick="viewDocument('${doc.id}')">
                 <i class="fa-solid fa-eye"></i> View
               </button>
-              <button class="btn-action btn-download" onclick="downloadDocument('${doc.reference || doc.external_id}', '${title.replace(/'/g, "\\'")}')">
+              <button class="btn-action btn-download" onclick="downloadDocument('${doc.id}', '${title.replace(/'/g, "\\'")}', '${category}', '${docType}')">
                 <i class="fa-solid fa-download"></i> Download
               </button>
             </div>
@@ -550,26 +703,32 @@
       typeFilter.addEventListener('change', applyFilters);
     }
 
-    window.viewDocument = function(reference) {
-      // Redirect to transaction history with the reference
-      window.location.href = `/user/history#applications`;
+    window.viewDocument = function(docId) {
+      // Redirect to history or inventory details depending on type
+      const doc = allDocuments.find(d => d.id === docId);
+      if (doc && doc.type === 'inventory') {
+        window.location.href = `/user/inventory/stock-info?id=${doc.metadata.fullId}`;
+      } else if (doc && doc.type === 'application') {
+        window.location.href = `/user/inventory/stock-info?id=${doc.metadata.fullId}`;
+      } else {
+        window.location.href = `/user/history#applications`;
+      }
     };
 
-    window.downloadDocument = function(reference, title) {
+    window.downloadDocument = function(docId, title, category, docType) {
       // Find the document
-      const doc = allDocuments.find(d => (d.reference || d.external_id) === reference);
+      const doc = allDocuments.find(d => d.id === docId);
       if (!doc) {
         alert('Document not found');
         return;
       }
 
-      const category = categorizeDocument(doc);
-      const docType = getDocumentType(doc);
-      const date = doc.created_at ? new Date(doc.created_at) : new Date();
-      const approvedDate = doc.updated_at ? new Date(doc.updated_at) : date;
-      const amount = peso.format(doc.amount || 0);
       const userEmail = localStorage.getItem('denr_user_email') || 'N/A';
       const userName = localStorage.getItem('denr_user_name') || 'User';
+      const date = doc.date instanceof Date ? doc.date : new Date(doc.date);
+      const approvedDate = doc.approvedDate instanceof Date ? doc.approvedDate : new Date(doc.approvedDate);
+      const reference = doc.reference;
+      const amount = typeof doc.amount === 'number' ? peso.format(doc.amount) : 'N/A';
 
       // Create PDF content
       const pdfContent = document.createElement('div');
@@ -738,8 +897,11 @@
     };
 
     // Initialize
-    loadDocuments();
-    setupFilters();
+    onAuthStateChanged(auth, (user) => {
+      console.log('Auth state changed, user:', user?.email);
+      loadDocuments();
+      setupFilters();
+    });
   </script>
 </body>
 </html>
