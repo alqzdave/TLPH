@@ -12,6 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
+
     :root{
       --gov-font: Verdana, Arial, Tahoma, sans-serif;
       --gov-bg: #f3f4f6;
@@ -19,12 +20,26 @@
       --gov-border: #d1d5db;
       --gov-focus: rgba(5,150,105,0.18);
     }
+
     html,body{ font-family: var(--gov-font); }
+
     body{ background: var(--gov-bg); }
-    .card{ background: var(--gov-panel); border: 1px solid var(--gov-border); border-radius: 16px; }
-    .focus-ring:focus{ outline: 3px solid var(--gov-focus); outline-offset: 2px; }
+
+    .card{ 
+      background: var(--gov-panel); 
+      border: 1px solid var(--gov-border); 
+      border-radius: 16px; 
+    }
+
+    .focus-ring:focus{ 
+      outline: 3px solid var(--gov-focus); 
+      outline-offset: 2px; 
+    }
+
     .sticky-head thead th{ position: sticky; top: 0; z-index: 5; }
+
     .modal-bg{ background: rgba(0,0,0,0.4); }
+
   </style>
 </head>
 
@@ -323,7 +338,6 @@
     function getAmount(td){
       const raw = td.getAttribute('data-amount');
       if(raw !== null) return Number(raw) || 0;
-      // fallback parse ₱ string
       return Number((td.innerText || "").replace(/[^\d.-]/g, "")) || 0;
     }
 
@@ -505,7 +519,6 @@
       modal.classList.remove('flex');
     }
 
-    // Initial render
     updateTxnAnalytics();
   </script>
 </body>

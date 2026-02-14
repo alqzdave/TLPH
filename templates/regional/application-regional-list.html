@@ -43,16 +43,16 @@
             <div class="print-header">
                 <h4 class="font-bold uppercase m-0">Republic of the Philippines</h4>
                 <h3 class="font-black uppercase m-0">Department of Environment and Natural Resources</h3>
-                <p class="text-[10px] uppercase font-bold">Region IV-B (MIMAROPA) Regional Office</p>
+                <p class="text-[10px] uppercase font-bold" x-text="`Region ${userRegion} (${userRegionName}) Regional Office`"></p>
                 <hr style="border: 1px solid #000; margin: 15px 0;">
                 <h5 class="font-black uppercase tracking-widest mt-4">Regional Application Masterlist Report</h5>
-                <p class="text-[9px] italic">Generated on: February 13, 2026</p>
+                <p class="text-[9px] italic" x-text="`Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`"></p>
             </div>
 
             <div class="mb-6 d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-4 no-print">
                 <div>
                     <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 m-0">Regional Application Masterlist</h1>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Region IV-B (MIMAROPA) Unified Monitoring System</p>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic" x-text="`Region ${userRegion} (${userRegionName}) Unified Monitoring System`"></p>
                 </div>
 
                 <div class="d-flex gap-2">
@@ -78,11 +78,9 @@
                         <div style="width: 200px;">
                             <select x-model="filterProvince" class="form-select form-select-sm text-[10px] font-black uppercase">
                                 <option value="ALL">All Provinces</option>
-                                <option value="MARINDUQUE">MARINDUQUE</option>
-                                <option value="OCCIDENTAL MINDORO">OCCIDENTAL MINDORO</option>
-                                <option value="ORIENTAL MINDORO">ORIENTAL MINDORO</option>
-                                <option value="PALAWAN">PALAWAN</option>
-                                <option value="ROMBLON">ROMBLON</option>
+                                <template x-for="province in userProvinces" :key="province">
+                                    <option :value="province" x-text="province"></option>
+                                </template>
                             </select>
                         </div>
 
@@ -162,21 +160,26 @@
                 </div>
             </div>
 
-            <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mt-10 no-print italic uppercase">DENR Region IV-B (MIMAROPA) Regional Management Oversight • 2026</p>
+            <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mt-10 no-print italic uppercase" x-text="`DENR Region ${userRegion} (${userRegionName}) Regional Management Oversight • 2026`"></p>
         </div>
     </div>
 
     <!-- Load Firebase config first -->
     <script type="module">
-        import { db } from '/static/js/firebase-config.js';
-        import { collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { auth, db } from '/static/js/firebase-config.js';
+        import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
         // Expose to window for Alpine
+        window.firebaseAuth = auth;
         window.firebaseDB = db;
         window.firebaseCollection = collection;
         window.firebaseQuery = query;
         window.firebaseWhere = where;
         window.firebaseOnSnapshot = onSnapshot;
+        window.firebaseDoc = doc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseOnAuthStateChanged = onAuthStateChanged;
         console.log('Firebase modules loaded and exposed to window');
     </script>
 
@@ -193,15 +196,44 @@
                 filterStatus: 'ALL',
                 apps: [],
                 loading: true,
+                userRegion: '4B',
+                userRegionName: 'MIMAROPA',
+                userProvinces: ['MARINDUQUE', 'OCCIDENTAL MINDORO', 'ORIENTAL MINDORO', 'PALAWAN', 'ROMBLON'],
                 
                 async init() {
+                    await this.loadUserRegion();
                     await this.loadApplications();
+                },
+                
+                async loadUserRegion() {
+                    return new Promise((resolve) => {
+                        window.firebaseOnAuthStateChanged(window.firebaseAuth, async (user) => {
+                            if (user) {
+                                try {
+                                    const userDoc = await window.firebaseGetDoc(window.firebaseDoc(window.firebaseDB, 'users', user.uid));
+                                    if (userDoc.exists()) {
+                                        const userData = userDoc.data();
+                                        this.userRegion = userData.region || '4B';
+                                        this.userRegionName = userData.regionName || 'MIMAROPA';
+                                        this.userProvinces = userData.provinces || ['MARINDUQUE', 'OCCIDENTAL MINDORO', 'ORIENTAL MINDORO', 'PALAWAN', 'ROMBLON'];
+                                        console.log('User region loaded:', this.userRegion, this.userRegionName, this.userProvinces);
+                                    }
+                                } catch (error) {
+                                    console.error('Error loading user region:', error);
+                                }
+                                resolve();
+                            } else {
+                                window.location.href = '/login';
+                            }
+                        });
+                    });
                 },
                 
                 async loadApplications() {
                     try {
                         console.log('==== REGIONAL APPLICATION LOADING ====');
-                        console.log('Loading regional applications for Region 4B...');
+                        console.log('Loading regional applications for Region', this.userRegion, '(' + this.userRegionName + ')');
+                        console.log('User provinces:', this.userProvinces);
                         
                         // Query applications with status 'to-review' or 'pending'
                         const q = window.firebaseQuery(
@@ -218,17 +250,24 @@
                             
                             snapshot.forEach((doc) => {
                                 const data = doc.data();
-                                console.log('Processing application:', doc.id, 'Status:', data.status);
+                                const appProvince = (data.province || '').toUpperCase();
                                 
-                                this.apps.push({
-                                    id: doc.id,
-                                    ref: doc.id.substring(0, 12).toUpperCase(),
-                                    province: (data.province || 'N/A').toUpperCase(),
-                                    municipality: (data.municipality || 'N/A').toUpperCase(),
-                                    applicant: `${data.firstName || ''} ${data.lastName || ''}`.toUpperCase().trim() || 'N/A',
-                                    category: (data.category || 'N/A').toUpperCase(),
-                                    status: (data.status || 'pending').toUpperCase()
-                                });
+                                // Only include applications from user's provinces
+                                if (this.userProvinces.includes(appProvince)) {
+                                    console.log('Processing application:', doc.id, 'Province:', appProvince, 'Status:', data.status);
+                                    
+                                    this.apps.push({
+                                        id: doc.id,
+                                        ref: doc.id.substring(0, 12).toUpperCase(),
+                                        province: appProvince,
+                                        municipality: (data.municipality || 'N/A').toUpperCase(),
+                                        applicant: `${data.firstName || ''} ${data.lastName || ''}`.toUpperCase().trim() || 'N/A',
+                                        category: (data.category || 'N/A').toUpperCase(),
+                                        status: (data.status || 'pending').toUpperCase()
+                                    });
+                                } else {
+                                    console.log('Skipping application from other region:', doc.id, 'Province:', appProvince);
+                                }
                             });
                             
                             console.log(`✓ Loaded ${this.apps.length} applications for regional view`);
