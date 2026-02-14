@@ -183,13 +183,6 @@
     import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Expose for Alpine
-    window.regionalAuth = auth;
-    window.regionalDB = db;
-    window.regionalOnAuthStateChanged = onAuthStateChanged;
-    window.regionalGetDoc = getDoc;
-    window.regionalDoc = doc;
-
     window.handleLogout = async function() {
         try {
             console.log('Logging out...');
@@ -201,10 +194,10 @@
             alert('Logout failed: ' + error.message);
         }
     };
-</script>
-
-<script>
+    
+    // Register Alpine component with direct Firebase imports
     document.addEventListener('alpine:init', () => {
+        console.log('Sidenav Alpine init executing...');
         Alpine.data('regionalSideNav', () => ({
             userRegion: 'IV-A',
             userRegionName: 'CALABARZON',
@@ -212,15 +205,18 @@
             userInitials: 'RA',
             
             async init() {
+                console.log('Sidenav init() called');
                 await this.loadUserData();
             },
             
             async loadUserData() {
+                console.log('Sidenav loadUserData() called');
                 return new Promise((resolve) => {
-                    window.regionalOnAuthStateChanged(window.regionalAuth, async (user) => {
+                    onAuthStateChanged(auth, async (user) => {
                         if (user) {
+                            console.log('Sidenav: User authenticated:', user.uid);
                             try {
-                                const userDoc = await window.regionalGetDoc(window.regionalDoc(window.regionalDB, 'users', user.uid));
+                                const userDoc = await getDoc(doc(db, 'users', user.uid));
                                 if (userDoc.exists()) {
                                     const userData = userDoc.data();
                                     this.userRegion = userData.region || 'IV-A';
@@ -231,11 +227,15 @@
                                     this.userName = `${firstName} ${lastName}`.toUpperCase();
                                     this.userInitials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
                                     
-                                    console.log('Sidenav user data loaded:', this.userRegion, this.userName);
+                                    console.log('Sidenav user data loaded:', this.userRegion, this.userRegionName, this.userName);
+                                } else {
+                                    console.log('Sidenav: User document not found');
                                 }
                             } catch (error) {
                                 console.error('Error loading user data in sidenav:', error);
                             }
+                        } else {
+                            console.log('Sidenav: No user authenticated');
                         }
                         resolve();
                     });
