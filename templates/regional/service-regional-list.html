@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="regionalAppMaster()">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -70,13 +70,13 @@
 
     {% include 'regional/sidenav.html' %}
 
-    <div class="main-wrapper">
+    <div class="main-wrapper" x-data="regionalAppMaster()" x-init="init()">
         <div class="container-fluid p-4 lg:p-5">
             
             <div class="mb-6 d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-4 no-print">
                 <div>
                     <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 m-0">Regional Application Masterlist</h1>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic">Consolidated Oversight • Region IV-A (CALABARZON)</p>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 italic" x-text="`Consolidated Oversight • Region ${userRegion} (${userRegionName})`"></p>
                 </div>
 
                 <div class="d-flex gap-2 mt-3 mt-md-0">
@@ -115,9 +115,12 @@
                             <span class="input-group-text bg-white border-end-0 text-slate-400"><span class="material-icons-round text-sm">search</span></span>
                             <input type="text" x-model="searchQuery" class="form-control border-start-0 text-xs font-bold uppercase tracking-wider" placeholder="Search Applicant, Ref Code, or Municipality...">
                         </div>
-                        <select x-model="filterProvince" class="form-select form-select-sm text-[10px] font-black uppercase tracking-tighter" style="width: 160px;">
+                        <select x-model="filterProvince" class="form-select form-select-sm text-[10px] font-black uppercase tracking-tighter" style="width: 180px;">
                             <option value="ALL">All Provinces</option>
-                            <option value="CAVITE">Cavite</option>
+                            <template x-for="province in userProvinces" :key="province">
+                                <option :value="province" x-text="province"></option>
+                            </template>
+                        </select>
                             <option value="LAGUNA">Laguna</option>
                             <option value="BATANGAS">Batangas</option>
                             <option value="RIZAL">Rizal</option>
@@ -175,31 +178,74 @@
                 </div>
             </div>
 
-            <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mt-10 no-print">DENR Region IV-A • Administrative Management Portal 2026</p>
+            <p class="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mt-10 no-print" x-text="`DENR Region ${userRegion} • Administrative Management Portal 2026`"></p>
         </div>
     </div>
 
-    <script>
-        function regionalAppMaster() {
-            return {
+    <script type="module">
+        import { auth, db } from '/static/js/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('regionalAppMaster', () => ({
                 searchQuery: '',
                 filterProvince: 'ALL',
+                userRegion: 'IV-A',
+                userRegionName: 'CALABARZON',
+                userProvinces: ['CAVITE', 'LAGUNA', 'BATANGAS'],
+                loading: true,
+                
+                async init() {
+                    await this.loadUserRegion();
+                    this.loading = false;
+                },
+                
+                async loadUserRegion() {
+                    return new Promise((resolve) => {
+                        onAuthStateChanged(auth, async (user) => {
+                            if (user) {
+                                try {
+                                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                                    if (userDoc.exists()) {
+                                        const userData = userDoc.data();
+                                        this.userRegion = userData.region || 'IV-A';
+                                        this.userRegionName = userData.regionName || 'CALABARZON';
+                                        this.userProvinces = userData.provinces || ['CAVITE', 'LAGUNA', 'BATANGAS'];
+                                        console.log('User region loaded:', this.userRegion, this.userRegionName, this.userProvinces);
+                                    }
+                                } catch (error) {
+                                    console.error('Error loading user region:', error);
+                                }
+                                resolve();
+                            } else {
+                                window.location.href = '/login';
+                            }
+                        });
+                    });
+                },
+                
                 apps: [
                     { ref: 'APP-REG-001', province: 'CAVITE', municipality: 'DASMARIÑAS', applicant: 'PAOLO DAVE ALQZD', status: 'PENDING' },
                     { ref: 'APP-REG-002', province: 'LAGUNA', municipality: 'CALAMBA', applicant: 'MARIA CLARA', status: 'APPROVED' },
                     { ref: 'APP-REG-003', province: 'BATANGAS', municipality: 'NASUGBU', applicant: 'JOSE RIZAL', status: 'PENDING' },
-                    { ref: 'APP-REG-004', province: 'RIZAL', municipality: 'ANTIPOLO', applicant: 'ANDRES BONIFACIO', status: 'REJECTED' }
+                    { ref: 'APP-REG-004', province: 'RIZAL', municipality: 'ANTIPOLO', applicant: 'ANDRES BONIFACIO', status: 'REJECTED' },
+                    { ref: 'APP-REG-005', province: 'MARINDUQUE', municipality: 'BOAC', applicant: 'JUAN DELA CRUZ', status: 'PENDING' },
+                    { ref: 'APP-REG-006', province: 'PALAWAN', municipality: 'PUERTO PRINCESA', applicant: 'MARIA SANTOS', status: 'APPROVED' },
+                    { ref: 'APP-REG-007', province: 'ORIENTAL MINDORO', municipality: 'CALAPAN', applicant: 'PEDRO REYES', status: 'PENDING' }
                 ],
                 get filteredApps() {
                     return this.apps.filter(i => {
                         const s = this.searchQuery.toLowerCase();
+                        // Only show apps from user's provinces
+                        const matchesUserRegion = this.userProvinces.includes(i.province);
                         const matchesSearch = i.ref.toLowerCase().includes(s) || i.applicant.toLowerCase().includes(s) || i.municipality.toLowerCase().includes(s);
                         const matchesProv = this.filterProvince === 'ALL' || i.province === this.filterProvince;
-                        return matchesSearch && matchesProv;
+                        return matchesUserRegion && matchesSearch && matchesProv;
                     });
                 }
-            }
-        }
+            }));
+        });
     </script>
 </body>
 </html>

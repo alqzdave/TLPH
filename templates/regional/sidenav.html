@@ -1,4 +1,4 @@
-<aside id="regional-sidenav" class="sidebar-container p-4 shadow-xl">
+<aside id="regional-sidenav" class="sidebar-container p-4 shadow-xl" x-data="regionalSideNav()" x-init="init()">
     
     <div class="mb-8 px-2 pt-4 flex items-center gap-3">
         <div class="flex-shrink-0 w-16 h-16 bg-white flex items-center justify-center shadow-md border border-slate-300 overflow-hidden p-1.5">
@@ -12,7 +12,7 @@
                 DENR REGIONAL
             </h2>
             <div class="mt-1 flex flex-col">
-                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none">
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none" x-text="`Region ${userRegion} Oversight`">
                     Region IV-A Oversight
                 </span>
                 <span class="text-[8px] font-black text-blue-800 uppercase tracking-tighter mt-1 italic">
@@ -24,11 +24,11 @@
 
     <div class="px-2 mb-6 no-print">
         <div class="p-3 bg-slate-100 border border-slate-200 flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-900 flex items-center justify-center text-white font-bold">
+            <div class="w-10 h-10 bg-blue-900 flex items-center justify-center text-white font-bold" x-text="userInitials">
                 RA
             </div>
             <div class="overflow-hidden">
-                <p class="text-[11px] font-bold text-slate-900 truncate m-0">ADMIN NAME</p>
+                <p class="text-[11px] font-bold text-slate-900 truncate m-0" x-text="userName">ADMIN NAME</p>
                 <p class="text-[9px] text-slate-500 uppercase tracking-tighter m-0">Active Session</p>
             </div>
         </div>
@@ -179,8 +179,16 @@
 </style>
 
 <script type="module">
-    import { auth } from '/static/js/firebase-config.js';
-    import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { auth, db } from '/static/js/firebase-config.js';
+    import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Expose for Alpine
+    window.regionalAuth = auth;
+    window.regionalDB = db;
+    window.regionalOnAuthStateChanged = onAuthStateChanged;
+    window.regionalGetDoc = getDoc;
+    window.regionalDoc = doc;
 
     window.handleLogout = async function() {
         try {
@@ -193,6 +201,48 @@
             alert('Logout failed: ' + error.message);
         }
     };
+</script>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('regionalSideNav', () => ({
+            userRegion: 'IV-A',
+            userRegionName: 'CALABARZON',
+            userName: 'ADMIN NAME',
+            userInitials: 'RA',
+            
+            async init() {
+                await this.loadUserData();
+            },
+            
+            async loadUserData() {
+                return new Promise((resolve) => {
+                    window.regionalOnAuthStateChanged(window.regionalAuth, async (user) => {
+                        if (user) {
+                            try {
+                                const userDoc = await window.regionalGetDoc(window.regionalDoc(window.regionalDB, 'users', user.uid));
+                                if (userDoc.exists()) {
+                                    const userData = userDoc.data();
+                                    this.userRegion = userData.region || 'IV-A';
+                                    this.userRegionName = userData.regionName || 'CALABARZON';
+                                    
+                                    const firstName = userData.firstName || 'ADMIN';
+                                    const lastName = userData.lastName || 'NAME';
+                                    this.userName = `${firstName} ${lastName}`.toUpperCase();
+                                    this.userInitials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+                                    
+                                    console.log('Sidenav user data loaded:', this.userRegion, this.userName);
+                                }
+                            } catch (error) {
+                                console.error('Error loading user data in sidenav:', error);
+                            }
+                        }
+                        resolve();
+                    });
+                });
+            }
+        }));
+    });
 </script>
 
 <script>

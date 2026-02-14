@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="regionalDashboard()">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,13 +28,13 @@
     {% include 'regional/sidenav.html' %}
     <div class="gov-header-bar no-print"></div>
 
-    <div class="main-wrapper">
+    <div class="main-wrapper" x-data="regionalDashboard()" x-init="init()">
         <div class="container-fluid p-4 lg:p-5">
             
             <div class="mb-6 d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-4">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 uppercase tracking-tight m-0">Regional Administrative Analytics</h1>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Region IV-A (CALABARZON) • Official Portal</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1" x-text="`Region ${userRegion} (${userRegionName}) • Official Portal`"></p>
                 </div>
                 <div class="d-flex gap-2 no-print mt-3 mt-md-0">
                     <button onclick="window.print()" class="btn btn-sm btn-outline-secondary btn-gov d-flex align-items-center gap-2">
@@ -69,11 +69,11 @@
                     <h3 class="text-sm font-bold uppercase m-0">Regional Revenue Breakdown</h3>
                     <div class="d-flex gap-2 no-print">
                         <input type="text" x-model="searchQuery" class="form-control form-control-sm text-xs" style="width: 200px;" placeholder="Search Municipality...">
-                        <select x-model="filterProvince" class="form-select form-select-sm text-xs font-bold" style="width: 130px;">
+                        <select x-model="filterProvince" class="form-select form-select-sm text-xs font-bold" style="width: 180px;">
                             <option value="ALL">All Provinces</option>
-                            <option value="CAVITE">CAVITE</option>
-                            <option value="LAGUNA">LAGUNA</option>
-                            <option value="BATANGAS">BATANGAS</option>
+                            <template x-for="province in userProvinces" :key="province">
+                                <option :value="province" x-text="province"></option>
+                            </template>
                         </select>
                     </div>
                 </div>
@@ -149,17 +149,51 @@
             </div>
 
             <div class="mt-5 py-5 border-top text-center opacity-50">
-                <p class="text-[9px] font-bold uppercase tracking-[0.5em]">DENR REGION IV-A • OFFICIAL ADMINISTRATIVE PORTAL</p>
+                <p class="text-[9px] font-bold uppercase tracking-[0.5em]" x-text="`DENR REGION ${userRegion} • OFFICIAL ADMINISTRATIVE PORTAL`"></p>
             </div>
         </div>
     </div>
 
-    <script>
-        function regionalDashboard() {
-            return {
+    <script type="module">
+        import { auth, db } from '/static/js/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('regionalDashboard', () => ({
                 searchQuery: '',
                 filterProvince: 'ALL',
                 filterLogType: 'ALL',
+                userRegion: 'IV-A',
+                userRegionName: 'CALABARZON',
+                userProvinces: ['CAVITE', 'LAGUNA', 'BATANGAS'],
+                loading: true,
+                async init() {
+                    await this.loadUserRegion();
+                    this.loading = false;
+                },
+                
+                async loadUserRegion() {
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            try {
+                                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                                if (userDoc.exists()) {
+                                    const userData = userDoc.data();
+                                    this.userRegion = userData.region || 'IV-A';
+                                    this.userRegionName = userData.regionName || 'CALABARZON';
+                                    this.userProvinces = userData.provinces || ['CAVITE', 'LAGUNA', 'BATANGAS'];
+                                    console.log('User region loaded:', this.userRegion, this.userRegionName, this.userProvinces);
+                                }
+                            } catch (error) {
+                                console.error('Error loading user region:', error);
+                            }
+                        } else {
+                            window.location.href = '/login';
+                        }
+                    });
+                },
+                
                 data: [
                     { id: 1, province: 'CAVITE', name: 'Dasmarinas City', permits: 142, revenue: 850000, activity: 85 },
                     { id: 2, province: 'CAVITE', name: 'Tagaytay City', permits: 98, revenue: 1200000, activity: 60 },
@@ -181,8 +215,8 @@
                 get filteredLogs() {
                     return this.auditLogs.filter(log => this.filterLogType === 'ALL' || log.type === this.filterLogType);
                 }
-            }
-        }
+            }));
+        });
 
         window.addEventListener('load', () => {
             const trendCtx = document.getElementById('regionalTrendChart').getContext('2d');
