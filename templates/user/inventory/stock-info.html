@@ -168,9 +168,9 @@
         }
 
         function getApplicationId() {
-            // Extract ID from URL path: /user/inventory/info/{id}
-            const pathParts = window.location.pathname.split('/');
-            return pathParts[pathParts.length - 1];
+            // Extract ID from URL query parameter: ?id=xxx
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
         }
 
         async function loadProductDetails(appId) {

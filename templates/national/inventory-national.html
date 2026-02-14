@@ -3,190 +3,232 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TLPH | National Dashboard - Inventory</title>
+  <title>TLPH | Compact National Inventory</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    body { 
-      font-family: Verdana, Arial, sans-serif;
-      background:#f3f4f6; 
-      }
+    :root { --gov-navy: #0f172a; --gov-bg: #f1f5f9; }
+    html, body { height: 100vh; overflow: hidden; } /* Lock scroll para sa dashboard feel */
+    body { font-family: "Inter", sans-serif; background: var(--gov-bg); font-size: 0.75rem; }
 
-      .card{ 
-        background:white;
-        border:1px solid #d1d5db;
-        border-radius:16px; 
-      }
-
-      .modal-bg{
-         background:rgba(0,0,0,0.4); 
-      }
-
+    .card { background: white; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .modal-bg { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+    
+    /* Custom Scrollbar para sa Table */
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    .chart-container { position: relative; height: 140px; width: 100%; }
+    
+    /* Table Density */
+    th { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 0.4rem 0.75rem !important; }
   </style>
 </head>
 
-<body class="min-h-screen text-slate-900">
+<body class="text-slate-900">
 
-    <div class="min-h-screen flex">
+  <div class="flex h-screen overflow-hidden">
 
-    {% include 'national/sidenav-national.html' %}
-
-    <main class="flex-1 px-6 py-6 space-y-6">
-
-    <section class="card p-4 flex justify-between items-center">
-      <div>
-        <div class="font-bold text-lg">Inventory (National)</div>
-        <div class="text-xs text-gray-600">Manage chemical, natural resource, protected area & biodiversity records</div>
-      </div>
-
-      <button onclick="openModal()"
-        class="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm flex items-center gap-2">
-        <span class="material-icons-round text-[18px]">add</span>
-        Add Item
-      </button>
-    </section>
-
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Total Records</div>
-        <div class="text-2xl font-bold mt-1">3,482</div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Chemical Inventory</div>
-        <div class="text-2xl font-bold mt-1">1,240</div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Natural Resources</div>
-        <div class="text-2xl font-bold mt-1">890</div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xs text-gray-600">Protected Areas</div>
-        <div class="text-2xl font-bold mt-1">154</div>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-
-      <div class="card p-4">
-        <div class="font-bold">Inventory by Category</div>
-        <div class="mt-4 h-[350px]">
-          <canvas id="categoryChart"></canvas>
-        </div>
-      </div>
-
-      <div class="card p-4">
-        <div class="font-bold">Inventory by Region</div>
-        <div class="mt-4 h-[350px]">
-          <canvas id="regionChart"></canvas>
-        </div>
-      </div>
-
-    </section>
-
-    <section class="card overflow-hidden">
-      <div class="p-4 font-bold">Inventory Records</div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm" id="inventoryTable">
-          <thead class="bg-gray-50 border-y">
-            <tr class="text-left text-gray-600">
-              <th class="py-3 px-4">Category</th>
-              <th class="py-3 px-4">Description</th>
-              <th class="py-3 px-4">Quantity</th>
-              <th class="py-3 px-4">Region</th>
-              <th class="py-3 px-4">Municipality</th>
-              <th class="py-3 px-4">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody id="inventoryBody" class="divide-y">
-
-            <tr>
-              <td class="px-4 py-3">Chemical Inventory</td>
-              <td class="px-4 py-3">Registered Pesticide Stock</td>
-              <td class="px-4 py-3 font-semibold">120</td>
-              <td class="px-4 py-3">Region IV-A</td>
-              <td class="px-4 py-3">Calamba</td>
-              <td class="px-4 py-3 flex gap-2">
-                <button onclick="editRow(this)" class="px-3 py-1 border rounded-lg text-xs">Edit</button>
-                <button onclick="deleteRow(this)" class="px-3 py-1 border border-rose-300 bg-rose-50 text-rose-700 rounded-lg text-xs">Remove</button>
-              </td>
-            </tr>
-
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    </main>
+    <div class="hidden lg:block w-64 bg-slate-900 h-full">
+      {% include 'national/sidenav-national.html' %}
     </div>
 
-    <div id="inventoryModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
-      <div class="bg-white rounded-2xl w-[500px] p-6 space-y-4">
+    <main class="flex-1 flex flex-col p-4 overflow-hidden space-y-3">
 
-        <div class="flex justify-between items-center">
-          <div class="font-bold text-lg" id="modalTitle">Add Inventory Item</div>
-          <button onclick="closeModal()">
-            <span class="material-icons-round">close</span>
-          </button>
+      <section class="card p-3 flex justify-between items-center shrink-0">
+        <div>
+          <div class="font-bold text-base flex items-center gap-2">
+            <span class="material-icons-round text-slate-500">inventory_2</span>
+            Inventory Registry (National)
+          </div>
+          <div class="text-[10px] text-gray-500 uppercase tracking-wider">Centralized Management System • Feb 2026</div>
         </div>
 
-        <form id="inventoryForm" class="space-y-3">
+        <button onclick="openModal()"
+          class="px-3 py-1.5 bg-slate-900 text-white rounded hover:bg-slate-800 transition-colors text-xs flex items-center gap-2">
+          <span class="material-icons-round text-[16px]">add</span>
+          Add Record
+        </button>
+      </section>
 
-          <select id="category" class="w-full px-3 py-2 border rounded-xl text-sm">
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+        <div class="card p-2 px-3 border-l-4 border-l-slate-900">
+          <div class="text-[10px] text-gray-500 font-bold uppercase">Total Records</div>
+          <div class="text-lg font-black text-slate-800">3,482</div>
+        </div>
+        <div class="card p-2 px-3 border-l-4 border-l-blue-500">
+          <div class="text-[10px] text-gray-500 font-bold uppercase">Chemical</div>
+          <div class="text-lg font-black text-blue-600">1,240</div>
+        </div>
+        <div class="card p-2 px-3 border-l-4 border-l-emerald-500">
+          <div class="text-[10px] text-gray-500 font-bold uppercase">Natural Resources</div>
+          <div class="text-lg font-black text-emerald-600">890</div>
+        </div>
+        <div class="card p-2 px-3 border-l-4 border-l-amber-500">
+          <div class="text-[10px] text-gray-500 font-bold uppercase">Protected Areas</div>
+          <div class="text-lg font-black text-amber-600">154</div>
+        </div>
+      </section>
+
+      <div class="flex-1 flex flex-col min-h-0 space-y-3">
+        
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-3 shrink-0">
+          <div class="card p-3">
+            <div class="font-bold text-xs mb-2 flex items-center gap-1 text-slate-600">
+              <span class="material-icons-round text-sm">pie_chart</span> By Category
+            </div>
+            <div class="chart-container">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card p-3">
+            <div class="font-bold text-xs mb-2 flex items-center gap-1 text-slate-600">
+              <span class="material-icons-round text-sm">bar_chart</span> By Regional Volume
+            </div>
+            <div class="chart-container">
+              <canvas id="regionChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="card flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div class="p-2 px-4 border-b bg-gray-50 flex justify-between items-center">
+            <span class="font-bold text-xs text-slate-700">MASTER LIST RECORDS</span>
+            <div class="text-[10px] text-slate-400">Showing 1 entry</div>
+          </div>
+
+          <div class="flex-1 overflow-auto custom-scroll">
+            <table class="min-w-full text-xs" id="inventoryTable">
+              <thead class="bg-slate-100 border-b sticky top-0 z-10">
+                <tr class="text-left text-slate-600">
+                  <th class="py-2 px-4">Category</th>
+                  <th class="py-2 px-4">Description</th>
+                  <th class="py-2 px-4">Qty</th>
+                  <th class="py-2 px-4">Region</th>
+                  <th class="py-2 px-4">Municipality</th>
+                  <th class="py-2 px-4 text-center">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="inventoryBody" class="divide-y">
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="font-medium">Chemical Inventory</td>
+                  <td class="text-slate-500">Registered Pesticide Stock</td>
+                  <td class="font-bold text-slate-900">120</td>
+                  <td>Region IV-A</td>
+                  <td>Calamba</td>
+                  <td class="flex justify-center gap-1">
+                    <button onclick="editRow(this)" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Edit">
+                      <span class="material-icons-round text-sm">edit</span>
+                    </button>
+                    <button onclick="deleteRow(this)" class="p-1 hover:bg-rose-100 rounded text-rose-600" title="Remove">
+                      <span class="material-icons-round text-sm">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <footer class="text-[10px] text-center text-slate-400 shrink-0">
+        &copy; 2026 Republic of the Philippines • National Inventory System v2.1
+      </footer>
+    </main>
+  </div>
+
+  <div id="inventoryModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
+    <div class="bg-white rounded-lg w-full max-w-md p-5 shadow-2xl">
+      <div class="flex justify-between items-center mb-4 border-b pb-2">
+        <div class="font-bold text-slate-800 flex items-center gap-2" id="modalTitle">
+          <span class="material-icons-round text-slate-400">add_box</span>
+          Record Entry
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <form id="inventoryForm" class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Category</label>
+          <select id="category" class="w-full px-3 py-2 border rounded text-xs focus:ring-2 focus:ring-slate-900 outline-none">
             <option>Chemical Inventory</option>
             <option>Natural Resources</option>
             <option>Protected Area</option>
             <option>Biodiversity Inventory</option>
           </select>
+        </div>
 
-          <input id="description" type="text" placeholder="Description"
-            class="w-full px-3 py-2 border rounded-xl text-sm">
+        <div>
+          <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Description</label>
+          <input id="description" type="text" placeholder="Item description"
+            class="w-full px-3 py-2 border rounded text-xs focus:ring-2 focus:ring-slate-900 outline-none">
+        </div>
 
-          <input id="quantity" type="number" placeholder="Quantity"
-            class="w-full px-3 py-2 border rounded-xl text-sm">
-
-          <input id="region" type="text" placeholder="Region"
-            class="w-full px-3 py-2 border rounded-xl text-sm">
-
-          <input id="municipality" type="text" placeholder="Municipality"
-            class="w-full px-3 py-2 border rounded-xl text-sm">
-
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" onclick="closeModal()"
-              class="px-4 py-2 border rounded-xl text-sm">Cancel</button>
-
-            <button type="submit"
-              class="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm">
-              Save
-            </button>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Quantity</label>
+            <input id="quantity" type="number" placeholder="0"
+              class="w-full px-3 py-2 border rounded text-xs focus:ring-2 focus:ring-slate-900 outline-none">
           </div>
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Region</label>
+            <input id="region" type="text" placeholder="e.g. NCR"
+              class="w-full px-3 py-2 border rounded text-xs focus:ring-2 focus:ring-slate-900 outline-none">
+          </div>
+        </div>
 
-        </form>
-      </div>
+        <div>
+          <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Municipality</label>
+          <input id="municipality" type="text" placeholder="Location name"
+            class="w-full px-3 py-2 border rounded text-xs focus:ring-2 focus:ring-slate-900 outline-none">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" onclick="closeModal()"
+            class="px-4 py-2 border rounded text-xs font-bold hover:bg-slate-50 transition-colors">Cancel</button>
+          <button type="submit"
+            class="px-4 py-2 bg-slate-900 text-white rounded text-xs font-bold hover:bg-slate-800 shadow-lg">
+            Save Record
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <script>
+  <script>
     let editingRow = null;
+    const inventoryBody = document.getElementById('inventoryBody');
+    const inventoryForm = document.getElementById('inventoryForm');
+    
+    // Inputs
+    const categoryInput = document.getElementById('category');
+    const descriptionInput = document.getElementById('description');
+    const quantityInput = document.getElementById('quantity');
+    const regionInput = document.getElementById('region');
+    const municipalityInput = document.getElementById('municipality');
 
     function openModal(){
       document.getElementById('inventoryModal').classList.remove('hidden');
       document.getElementById('inventoryModal').classList.add('flex');
-      document.getElementById('inventoryForm').reset();
     }
 
     function closeModal(){
       document.getElementById('inventoryModal').classList.add('hidden');
       document.getElementById('inventoryModal').classList.remove('flex');
+      inventoryForm.reset();
+      editingRow = null;
     }
 
-    document.getElementById('inventoryForm').addEventListener('submit', function(e){
+    inventoryForm.addEventListener('submit', function(e){
       e.preventDefault();
 
       const category = categoryInput.value;
@@ -203,30 +245,29 @@
         editingRow.cells[4].innerText = municipality;
       } else {
         const row = inventoryBody.insertRow();
+        row.className = "hover:bg-slate-50 transition-colors";
         row.innerHTML = `
-          <td class="px-4 py-3">${category}</td>
-          <td class="px-4 py-3">${description}</td>
-          <td class="px-4 py-3 font-semibold">${quantity}</td>
-          <td class="px-4 py-3">${region}</td>
-          <td class="px-4 py-3">${municipality}</td>
-          <td class="px-4 py-3 flex gap-2">
-            <button onclick="editRow(this)" class="px-3 py-1 border rounded-lg text-xs">Edit</button>
-            <button onclick="deleteRow(this)" class="px-3 py-1 border border-rose-300 bg-rose-50 text-rose-700 rounded-lg text-xs">Remove</button>
+          <td class="font-medium">${category}</td>
+          <td class="text-slate-500">${description}</td>
+          <td class="font-bold text-slate-900">${quantity}</td>
+          <td>${region}</td>
+          <td>${municipality}</td>
+          <td class="flex justify-center gap-1">
+            <button onclick="editRow(this)" class="p-1 hover:bg-slate-200 rounded text-slate-600"><span class="material-icons-round text-sm">edit</span></button>
+            <button onclick="deleteRow(this)" class="p-1 hover:bg-rose-100 rounded text-rose-600"><span class="material-icons-round text-sm">delete</span></button>
           </td>
         `;
       }
-
-      editingRow = null;
       closeModal();
     });
 
     function editRow(btn){
       editingRow = btn.closest("tr");
-      category.value = editingRow.cells[0].innerText;
-      description.value = editingRow.cells[1].innerText;
-      quantity.value = editingRow.cells[2].innerText;
-      region.value = editingRow.cells[3].innerText;
-      municipality.value = editingRow.cells[4].innerText;
+      categoryInput.value = editingRow.cells[0].innerText;
+      descriptionInput.value = editingRow.cells[1].innerText;
+      quantityInput.value = editingRow.cells[2].innerText;
+      regionInput.value = editingRow.cells[3].innerText;
+      municipalityInput.value = editingRow.cells[4].innerText;
       openModal();
     }
 
@@ -236,24 +277,34 @@
       }
     }
 
+    // Chart Options
+    const chartPlugins = { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 9 } } } };
+
     new Chart(document.getElementById('categoryChart'), {
-      type:'doughnut',
-      data:{
-        labels:['Chemical','Natural Resources','Protected Area','Biodiversity'],
-        datasets:[{data:[1240,890,154,1198]}]
+      type: 'doughnut',
+      data: {
+        labels: ['Chemical','Natural Res.','Protected','Biodiversity'],
+        datasets: [{ data: [1240, 890, 154, 1198], backgroundColor: ['#1e293b', '#3b82f6', '#10b981', '#f59e0b'], borderWidth: 2 }]
       },
-      options:{responsive:true,maintainAspectRatio:false}
+      options: { responsive: true, maintainAspectRatio: false, plugins: chartPlugins, cutout: '65%' }
     });
 
     new Chart(document.getElementById('regionChart'), {
-      type:'bar',
-      data:{
-        labels:['Region IV-A','NCR','Region VII','BARMM','CAR'],
-        datasets:[{label:'Inventory Count',data:[980,860,720,540,382]}]
+      type: 'bar',
+      data: {
+        labels: ['R4-A','NCR','R7','BARMM','CAR'],
+        datasets: [{ label: 'Count', data: [980, 860, 720, 540, 382], backgroundColor: '#1e293b', borderRadius: 4 }]
       },
-      options:{responsive:true,maintainAspectRatio:false}
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { legend: { display: false } },
+        scales: { 
+          y: { ticks: { font: { size: 9 } }, grid: { display: false } }, 
+          x: { ticks: { font: { size: 9 } }, grid: { display: false } } 
+        } 
+      }
     });
-    </script>
-gi
+  </script>
 </body>
 </html>
