@@ -7,6 +7,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -51,7 +52,7 @@
 
     {% include 'regional/sidenav.html' %}
 
-    <div class="main-wrapper">
+    <div class="main-wrapper" x-data="regionalView()" x-init="init()">
         <div class="content-container">
             
             <div class="mb-3 flex items-center justify-between border-b border-slate-300 pb-2">
@@ -59,7 +60,7 @@
                     <span class="material-icons-round text-gov-primary">account_circle</span>
                     <div>
                         <h1 class="text-[11px] font-black uppercase tracking-widest text-gov-primary m-0">Regional Applicant Oversight</h1>
-                        <p class="text-[9px] font-bold text-slate-500 m-0 uppercase tracking-tighter">Official Personnel & Farm Record • Region IV-A</p>
+                        <p class="text-[9px] font-bold text-slate-500 m-0 uppercase tracking-tighter" x-text="`Official Personnel & Farm Record • Region ${userRegion}`"></p>
                     </div>
                 </div>
                 <a href="/regional/service-list" class="inline-flex items-center gap-1 border border-slate-300 bg-white px-3 py-1 text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all text-decoration-none text-slate-600">
@@ -179,9 +180,51 @@
                 </section>
             </div>
 
-            <p class="text-center text-[8px] text-slate-400 font-black uppercase tracking-[0.5em] mt-4 italic">Department of Environment and Natural Resources • Region IV-A Portal</p>
+            <p class="text-center text-[8px] text-slate-400 font-black uppercase tracking-[0.5em] mt-4 italic" x-text="`Department of Environment and Natural Resources • Region ${userRegion} Portal`"></p>
         </div>
     </div>
+
+    <script type="module">
+        import { auth, db } from '/static/js/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('regionalView', () => ({
+                userRegion: 'IV-A',
+                userRegionName: 'CALABARZON',
+                loading: true,
+                
+                async init() {
+                    await this.loadUserRegion();
+                    this.loading = false;
+                },
+                
+                async loadUserRegion() {
+                    return new Promise((resolve) => {
+                        onAuthStateChanged(auth, async (user) => {
+                            if (user) {
+                                try {
+                                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                                    if (userDoc.exists()) {
+                                        const userData = userDoc.data();
+                                        this.userRegion = userData.region || 'IV-A';
+                                        this.userRegionName = userData.regionName || 'CALABARZON';
+                                        console.log('User region loaded:', this.userRegion, this.userRegionName);
+                                    }
+                                } catch (error) {
+                                    console.error('Error loading user region:', error);
+                                }
+                                resolve();
+                            } else {
+                                window.location.href = '/login';
+                            }
+                        });
+                    });
+                }
+            }));
+        });
+    </script>
 
 </body>
 </html>
