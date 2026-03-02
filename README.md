@@ -29,10 +29,11 @@ TLPH is a full-stack web application designed for the Department of Environment 
 - Pyrebase4 4.7.1 - Frontend Firebase Integration
 - Flask-SQLAlchemy 3.1.1 - ORM
 - Flask-Mail 0.9.1 - Email Service
-- Xendit 2.9.0 - Payment Processing
+- Xendit 0.1.3 - Payment Processing
 - ReportLab 4.0.4 - PDF Generation
 - Python-dotenv 1.0.0 - Environment Management
-- Requests 2.31.0 - HTTP Library
+- Requests 2.29.0 - HTTP Library
+- Python-calendar 1.0.0 - Calendar Utilities
 ```
 
 ## ✨ Features
@@ -71,6 +72,10 @@ TLPH is a full-stack web application designed for the Department of Environment 
 - **Main Routes**: Authentication, home, dashboard
 - **API Routes**: User management, data operations
 - **Municipal Routes**: Municipal admin dashboard
+- **Municipal API Logs Routes**: Municipal activity logging
+- **National Routes**: National admin dashboard and management
+- **Regional Routes**: Regional admin dashboard and management
+- **Super Admin Routes**: Super admin dashboard and management
 - **Service Routes**: Service management
 - **Payment Routes**: Payment processing and verification
 - **Permit Routes**: Various permit applications
@@ -176,7 +181,13 @@ TLPH/
 ├── app.py                          # Main Flask application
 ├── config.py                       # Configuration settings
 ├── firebase_config.py              # Firebase initialization
+├── firebase_auth_middleware.py     # Role-based authentication middleware
 ├── transaction_storage.py          # Transaction management
+├── coa_storage.py                  # Chart of Accounts management
+├── deposit_storage.py              # Deposit category management
+├── entities_storage.py             # Entity management
+├── expense_storage.py              # Expense category management
+├── system_logs_storage.py          # System logs management
 ├── requirements.txt                # Python dependencies
 ├── firebase-credentials.json       # Firebase service account key
 │
@@ -184,6 +195,10 @@ TLPH/
 │   ├── main_routes.py             # Authentication & main pages
 │   ├── api_routes.py              # API endpoints
 │   ├── municipal_routes.py        # Municipal admin routes
+│   ├── municipal_api_logs.py      # Municipal activity logging routes
+│   ├── national_routes.py         # National admin routes
+│   ├── regional_routes.py         # Regional admin routes
+│   ├── superadmin_routes.py       # Super admin routes
 │   ├── service_routes.py          # Service management
 │   ├── payments_routes.py         # Payment processing
 │   ├── permits_routes.py          # Permit applications
@@ -194,6 +209,9 @@ TLPH/
 │   ├── wildlife_routes.py         # Wildlife permits
 │   ├── farm_routes.py             # Farm permits
 │   └── seminar_routes.py          # Seminar management
+│
+├── models/                         # Data models
+│   └── ph_locations.py            # Philippine locations data
 │
 ├── templates/                      # HTML templates
 │   ├── user/                      # User interface templates
@@ -211,15 +229,24 @@ TLPH/
 ├── data/                          # Data storage
 │   └── transactions.json          # Transaction cache
 │
-└── models/                        # Data models
+└── scripts/                        # Utility & migration scripts
+    ├── migrate_companies.py        # Company data migration
+    ├── migrate_departments.py      # Department data migration
+    ├── migrate_designations_employees.py  # Designations/employees migration
+    ├── populate_municipalities.py  # Municipality data population
+    ├── populate_all_municipalities.py     # Full municipality population
+    ├── setup_companies.py          # Company setup utility
+    ├── fix_municipality.py         # Municipality data fix utility
+    └── debug_firebase.py           # Firebase debug utility
 ```
 
 ## 🔐 Security Features
 
 - Firebase Authentication with secure token management
+- Role-based access control (RBAC) via `firebase_auth_middleware.py`
 - Environment variable configuration for sensitive data
 - Secure file upload and storage
-- Role-based access control (RBAC)
+- Session management with configurable lifetime (24-hour sessions)
 - HTTPS ready for production deployment
 - Payment processing with Xendit secure API
 
@@ -261,7 +288,15 @@ For detailed setup instructions for specific services:
 
 - [Firebase Setup Guide](FIREBASE_SETUP_GUIDE.md)
 - [Firebase Setup Instructions](FIREBASE_SETUP.md)
+- [Firebase Transactions Setup](FIREBASE_TRANSACTIONS_SETUP.md)
 - [Xendit Payment Integration](XENDIT_SETUP.md)
+- [DENR Print System](DENR_PRINT_SYSTEM.md)
+
+### 🗄️ Database Schema Documentation
+
+- [Companies Schema](COMPANIES_SCHEMA.md)
+- [Departments Schema](DEPARTMENTS_SCHEMA.md)
+- [Designations & Employees Schema](DESIGNATIONS_EMPLOYEES_SCHEMA.md)
 
 ## 📞 Contact & Support
 
