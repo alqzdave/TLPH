@@ -1730,29 +1730,38 @@
         };
 
         let farmHtml = '';
+        const farmCommonFields = `
+          <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farmer ID</p><p class="font-semibold text-gray-800 uppercase">${d.farmerIdNumber || 'N/A'}</p></div>
+          <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Google Pin</p><p class="font-semibold text-gray-800 break-all">${d.googlePinLocation ? `<a href="${d.googlePinLocation}" target="_blank" rel="noopener" class="text-green-700 underline">Open Pin</a>` : 'N/A'}</p></div>
+          <div class="col-span-2"><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Address</p><p class="font-semibold text-gray-800">${d.farmAddress || 'N/A'}</p></div>`;
+
         if (serviceCategory === 'farm-visit' && svc.includes('initial farm visit')) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Size</p><p class="font-semibold text-gray-800">${d.farmSize ? d.farmSize + ' ha' : 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Production Type</p><p class="font-semibold text-gray-800">${fmtProdType(d.productionType)}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Issues Report</p><p class="font-semibold text-gray-800">${fmtFiles(d.issueReport)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Field Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.fieldPhotos)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Field Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.fieldPhotos)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && (svc.includes('disease') || svc.includes('pest investigation'))) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Date Symptom Started</p><p class="font-semibold text-gray-800">${d.dateSymptomStarted ? new Date(d.dateSymptomStarted).toLocaleDateString('en-PH', {year:'numeric',month:'short',day:'numeric'}) : 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Affected Area</p><p class="font-semibold text-gray-800">${d.affectedAreaHa ? d.affectedAreaHa + ' ha' : 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Close-up Photo</p><p class="font-semibold text-gray-800">${fmtFiles(d.closeUpPhoto)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Spray Record</p><p class="font-semibold text-gray-800">${fmtFiles(d.sprayRecord)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Spray Record</p><p class="font-semibold text-gray-800">${fmtFiles(d.sprayRecord)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && (svc.includes('soil') || svc.includes('crop evaluation'))) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Crop Stage</p><p class="font-semibold text-gray-800">${fmtCropStage(d.cropStage)}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Fertilization History</p><p class="font-semibold text-gray-800">${fmtFiles(d.fertilizationHistory)}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Soil Test Result</p><p class="font-semibold text-gray-800">${fmtFiles(d.soilTestResult)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.farmPhotos)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.farmPhotos)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && (svc.includes('follow-up') || svc.includes('follow up') || svc.includes('visit'))) {
           farmHtml = `
             <div class="col-span-2"><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Reference Number</p><p class="font-semibold text-gray-800 uppercase">${d.referenceNumber || 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Revised Documents</p><p class="font-semibold text-gray-800">${fmtFiles(d.revisedDocuments)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Latest Site Photo</p><p class="font-semibold text-gray-800">${fmtFiles(d.latestSitePhoto)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Latest Site Photo</p><p class="font-semibold text-gray-800">${fmtFiles(d.latestSitePhoto)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && svc.includes('compliance inspection')) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Compliance Type</p><p class="font-semibold text-gray-800">${fmtCompliance(d.complianceType)}</p></div>
