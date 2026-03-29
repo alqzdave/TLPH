@@ -645,24 +645,23 @@
         
         // Open Edit Modal & Populate Data
         window.editNotification = async function(id) {
-            // Debug: Show the ID being fetched
-            console.log('Edit notification ID:', id);
             try {
                 const resp = await fetch(`/api/notifications/get/${id}`);
                 const data = await resp.json();
-                console.log('Notification fetch response:', data); // Debug: Show response
                 if (!data.success) throw new Error(data.message || 'Failed to fetch notification');
                 const n = data.notification;
                 
-                document.getElementById('modalTitle').innerText = 'Edit Notification';
-                document.getElementById('notificationId').value = n.id || '';
-                document.getElementById('notificationType').value = n.type || '';
-                document.getElementById('notificationScope').value = n.scope || '';
-                document.getElementById('notificationContent').value = n.content || '';
-                document.getElementById('notificationPostDate').value = n.post_date ? n.post_date.slice(0, 16) : '';
-                document.getElementById('notificationEndDate').value = n.end_date ? n.end_date.slice(0, 16) : '';
+                // Populate the form fields
+                document.getElementById('notificationTypeNew').value = n.type || '';
+                document.getElementById('notificationScopeNew').value = n.scope || '';
+                document.getElementById('notificationContentNew').value = n.content || '';
+                document.getElementById('notificationPostDateNew').value = n.post_date ? n.post_date.slice(0, 16) : '';
+                document.getElementById('notificationEndDateNew').value = n.end_date ? n.end_date.slice(0, 16) : '';
+                // Set editingNotificationId so submit knows to update
                 window.editingNotificationId = id;
+                // Scroll to form and focus first field
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.getElementById('notificationTypeNew').focus();
             } catch (err) {
                 alert('Failed to load notification for edit. Ensure the endpoint exists.\n' + (err.message || err));
             }
