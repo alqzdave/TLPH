@@ -2572,8 +2572,8 @@ def api_cancel_notification(notification_id):
     try:
         from firebase_config import get_firestore_db
         db = get_firestore_db()
-        db.collection("notifications").document(notification_id).update({"status": "canceled"})
-        return jsonify({'success': True, 'message': 'Notification cancelled'})
+        db.collection("notifications").document(notification_id).delete()
+        return jsonify({'success': True, 'message': 'Notification canceled and deleted'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
