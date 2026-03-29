@@ -50,8 +50,40 @@ def _serialize_notification(doc):
     return d
 
 def get_active_notifications(now=None):
-    docs = db.collection("notifications").stream()
-    return [_serialize_notification(d) for d in docs]
+    now = now or datetime.utcnow()
+    notifications = []
+    for d in db.collection("notifications").stream():
+        notif = d.to_dict()
+        post_date = notif.get("post_date")
+        end_date = notif.get("end_date")
+        # Convert Firestore Timestamp or string to datetime
+        if hasattr(post_date, 'isoformat'):
+            post_date_dt = post_date
+        else:
+            try:
+                post_date_dt = datetime.fromisoformat(post_date)
+            except Exception:
+                post_date_dt = None
+        if hasattr(end_date, 'isoformat'):
+            end_date_dt = end_date
+        else:
+            try:
+                end_date_dt = datetime.fromisoformat(end_date)
+            except Exception:
+                end_date_dt = None
+
+        # Determine status
+        if end_date_dt and end_date_dt < now:
+            notif["status"] = "inactive"
+        elif post_date_dt and post_date_dt > now:
+            notif["status"] = "to_post"
+        elif post_date_dt and end_date_dt and post_date_dt <= now <= end_date_dt:
+            notif["status"] = "posted"
+        # else keep original status if dates are missing
+
+        notif["id"] = d.id
+        notifications.append(_serialize_value(notif))
+    return notifications
 
 def expire_old_notifications():
     now = datetime.utcnow()
