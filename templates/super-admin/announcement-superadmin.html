@@ -557,8 +557,8 @@
             const type = document.getElementById('notificationTypeNew').value;
             const scope = document.getElementById('notificationScopeNew').value;
             const content = document.getElementById('notificationContentNew').value;
-            const post_date = document.getElementById('notificationPostDateNew').value;
-            const end_date = document.getElementById('notificationEndDateNew').value;
+            const post_date = getManilaISOString(document.getElementById('notificationPostDateNew').value);
+            const end_date = getManilaISOString(document.getElementById('notificationEndDateNew').value);
             const statusDiv = document.getElementById('formStatusNew');
             
             statusDiv.style.display = 'none';
@@ -737,6 +737,20 @@
                 document.getElementById("categoryFilter").value = "all"; 
                 filterTable(); 
             });
+        }
+
+        // Helper: Convert datetime-local input to ISO string in Asia/Manila timezone
+        function getManilaISOString(localDateTimeStr) {
+            if (!localDateTimeStr) return '';
+            // Parse as local time, then treat as Asia/Manila
+            const [date, time] = localDateTimeStr.split('T');
+            const [year, month, day] = date.split('-');
+            const [hour, minute] = time.split(':');
+            // Create a Date object in Asia/Manila
+            const manilaDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
+            // Offset for Manila (UTC+8)
+            manilaDate.setUTCHours(manilaDate.getUTCHours() - 8);
+            return manilaDate.toISOString();
         }
 
         // --- 6. Initialization ---
