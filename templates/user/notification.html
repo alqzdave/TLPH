@@ -72,7 +72,7 @@
                 <div class="flex-grow">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-[9px] font-black text-green-700 uppercase tracking-widest bg-green-100/50 px-2 py-1 rounded">System</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase italic">Just now</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase italic" id="userNotifTime0">Just now</span>
                     </div>
                     <h3 class="text-sm font-black text-green-900 m-0">Welcome to the DENR Portal!</h3>
                     <p class="text-xs text-slate-600 mt-1 leading-relaxed m-0 italic">You will receive important updates and alerts here.</p>
@@ -85,7 +85,35 @@
                 <div class="flex-grow">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-[9px] font-black text-yellow-700 uppercase tracking-widest bg-yellow-100/50 px-2 py-1 rounded">Application</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase italic">1 hour ago</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase italic" id="userNotifTime1">1 hour ago</span>
+                    </div>
+                    <script>
+                    // User notification "time ago" logic for static HTML (replace with dynamic if needed)
+                    function userTimeAgo(dateStr) {
+                        const date = new Date(dateStr);
+                        const now = new Date();
+                        const seconds = Math.floor((now - date) / 1000);
+                        const hours = Math.floor(seconds / 3600);
+                        if (hours < 24) {
+                            return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+                        }
+                        const days = Math.floor(hours / 24);
+                        return days === 1 ? '1 day ago' : `${days} days ago`;
+                    }
+                    // Example: update static demo times (replace with real notification times if dynamic)
+                    window.addEventListener('DOMContentLoaded', function() {
+                        // Example: set the time for the first notification (welcome)
+                        var notif0 = document.getElementById('userNotifTime0');
+                        if (notif0) notif0.textContent = userTimeAgo(new Date().toISOString());
+                        // Example: set the time for the second notification (1 hour ago)
+                        var notif1 = document.getElementById('userNotifTime1');
+                        if (notif1) {
+                            var d = new Date();
+                            d.setHours(d.getHours() - 1);
+                            notif1.textContent = userTimeAgo(d.toISOString());
+                        }
+                    });
+                    </script>
                     </div>
                     <h3 class="text-sm font-bold text-green-800 m-0 leading-none">Application #2026-001 Submitted</h3>
                     <p class="text-xs text-slate-500 mt-2 leading-relaxed m-0 italic">Your application for Tree Cutting Permit has been received.</p>
