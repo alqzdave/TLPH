@@ -502,20 +502,16 @@
                         let rowClass = 'js-row'; // Needed for local filter search
                         let actionBtn = '';
 
-                        if (n.status === 'canceled') {
-                            statusPill = '<span class="status-pill status-inactive" style="background:#fef2f2;color:#dc2626;border-color:#fecaca;">Canceled</span>';
-                            rowClass += ' table-secondary';
-                            actionBtn = `<button class="btn btn-action" title="Delete" onclick="deleteNotification('${n.id}')"><i class='fa fa-trash text-danger'></i></button>`;
-                        } else if (n.status === 'posted') {
+                        if (n.status === 'posted') {
                             statusPill = '<span class="status-pill status-active">Posted</span>';
                             rowClass += ' table-success';
-                            actionBtn = `<button class="btn btn-action" title="Cancel" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-secondary'></i></button>`;
+                            actionBtn = `<button class="btn btn-action" title="Cancel & Delete" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-secondary'></i></button>`;
                         } else if (n.status === 'to_post') {
                             statusPill = '<span class="status-pill status-draft" style="background:#fef9c3;color:#b45309;border-color:#fde047;">Scheduled</span>';
                             rowClass += ' table-warning';
                             actionBtn = `
                                 <button class="btn btn-action" title="Edit" onclick="editNotification('${n.id}')"><i class='fa fa-edit text-primary'></i></button>
-                                <button class="btn btn-action" title="Cancel" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-warning'></i></button>
+                                <button class="btn btn-action" title="Cancel & Delete" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-warning'></i></button>
                             `;
                         } else if (n.status === 'inactive') {
                             statusPill = '<span class="status-pill status-inactive">Inactive</span>';
@@ -702,12 +698,12 @@
         }
 
         window.cancelNotification = async function(id) {
-            if (confirm('Are you sure you want to cancel this notification? It will be set to canceled and cannot be posted.')) {
+            if (confirm('Are you sure you want to cancel and permanently delete this notification? This action cannot be undone.')) {
                 const resp = await fetch(`/api/notifications/cancel/${id}`, { method: 'POST' });
                 if (resp.ok) {
                     await fetchAndRenderNotifications();
                 } else {
-                    alert('Failed to cancel notification.');
+                    alert('Failed to delete notification.');
                 }
             }
         }
