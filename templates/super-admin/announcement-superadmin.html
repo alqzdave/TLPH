@@ -662,7 +662,7 @@
                 // Change form title and button text for edit mode
                 document.getElementById('notificationFormTitle').innerText = 'Edit Notification';
                 document.getElementById('submitBtnNew').innerText = 'Update Notification';
-                document.getElementById('clearBtnNew').innerText = 'Cancel';
+                // Scroll to form and focus first field
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 document.getElementById('notificationTypeNew').focus();
             } catch (err) {
@@ -729,43 +729,19 @@
             }
         }
 
-        // Reset form to create mode when cleared/canceled or after submit
-        const notificationForm = document.getElementById('notificationForm');
-        const clearBtn = document.getElementById('clearBtnNew');
+        // Attach clear button listener
+        const clearBtn = document.getElementById("clearBtn");
         if (clearBtn) {
-            clearBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                notificationForm.reset();
-                window.editingNotificationId = null;
-                document.getElementById('notificationFormTitle').innerText = 'New Notification';
-                document.getElementById('submitBtnNew').innerText = 'Create Notification';
-                clearBtn.innerText = 'Clear';
+            clearBtn.addEventListener("click", () => { 
+                document.getElementById("searchBox").value = ""; 
+                document.getElementById("categoryFilter").value = "all"; 
+                filterTable(); 
             });
         }
-        if (notificationForm) {
-            notificationForm.addEventListener('reset', function() {
-                window.editingNotificationId = null;
-                document.getElementById('notificationFormTitle').innerText = 'New Notification';
-                document.getElementById('submitBtnNew').innerText = 'Create Notification';
-                clearBtn.innerText = 'Clear';
-            });
-            notificationForm.addEventListener('submit', async function(e) {
-                // ...existing code...
-                if (resp.ok) {
-                    statusDiv.innerText = window.editingNotificationId ? 'Notification updated!' : 'Notification saved!';
-                    statusDiv.style.color = '#15803d';
-                    statusDiv.style.display = 'block';
-                    notificationForm.reset();
-                    window.editingNotificationId = null;
-                    document.getElementById('notificationFormTitle').innerText = 'New Notification';
-                    document.getElementById('submitBtnNew').innerText = 'Create Notification';
-                    clearBtn.innerText = 'Clear';
-                    await fetchAndRenderNotifications();
-                }
-                // ...existing code...
-            });
-        }
-        // ...existing code...
+
+        // --- 6. Initialization ---
+        fetchAndRenderNotifications();
+
     });
     </script>
 </body>
