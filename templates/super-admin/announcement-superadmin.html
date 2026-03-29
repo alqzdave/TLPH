@@ -560,28 +560,38 @@
             const post_date = getManilaISOString(document.getElementById('notificationPostDateNew').value);
             const end_date = getManilaISOString(document.getElementById('notificationEndDateNew').value);
             const statusDiv = document.getElementById('formStatusNew');
-            
+
             statusDiv.style.display = 'none';
             try {
-                const resp = await fetch('/api/notifications/create', {
-                    method: 'POST',
+                let url = '/api/notifications/create';
+                let method = 'POST';
+                // If editing, use update endpoint
+                if (window.editingNotificationId) {
+                    url = `/api/notifications/update/${window.editingNotificationId}`;
+                }
+                const resp = await fetch(url, {
+                    method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type, scope, content, post_date, end_date })
                 });
-                
+
                 if (resp.ok) {
-                    statusDiv.innerText = 'Notification saved!';
+                    statusDiv.innerText = window.editingNotificationId ? 'Notification updated!' : 'Notification saved!';
                     statusDiv.style.color = '#15803d';
                     statusDiv.style.display = 'block';
                     document.getElementById('notificationForm').reset();
+                    // Reset edit state and UI
+                    window.editingNotificationId = null;
+                    document.getElementById('notificationFormTitle').innerText = 'New Notification';
+                    document.getElementById('submitBtnNew').innerText = 'Create Notification';
                     await fetchAndRenderNotifications();
                 } else {
-                    statusDiv.innerText = 'Failed to save notification.';
+                    statusDiv.innerText = window.editingNotificationId ? 'Failed to update notification.' : 'Failed to save notification.';
                     statusDiv.style.color = '#dc2626';
                     statusDiv.style.display = 'block';
                 }
             } catch (err) {
-                statusDiv.innerText = 'Error saving notification.';
+                statusDiv.innerText = window.editingNotificationId ? 'Error updating notification.' : 'Error saving notification.';
                 statusDiv.style.color = '#dc2626';
                 statusDiv.style.display = 'block';
             }
@@ -650,7 +660,7 @@
                 const data = await resp.json();
                 if (!data.success) throw new Error(data.message || 'Failed to fetch notification');
                 const n = data.notification;
-                
+
                 // Populate the form fields
                 document.getElementById('notificationTypeNew').value = n.type || '';
                 document.getElementById('notificationScopeNew').value = n.scope || '';
@@ -669,6 +679,12 @@
                 alert('Failed to load notification for edit. Ensure the endpoint exists.\n' + (err.message || err));
             }
         }
+        // Reset edit state when clearing the form
+        document.getElementById('notificationForm').addEventListener('reset', function() {
+            window.editingNotificationId = null;
+            document.getElementById('notificationFormTitle').innerText = 'New Notification';
+            document.getElementById('submitBtnNew').innerText = 'Create Notification';
+        });
 
         window.deleteNotification = async function(id) {
             if (confirm('Are you sure you want to delete this inactive notification permanently?')) {
