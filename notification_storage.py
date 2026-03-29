@@ -50,12 +50,7 @@ def _serialize_notification(doc):
     return d
 
 def get_active_notifications(now=None):
-    now = now or datetime.utcnow()
-    docs = db.collection("notifications") \
-        .where("post_date", "<=", now) \
-        .where("end_date", ">=", now) \
-        .where("status", "in", ["active", "scheduled"]) \
-        .stream()
+    docs = db.collection("notifications").stream()
     return [_serialize_notification(d) for d in docs]
 
 def expire_old_notifications():
