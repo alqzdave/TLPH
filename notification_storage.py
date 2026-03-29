@@ -64,6 +64,9 @@ def get_active_notifications(now=None):
     notifications = []
     for d in db.collection("notifications").stream():
         notif = d.to_dict()
+        # Skip canceled notifications
+        if notif.get("status") == "canceled":
+            continue
         post_date = notif.get("post_date")
         end_date = notif.get("end_date")
         # Convert Firestore Timestamp or string to timezone-aware UTC datetime

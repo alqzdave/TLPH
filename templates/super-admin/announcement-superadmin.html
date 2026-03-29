@@ -502,7 +502,11 @@
                         let rowClass = 'js-row'; // Needed for local filter search
                         let actionBtn = '';
 
-                        if (n.status === 'posted') {
+                        if (n.status === 'canceled') {
+                            statusPill = '<span class="status-pill status-inactive" style="background:#fef2f2;color:#dc2626;border-color:#fecaca;">Canceled</span>';
+                            rowClass += ' table-secondary';
+                            actionBtn = `<button class="btn btn-action" title="Delete" onclick="deleteNotification('${n.id}')"><i class='fa fa-trash text-danger'></i></button>`;
+                        } else if (n.status === 'posted') {
                             statusPill = '<span class="status-pill status-active">Posted</span>';
                             rowClass += ' table-success';
                             actionBtn = `<button class="btn btn-action" title="Cancel" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-secondary'></i></button>`;
@@ -698,7 +702,7 @@
         }
 
         window.cancelNotification = async function(id) {
-            if (confirm('Are you sure you want to cancel this notification? It will be set to inactive.')) {
+            if (confirm('Are you sure you want to cancel this notification? It will be set to canceled and cannot be posted.')) {
                 const resp = await fetch(`/api/notifications/cancel/${id}`, { method: 'POST' });
                 if (resp.ok) {
                     await fetchAndRenderNotifications();
