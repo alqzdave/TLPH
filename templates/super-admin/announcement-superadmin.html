@@ -1,3 +1,83 @@
+        let editingNotificationId = null;
+        async function editNotification(id) {
+            // Fetch notification data
+            const resp = await fetch(`/api/notifications/get/${id}`);
+            if (!resp.ok) {
+                alert('Failed to fetch notification for editing.');
+                return;
+            }
+            const data = await resp.json();
+            if (!data.success) {
+                alert('Notification not found.');
+                return;
+            }
+            const n = data.notification;
+            // Populate form
+            document.getElementById('notificationTypeNew').value = n.type || '';
+            document.getElementById('notificationScopeNew').value = n.scope || '';
+            document.getElementById('notificationContentNew').value = n.content || '';
+            document.getElementById('notificationPostDateNew').value = n.post_date ? n.post_date.slice(0, 16) : '';
+            document.getElementById('notificationEndDateNew').value = n.end_date ? n.end_date.slice(0, 16) : '';
+            editingNotificationId = id;
+            // Show form (scroll to top if needed)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        document.getElementById('notificationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const type = document.getElementById('notificationTypeNew').value;
+            const scope = document.getElementById('notificationScopeNew').value;
+            const content = document.getElementById('notificationContentNew').value;
+            const post_date = document.getElementById('notificationPostDateNew').value;
+            const end_date = document.getElementById('notificationEndDateNew').value;
+            const statusDiv = document.getElementById('formStatusNew');
+            statusDiv.style.display = 'none';
+            try {
+                let resp;
+                if (editingNotificationId) {
+                    // Update existing notification
+                    resp = await fetch(`/api/notifications/update/${editingNotificationId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type,
+                            scope,
+                            content,
+                            post_date,
+                            end_date
+                        })
+                    });
+                } else {
+                    // Create new notification
+                    resp = await fetch('/api/notifications/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type,
+                            scope,
+                            content,
+                            post_date,
+                            end_date
+                        })
+                    });
+                }
+                if (resp.ok) {
+                    statusDiv.innerText = editingNotificationId ? 'Notification updated!' : 'Notification saved!';
+                    statusDiv.style.color = '#15803d';
+                    statusDiv.style.display = 'block';
+                    document.getElementById('notificationForm').reset();
+                    editingNotificationId = null;
+                    await fetchAndRenderNotifications();
+                } else {
+                    statusDiv.innerText = 'Failed to save notification.';
+                    statusDiv.style.color = '#dc2626';
+                    statusDiv.style.display = 'block';
+                }
+            } catch (err) {
+                statusDiv.innerText = 'Error saving notification.';
+                statusDiv.style.color = '#dc2626';
+                statusDiv.style.display = 'block';
+            }
+        });
 <!DOCTYPE html>
 <html lang="en">
 <head>

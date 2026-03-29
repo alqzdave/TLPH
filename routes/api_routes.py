@@ -2566,3 +2566,33 @@ def api_cancel_notification(notification_id):
         return jsonify({'success': True, 'message': 'Notification cancelled'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# Get a single notification by ID
+@bp.route('/notifications/get/<notification_id>', methods=['GET'])
+def api_get_notification(notification_id):
+    try:
+        db = firestore.client()
+        doc = db.collection("notifications").document(notification_id).get()
+        if not doc.exists:
+            return jsonify({'success': False, 'message': 'Notification not found'}), 404
+        from notification_storage import _serialize_notification
+        return jsonify({'success': True, 'notification': _serialize_notification(doc)})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# Update notification
+@bp.route('/notifications/update/<notification_id>', methods=['POST'])
+def api_update_notification(notification_id):
+    try:
+        db = firestore.client()
+        data = request.get_json() or {}
+        update_fields = {}
+        for field in ["type", "scope", "content", "post_date", "end_date"]:
+            if field in data:
+                update_fields[field] = data[field]
+        if update_fields:
+            db.collection("notifications").document(notification_id).update(update_fields)
+        return jsonify({'success': True, 'message': 'Notification updated'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
