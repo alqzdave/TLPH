@@ -645,10 +645,12 @@
         
         // Open Edit Modal & Populate Data
         window.editNotification = async function(id) {
+            // Debug: Show the ID being fetched
+            console.log('Edit notification ID:', id);
             try {
                 const resp = await fetch(`/api/notifications/get/${id}`);
                 const data = await resp.json();
-                
+                console.log('Notification fetch response:', data); // Debug: Show response
                 if (!data.success) throw new Error(data.message || 'Failed to fetch notification');
                 const n = data.notification;
                 
@@ -657,12 +659,12 @@
                 document.getElementById('notificationType').value = n.type || '';
                 document.getElementById('notificationScope').value = n.scope || '';
                 document.getElementById('notificationContent').value = n.content || '';
-                document.getElementById('notificationPostDate').value = n.post_date ? n.post_date.slice(0,16) : '';
-                document.getElementById('notificationEndDate').value = n.end_date ? n.end_date.slice(0,16) : '';
-                
-                new bootstrap.Modal(document.getElementById('announcementModal')).show();
+                document.getElementById('notificationPostDate').value = n.post_date ? n.post_date.slice(0, 16) : '';
+                document.getElementById('notificationEndDate').value = n.end_date ? n.end_date.slice(0, 16) : '';
+                window.editingNotificationId = id;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (err) {
-                alert('Failed to load notification for edit. Ensure the endpoint exists.');
+                alert('Failed to load notification for edit. Ensure the endpoint exists.\n' + (err.message || err));
             }
         }
 
