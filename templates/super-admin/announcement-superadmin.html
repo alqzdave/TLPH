@@ -659,6 +659,9 @@
                 document.getElementById('notificationEndDateNew').value = n.end_date ? n.end_date.slice(0, 16) : '';
                 // Set editingNotificationId so submit knows to update
                 window.editingNotificationId = id;
+                // Change form title and button text for edit mode
+                document.getElementById('notificationFormTitle').innerText = 'Edit Notification';
+                document.getElementById('submitBtnNew').innerText = 'Update Notification';
                 // Scroll to form and focus first field
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 document.getElementById('notificationTypeNew').focus();
