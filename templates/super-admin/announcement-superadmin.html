@@ -568,15 +568,18 @@
                         if (n.status === 'posted') {
                             statusPill = '<span class="status-pill status-active">Posted</span>';
                             rowClass = 'table-success';
-                            actionBtn = `<button class="btn btn-sm btn-secondary" onclick="cancelNotification('${n.id}')">Cancel</button>`;
+                            actionBtn = `<button class="btn btn-action" title="Cancel" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-secondary'></i></button>`;
                         } else if (n.status === 'to_post') {
                             statusPill = '<span class="status-pill status-draft" style="background:#fef9c3;color:#b45309;border-color:#fde047;">Scheduled</span>';
                             rowClass = 'table-warning';
-                            actionBtn = `<button class="btn btn-sm btn-warning text-white" onclick="cancelNotification('${n.id}')">Cancel</button>`;
+                            actionBtn = `
+                                <button class="btn btn-action" title="Edit" onclick="editNotification('${n.id}')"><i class='fa fa-edit text-primary'></i></button>
+                                <button class="btn btn-action" title="Cancel" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-warning'></i></button>
+                            `;
                         } else if (n.status === 'inactive') {
                             statusPill = '<span class="status-pill status-inactive">Inactive</span>';
                             rowClass = 'table-secondary';
-                            actionBtn = `<button class="btn btn-sm btn-danger" onclick="deleteNotification('${n.id}')">Delete</button>`;
+                            actionBtn = `<button class="btn btn-action" title="Delete" onclick="deleteNotification('${n.id}')"><i class='fa fa-trash text-danger'></i></button>`;
                         } else {
                             statusPill = `<span class="status-pill">${n.status || ''}</span>`;
                         }
@@ -593,17 +596,28 @@
                         `;
                     }).join('');
                         // Action button handlers (stubs)
-                        function deleteNotification(id) {
+                        async function deleteNotification(id) {
                             if (confirm('Are you sure you want to delete this notification?')) {
-                                // TODO: Implement backend delete call
-                                alert('Delete notification: ' + id);
+                                const resp = await fetch(`/api/notifications/delete/${id}`, { method: 'POST' });
+                                if (resp.ok) {
+                                    await fetchAndRenderNotifications();
+                                } else {
+                                    alert('Failed to delete notification.');
+                                }
                             }
                         }
-                        function cancelNotification(id) {
+                        async function cancelNotification(id) {
                             if (confirm('Are you sure you want to cancel this notification?')) {
-                                // TODO: Implement backend cancel call
-                                alert('Cancel notification: ' + id);
+                                const resp = await fetch(`/api/notifications/cancel/${id}`, { method: 'POST' });
+                                if (resp.ok) {
+                                    await fetchAndRenderNotifications();
+                                } else {
+                                    alert('Failed to cancel notification.');
+                                }
                             }
+                        }
+                        function editNotification(id) {
+                            alert('Edit notification: ' + id + '\n(Implement modal or redirect to edit form)');
                         }
                 }
                 recordCount.innerText = notifications.length + ' Notifications';

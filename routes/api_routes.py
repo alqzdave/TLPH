@@ -1,3 +1,22 @@
+# Delete notification
+@bp.route('/notifications/delete/<notification_id>', methods=['POST'])
+def api_delete_notification(notification_id):
+    try:
+        db = firestore.client()
+        db.collection("notifications").document(notification_id).delete()
+        return jsonify({'success': True, 'message': 'Notification deleted'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# Cancel notification (set status to 'inactive')
+@bp.route('/notifications/cancel/<notification_id>', methods=['POST'])
+def api_cancel_notification(notification_id):
+    try:
+        db = firestore.client()
+        db.collection("notifications").document(notification_id).update({"status": "inactive"})
+        return jsonify({'success': True, 'message': 'Notification cancelled'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 from google.cloud.firestore_v1.base_query import FieldFilter
 from flask import Blueprint, request, jsonify, session
