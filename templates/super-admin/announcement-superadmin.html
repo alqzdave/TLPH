@@ -527,6 +527,7 @@
         });
 
         // Fetch and render notifications
+
         async function fetchAndRenderNotifications() {
             const tbody = document.getElementById('tbody');
             const recordCount = document.getElementById('recordCount');
@@ -535,21 +536,48 @@
                 const resp = await fetch('/api/notifications/list');
                 const data = await resp.json();
                 if (!data.success) throw new Error(data.message || 'Failed to load notifications');
-                const notifications = data.notifications || [];
+                let notifications = data.notifications || [];
+                // Sort: posted > to_post > inactive, then by post_date desc
+                const statusOrder = { posted: 0, to_post: 1, inactive: 2 };
+                notifications.sort((a, b) => {
+                    const sa = statusOrder[a.status] ?? 99;
+                    const sb = statusOrder[b.status] ?? 99;
+                    if (sa !== sb) return sa - sb;
+                    // Sort by post_date descending
+                    const da = new Date(a.post_date);
+                    const db = new Date(b.post_date);
+                    return db - da;
+                });
                 if (notifications.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400">No notifications found.</td></tr>';
                 } else {
-                    tbody.innerHTML = notifications.map(n => `
-                        <tr>
+                    tbody.innerHTML = notifications.map(n => {
+                        let statusPill = '';
+                        let rowClass = '';
+                        if (n.status === 'posted') {
+                            statusPill = '<span class="status-pill status-active">Posted</span>';
+                            rowClass = 'table-success';
+                        } else if (n.status === 'to_post') {
+                            statusPill = '<span class="status-pill status-draft" style="background:#fef9c3;color:#b45309;border-color:#fde047;">Scheduled</span>';
+                            rowClass = 'table-warning';
+                        } else if (n.status === 'inactive') {
+                            statusPill = '<span class="status-pill status-inactive">Inactive</span>';
+                            rowClass = 'table-secondary';
+                        } else {
+                            statusPill = `<span class="status-pill">${n.status || ''}</span>`;
+                        }
+                        return `
+                        <tr class="${rowClass}">
                             <td>${n.type}</td>
                             <td>${n.scope}</td>
                             <td>${n.content}</td>
                             <td>${formatDate(n.post_date)}</td>
                             <td>${formatDate(n.end_date)}</td>
-                            <td>${n.status || ''}</td>
+                            <td>${statusPill}</td>
                             <td class="text-center">-</td>
                         </tr>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
                 recordCount.innerText = notifications.length + ' Notifications';
             } catch (err) {
