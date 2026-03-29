@@ -2572,7 +2572,8 @@ def api_cancel_notification(notification_id):
 @bp.route('/notifications/get/<notification_id>', methods=['GET'])
 def api_get_notification(notification_id):
     try:
-        db = firestore.client()
+        from firebase_config import get_firestore_db
+        db = get_firestore_db()
         doc = db.collection("notifications").document(notification_id).get()
         if not doc.exists:
             return jsonify({'success': False, 'message': 'Notification not found'}), 404
