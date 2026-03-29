@@ -78,8 +78,8 @@
 
 
 <div class="floating-notification-btn group" title="Notifications" onclick="openNotificationModal()">
-        <i class="fa-solid fa-bell text-xl group-hover:text-yellow-300 transition"></i>
-        <span class="floating-notification-badge">3</span>
+    <i class="fa-solid fa-bell text-xl group-hover:text-yellow-300 transition" id="userNotifBell"></i>
+    <span class="floating-notification-badge" id="userNotifBadge" style="display:none"></span>
 </div>
 
 <!-- Notification Modal -->
@@ -94,40 +94,88 @@
                 <span class="font-bold text-base tracking-tight">Messages</span>
                 <button onclick="closeNotificationModal()" class="ml-auto text-white/80 hover:text-white text-lg font-bold focus:outline-none" title="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="max-h-72 overflow-y-auto py-2 bg-white/70">
-                <!-- Example notification items -->
-                <div class="flex items-start gap-3 px-4 py-2 hover:bg-blue-50/80 cursor-pointer border-b border-blue-50 last:border-b-0">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500"><i class="fa-solid fa-message"></i></div>
-                    <div class="flex-grow min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="font-semibold text-sm text-blue-900 truncate">Hi there, want to learn more about your ...</span>
-                            <span class="ml-auto text-[10px] text-slate-400">1w ago</span>
-                        </div>
-                        <div class="text-xs text-slate-500 truncate">Operator</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3 px-4 py-2 hover:bg-blue-50/80 cursor-pointer border-b border-blue-50 last:border-b-0">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500"><i class="fa-solid fa-robot"></i></div>
-                    <div class="flex-grow min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="font-semibold text-sm text-blue-900 truncate">Hello, I'm a Custom Bot 👋 Want to see wh...</span>
-                            <span class="ml-auto text-[10px] text-slate-400">1w ago</span>
-                        </div>
-                        <div class="text-xs text-slate-500 truncate">Operator</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3 px-4 py-2 hover:bg-blue-50/80 cursor-pointer border-b border-blue-50 last:border-b-0">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500"><i class="fa-solid fa-circle-question"></i></div>
-                    <div class="flex-grow min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="font-semibold text-sm text-blue-900 truncate">Hi 👋 Anything I can help with?</span>
-                            <span class="ml-auto text-[10px] text-slate-400">1w ago</span>
-                        </div>
-                        <div class="text-xs text-slate-500 truncate">Operator</div>
-                    </div>
-                </div>
-                <!-- Add more notification items as needed -->
+            <div class="max-h-72 overflow-y-auto py-2 bg-white/70" id="userNotificationList">
+                <div class="text-slate-400 text-xs px-4 py-2">Loading notifications...</div>
             </div>
+        <script>
+        function timeAgoUser(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return `${seconds} seconds ago`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} minutes ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} hours ago`;
+            const days = Math.floor(hours / 24);
+            return `${days} days ago`;
+        }
+
+        function renderUserNotificationItem(notif) {
+            return `
+                <div class="flex items-start gap-3 px-4 py-2 hover:bg-blue-50/80 cursor-pointer border-b border-blue-50 last:border-b-0">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-center gap-1">
+                            <span class="font-semibold text-sm text-blue-900 truncate">${notif.title || notif.type || 'Notification'}</span>
+                            <span class="ml-auto text-[10px] text-slate-400">${notif.post_date ? timeAgoUser(notif.post_date) : ''}</span>
+                        </div>
+                        <div class="text-xs text-slate-500 truncate">${notif.content || ''}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function updateUserNotificationBadgeAndList() {
+            const badge = document.getElementById('userNotifBadge');
+            const bell = document.getElementById('userNotifBell');
+            const listDiv = document.getElementById('userNotificationList');
+            try {
+                const res = await fetch('/api/notifications/list');
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
+                const notifs = (data.notifications || []).filter(n => {
+                    if (n.status !== 'posted') return false;
+                    if (!(n.scope === 'all' || n.scope === 'user')) return false;
+                    if (!n.post_date) return false;
+                    const postDate = new Date(n.post_date);
+                    const now = new Date();
+                    const diffHrs = (now - postDate) / (1000 * 60 * 60);
+                    return diffHrs <= 5;
+                });
+                if (notifs.length > 0) {
+                    badge.textContent = notifs.length > 9 ? '9+' : notifs.length;
+                    badge.style.display = '';
+                    bell.classList.add('text-yellow-500', 'animate-bounce');
+                    bell.classList.remove('text-slate-400');
+                } else {
+                    badge.textContent = '';
+                    badge.style.display = 'none';
+                    bell.classList.remove('text-yellow-500', 'animate-bounce');
+                    bell.classList.add('text-slate-400');
+                }
+                if (listDiv) {
+                    if (notifs.length === 0) {
+                        listDiv.innerHTML = '<div class="text-slate-400 text-xs px-4 py-2">No notifications to display.</div>';
+                    } else {
+                        // Sort by post_date descending
+                        notifs.sort((a, b) => new Date(b.post_date) - new Date(a.post_date));
+                        listDiv.innerHTML = notifs.map(renderUserNotificationItem).join('');
+                    }
+                }
+            } catch (e) {
+                badge.textContent = '';
+                badge.style.display = 'none';
+                bell.classList.remove('text-yellow-500', 'animate-bounce');
+                bell.classList.add('text-slate-400');
+                if (listDiv) listDiv.innerHTML = '<div class="text-rose-500 text-xs px-4 py-2">Error loading notifications: ' + e.message + '</div>';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateUserNotificationBadgeAndList);
+        setInterval(updateUserNotificationBadgeAndList, 2 * 60 * 1000);
+        </script>
         </div>
     </div>
 </div>
