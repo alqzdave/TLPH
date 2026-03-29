@@ -2540,7 +2540,15 @@ def api_create_notification():
 @bp.route('/notifications/list', methods=['GET'])
 def api_list_notifications():
     try:
-        notifications = get_active_notifications()
+        # For superadmin, show all notifications including canceled
+        from flask import session
+        user_role = session.get('user_role', '')
+        if user_role == 'superadmin':
+            from notification_storage import get_all_notifications
+            notifications = get_all_notifications()
+        else:
+            from notification_storage import get_active_notifications
+            notifications = get_active_notifications()
         return jsonify({'success': True, 'notifications': notifications})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

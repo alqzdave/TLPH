@@ -1,3 +1,10 @@
+def get_all_notifications():
+    notifications = []
+    for d in db.collection("notifications").stream():
+        notif = d.to_dict()
+        notif["id"] = d.id
+        notifications.append(_serialize_value(notif))
+    return notifications
 # notification_storage.py
 # Firestore logic for notifications collection
 from firebase_admin import firestore
