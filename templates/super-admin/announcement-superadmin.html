@@ -531,6 +531,10 @@
         async function fetchAndRenderNotifications() {
             const tbody = document.getElementById('tbody');
             const recordCount = document.getElementById('recordCount');
+            const statTotal = document.getElementById('statTotal');
+            const statActive = document.getElementById('statActive');
+            const statUpcoming = document.getElementById('statUpcoming');
+            const statExpired = document.getElementById('statExpired');
             tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
             try {
                 const resp = await fetch('/api/notifications/list');
@@ -548,6 +552,12 @@
                     const db = new Date(b.post_date);
                     return db - da;
                 });
+                // Stats
+                statTotal.innerText = notifications.length;
+                statActive.innerText = notifications.filter(n => n.status === 'posted').length;
+                statUpcoming.innerText = notifications.filter(n => n.status === 'to_post').length;
+                statExpired.innerText = notifications.filter(n => n.status === 'inactive').length;
+
                 if (notifications.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400">No notifications found.</td></tr>';
                 } else {
@@ -583,6 +593,10 @@
             } catch (err) {
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading notifications.</td></tr>';
                 recordCount.innerText = '0 Notifications';
+                if (statTotal) statTotal.innerText = 0;
+                if (statActive) statActive.innerText = 0;
+                if (statUpcoming) statUpcoming.innerText = 0;
+                if (statExpired) statExpired.innerText = 0;
             }
         }
 
