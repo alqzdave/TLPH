@@ -83,40 +83,61 @@
         </div>
 
         <div class="space-y-4">
-            
-            <div class="notification-card unread p-4 rounded-3xl flex gap-5 border border-slate-100">
-                <div class="flex-shrink-0 w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center shadow-inner">
-                    <span class="material-icons-round text-2xl">description</span>
-                </div>
-                <div class="flex-grow">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-[9px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-100/50 px-2 py-1 rounded">New Application</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase italic">2 mins ago</span>
-                    </div>
-                    <h3 class="text-sm font-black text-emerald-950 m-0">Tree Cutting Permit Request #2026-045</h3>
-                    <p class="text-xs text-slate-600 mt-1 leading-relaxed m-0 italic">A new application has been submitted by Brgy. Malitlit Office for site inspection.</p>
-                </div>
-                <button class="text-slate-300 hover:text-emerald-600 transition-colors self-center">
-                    <span class="material-icons-round text-3xl">chevron_right</span>
-                </button>
-            </div>
+            <div id="notificationList"></div>
+            <script>
+            function timeAgo(dateStr) {
+                const date = new Date(dateStr);
+                const now = new Date();
+                const seconds = Math.floor((now - date) / 1000);
+                if (seconds < 60) return `${seconds} seconds ago`;
+                const minutes = Math.floor(seconds / 60);
+                if (minutes < 60) return `${minutes} minutes ago`;
+                const hours = Math.floor(minutes / 60);
+                if (hours < 24) return `${hours} hours ago`;
+                const days = Math.floor(hours / 24);
+                return `${days} days ago`;
+            }
 
-            <div class="notification-card bg-white p-4 rounded-3xl flex gap-5 border border-slate-100 opacity-90 shadow-sm">
-                <div class="flex-shrink-0 w-14 h-14 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center">
-                    <span class="material-icons-round text-2xl">inventory_2</span>
-                </div>
-                <div class="flex-grow">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-[9px] font-black text-amber-700 uppercase tracking-widest bg-amber-100/50 px-2 py-1 rounded">Inventory Alert</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase italic">1 hour ago</span>
+            function renderNotificationCard(notif) {
+                return `
+                <div class="notification-card unread p-4 rounded-3xl flex gap-5 border border-slate-100">
+                    <div class="flex-shrink-0 w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center shadow-inner">
+                        <span class="material-icons-round text-2xl">notifications</span>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-800 m-0 leading-none">Low Stock: Chainsaw Lubricant (Official Issue)</h3>
-                    <p class="text-xs text-slate-500 mt-2 leading-relaxed m-0 italic">Municipal storage reports that the lubricant stock is below 15% threshold.</p>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[9px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-100/50 px-2 py-1 rounded">${notif.type ? notif.type.charAt(0).toUpperCase() + notif.type.slice(1) : 'Notification'}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase italic">${notif.post_date ? timeAgo(notif.post_date) : ''}</span>
+                        </div>
+                        <h3 class="text-sm font-black text-emerald-950 m-0">${notif.title || ''}</h3>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed m-0 italic">${notif.content || ''}</p>
+                    </div>
                 </div>
-                <button class="text-slate-300 hover:text-emerald-600 transition-colors self-center">
-                    <span class="material-icons-round text-3xl">chevron_right</span>
-                </button>
-            </div>
+                `;
+            }
+
+            async function loadMunicipalNotifications() {
+                const listDiv = document.getElementById('notificationList');
+                listDiv.innerHTML = '<div class="text-slate-400 text-xs">Loading notifications...</div>';
+                try {
+                    const res = await fetch('/api/notifications/list');
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
+                    // Filter: posted + scope 'municipal' or 'all'
+                    const notifs = (data.notifications || []).filter(n => n.status === 'posted' && (n.scope === 'all' || n.scope === 'municipal'));
+                    if (notifs.length === 0) {
+                        listDiv.innerHTML = '<div class="text-slate-400 text-xs">No notifications to display.</div>';
+                        return;
+                    }
+                    // Sort by post_date descending
+                    notifs.sort((a, b) => new Date(b.post_date) - new Date(a.post_date));
+                    listDiv.innerHTML = notifs.map(renderNotificationCard).join('');
+                } catch (e) {
+                    listDiv.innerHTML = '<div class="text-rose-500 text-xs">Error loading notifications: ' + e.message + '</div>';
+                }
+            }
+            document.addEventListener('DOMContentLoaded', loadMunicipalNotifications);
+            </script>
 
             <div class="notification-card bg-white p-4 rounded-3xl flex gap-5 border border-slate-100 shadow-sm">
                 <div class="flex-shrink-0 w-14 h-14 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center">
