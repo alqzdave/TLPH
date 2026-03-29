@@ -67,17 +67,56 @@
             <button class="bg-white border border-slate-200 text-slate-400 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 hover:text-blue-800 transition-all whitespace-nowrap">Projects</button>
             <button class="bg-white border border-slate-200 text-slate-400 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 hover:text-blue-800 transition-all whitespace-nowrap">Services</button>
         </div>
-        <!-- Example Notification Card -->
-        <div class="notification-card unread p-4 mb-4 rounded shadow border-l-4 border-blue-900 flex items-start gap-3">
-            <span class="material-icons-round text-blue-900">notifications</span>
-            <div>
-                <div class="font-bold text-sm text-blue-900">New Project Approval Required</div>
-                <div class="text-xs text-slate-600">A new municipal project is pending your review. <span class="font-bold">View details in the Projects section.</span></div>
-                <div class="text-[10px] text-slate-400 mt-1">2 minutes ago</div>
+        <div id="notificationList"></div>
+        <script>
+        function timeAgo(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return `${seconds} seconds ago`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} minutes ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} hours ago`;
+            const days = Math.floor(hours / 24);
+            return `${days} days ago`;
+        }
+
+        function renderNotificationCard(notif) {
+            return `
+            <div class="notification-card unread p-4 mb-4 rounded shadow border-l-4 border-blue-900 flex items-start gap-3">
+                <span class="material-icons-round text-blue-900">notifications</span>
+                <div>
+                    <div class="font-bold text-sm text-blue-900">${notif.type ? notif.type.charAt(0).toUpperCase() + notif.type.slice(1) : 'Notification'}</div>
+                    <div class="text-xs text-slate-600">${notif.content || ''}</div>
+                    <div class="text-[10px] text-slate-400 mt-1">${notif.post_date ? timeAgo(notif.post_date) : ''}</div>
+                </div>
             </div>
-        </div>
-        <!-- End Example Notification Card -->
-        <!-- More notifications would be rendered here dynamically -->
+            `;
+        }
+
+        async function loadRegionalNotifications() {
+            const listDiv = document.getElementById('notificationList');
+            listDiv.innerHTML = '<div class="text-slate-400 text-xs">Loading notifications...</div>';
+            try {
+                const res = await fetch('/api/notifications/list');
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
+                // Filter: posted + scope 'regional' or 'all'
+                const notifs = (data.notifications || []).filter(n => n.status === 'posted' && (n.scope === 'all' || n.scope === 'regional'));
+                if (notifs.length === 0) {
+                    listDiv.innerHTML = '<div class="text-slate-400 text-xs">No notifications to display.</div>';
+                    return;
+                }
+                // Sort by post_date descending
+                notifs.sort((a, b) => new Date(b.post_date) - new Date(a.post_date));
+                listDiv.innerHTML = notifs.map(renderNotificationCard).join('');
+            } catch (e) {
+                listDiv.innerHTML = '<div class="text-rose-500 text-xs">Error loading notifications: ' + e.message + '</div>';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadRegionalNotifications);
+        </script>
     </div>
 </body>
 </html>

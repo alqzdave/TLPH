@@ -42,10 +42,50 @@
             <span>Service Request</span>
             <span id="regNavServiceBadge" class="ml-auto hidden min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-white text-[8px] font-black flex items-center justify-center leading-none"></span>
         </a>
-        <a href="/regional/operations/projects" class="nav-btn-link">
-            <span class="material-icons-round">folder_special</span>
-            <span>Projects</span>
+        <a href="/regional/notification" class="nav-btn-link relative" id="regionalNotifIconLink">
+            <span class="material-icons-round" id="regionalNotifIconBell">notifications</span>
+            <span>Notifications</span>
+            <span id="regionalNotifBadge" style="display:none;"
+                class="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white shadow"></span>
         </a>
+        <script>
+        async function updateRegionalNotifBadge() {
+            const badge = document.getElementById('regionalNotifBadge');
+            const bell = document.getElementById('regionalNotifIconBell');
+            try {
+                const res = await fetch('/api/notifications/list');
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
+                const notifs = (data.notifications || []).filter(n => {
+                    if (n.status !== 'posted') return false;
+                    if (!(n.scope === 'all' || n.scope === 'regional')) return false;
+                    if (!n.post_date) return false;
+                    const postDate = new Date(n.post_date);
+                    const now = new Date();
+                    const diffHrs = (now - postDate) / (1000 * 60 * 60);
+                    return diffHrs <= 5;
+                });
+                if (notifs.length > 0) {
+                    badge.textContent = notifs.length;
+                    badge.style.display = '';
+                    bell.classList.add('text-blue-900', 'animate-bounce');
+                    bell.classList.remove('text-slate-400');
+                } else {
+                    badge.textContent = '';
+                    badge.style.display = 'none';
+                    bell.classList.remove('text-blue-900', 'animate-bounce');
+                    bell.classList.add('text-slate-400');
+                }
+            } catch (e) {
+                badge.textContent = '';
+                badge.style.display = 'none';
+                bell.classList.remove('text-blue-900', 'animate-bounce');
+                bell.classList.add('text-slate-400');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateRegionalNotifBadge);
+        setInterval(updateRegionalNotifBadge, 2 * 60 * 1000);
+        </script>
         <a href="/regional/operations/task" class="nav-btn-link">
             <span class="material-icons-round">task_alt</span>
             <span>Task</span>
