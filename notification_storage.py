@@ -26,6 +26,18 @@ def create_notification(type, content, post_date, end_date, created_by, scope, t
     ref = db.collection("notifications").add(doc)
     return ref
 
+def _serialize_notification(doc):
+    def to_iso(val):
+        if hasattr(val, 'isoformat'):
+            return val.isoformat()
+        return val
+    d = doc.to_dict()
+    for k in ["post_date", "end_date", "created_at"]:
+        if k in d:
+            d[k] = to_iso(d[k])
+    d["id"] = doc.id
+    return d
+
 def get_active_notifications(now=None):
     now = now or datetime.utcnow()
     docs = db.collection("notifications") \
@@ -33,7 +45,7 @@ def get_active_notifications(now=None):
         .where("end_date", ">=", now) \
         .where("status", "in", ["active", "scheduled"]) \
         .stream()
-    return [d.to_dict() | {"id": d.id} for d in docs]
+    return [_serialize_notification(d) for d in docs]
 
 def expire_old_notifications():
     now = datetime.utcnow()

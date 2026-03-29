@@ -17,7 +17,7 @@
         }
         main.announcement-bg {
             background: rgba(255,255,255,0.85);
-            border-radius: 18px;
+            border-radius: 18px;    
             box-shadow: 0 6px 32px 0 rgba(16, 42, 67, 0.10), 0 1.5px 4px 0 rgba(16, 42, 67, 0.04);
             position: relative;
             overflow: hidden;
@@ -653,11 +653,13 @@
             bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
         }
 
-        // Live Search & Filter
+        // Live Search & Filter (safe for missing elements)
         document.addEventListener("DOMContentLoaded", () => {
-            const searchBox = document.getElementById("searchBox"), catFilter = document.getElementById("categoryFilter"), 
-                  rows = document.querySelectorAll(".js-row"), countText = document.getElementById("visibleCount");
-
+            const searchBox = document.getElementById("searchBox");
+            const catFilter = document.getElementById("categoryFilter");
+            const rows = document.querySelectorAll(".js-row");
+            const countText = document.getElementById("visibleCount");
+            if (!searchBox || !catFilter || !countText) return;
             function filterTable() {
                 const term = searchBox.value.toLowerCase().trim(), selected = catFilter.value;
                 let visibleRows = 0;
@@ -668,18 +670,22 @@
                     row.style.display = match ? "" : "none";
                     if (match) visibleRows++;
                 });
-                document.getElementById("noResultsMsg").classList.toggle("d-none", visibleRows !== 0);
+                const noResultsMsg = document.getElementById("noResultsMsg");
+                if (noResultsMsg) noResultsMsg.classList.toggle("d-none", visibleRows !== 0);
                 countText.innerText = visibleRows;
             }
-
             searchBox.addEventListener("input", filterTable);
             catFilter.addEventListener("change", filterTable);
-            document.getElementById("clearBtn").onclick = () => { searchBox.value = ""; catFilter.value = "all"; filterTable(); };
+            const clearBtn = document.getElementById("clearBtn");
+            if (clearBtn) clearBtn.onclick = () => { searchBox.value = ""; catFilter.value = "all"; filterTable(); };
         });
 
-        // Chart Init
+        // Chart Init (safe for missing element)
         document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('announcementChart').getContext('2d');
+            const chartElem = document.getElementById('announcementChart');
+            if (!chartElem) return;
+            const ctx = chartElem.getContext('2d');
+            if (!ctx) return;
             new Chart(ctx, {
                 type: 'bar',
                 data: {
