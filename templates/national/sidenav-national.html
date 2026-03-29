@@ -67,19 +67,56 @@
                     <div class="text-[11px] text-gray-500 font-semibold">National Admin</div>
                 </div>
             </div>
-            <div x-data="{ unread: 3 }" class="relative">
+            <div class="relative">
                 <a href="/national/notification" title="Notifications"
-                   :class="unread > 0 ? 'bg-blue-50 border border-blue-200' : ''"
+                   id="nationalNotifIcon"
                    class="rounded-full p-2 transition group flex items-center justify-center">
-                    <span class="material-icons-round text-[22px] align-middle transition"
-                          :class="unread > 0 ? 'text-blue-900 animate-bounce' : 'text-slate-400 group-hover:text-blue-700'">
+                    <span class="material-icons-round text-[22px] align-middle transition" id="nationalNotifIconBell">
                         notifications
                     </span>
-                    <template x-if="unread > 0">
-                        <span class="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white shadow">{{ unread }}</span>
-                    </template>
+                    <span id="nationalNotifBadge" style="display:none;"
+                        class="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white shadow"></span>
                 </a>
             </div>
+            <script>
+            async function updateNationalNotifBadge() {
+                const badge = document.getElementById('nationalNotifBadge');
+                const bell = document.getElementById('nationalNotifIconBell');
+                try {
+                    const res = await fetch('/api/notifications/list');
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
+                    const notifs = (data.notifications || []).filter(n => {
+                        if (n.status !== 'posted') return false;
+                        if (!(n.scope === 'all' || n.scope === 'national')) return false;
+                        if (!n.post_date) return false;
+                        const postDate = new Date(n.post_date);
+                        const now = new Date();
+                        const diffHrs = (now - postDate) / (1000 * 60 * 60);
+                        return diffHrs <= 5;
+                    });
+                    if (notifs.length > 0) {
+                        badge.textContent = notifs.length;
+                        badge.style.display = '';
+                        bell.classList.add('text-blue-900', 'animate-bounce');
+                        bell.classList.remove('text-slate-400');
+                    } else {
+                        badge.textContent = '';
+                        badge.style.display = 'none';
+                        bell.classList.remove('text-blue-900', 'animate-bounce');
+                        bell.classList.add('text-slate-400');
+                    }
+                } catch (e) {
+                    badge.textContent = '';
+                    badge.style.display = 'none';
+                    bell.classList.remove('text-blue-900', 'animate-bounce');
+                    bell.classList.add('text-slate-400');
+                }
+            }
+            document.addEventListener('DOMContentLoaded', updateNationalNotifBadge);
+            // Optionally, poll every 2 minutes for live updates:
+            setInterval(updateNationalNotifBadge, 2 * 60 * 1000);
+            </script>
         </div>
     </div>
 
