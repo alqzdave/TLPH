@@ -26,15 +26,26 @@ def create_notification(type, content, post_date, end_date, created_by, scope, t
     ref = db.collection("notifications").add(doc)
     return ref
 
-def _serialize_notification(doc):
-    def to_iso(val):
-        if hasattr(val, 'isoformat'):
-            return val.isoformat()
+
+from google.cloud.firestore import DocumentReference
+
+def _serialize_value(val):
+    if isinstance(val, dict):
+        return {k: _serialize_value(v) for k, v in val.items()}
+    elif isinstance(val, list):
+        return [_serialize_value(v) for v in val]
+    elif isinstance(val, datetime):
+        return val.isoformat()
+    elif hasattr(val, 'isoformat'):
+        return val.isoformat()
+    elif isinstance(val, DocumentReference):
+        return str(val)
+    else:
         return val
+
+def _serialize_notification(doc):
     d = doc.to_dict()
-    for k in ["post_date", "end_date", "created_at"]:
-        if k in d:
-            d[k] = to_iso(d[k])
+    d = _serialize_value(d)
     d["id"] = doc.id
     return d
 
