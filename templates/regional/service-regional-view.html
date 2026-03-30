@@ -504,9 +504,15 @@
                     }
                 },
 
+                toProxyUrl(url) {
+                    const raw = String(url || '').trim();
+                    if (!raw) return '';
+                    return `/api/files/proxy?url=${encodeURIComponent(raw)}`;
+                },
+
                 openFilePreview(file) {
                     if (!file?.url) return;
-                    this.filePreviewUrl = file.url;
+                    this.filePreviewUrl = this.toProxyUrl(file.url);
                     this.filePreviewName = file.name || 'Attachment';
                     if (this.isImageFile(file.url)) this.filePreviewType = 'image';
                     else if (this.isPdfFile(file.url)) this.filePreviewType = 'pdf';
