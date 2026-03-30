@@ -1834,6 +1834,44 @@ def upload_service_files():
             'message': f'Failed to upload service files: {str(e)}'
         }), 500
 
+
+@bp.route('/upload-backend-health', methods=['GET'])
+def upload_backend_health():
+    """Quick diagnostic endpoint for hosted upload backends (no secret values exposed)."""
+    try:
+        cloud_name = bool((os.environ.get('CLOUDINARY_CLOUD_NAME') or '').strip())
+        api_key = bool((os.environ.get('CLOUDINARY_API_KEY') or '').strip())
+        api_secret = bool((os.environ.get('CLOUDINARY_API_SECRET') or '').strip())
+
+        firebase_bucket_ok = False
+        firebase_bucket_name = ''
+        firebase_bucket_error = ''
+        try:
+            from firebase_config import get_storage_bucket
+            bucket = get_storage_bucket()
+            firebase_bucket_ok = bool(bucket)
+            firebase_bucket_name = getattr(bucket, 'name', '') if bucket else ''
+        except Exception as fb_err:
+            firebase_bucket_error = str(fb_err)
+
+        return jsonify({
+            'success': True,
+            'cloudinary': {
+                'configured': cloud_name and api_key and api_secret,
+                'cloud_name_set': cloud_name,
+                'api_key_set': api_key,
+                'api_secret_set': api_secret,
+            },
+            'firebase_storage': {
+                'configured': firebase_bucket_ok,
+                'bucket_name': firebase_bucket_name,
+                'error': firebase_bucket_error,
+            },
+            'local_fallback_enabled': str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @bp.route('/get-applications/<user_id>', methods=['GET'])
 @firebase_auth_required
 def get_user_applications(user_id):

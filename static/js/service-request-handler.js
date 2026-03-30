@@ -23,6 +23,7 @@ async function uploadServiceFiles(form, userId) {
 
   const res = await fetch('/api/upload-service-files', {
     method: 'POST',
+    headers: { 'Accept': 'application/json' },
     body: formData,
     credentials: 'include'
   });
@@ -40,7 +41,16 @@ async function uploadServiceFiles(form, userId) {
       throw new Error(payload.message);
     }
     if (/<!doctype html|<html/i.test(raw || '')) {
-      throw new Error('Session expired or unauthorized in hosted environment. Please login again and retry.');
+      if (res.status === 401 || res.status === 403) {
+        throw new Error('Session expired or unauthorized in hosted environment. Please login again and retry.');
+      }
+      if (res.status === 404) {
+        throw new Error('Upload endpoint not found on hosted build (HTTP 404). Redeploy latest backend code.');
+      }
+      if (res.status === 413) {
+        throw new Error('Uploaded file is too large for hosted server (HTTP 413). Try smaller files/photos.');
+      }
+      throw new Error(`Hosted server returned HTML error page (HTTP ${res.status}) while uploading files.`);
     }
     throw new Error(`Failed to upload service files (HTTP ${res.status}).`);
   }
