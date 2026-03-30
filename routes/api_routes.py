@@ -3551,8 +3551,8 @@ def api_get_inquiry_conversations():
 
         # Enrich conversation display data from users profile when missing.
         for convo in convos:
-            convo_key = (convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
-            convo_email = (convo.get('email') or convo.get('user_email') or '').strip().lower()
+            convo_key = str(convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
+            convo_email = str(convo.get('email') or convo.get('user_email') or '').strip().lower()
             if convo.get('user_photo') and convo.get('user_name'):
                 continue
 
