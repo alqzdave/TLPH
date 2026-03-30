@@ -389,24 +389,33 @@
                   </td>
                   <td class="px-3 py-1.5 text-center no-print">
                     <div class="flex justify-center gap-1 flex-nowrap">
-                      <button type="button" class="btn-action btn-approve" onclick="openActionModal('approve', this)" title="Approve">
-                        <span class="material-icons-round text-[12px]">check_circle</span>
-                      </button>
-                      <button type="button" class="btn-action btn-reject" onclick="openActionModal('reject', this)" title="Reject">
-                        <span class="material-icons-round text-[12px]">block</span>
-                      </button>
-                      <button type="button" class="btn-action btn-forward" onclick="openAllocateModal('{{ q.id }}')" title="Forward">
-                        <span class="material-icons-round text-[12px]">send</span>
-                      </button>
-                      <button type="button" class="btn-action btn-edit" onclick="openEditDrawer('{{ q.id }}')" title="Edit">
-                        <span class="material-icons-round text-[12px]">edit</span>
-                      </button>
-                      <button type="button" class="btn-action btn-draft" onclick="openDraftPreview(this)" title="Draft">
-                        <span class="material-icons-round text-[12px]">description</span>
-                      </button>
-                      <button type="button" class="btn-action btn-status" onclick="openStatusModal('{{ q.id }}')" title="Change Status">
-                        <span class="material-icons-round text-[12px]">sync_alt</span>
-                      </button>
+                      {% if status not in ['APPROVED', 'REJECTED', 'FORWARDED'] %}
+                        <button type="button" class="btn-action btn-approve" onclick="openActionModal('approve', this)" title="Approve">
+                          <span class="material-icons-round text-[12px]">check_circle</span>
+                        </button>
+                        <button type="button" class="btn-action btn-reject" onclick="openActionModal('reject', this)" title="Reject">
+                          <span class="material-icons-round text-[12px]">block</span>
+                        </button>
+                        <button type="button" class="btn-action btn-forward" onclick="openAllocateModal('{{ q.id }}')" title="Forward">
+                          <span class="material-icons-round text-[12px]">send</span>
+                        </button>
+                        <button type="button" class="btn-action btn-edit" onclick="openEditDrawer('{{ q.id }}')" title="Edit">
+                          <span class="material-icons-round text-[12px]">edit</span>
+                        </button>
+                        <button type="button" class="btn-action btn-draft" onclick="openDraftPreview(this)" title="Draft">
+                          <span class="material-icons-round text-[12px]">description</span>
+                        </button>
+                        <button type="button" class="btn-action btn-status" onclick="openStatusModal('{{ q.id }}')" title="Change Status">
+                          <span class="material-icons-round text-[12px]">sync_alt</span>
+                        </button>
+                      {% else %}
+                        <button type="button" class="btn-action btn-edit" onclick="openEditDrawer('{{ q.id }}')" title="Edit">
+                          <span class="material-icons-round text-[12px]">edit</span>
+                        </button>
+                        <button type="button" class="btn-action btn-draft" onclick="openDraftPreview(this)" title="Draft">
+                          <span class="material-icons-round text-[12px]">description</span>
+                        </button>
+                      {% endif %}
                     </div>
                   </td>
                 </tr>
