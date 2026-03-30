@@ -362,35 +362,35 @@
                 if(list) list.scrollTop = list.scrollHeight;
             }
 
-            // --- Inquiry Messenger: Frontend Logic / Mock Data ---
-            let inquiryMessages = [
-                { me: false, text: "Hello! How can we help you today?", time: "10:00 AM" }
-            ];
 
-            function renderInquiryMessages() {
+            // --- Inquiry Messenger: Backend Integration ---
+            let userId = window.currentUserId || (window.user && window.user.id) || '';
+            let userName = window.currentUserName || (window.user && window.user.name) || '';
+            let userPhoto = window.currentUserPhoto || (window.user && window.user.photo) || '';
+
+            function fetchInquiryMessages() {
+                fetch(`/api/inquiries/messages/${userId}`, { credentials: 'same-origin' })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) renderInquiryMessages(res.messages);
+                    });
+            }
+
+            function renderInquiryMessages(messages) {
                 const list = document.getElementById('userMessageList');
-                list.innerHTML = inquiryMessages.map(m => {
-                    let msgContent = formatInquiryText(m.text || '');
-                    
-                    if (m.img) {
-                        msgContent += `<img src="${m.img}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.img}')">`;
-                    }
-                    
-                    let extraClass = m.img && !(m.text || '').trim() ? ' image-only' : '';
-                    let avatar = m.me ? '' : `<div class="inquiry-msg-avatar"><i class="fa-solid fa-robot"></i></div>`;
-                    
-                    return `
-                        <div class="inquiry-msg-row${m.me ? ' me' : ''}">
-                            ${avatar}
-                            <div class="inquiry-msg${m.me ? ' me' : ''}${extraClass}">
-                                ${msgContent}
-                                <span class="msg-time">${m.time}</span>
-                            </div>
-                        </div>
-                    `;
+                list.innerHTML = (messages||[]).map(m => {
+                    let isMe = m.user_id === userId;
+                    let msgContent = formatInquiryText(m.message||'');
+                    if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
+                    let extraClass = m.file_url && !(m.message||'').trim() ? ' image-only' : '';
+                    let time = m.timestamp ? new Date(m.timestamp.seconds ? m.timestamp.seconds*1000 : m.timestamp).toLocaleString() : '';
+                    let avatar = m.user_photo ? `<img src="${m.user_photo}" class="inquiry-msg-avatar" alt="avatar">` : `<div class="inquiry-msg-avatar"></div>`;
+                    return `<div class="inquiry-msg-row${isMe?' me':''}">`
+                        + avatar +
+                        `<div class="inquiry-msg${isMe?' me':''}${extraClass}">${msgContent}<span class="msg-time">${time}</span></div>` +
+                    `</div>`;
                 }).join('');
-                
-                setTimeout(() => { list.scrollTop = list.scrollHeight; }, 50);
+                setTimeout(()=>{ list.scrollTop = list.scrollHeight; }, 50);
             }
 
             function sendUserMessage(e) {
@@ -398,31 +398,39 @@
                 const input = document.getElementById('userMessageInput');
                 const msg = input.value.trim();
                 if (!msg) return;
-                
-                inquiryMessages.push({
-                    me: true, 
-                    text: msg, 
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('user_name', userName);
+                formData.append('user_photo', userPhoto);
+                formData.append('message', msg);
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) {
+                        input.value = '';
+                        fetchInquiryMessages();
+                    }
                 });
-                input.value = '';
-                renderInquiryMessages();
             }
 
             function sendUserPhoto(e) {
                 const file = e.target.files[0];
                 if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    inquiryMessages.push({
-                        me: true, 
-                        img: ev.target.result, 
-                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
-                    });
-                    renderInquiryMessages();
-                };
-                reader.readAsDataURL(file);
-                e.target.value = '';
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('user_name', userName);
+                formData.append('user_photo', userPhoto);
+                formData.append('message', '');
+                formData.append('file', file);
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) fetchInquiryMessages();
+                });
             }
 
             function formatInquiryText(text) {
@@ -463,8 +471,8 @@
                 setTimeout(() => { document.getElementById('inquiryLightboxImg').src = ""; }, 300);
             }
 
-            // Initial render
-            document.addEventListener('DOMContentLoaded', renderInquiryMessages);
+            // Initial fetch
+            document.addEventListener('DOMContentLoaded', fetchInquiryMessages);
 
 
             // --- Notification Logic ---
