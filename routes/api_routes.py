@@ -402,21 +402,23 @@ def proxy_file():
                             parts = parts[1:]
 
                         if parts:
+                            original_parts = list(parts)
                             last = parts[-1]
+                            basename = None
+                            file_format = None
                             if '.' in last:
                                 basename, ext = last.rsplit('.', 1)
-                                parts[-1] = basename
                                 file_format = ext.lower()
-                            else:
-                                file_format = None
 
-                            public_id = '/'.join(parts)
+                            # Try both public_id variants because raw assets may keep extension in public_id
+                            public_id_candidates = []
+                            if basename:
+                                parts_no_ext = list(original_parts)
+                                parts_no_ext[-1] = basename
+                                public_id_candidates.append('/'.join(parts_no_ext))
+                            public_id_candidates.append('/'.join(original_parts))
+
                             timestamp = int(time.time())
-
-                            base_sign_payload = {
-                                'public_id': public_id,
-                                'timestamp': timestamp,
-                            }
 
                             # PDFs/docs are often stored as raw; images as image.
                             # Try both resource types and both with/without format.
@@ -428,50 +430,72 @@ def proxy_file():
                             for resource_type in resource_types:
                                 private_download_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/download"
 
-                                # First try with format if present
-                                params_with_format = {
-                                    'public_id': public_id,
-                                    'timestamp': timestamp,
-                                    'api_key': api_key,
-                                }
-                                if file_format:
-                                    params_with_format['format'] = file_format
-                                    sign_payload_with_format = dict(base_sign_payload)
-                                    sign_payload_with_format['format'] = file_format
-                                    params_with_format['signature'] = _cloudinary_signature(sign_payload_with_format, api_secret)
-                                else:
-                                    params_with_format['signature'] = _cloudinary_signature(base_sign_payload, api_secret)
+                                for public_id in public_id_candidates:
+                                    # Some accounts/resources require delivery type in signature.
+                                    for include_type in (True, False):
+                                        base_sign_payload = {
+                                            'public_id': public_id,
+                                            'timestamp': timestamp,
+                                        }
 
-                                fallback_response = requests.get(
-                                    private_download_url,
-                                    params=params_with_format,
-                                    timeout=30,
-                                    stream=False,
-                                    headers=headers,
-                                    allow_redirects=True,
-                                )
-                                print(f"📥 [FILE_PROXY] Private download ({resource_type}, with format) status: {fallback_response.status_code}")
-                                if fallback_response.status_code == 200:
-                                    break
+                                        if include_type:
+                                            base_sign_payload['type'] = 'upload'
 
-                                # Retry without format (some assets fail if forced)
-                                params_without_format = {
-                                    'public_id': public_id,
-                                    'timestamp': timestamp,
-                                    'api_key': api_key,
-                                    'signature': _cloudinary_signature(base_sign_payload, api_secret),
-                                }
+                                        # First try with format when useful
+                                        if file_format:
+                                            params_with_format = {
+                                                'public_id': public_id,
+                                                'timestamp': timestamp,
+                                                'api_key': api_key,
+                                                'format': file_format,
+                                            }
+                                            sign_payload_with_format = dict(base_sign_payload)
+                                            sign_payload_with_format['format'] = file_format
 
-                                fallback_response = requests.get(
-                                    private_download_url,
-                                    params=params_without_format,
-                                    timeout=30,
-                                    stream=False,
-                                    headers=headers,
-                                    allow_redirects=True,
-                                )
-                                print(f"📥 [FILE_PROXY] Private download ({resource_type}, no format) status: {fallback_response.status_code}")
-                                if fallback_response.status_code == 200:
+                                            if include_type:
+                                                params_with_format['type'] = 'upload'
+
+                                            params_with_format['signature'] = _cloudinary_signature(sign_payload_with_format, api_secret)
+
+                                            fallback_response = requests.get(
+                                                private_download_url,
+                                                params=params_with_format,
+                                                timeout=30,
+                                                stream=False,
+                                                headers=headers,
+                                                allow_redirects=True,
+                                            )
+                                            print(f"📥 [FILE_PROXY] Private download ({resource_type}, with format, type={include_type}, pid={public_id}) status: {fallback_response.status_code}")
+                                            if fallback_response.status_code == 200:
+                                                break
+
+                                        # Retry without format (some assets fail if forced)
+                                        params_without_format = {
+                                            'public_id': public_id,
+                                            'timestamp': timestamp,
+                                            'api_key': api_key,
+                                            'signature': _cloudinary_signature(base_sign_payload, api_secret),
+                                        }
+
+                                        if include_type:
+                                            params_without_format['type'] = 'upload'
+
+                                        fallback_response = requests.get(
+                                            private_download_url,
+                                            params=params_without_format,
+                                            timeout=30,
+                                            stream=False,
+                                            headers=headers,
+                                            allow_redirects=True,
+                                        )
+                                        print(f"📥 [FILE_PROXY] Private download ({resource_type}, no format, type={include_type}, pid={public_id}) status: {fallback_response.status_code}")
+                                        if fallback_response.status_code == 200:
+                                            break
+
+                                    if fallback_response is not None and fallback_response.status_code == 200:
+                                        break
+
+                                if fallback_response is not None and fallback_response.status_code == 200:
                                     break
 
                             if fallback_response is not None:
@@ -724,15 +748,18 @@ def proxy_file():
                                 parts = parts[1:]
 
                             if parts:
+                                original_parts = list(parts)
                                 last = parts[-1]
+                                fmt = None
+                                public_id_candidates = []
                                 if '.' in last:
                                     base, ext = last.rsplit('.', 1)
-                                    parts[-1] = base
                                     fmt = ext.lower()
-                                else:
-                                    fmt = None
+                                    parts_no_ext = list(original_parts)
+                                    parts_no_ext[-1] = base
+                                    public_id_candidates.append('/'.join(parts_no_ext))
+                                public_id_candidates.append('/'.join(original_parts))
 
-                                public_id = '/'.join(parts)
                                 resource_types = ['image', 'raw']
                                 delivery_types = ['upload', 'private', 'authenticated']
 
@@ -740,28 +767,32 @@ def proxy_file():
                                 for resource_type in resource_types:
                                     if signed_ok:
                                         break
-                                    for delivery_type in delivery_types:
-                                        url_opts = {
-                                            'resource_type': resource_type,
-                                            'type': delivery_type,
-                                            'secure': True,
-                                            'sign_url': True,
-                                        }
-                                        if fmt:
-                                            url_opts['format'] = fmt
+                                    for public_id in public_id_candidates:
+                                        for delivery_type in delivery_types:
+                                            url_opts = {
+                                                'resource_type': resource_type,
+                                                'type': delivery_type,
+                                                'secure': True,
+                                                'sign_url': True,
+                                            }
+                                            # For raw assets, format can break if public_id already includes extension
+                                            if fmt and resource_type != 'raw':
+                                                url_opts['format'] = fmt
 
-                                        signed_url, _ = cloudinary.utils.cloudinary_url(public_id, **url_opts)
-                                        signed_resp = requests.get(
-                                            signed_url,
-                                            timeout=30,
-                                            stream=False,
-                                            headers=headers,
-                                            allow_redirects=True,
-                                        )
-                                        print(f"📥 [FILE_PROXY] Signed URL ({resource_type}/{delivery_type}) status: {signed_resp.status_code}")
-                                        if signed_resp.status_code == 200:
-                                            response = signed_resp
-                                            signed_ok = True
+                                            signed_url, _ = cloudinary.utils.cloudinary_url(public_id, **url_opts)
+                                            signed_resp = requests.get(
+                                                signed_url,
+                                                timeout=30,
+                                                stream=False,
+                                                headers=headers,
+                                                allow_redirects=True,
+                                            )
+                                            print(f"📥 [FILE_PROXY] Signed URL ({resource_type}/{delivery_type}, pid={public_id}) status: {signed_resp.status_code}")
+                                            if signed_resp.status_code == 200:
+                                                response = signed_resp
+                                                signed_ok = True
+                                                break
+                                        if signed_ok:
                                             break
                 except Exception as signed_err:
                     print(f"⚠️  [FILE_PROXY] Signed URL fallback failed: {signed_err}")
