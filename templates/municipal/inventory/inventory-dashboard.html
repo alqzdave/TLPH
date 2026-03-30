@@ -641,8 +641,19 @@
       if (item.imageUrl) {
         pushDoc('Resource Photo', item.imageUrl);
       }
+      if (item.visitApprovalUrl) {
+        pushDoc('Visit Approval Document', item.visitApprovalUrl);
+      }
+      if (item.scientificStudyUrl) {
+        pushDoc('Scientific Studies of Origin', item.scientificStudyUrl);
+      }
       if (item.permitUrl) {
         pushDoc('Permit File', item.permitUrl);
+      }
+      if (Array.isArray(item.newStockImageUrls) && item.newStockImageUrls.length > 0) {
+        item.newStockImageUrls.forEach((url, idx) => {
+          pushDoc(`New Stock Image ${idx + 1}`, url);
+        });
       }
 
       const source = item.attachments;
