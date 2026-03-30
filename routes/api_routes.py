@@ -3464,7 +3464,10 @@ def api_get_inquiry_conversations():
 @firebase_auth_required
 def api_get_inquiry_messages(user_id):
     try:
-        msgs = get_messages(user_id)
+        convo_key = (user_id or '').strip()
+        if not convo_key:
+            convo_key = (request.args.get('email') or session.get('user_email') or '').strip()
+        msgs = get_messages(convo_key)
         return jsonify({'success': True, 'messages': msgs})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -3473,8 +3476,24 @@ def api_get_inquiry_messages(user_id):
 @firebase_auth_required
 def api_send_inquiry_message():
     try:
-        user_id = request.form.get('user_id')
-        user_name = request.form.get('user_name')
+        user_id = (request.form.get('user_id') or '').strip()
+        user_email = (request.form.get('user_email') or '').strip().lower()
+        if not user_email and '@' in user_id:
+            user_email = user_id.lower()
+
+        if not user_id:
+            user_id = user_email or (session.get('user_email') or '').strip().lower()
+
+        if not user_email and '@' in user_id:
+            user_email = user_id.lower()
+
+        if not user_id:
+            return jsonify({'success': False, 'message': 'User identity is required'}), 400
+
+        user_name = (request.form.get('user_name') or '').strip()
+        if not user_name:
+            user_name = (session.get('user_name') or user_email or 'User').strip()
+
         message = request.form.get('message', '')
         user_photo = request.form.get('user_photo', '')
         file_url = ''
@@ -3483,7 +3502,7 @@ def api_send_inquiry_message():
             file = request.files['file']
             file_url = upload_file_to_cloudinary(file, folder='inquiries')
             file_type = file.mimetype
-        doc = add_message(user_id, user_name, message, user_photo, file_url, file_type)
+        doc = add_message(user_id, user_name, message, user_photo, file_url, file_type, user_email=user_email)
         return jsonify({'success': True, 'message': doc})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

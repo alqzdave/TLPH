@@ -364,17 +364,25 @@
 
 
             // --- Inquiry Messenger: Backend Integration ---
-            let userId = window.currentUserId || (window.user && window.user.id) || '';
+            let userEmail = window.currentUserEmail || (window.user && (window.user.email || window.user.user_email)) || '';
+            if (!userEmail) {
+                try {
+                    userEmail = (localStorage.getItem('denr_user_email') || '').trim();
+                } catch (e) {
+                    userEmail = '';
+                }
+            }
+            let userId = userEmail || window.currentUserId || (window.user && window.user.id) || '';
             let userName = window.currentUserName || (window.user && window.user.name) || '';
             let userPhoto = window.currentUserPhoto || (window.user && window.user.photo) || '';
 
             function fetchInquiryMessages() {
                 if (!userId) {
                     const list = document.getElementById('userMessageList');
-                    if (list) list.innerHTML = `<div style='color:#dc2626;text-align:center;padding:1.5em 0;'>User ID not set. Please log in or reload the page.</div>`;
+                    if (list) list.innerHTML = `<div style='color:#dc2626;text-align:center;padding:1.5em 0;'>User email not set. Please log in or reload the page.</div>`;
                     return;
                 }
-                fetch(`/api/inquiries/messages/${userId}`, { credentials: 'same-origin' })
+                fetch(`/api/inquiries/messages/${encodeURIComponent(userId)}`, { credentials: 'same-origin' })
                     .then(r => r.json())
                     .then(res => {
                         if (res.success) renderInquiryMessages(res.messages);
@@ -384,7 +392,8 @@
             function renderInquiryMessages(messages) {
                 const list = document.getElementById('userMessageList');
                 list.innerHTML = (messages||[]).map(m => {
-                    let isMe = m.user_id === userId;
+                    const msgOwner = m.user_id || m.user_email || m.email || '';
+                    let isMe = msgOwner === userId;
                     let msgContent = formatInquiryText(m.message||'');
                     if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
                     let extraClass = m.file_url && !(m.message||'').trim() ? ' image-only' : '';
@@ -401,7 +410,7 @@
             function sendUserMessage(e) {
                 e.preventDefault();
                 if (!userId) {
-                    alert('User ID not set. Please log in or reload the page.');
+                    alert('User email not set. Please log in or reload the page.');
                     return;
                 }
                 const input = document.getElementById('userMessageInput');
@@ -409,6 +418,7 @@
                 if (!msg) return;
                 const formData = new FormData();
                 formData.append('user_id', userId);
+                formData.append('user_email', userId);
                 formData.append('user_name', userName);
                 formData.append('user_photo', userPhoto);
                 formData.append('message', msg);
@@ -426,13 +436,14 @@
 
             function sendUserPhoto(e) {
                 if (!userId) {
-                    alert('User ID not set. Please log in or reload the page.');
+                    alert('User email not set. Please log in or reload the page.');
                     return;
                 }
                 const file = e.target.files[0];
                 if (!file) return;
                 const formData = new FormData();
                 formData.append('user_id', userId);
+                formData.append('user_email', userId);
                 formData.append('user_name', userName);
                 formData.append('user_photo', userPhoto);
                 formData.append('message', '');
