@@ -139,122 +139,7 @@
     if (emptyCell) emptyCell.parentElement.remove();
   }
 
-  // --- Create Quotation ---
-  function openCreateModal() {
-    const modal = byId('createQuotationModal');
-    if (!modal) return;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    const dateInput = byId('qDate');
-    if (dateInput) {
-      dateInput.value = new Date().toISOString().slice(0, 10);
-    }
-    const statusInput = byId('qStatus');
-    if (statusInput) statusInput.value = 'pending';
-  }
-
-  function closeCreateModal() {
-    const modal = byId('createQuotationModal');
-    if (!modal) return;
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    const form = byId('createQuotationForm');
-    if (form) form.reset();
-  }
-
-  function submitQuotation(e) {
-    e.preventDefault();
-    const number = (byId('qNumber')?.value || '').trim();
-    const date = byId('qDate')?.value || '';
-    const client = (byId('qClient')?.value || '').trim();
-    const municipality = byId('qMunicipality')?.value || '';
-    const amount = toNumber(byId('qAmount')?.value);
-    const deliverFrom = (byId('qDeliverFrom')?.value || '').trim();
-    const deliverTo = (byId('qDeliverTo')?.value || '').trim();
-    const deliverToType = byId('qDeliverToType')?.value || '';
-    const status = normalizeStatus(byId('qStatus')?.value || 'PENDING');
-
-    if (!number || !date || !client || !municipality || !Number.isFinite(amount) || !deliverFrom || !deliverTo) {
-      alert('Please complete all required fields.');
-      return;
-    }
-
-    removeEmptyRow();
-
-    const row = document.createElement('tr');
-    row.className = 'hover:bg-emerald-50 transition quote-row';
-
-    const fiscalYear = date ? `FY ${date.slice(0, 4)}` : 'ALL';
-    const data = {
-      id: `tmp-${Date.now()}`,
-      number,
-      client,
-      municipality,
-      amount,
-      date,
-      status,
-      deliverFrom,
-      deliverTo,
-      deliverToType,
-      buyerType: '',
-      title: '',
-      category: '',
-      supplier: '',
-      product: '',
-      quantity: 0,
-      unitPrice: 0,
-      otherCharges: 0,
-      otherChargesNote: '',
-      fy: fiscalYear
-    };
-
-    writeRowData(row, data);
-
-    const cells = [
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td')
-    ];
-
-    cells[0].className = 'font-black text-slate-900 border-r border-slate-100 uppercase';
-    cells[1].className = 'font-bold text-slate-700 border-r border-slate-100 uppercase';
-    cells[2].className = 'font-bold text-slate-700 border-r border-slate-100 uppercase';
-    cells[3].className = 'font-mono font-bold text-emerald-800 border-r border-slate-100 text-right text-[11px]';
-    cells[4].className = 'font-mono text-slate-500 border-r border-slate-100 text-center';
-    cells[5].className = 'text-center border-r border-slate-100';
-    cells[6].className = 'text-center border-r border-slate-100';
-    cells[7].className = 'text-center border-r border-slate-100';
-    cells[8].className = 'text-center border-r border-slate-100';
-    cells[9].className = 'text-center';
-
-    row.appendChild(cells[0]);
-    row.appendChild(cells[1]);
-    row.appendChild(cells[2]);
-    row.appendChild(cells[3]);
-    row.appendChild(cells[4]);
-    row.appendChild(cells[5]);
-    row.appendChild(cells[6]);
-    row.appendChild(cells[7]);
-    row.appendChild(cells[8]);
-    row.appendChild(cells[9]);
-
-    cells[9].appendChild(buildActionCell());
-
-    writeRowData(row, data);
-
-    const tbody = byId('quoteTable');
-    if (tbody) tbody.appendChild(row);
-
-    closeCreateModal();
-    filterTable();
-  }
+  // Quotation creation logic removed for regional users
 
   // --- View Quotation ---
   function viewQuotation(btn) {
@@ -722,9 +607,7 @@
   }
 
   // Expose functions for inline handlers
-  window.openCreateModal = openCreateModal;
-  window.closeCreateModal = closeCreateModal;
-  window.submitQuotation = submitQuotation;
+  // Creation modal handlers removed for regional users
   window.viewQuotation = viewQuotation;
   window.closeViewModal = closeViewModal;
   window.openReceiveModal = openReceiveModal;

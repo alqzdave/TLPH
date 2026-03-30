@@ -78,11 +78,12 @@
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-1.5 items-center">
+        <!-- Quotation creation disabled for regional users -->
+        <!-- <div class="flex flex-wrap gap-1.5 items-center">
           <button onclick="openCreateModal()" class="gov-btn bg-emerald-800 hover:bg-emerald-900 text-white shadow-sm h-7 flex items-center gap-1">
             <span class="material-icons-round text-[14px]">add</span> New Quotation
           </button>
-        </div>
+        </div> -->
       </header>
 
       <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 shrink-0">
@@ -363,73 +364,7 @@
     </div>
   </main>
 
-  <div id="createQuotationModal" class="gov-modal no-print">
-    <div class="absolute inset-0 cursor-pointer" onclick="closeCreateModal()"></div>
-    <div class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] relative z-10" onclick="event.stopPropagation()">
-      <div class="bg-emerald-900 text-white px-4 py-3 flex justify-between items-center shrink-0 border-b border-emerald-800">
-        <h3 class="text-[11px] font-black uppercase tracking-widest m-0 flex items-center gap-2">
-            <i class="fa-solid fa-file-invoice-dollar text-emerald-400"></i> New Quotation
-        </h3>
-        <button onclick="closeCreateModal()" class="text-slate-300 hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer">
-            <span class="material-icons-round text-sm">close</span>
-        </button>
-      </div>
-      <div class="p-4 bg-slate-50 flex-1 overflow-y-auto custom-scrollbar">
-        <form id="createQuotationForm" onsubmit="submitQuotation(event)" class="space-y-3">
-          <div class="grid grid-cols-2 gap-3">
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Quotation # *</label>
-              <input type="text" id="qNumber" name="qNumber" placeholder="e.g. Q-2026-049" class="gov-input w-full h-8 font-mono uppercase" required />
-            </div>
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Filing Date *</label>
-              <input type="date" id="qDate" name="qDate" class="gov-input w-full h-8 font-mono" required />
-            </div>
-            <div class="col-span-2">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Client / Entity *</label>
-              <input type="text" id="qClient" class="gov-input w-full h-8" required />
-            </div>
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Municipality *</label>
-              <select id="qMunicipality" name="qMunicipality" class="gov-input w-full h-8 cursor-pointer" required>
-                <option value="" disabled selected>Select Municipality</option>
-                {% for m in municipalities %}
-                  <option value="{{ m }}">{{ m }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-emerald-700 mb-1 ml-0.5">Total Amount (₱) *</label>
-              <input type="number" id="qAmount" name="qAmount" placeholder="0.00" step="0.01" min="0" class="gov-input w-full h-8 font-mono text-right text-emerald-800 border-emerald-300" required />
-            </div>
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Deliver From *</label>
-              <input type="text" id="qDeliverFrom" name="qDeliverFrom" class="gov-input w-full h-8" required />
-            </div>
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Deliver To *</label>
-              <input type="text" id="qDeliverTo" name="qDeliverTo" class="gov-input w-full h-8" required />
-            </div>
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Deliver To Type *</label>
-              <select id="qDeliverToType" name="qDeliverToType" class="gov-input w-full h-8 cursor-pointer" required>
-                <option value="municipal">Municipal</option>
-                <option value="regional">Regional</option>
-                <option value="national">National</option>
-              </select>
-            </div>
-            <div class="col-span-2 sm:col-span-1">
-              <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Status *</label>
-              <select id="qStatus" name="qStatus" class="gov-input w-full h-8 cursor-pointer" required>
-                <option value="pending">Pending</option>
-                <option value="received">Received</option>
-              </select>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <!-- Quotation creation modal removed for regional users -->
 
   <div id="viewQuotationModal" class="gov-modal no-print">
     <div class="absolute inset-0 cursor-pointer" onclick="closeViewModal()"></div>
