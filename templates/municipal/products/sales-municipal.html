@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -102,7 +102,7 @@
           <div class="flex justify-between items-start">
             <div>
               <div class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Total Sales</div>
-              <div class="text-xl font-black text-slate-900 leading-none mt-1" id="kpiTotal">86</div>
+              <div class="text-xl font-black text-slate-900 leading-none mt-1" id="kpiTotal">0</div>
             </div>
             <span class="material-icons-round text-slate-300 text-[20px]">receipt_long</span>
           </div>
@@ -115,7 +115,7 @@
           <div class="flex justify-between items-start">
             <div>
               <div class="text-[9px] font-black uppercase text-emerald-800 tracking-widest">Gross Revenue</div>
-              <div class="text-xl font-black text-emerald-700 leading-none mt-1 font-mono">₱2,450,000</div>
+              <div class="text-xl font-black text-emerald-700 leading-none mt-1 font-mono" id="kpiGross">&#8369;0.00</div>
             </div>
             <span class="material-icons-round text-emerald-200 text-[20px]">payments</span>
           </div>
@@ -128,7 +128,7 @@
           <div class="flex justify-between items-start">
             <div>
               <div class="text-[9px] font-black uppercase text-amber-800 tracking-widest">Pending Payment</div>
-              <div class="text-xl font-black text-amber-700 leading-none mt-1">4</div>
+              <div class="text-xl font-black text-amber-700 leading-none mt-1" id="kpiPending">0</div>
             </div>
             <span class="material-icons-round text-amber-200 text-[20px]">hourglass_top</span>
           </div>
@@ -379,6 +379,46 @@
     const searchEl = document.getElementById('searchSale');
     const statusFilterEl = document.getElementById('statusFilter');
     const resetBtn = document.getElementById('resetBtn');
+    const kpiTotalEl = document.getElementById('kpiTotal');
+    const kpiGrossEl = document.getElementById('kpiGross');
+    const kpiPendingEl = document.getElementById('kpiPending');
+
+    function parseCurrency(value) {
+      if (!value) return 0;
+      const cleaned = String(value).replace(/[^\d.\-]/g, '');
+      const num = Number(cleaned);
+      return Number.isFinite(num) ? num : 0;
+    }
+
+    function updateKpis() {
+      const rows = document.querySelectorAll('.sale-row');
+      let totalSales = 0;
+      let pendingCount = 0;
+      let grossRevenue = 0;
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 7) return;
+
+        totalSales++;
+        const amountText = cells[3].innerText.trim();
+        const statusSpan = cells[6].querySelector('span');
+        const statusText = statusSpan ? statusSpan.innerText.trim().toLowerCase() : '';
+
+        if (statusText === 'pending') {
+          pendingCount++;
+        }
+        if (statusText === 'completed') {
+          grossRevenue += parseCurrency(amountText);
+        }
+      });
+
+      if (kpiTotalEl) kpiTotalEl.innerText = totalSales.toLocaleString('en-PH');
+      if (kpiPendingEl) kpiPendingEl.innerText = pendingCount.toLocaleString('en-PH');
+      if (kpiGrossEl) {
+        kpiGrossEl.innerText = `\u20B1${grossRevenue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+    }
 
     function applyFilters() {
       const textFilter = (searchEl.value || '').toLowerCase().trim();
@@ -402,6 +442,7 @@
 
       document.getElementById('visibleCount').innerText = visible;
       document.getElementById('totalCount').innerText = total;
+      updateKpis();
     }
 
     searchEl.addEventListener('input', applyFilters);
@@ -541,7 +582,7 @@
         <td class="px-4 py-3 align-middle border-r border-slate-100 font-black text-slate-900 uppercase">${customer}</td>
         <td class="px-4 py-3 align-middle border-r border-slate-100 font-bold text-slate-700 uppercase">${product}</td>
         <td class="px-4 py-3 align-middle border-r border-slate-100 text-right font-mono font-black text-blue-800">${quantity.toLocaleString('en-PH')}</td>
-        <td class="px-4 py-3 align-middle border-r border-slate-100 text-right font-mono font-black text-emerald-700">₱${totalDisplay}</td>
+        <td class="px-4 py-3 align-middle border-r border-slate-100 text-right font-mono font-black text-emerald-700">\u20B1${totalDisplay}</td>
         <td class="px-4 py-3 align-middle border-r border-slate-100 font-black text-slate-700 uppercase text-center">${defaultMunicipality}</td>
         <td class="px-4 py-3 align-middle text-center border-r border-slate-100 font-mono text-slate-600">${date}</td>
         <td class="px-4 py-3 align-middle text-center border-r border-slate-100">
