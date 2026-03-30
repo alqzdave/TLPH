@@ -374,7 +374,16 @@
             }
             let userId = userEmail || window.currentUserId || (window.user && window.user.id) || '';
             let userName = window.currentUserName || (window.user && window.user.name) || '';
-            let userPhoto = window.currentUserPhoto || (window.user && window.user.photo) || '';
+            let userPhoto = window.currentUserPhoto
+                || (window.user && (window.user.photoURL || window.user.photoUrl || window.user.profilePhoto || window.user.profile_photo || window.user.photo))
+                || '';
+            if (!userPhoto) {
+                try {
+                    userPhoto = (localStorage.getItem('_navPhoto') || '').trim();
+                } catch (e) {
+                    userPhoto = '';
+                }
+            }
 
             async function ensureInquiryIdentity() {
                 if (userId) return true;
@@ -400,6 +409,14 @@
 
                     if (!userName) {
                         userName = userEmail.split('@')[0] || 'User';
+                    }
+
+                    if (!userPhoto) {
+                        try {
+                            userPhoto = (localStorage.getItem('_navPhoto') || '').trim();
+                        } catch (e) {
+                            userPhoto = '';
+                        }
                     }
 
                     return true;
@@ -434,7 +451,8 @@
                     if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
                     let extraClass = m.file_url && !(m.message||'').trim() ? ' image-only' : '';
                     let time = m.timestamp ? new Date(m.timestamp.seconds ? m.timestamp.seconds*1000 : m.timestamp).toLocaleString() : '';
-                    let avatar = m.user_photo ? `<img src="${m.user_photo}" class="inquiry-msg-avatar" alt="avatar">` : `<div class="inquiry-msg-avatar"></div>`;
+                    const bubblePhoto = m.user_photo || (isMe ? userPhoto : '');
+                    let avatar = bubblePhoto ? `<img src="${bubblePhoto}" class="inquiry-msg-avatar" alt="avatar">` : `<div class="inquiry-msg-avatar"></div>`;
                     return `<div class="inquiry-msg-row${isMe?' me':''}">`
                         + avatar +
                         `<div class="inquiry-msg${isMe?' me':''}${extraClass}">${msgContent}<span class="msg-time">${time}</span></div>` +
