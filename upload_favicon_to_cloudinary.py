@@ -1,25 +1,60 @@
+import os
 import cloudinary
 import cloudinary.uploader
-import os
+from dotenv import load_dotenv
 
-# Ensure your Cloudinary credentials are set in your environment variables:
-# CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 
-cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.getenv("CLOUDINARY_API_KEY"),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET")
-)
+def main():
+    # Load credentials from .env (if present) + system env
+    load_dotenv()
 
-# Path to your favicon file
-file_path = "static/340-3402747_denr-department-of-environment-and-natural.ico"
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    api_key = os.getenv("CLOUDINARY_API_KEY")
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
 
-# Upload to Cloudinary as a raw file (for .ico)
-result = cloudinary.uploader.upload(
-    file_path,
-    resource_type="raw",  # Use 'raw' for .ico files
-    public_id="denr-favicon",  # You can change this name
-    overwrite=True
-)
+    if not cloud_name or not api_key or not api_secret:
+        print("❌ Missing Cloudinary credentials.")
+        print("Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env or system env.")
+        return
 
-print("Cloudinary URL:", result["secure_url"])
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret,
+    )
+
+    png_path = "static/340-3402747_denr-department-of-environment-and-natural.png"
+    ico_path = "static/340-3402747_denr-department-of-environment-and-natural.ico"
+
+    if not os.path.exists(png_path):
+        print(f"❌ PNG not found: {png_path}")
+        return
+    if not os.path.exists(ico_path):
+        print(f"❌ ICO not found: {ico_path}")
+        return
+
+    # PNG for logo/preview use
+    png_result = cloudinary.uploader.upload(
+        png_path,
+        resource_type="image",
+        folder="tlph/branding",
+        public_id="denr-tab-logo",
+        overwrite=True,
+    )
+
+    # ICO for browser tab favicon use
+    ico_result = cloudinary.uploader.upload(
+        ico_path,
+        resource_type="raw",
+        folder="tlph/branding",
+        public_id="denr-favicon",
+        overwrite=True,
+    )
+
+    print("✅ Upload complete")
+    print("PNG URL:", png_result.get("secure_url"))
+    print("ICO URL:", ico_result.get("secure_url"))
+
+
+if __name__ == "__main__":
+    main()
