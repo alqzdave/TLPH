@@ -560,33 +560,44 @@
 
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Create Modal Triggers
-      document.getElementById('createQuoteBtn').addEventListener('click', () => {
-        const modal = document.getElementById('quoteModal');
-        document.getElementById('quoteForm').reset();
-        const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
-        const randomStr = Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('quoteNumberInput').value = `MQ-${dateStr}-${randomStr}`;
-        const muni = document.getElementById('quoteOriginMuni');
-        if(muni) document.getElementById('quoteClientInput').value = 'LGU ' + muni.value.trim();
-        openWorkflowModal(modal);
-      });
-      document.getElementById('quoteCancelBtn').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
-      document.getElementById('quoteCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
-      document.getElementById('quoteForm').addEventListener('submit', handleQuoteSubmit);
+      // Create Modal Triggers (guarded for municipal view)
+      const createQuoteBtn = document.getElementById('createQuoteBtn');
+      const quoteForm = document.getElementById('quoteForm');
+      if (createQuoteBtn && quoteForm) {
+        createQuoteBtn.addEventListener('click', () => {
+          const modal = document.getElementById('quoteModal');
+          quoteForm.reset();
+          const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
+          const randomStr = Math.floor(1000 + Math.random() * 9000);
+          document.getElementById('quoteNumberInput').value = `MQ-${dateStr}-${randomStr}`;
+          const muni = document.getElementById('quoteOriginMuni');
+          if(muni) document.getElementById('quoteClientInput').value = 'LGU ' + muni.value.trim();
+          openWorkflowModal(modal);
+        });
+        const quoteCancelBtn = document.getElementById('quoteCancelBtn');
+        if (quoteCancelBtn) quoteCancelBtn.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
+        const quoteCloseIcon = document.getElementById('quoteCloseIcon');
+        if (quoteCloseIcon) quoteCloseIcon.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
+        quoteForm.addEventListener('submit', handleQuoteSubmit);
+      }
 
       // Edit Modal Triggers
 
       // Forward Modal Triggers
 
       // Receive Modal Triggers
-      document.getElementById('workflowReceiveForm').addEventListener('submit', handleReceiveSubmit);
-      document.getElementById('workflowReceiveCancel').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
-      document.getElementById('workflowReceiveCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
+      const workflowReceiveForm = document.getElementById('workflowReceiveForm');
+      if (workflowReceiveForm) workflowReceiveForm.addEventListener('submit', handleReceiveSubmit);
+      const workflowReceiveCancel = document.getElementById('workflowReceiveCancel');
+      if (workflowReceiveCancel) workflowReceiveCancel.addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
+      const workflowReceiveCloseIcon = document.getElementById('workflowReceiveCloseIcon');
+      if (workflowReceiveCloseIcon) workflowReceiveCloseIcon.addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
 
       // View Modal Triggers
-      document.getElementById('quoteViewCloseBtn').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
-      document.getElementById('quoteViewCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
+      const quoteViewCloseBtn = document.getElementById('quoteViewCloseBtn');
+      if (quoteViewCloseBtn) quoteViewCloseBtn.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
+      const quoteViewCloseIcon = document.getElementById('quoteViewCloseIcon');
+      if (quoteViewCloseIcon) quoteViewCloseIcon.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
 
       // Table Actions Delegation
       document.querySelector('#quoteTable tbody').addEventListener('click', event => {
