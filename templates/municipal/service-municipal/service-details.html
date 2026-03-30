@@ -157,14 +157,16 @@
                                 </div>
                             </div>
 
-                            <hr class="my-4 opacity-10">
+                            <div id="additionalInfoSection" style="display:none;">
+                                <hr class="my-4 opacity-10">
 
-                            <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-emerald-800"><i class="fa-solid fa-file-shield me-2"></i> Additional Information</h3>
-                            
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <p class="info-label">Request Details</p>
-                                    <p class="info-value text-xs normal-case" id="requestDetails">—</p>
+                                <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-emerald-800"><i class="fa-solid fa-file-shield me-2"></i> Additional Information</h3>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p class="info-label">Request Details</p>
+                                        <p class="info-value text-xs normal-case" id="requestDetails">—</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -389,9 +391,16 @@
                     document.getElementById('dateFiled').textContent = 'N/A';
                 }
                 
-                // Request details (narrative for typhoon, fallback chain)
-                const details = serviceData.narrative || serviceData.details || serviceData.notes || serviceData.comments || 'No additional details provided';
-                document.getElementById('requestDetails').textContent = details;
+                // Request details (show section only when real content exists)
+                const additionalInfoSection = document.getElementById('additionalInfoSection');
+                const detailsRaw = serviceData.narrative || serviceData.details || serviceData.notes || serviceData.comments || '';
+                const details = String(detailsRaw || '').trim();
+                if (details) {
+                    additionalInfoSection.style.display = '';
+                    document.getElementById('requestDetails').textContent = details;
+                } else {
+                    additionalInfoSection.style.display = 'none';
+                }
 
                 // Show form-specific fields for typhoon / pest
                 const svcType = (serviceData.serviceType || '').toLowerCase();
