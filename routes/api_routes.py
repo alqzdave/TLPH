@@ -3469,7 +3469,6 @@ def api_update_notification(notification_id):
 
 
 from inquiries_storage import get_conversations, get_messages, add_message
-from cloudinary_utils import upload_file_to_cloudinary
 # === INQUIRIES (MESSENGER) API ===
 @bp.route('/inquiries/conversations', methods=['GET'])
 @firebase_auth_required
@@ -3514,15 +3513,30 @@ def api_send_inquiry_message():
         if not user_name:
             user_name = (session.get('user_name') or user_email or 'User').strip()
 
+        sender_email = (session.get('user_email') or '').strip().lower() or user_email
+        sender_role = (session.get('user_role') or '').strip().lower()
+        is_admin_sender = sender_role in {'superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'}
+
         message = request.form.get('message', '')
         user_photo = request.form.get('user_photo', '')
         file_url = ''
         file_type = ''
         if 'file' in request.files:
             file = request.files['file']
-            file_url = upload_file_to_cloudinary(file, folder='inquiries')
+            file_url = _upload_to_cloudinary(file, folder='tlph/inquiries')
             file_type = file.mimetype
-        doc = add_message(user_id, user_name, message, user_photo, file_url, file_type, user_email=user_email)
+        doc = add_message(
+            user_id,
+            user_name,
+            message,
+            user_photo,
+            file_url,
+            file_type,
+            user_email=user_email,
+            sender_email=sender_email,
+            sender_role=sender_role,
+            is_admin=is_admin_sender,
+        )
         return jsonify({'success': True, 'message': doc})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

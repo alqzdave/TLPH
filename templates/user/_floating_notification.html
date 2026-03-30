@@ -427,8 +427,9 @@
             function renderInquiryMessages(messages) {
                 const list = document.getElementById('userMessageList');
                 list.innerHTML = (messages||[]).map(m => {
+                    const senderEmail = (m.sender_email || '').toLowerCase();
                     const msgOwner = m.user_id || m.email || m.user_email || '';
-                    let isMe = msgOwner === userId;
+                    let isMe = senderEmail ? senderEmail === String(userId).toLowerCase() : (msgOwner === userId && !m.is_admin);
                     let msgContent = formatInquiryText(m.message||'');
                     if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
                     let extraClass = m.file_url && !(m.message||'').trim() ? ' image-only' : '';

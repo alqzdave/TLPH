@@ -47,16 +47,44 @@ def get_messages(user_id):
 
     key = str(user_id).strip()
 
-    # Preserve existing behavior first.
-    docs = list(get_inquiries_collection().where('user_id', '==', key).order_by('timestamp').stream())
+    # Avoid Firestore composite index dependency by querying first, then sorting in Python.
+    docs = list(get_inquiries_collection().where('user_id', '==', key).stream())
     if not docs:
-        docs = list(get_inquiries_collection().where('email', '==', key.lower()).order_by('timestamp').stream())
+        docs = list(get_inquiries_collection().where('email', '==', key.lower()).stream())
     if not docs:
-        docs = list(get_inquiries_collection().where('user_email', '==', key.lower()).order_by('timestamp').stream())
+        docs = list(get_inquiries_collection().where('user_email', '==', key.lower()).stream())
 
-    return [doc.to_dict() for doc in docs]
+    messages = [doc.to_dict() for doc in docs]
 
-def add_message(user_id, user_name, message, user_photo=None, file_url=None, file_type=None, user_email=None):
+    def _ts_value(msg):
+        ts = msg.get('timestamp')
+        if hasattr(ts, 'timestamp'):
+            try:
+                return ts.timestamp()
+            except Exception:
+                return 0
+        if isinstance(ts, str):
+            try:
+                return datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp()
+            except Exception:
+                return 0
+        return 0
+
+    messages.sort(key=_ts_value)
+    return messages
+
+def add_message(
+    user_id,
+    user_name,
+    message,
+    user_photo=None,
+    file_url=None,
+    file_type=None,
+    user_email=None,
+    sender_email=None,
+    sender_role=None,
+    is_admin=False,
+):
     user_id = str(user_id or '').strip()
     user_email = str(user_email or '').strip().lower()
     if not user_email and '@' in user_id:
@@ -67,6 +95,9 @@ def add_message(user_id, user_name, message, user_photo=None, file_url=None, fil
         'email': user_email,
         'user_email': user_email,
         'user_name': user_name,
+        'sender_email': (sender_email or user_email or '').strip().lower(),
+        'sender_role': (sender_role or '').strip(),
+        'is_admin': bool(is_admin),
         'message': message,
         'timestamp': datetime.utcnow(),
         'user_photo': user_photo or '',
