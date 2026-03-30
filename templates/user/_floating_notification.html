@@ -506,6 +506,7 @@
                         `<div class="inquiry-msg${isMe?' me':''}${extraClass}">${msgContent}<span class="msg-time">${time}</span></div>` +
                     `</div>`;
                 }).join('');
+                list.innerHTML = defaultMessage + messagesHtml;
                 setTimeout(()=>{ list.scrollTop = list.scrollHeight; }, 50);
             }
 

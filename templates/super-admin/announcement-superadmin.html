@@ -1039,8 +1039,18 @@
 
         function renderMessengerMessages(messages) {
             const body = document.getElementById('messengerChatBody');
+            
+            const defaultMessage = `<div class="messenger-msg-row">
+                <span class="messenger-msg-avatar" style="background: linear-gradient(135deg, #10b981, #059669); display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-headset" style="font-size:0.9rem;"></i></span>
+                <div class="messenger-msg" style="background: #f0fdf4; border-left: 3px solid #10b981; margin-left:8px;">
+                    <div class="msg-sender" style="color:#10b981; font-weight:700;">Support Team</div>
+                    <div style="margin-top:6px; font-size:0.9rem; color:#374151;">Hello! 👋 Welcome to our support chat. How can we help you today? We're here to answer any questions about your application or services.</div>
+                    <span class="msg-time">${new Date().toLocaleString()}</span>
+                </div>
+            </div>`;
+
             if (!messages || messages.length === 0) {
-                body.innerHTML = `<div style='margin:auto; color:#94a3b8; font-size:1rem; text-align:center;'><i class='fa-regular fa-comments' style='font-size:3rem; margin-bottom:10px; color:#cbd5e1;'></i><br>No messages yet</div>`;
+                body.innerHTML = defaultMessage;
                 return;
             }
 
@@ -1061,7 +1071,7 @@
                 }
             }
 
-            body.innerHTML = messages.map(m => {
+            const messagesHtml = messages.map(m => {
                 const sender = m.user_name || '';
                 const senderAvatar = m.user_photo
                     ? `<img src='${m.user_photo}' class='messenger-msg-avatar' alt='avatar'>`
@@ -1105,6 +1115,7 @@
                     + `</div>`;
             }).join('');
 
+            body.innerHTML = defaultMessage + messagesHtml;
             setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
         }
 
