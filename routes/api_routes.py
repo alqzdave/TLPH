@@ -1753,7 +1753,6 @@ def submit_application():
 
 
 @bp.route('/upload-service-files', methods=['POST'])
-@firebase_auth_required
 def upload_service_files():
     """Upload service request files and return web URLs grouped by field id/name."""
     try:
