@@ -335,6 +335,10 @@
             const nationalStatus = normalizeStatus(item.nationalStatus);
             const regionalStatus = normalizeStatus(item.regionalStatus);
             const baseStatus = normalizeStatus(item.status || 'pending');
+            const approvedByLevelRaw = String(item.approvedByLevel || '').trim();
+            const rejectedByLevelRaw = String(item.rejectedByLevel || '').trim();
+            const approvedByLevelLower = approvedByLevelRaw.toLowerCase();
+            const rejectedByLevelLower = rejectedByLevelRaw.toLowerCase();
             const approvedByLevel = String(item.approvedByLevel || '').trim().toUpperCase();
             const rejectedByLevel = String(item.rejectedByLevel || '').trim().toUpperCase();
             const forwardedToLevel = String(item.forwardedToLevel || '').trim().toUpperCase();
@@ -348,21 +352,34 @@
                     badge: 'bg-violet-50 text-violet-700 border-violet-200'
                 };
             }
-            if (regionalStatus === 'approved' || baseStatus === 'approved') {
+
+            const municipalApprovedAwaitingRegional = (
+                baseStatus === 'approved' &&
+                approvedByLevelLower === 'municipal' &&
+                regionalStatus !== 'approved' &&
+                regionalStatus !== 'rejected' &&
+                nationalStatus !== 'approved' &&
+                nationalStatus !== 'rejected'
+            );
+
+            if (municipalApprovedAwaitingRegional || baseStatus === 'to-review') {
+                return { code: 'to-review', label: 'PENDING REGIONAL REVIEW', badge: 'bg-amber-50 text-amber-700 border-amber-200' };
+            }
+
+            if (regionalStatus === 'approved' || (baseStatus === 'approved' && approvedByLevelLower !== 'municipal')) {
                 return {
                     code: 'approved',
                     label: approvedByLevel ? `APPROVED BY ${approvedByLevel}` : (regionalStatus === 'approved' ? 'APPROVED BY REGIONAL' : 'APPROVED'),
                     badge: 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 };
             }
-            if (regionalStatus === 'rejected' || baseStatus === 'rejected') {
+            if (regionalStatus === 'rejected' || (baseStatus === 'rejected' && rejectedByLevelLower !== 'municipal')) {
                 return {
                     code: 'rejected',
                     label: rejectedByLevel ? `REJECTED BY ${rejectedByLevel}` : (regionalStatus === 'rejected' ? 'REJECTED BY REGIONAL' : 'REJECTED'),
                     badge: 'bg-rose-50 text-rose-700 border-rose-200'
                 };
             }
-            if (baseStatus === 'to-review') return { code: 'to-review', label: 'PENDING REGIONAL REVIEW', badge: 'bg-amber-50 text-amber-700 border-amber-200' };
             return { code: 'pending', label: 'PENDING', badge: 'bg-slate-50 text-slate-700 border-slate-200' };
         }
 
@@ -383,11 +400,17 @@
             const st = normalizeStatus(item.status);
             const regionalStatus = normalizeStatus(item.regionalStatus);
             const nationalStatus = normalizeStatus(item.nationalStatus);
+            const approvedByLevel = String(item.approvedByLevel || '').trim().toLowerCase();
+            const rejectedByLevel = String(item.rejectedByLevel || '').trim().toLowerCase();
+
+            const approvedFinalByRegionalOrNational = st === 'approved' && ['regional', 'national'].includes(approvedByLevel);
+            const rejectedFinalByRegionalOrNational = st === 'rejected' && ['regional', 'national'].includes(rejectedByLevel);
+
             return (
                 nationalStatus === 'approved' ||
                 nationalStatus === 'rejected' ||
-                st === 'approved' ||
-                st === 'rejected' ||
+                approvedFinalByRegionalOrNational ||
+                rejectedFinalByRegionalOrNational ||
                 st === 'forwarded-to-national' ||
                 regionalStatus === 'approved' ||
                 regionalStatus === 'rejected'
