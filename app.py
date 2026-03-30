@@ -9,6 +9,12 @@ import os
 app = Flask(__name__)
 app.config.from_object(Config)
 
+FAVICON_URL = "https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705"
+FAVICON_HEAD_SNIPPET = (
+    f'  <link rel="icon" type="image/x-icon" href="{FAVICON_URL}">\n'
+    f'  <link rel="shortcut icon" type="image/x-icon" href="{FAVICON_URL}">\n'
+)
+
 # Session configuration
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
@@ -73,6 +79,34 @@ def datetimeformat(value, format='%b %d, %Y'):
 @app.route('/account-disabled')
 def account_disabled():
     return render_template('account-disabled.html')
+
+
+@app.after_request
+def ensure_favicon_on_all_html(response):
+    """Inject favicon links for templates that don't include base.html."""
+    try:
+        content_type = (response.content_type or '').lower()
+        if 'text/html' not in content_type:
+            return response
+
+        body = response.get_data(as_text=True)
+        if not body or '</head>' not in body.lower():
+            return response
+
+        if 'rel="icon"' in body.lower() or "rel='icon'" in body.lower() or 'shortcut icon' in body.lower():
+            return response
+
+        lower_body = body.lower()
+        idx = lower_body.find('</head>')
+        if idx == -1:
+            return response
+
+        updated = body[:idx] + FAVICON_HEAD_SNIPPET + body[idx:]
+        response.set_data(updated)
+    except Exception:
+        return response
+
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)

@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/denr-print.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705">
+  <link rel="shortcut icon" type="image/x-icon" href="https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705">
   <title>History | DENR Portal</title>
 
   <style>
@@ -604,6 +606,30 @@
     <div class="relative w-full max-w-3xl">
       <button onclick="closeServiceImageViewer()" class="absolute -top-3 -right-3 bg-white text-gray-700 hover:text-black rounded-full w-8 h-8 shadow font-bold">&times;</button>
       <img id="serviceImageViewerImg" src="" alt="Attachment Preview" class="w-full max-h-[82vh] object-contain bg-white rounded-lg shadow-2xl" />
+    </div>
+  </div>
+
+  <!-- File Preview Modal -->
+  <div id="filePreviewModal" style="display:none;" class="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4">
+    <div class="relative w-full max-w-4xl bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <h3 id="filePreviewTitle" class="text-lg font-bold text-gray-800 truncate flex-1">Document Preview</h3>
+        <button onclick="closeFilePreview()" class="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none">&times;</button>
+      </div>
+      
+      <!-- Content -->
+      <div id="filePreviewBody" class="flex-1 overflow-y-auto bg-white flex items-center justify-center">
+        <div class="text-center py-8">
+          <i class="fa-solid fa-file text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Loading...</p>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="border-t border-gray-200 px-6 py-4 bg-gray-50 flex gap-2">
+        <button onclick="closeFilePreview()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg text-sm transition-all">Close</button>
+      </div>
     </div>
   </div>
 
@@ -1531,14 +1557,15 @@
         if (isImageFile(url)) {
           const encodedUrl = encodeURIComponent(url);
           return `<div class="bg-white border border-slate-200 rounded p-1">
-            <img src="${escapeAttr(url)}" alt="${escapeAttr(name)}" class="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80" loading="lazy" title="${escapeAttr(name)}" onclick="openServiceImageViewerFromEncoded('${encodedUrl}')"/>
+            <img src="/api/files/proxy?url=${encodedUrl}" alt="${escapeAttr(name)}" class="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80" loading="lazy" title="${escapeAttr(name)}" onclick="openServiceImageViewerFromEncoded('${encodedUrl}')"/>
           </div>`;
         }
-        return `<div class="bg-white border border-slate-200 rounded p-2 flex items-center justify-between gap-2">
+        const encodedUrl = encodeURIComponent(url);
+          return `<div class="bg-white border border-slate-200 rounded p-2 flex items-center justify-between gap-2">
           <span class="text-[10px] font-semibold text-slate-700 truncate">${escapeAttr(name)}</span>
-          <a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" class="text-[9px] font-black uppercase bg-emerald-600 text-white px-2 py-1 rounded no-underline whitespace-nowrap">
+          <button type="button" onclick="openFilePreviewFromEncoded('${encodedUrl}')" class="text-[9px] font-black uppercase bg-emerald-600 text-white px-2 py-1 rounded no-underline whitespace-nowrap border-0 cursor-pointer hover:bg-emerald-700">
             View
-          </a>
+          </button>
         </div>`;
       }).join('');
       
@@ -1694,12 +1721,12 @@
             const safeUrl = escapeHtml(item);
             const encodedUrl = encodeURIComponent(item);
             const thumb = isImagePath(item)
-              ? `<img src="${safeUrl}" alt="File ${idx + 1}" class="h-7 w-7 rounded border border-slate-200 object-cover" loading="lazy">`
+              ? `<img src="/api/files/proxy?url=${encodedUrl}" alt="File ${idx + 1}" class="h-7 w-7 rounded border border-slate-200 object-cover" loading="lazy">`
               : `<span class="material-icons-round text-slate-500" style="font-size:16px;">description</span>`;
 
             const actionBtn = isImagePath(item)
               ? `<button type="button" onclick="openServiceImageViewerFromEncoded('${encodedUrl}')" class="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase px-2 py-1 rounded">View</button>`
-              : `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase px-2 py-1 rounded">View</a>`;
+              : `<button type="button" onclick="openFilePreviewFromEncoded('${encodedUrl}')" class="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase px-2 py-1 rounded">View</button>`;
 
             return `<div class="flex items-center justify-between gap-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1">
               <div class="min-w-0 flex items-center gap-2">
@@ -1730,29 +1757,38 @@
         };
 
         let farmHtml = '';
+        const farmCommonFields = `
+          <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farmer ID</p><p class="font-semibold text-gray-800 uppercase">${d.farmerIdNumber || 'N/A'}</p></div>
+          <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Google Pin</p><p class="font-semibold text-gray-800 break-all">${d.googlePinLocation ? `<a href="${d.googlePinLocation}" target="_blank" rel="noopener" class="text-green-700 underline">Open Pin</a>` : 'N/A'}</p></div>
+          <div class="col-span-2"><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Address</p><p class="font-semibold text-gray-800">${d.farmAddress || 'N/A'}</p></div>`;
+
         if (serviceCategory === 'farm-visit' && svc.includes('initial farm visit')) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Size</p><p class="font-semibold text-gray-800">${d.farmSize ? d.farmSize + ' ha' : 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Production Type</p><p class="font-semibold text-gray-800">${fmtProdType(d.productionType)}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Issues Report</p><p class="font-semibold text-gray-800">${fmtFiles(d.issueReport)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Field Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.fieldPhotos)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Field Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.fieldPhotos)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && (svc.includes('disease') || svc.includes('pest investigation'))) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Date Symptom Started</p><p class="font-semibold text-gray-800">${d.dateSymptomStarted ? new Date(d.dateSymptomStarted).toLocaleDateString('en-PH', {year:'numeric',month:'short',day:'numeric'}) : 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Affected Area</p><p class="font-semibold text-gray-800">${d.affectedAreaHa ? d.affectedAreaHa + ' ha' : 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Close-up Photo</p><p class="font-semibold text-gray-800">${fmtFiles(d.closeUpPhoto)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Spray Record</p><p class="font-semibold text-gray-800">${fmtFiles(d.sprayRecord)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Spray Record</p><p class="font-semibold text-gray-800">${fmtFiles(d.sprayRecord)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && (svc.includes('soil') || svc.includes('crop evaluation'))) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Crop Stage</p><p class="font-semibold text-gray-800">${fmtCropStage(d.cropStage)}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Fertilization History</p><p class="font-semibold text-gray-800">${fmtFiles(d.fertilizationHistory)}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Soil Test Result</p><p class="font-semibold text-gray-800">${fmtFiles(d.soilTestResult)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.farmPhotos)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Farm Photos</p><p class="font-semibold text-gray-800">${fmtFiles(d.farmPhotos)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && (svc.includes('follow-up') || svc.includes('follow up') || svc.includes('visit'))) {
           farmHtml = `
             <div class="col-span-2"><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Reference Number</p><p class="font-semibold text-gray-800 uppercase">${d.referenceNumber || 'N/A'}</p></div>
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Revised Documents</p><p class="font-semibold text-gray-800">${fmtFiles(d.revisedDocuments)}</p></div>
-            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Latest Site Photo</p><p class="font-semibold text-gray-800">${fmtFiles(d.latestSitePhoto)}</p></div>`;
+            <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Latest Site Photo</p><p class="font-semibold text-gray-800">${fmtFiles(d.latestSitePhoto)}</p></div>
+            ${farmCommonFields}`;
         } else if (serviceCategory === 'farm-visit' && svc.includes('compliance inspection')) {
           farmHtml = `
             <div><p class="text-gray-500 font-bold uppercase tracking-widest text-[10px] mb-0.5">Compliance Type</p><p class="font-semibold text-gray-800">${fmtCompliance(d.complianceType)}</p></div>
@@ -1923,10 +1959,9 @@
 
     window.openServiceImageViewerFromEncoded = function(encodedUrl) {
       try {
-        const url = decodeURIComponent(encodedUrl || '');
         const modal = document.getElementById('serviceImageViewerModal');
         const img = document.getElementById('serviceImageViewerImg');
-        img.src = url;
+        img.src = `/api/files/proxy?url=${encodedUrl}`;
         modal.style.display = 'flex';
       } catch (e) {
         console.error('Failed to open image preview:', e);
@@ -1939,6 +1974,63 @@
       img.src = '';
       modal.style.display = 'none';
     };
+
+    // File Preview Modal
+    window.openFilePreviewFromEncoded = function(encodedUrl) {
+      try {
+        const url = decodeURIComponent(encodedUrl || '');
+        const modal = document.getElementById('filePreviewModal');
+        
+        if (!modal) {
+          console.error('File preview modal not found');
+          return;
+        }
+
+        const parts = url.split('/');
+        const filename = (parts[parts.length - 1] || 'document').split('?')[0];
+        const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i.test(url);
+        const isPdf = /\.pdf(\?|$)/i.test(url);
+        
+        document.getElementById('filePreviewTitle').textContent = filename;
+        const previewBody = document.getElementById('filePreviewBody');
+        
+        if (isImage) {
+          previewBody.innerHTML = `<img src="/api/files/proxy?url=${encodedUrl}" alt="${filename}" class="max-w-full max-h-[80vh] object-contain mx-auto" loading="lazy" />`;
+        } else if (isPdf) {
+          previewBody.innerHTML = `<iframe src="/api/files/proxy?url=${encodedUrl}" class="w-full h-[80vh] border-0"></iframe>`;
+        } else {
+          previewBody.innerHTML = `
+            <div class="text-center py-8">
+              <i class="fa-solid fa-file text-6xl text-gray-300 mb-4"></i>
+              <p class="text-gray-500 font-semibold mb-4">Preview not available for this file type</p>
+              <a href="/api/files/proxy?url=${encodedUrl}" target="_blank" class="inline-block bg-blue-600 text-white px-4 py-2 rounded font-bold">Download File</a>
+            </div>
+          `;
+        }
+        
+        modal.style.display = 'flex';
+      } catch (e) {
+        console.error('Failed to open file preview:', e);
+        alert('Error opening file preview');
+      }
+    };
+
+    window.closeFilePreview = function() {
+      const modal = document.getElementById('filePreviewModal');
+      if (modal) {
+        document.getElementById('filePreviewBody').innerHTML = '';
+        modal.style.display = 'none';
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const filePreviewModal = document.getElementById('filePreviewModal');
+      if (filePreviewModal) {
+        filePreviewModal.addEventListener('click', function(e) {
+          if (e.target === this) closeFilePreview();
+        });
+      }
+    });
 
     document.getElementById('serviceDetailModal').addEventListener('click', function(e) {
       if (e.target === this) closeServiceDetail();

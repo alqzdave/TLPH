@@ -49,7 +49,6 @@
       id: row.dataset.id || '',
       number: row.dataset.number || '',
       client: row.dataset.client || '',
-      municipality: row.dataset.municipality || '',
       amount: toNumber(row.dataset.amount || 0),
       date: row.dataset.date || '',
       status: normalizeStatus(row.dataset.status || 'PENDING'),
@@ -74,7 +73,6 @@
     row.dataset.id = data.id || row.dataset.id || '';
     row.dataset.number = data.number || '';
     row.dataset.client = data.client || '';
-    row.dataset.municipality = data.municipality || '';
     row.dataset.amount = String(Number.isFinite(data.amount) ? data.amount : 0);
     row.dataset.date = data.date || '';
     row.dataset.status = normalizeStatus(data.status || 'PENDING');
@@ -96,13 +94,12 @@
     if (cells.length >= 9) {
       cells[0].textContent = data.number || '';
       cells[1].textContent = data.client || '';
-      cells[2].textContent = data.municipality || '';
-      cells[3].textContent = `${peso}${formatMoney(data.amount || 0)}`;
-      cells[4].textContent = data.date || '';
-      setStatusCell(cells[5], data.status);
-      cells[6].textContent = data.deliverFrom || '';
-      cells[7].textContent = data.deliverTo || '';
-      cells[8].textContent = data.deliverToType || '';
+      cells[2].textContent = `${peso}${formatMoney(data.amount || 0)}`;
+      cells[3].textContent = data.date || '';
+      setStatusCell(cells[4], data.status);
+      cells[5].textContent = data.deliverFrom || '';
+      cells[6].textContent = data.deliverTo || '';
+      cells[7].textContent = data.deliverToType || '';
     }
   }
 
@@ -139,122 +136,7 @@
     if (emptyCell) emptyCell.parentElement.remove();
   }
 
-  // --- Create Quotation ---
-  function openCreateModal() {
-    const modal = byId('createQuotationModal');
-    if (!modal) return;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    const dateInput = byId('qDate');
-    if (dateInput) {
-      dateInput.value = new Date().toISOString().slice(0, 10);
-    }
-    const statusInput = byId('qStatus');
-    if (statusInput) statusInput.value = 'pending';
-  }
-
-  function closeCreateModal() {
-    const modal = byId('createQuotationModal');
-    if (!modal) return;
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    const form = byId('createQuotationForm');
-    if (form) form.reset();
-  }
-
-  function submitQuotation(e) {
-    e.preventDefault();
-    const number = (byId('qNumber')?.value || '').trim();
-    const date = byId('qDate')?.value || '';
-    const client = (byId('qClient')?.value || '').trim();
-    const municipality = byId('qMunicipality')?.value || '';
-    const amount = toNumber(byId('qAmount')?.value);
-    const deliverFrom = (byId('qDeliverFrom')?.value || '').trim();
-    const deliverTo = (byId('qDeliverTo')?.value || '').trim();
-    const deliverToType = byId('qDeliverToType')?.value || '';
-    const status = normalizeStatus(byId('qStatus')?.value || 'PENDING');
-
-    if (!number || !date || !client || !municipality || !Number.isFinite(amount) || !deliverFrom || !deliverTo) {
-      alert('Please complete all required fields.');
-      return;
-    }
-
-    removeEmptyRow();
-
-    const row = document.createElement('tr');
-    row.className = 'hover:bg-emerald-50 transition quote-row';
-
-    const fiscalYear = date ? `FY ${date.slice(0, 4)}` : 'ALL';
-    const data = {
-      id: `tmp-${Date.now()}`,
-      number,
-      client,
-      municipality,
-      amount,
-      date,
-      status,
-      deliverFrom,
-      deliverTo,
-      deliverToType,
-      buyerType: '',
-      title: '',
-      category: '',
-      supplier: '',
-      product: '',
-      quantity: 0,
-      unitPrice: 0,
-      otherCharges: 0,
-      otherChargesNote: '',
-      fy: fiscalYear
-    };
-
-    writeRowData(row, data);
-
-    const cells = [
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td'),
-      document.createElement('td')
-    ];
-
-    cells[0].className = 'font-black text-slate-900 border-r border-slate-100 uppercase';
-    cells[1].className = 'font-bold text-slate-700 border-r border-slate-100 uppercase';
-    cells[2].className = 'font-bold text-slate-700 border-r border-slate-100 uppercase';
-    cells[3].className = 'font-mono font-bold text-emerald-800 border-r border-slate-100 text-right text-[11px]';
-    cells[4].className = 'font-mono text-slate-500 border-r border-slate-100 text-center';
-    cells[5].className = 'text-center border-r border-slate-100';
-    cells[6].className = 'text-center border-r border-slate-100';
-    cells[7].className = 'text-center border-r border-slate-100';
-    cells[8].className = 'text-center border-r border-slate-100';
-    cells[9].className = 'text-center';
-
-    row.appendChild(cells[0]);
-    row.appendChild(cells[1]);
-    row.appendChild(cells[2]);
-    row.appendChild(cells[3]);
-    row.appendChild(cells[4]);
-    row.appendChild(cells[5]);
-    row.appendChild(cells[6]);
-    row.appendChild(cells[7]);
-    row.appendChild(cells[8]);
-    row.appendChild(cells[9]);
-
-    cells[9].appendChild(buildActionCell());
-
-    writeRowData(row, data);
-
-    const tbody = byId('quoteTable');
-    if (tbody) tbody.appendChild(row);
-
-    closeCreateModal();
-    filterTable();
-  }
+  // Quotation creation logic removed for regional users
 
   // --- View Quotation ---
   function viewQuotation(btn) {
@@ -263,7 +145,6 @@
     if (!data) return;
     byId('vqNumber').textContent = data.number || 'N/A';
     byId('vqClient').textContent = data.client || 'N/A';
-    byId('vqMunicipality').textContent = data.municipality || 'N/A';
     byId('vqStatus').textContent = data.status || 'N/A';
     byId('vqDate').textContent = data.date || 'N/A';
     byId('vqDeliverFrom').textContent = data.deliverFrom || 'N/A';
@@ -288,38 +169,6 @@
     const modal = byId('viewQuotationModal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
-  }
-
-  // --- Forward Modal ---
-  let currentForwardRow = null;
-  function openForwardModal(btn) {
-    currentForwardRow = btn?.closest('tr') || null;
-    const rowData = readRowData(currentForwardRow);
-    const modal = byId('forwardModal');
-    if (!modal) return;
-    byId('forwardQuotationId').value = rowData?.id || '';
-    byId('forwardMunicipality').value = rowData?.municipality || '';
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  }
-
-  function closeForwardModal() {
-    const modal = byId('forwardModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    currentForwardRow = null;
-  }
-
-  function submitForward(e) {
-    e.preventDefault();
-    if (!currentForwardRow) return;
-    const target = byId('forwardMunicipality')?.value || '';
-    const data = readRowData(currentForwardRow);
-    if (!data) return;
-    data.deliverTo = target;
-    data.deliverToType = 'municipal';
-    writeRowData(currentForwardRow, data);
-    closeForwardModal();
   }
 
   // --- Status Modal ---
@@ -353,6 +202,7 @@
     writeRowData(currentStatusRow, data);
     closeStatusModal();
     filterTable();
+    updateSummaryCounts();
   }
 
   // --- Receive Modal ---
@@ -499,6 +349,7 @@
     data.amount = totalAmount;
     data.fy = issueDate ? `FY ${issueDate.slice(0, 4)}` : data.fy;
     writeRowData(currentEditRow, data);
+    updateSummaryCounts();
     closeQuoteDrawer();
   }
 
@@ -514,6 +365,7 @@
       if (receiveBtn) receiveBtn.remove();
     }
     filterTable();
+    updateSummaryCounts();
   }
 
   // --- Draft Preview ---
@@ -555,7 +407,6 @@
   function filterTable() {
     const q = (byId('searchQuote')?.value || '').toLowerCase().trim();
     const status = (byId('statusFilter')?.value || 'ALL').toUpperCase();
-    const mun = (byId('municipalityFilter')?.value || 'ALL').toUpperCase();
     const fy = (byId('fyFilter')?.value || 'ALL').toUpperCase();
 
     const rows = document.querySelectorAll('.quote-row');
@@ -564,15 +415,13 @@
     rows.forEach((row) => {
       const text = row.innerText.toLowerCase();
       const rowStatus = normalizeStatus(row.getAttribute('data-status') || '');
-      const rowMun = (row.getAttribute('data-municipality') || '').toUpperCase();
       const rowFY = (row.getAttribute('data-fy') || 'ALL').toUpperCase();
 
       const matchQ = text.includes(q);
       const matchStatus = status === 'ALL' || rowStatus.includes(status);
-      const matchMun = mun === 'ALL' || rowMun.includes(mun);
       const matchFY = fy === 'ALL' || rowFY.includes(fy);
 
-      if (matchQ && matchStatus && matchMun && matchFY) {
+      if (matchQ && matchStatus && matchFY) {
         row.style.display = '';
         count++;
       } else {
@@ -589,7 +438,6 @@
   function resetFilters() {
     if (byId('searchQuote')) byId('searchQuote').value = '';
     if (byId('statusFilter')) byId('statusFilter').value = 'ALL';
-    if (byId('municipalityFilter')) byId('municipalityFilter').value = 'ALL';
     if (byId('fyFilter')) byId('fyFilter').value = 'ALL';
     filterTable();
   }
@@ -598,10 +446,32 @@
     const rows = document.querySelectorAll('.quote-row');
     rows.forEach((row) => {
       const cells = row.querySelectorAll('td');
-      if (cells.length >= 6) {
-        setStatusCell(cells[5], row.dataset.status || 'PENDING');
+      if (cells.length >= 5) {
+        setStatusCell(cells[4], row.dataset.status || 'PENDING');
       }
     });
+  }
+
+  function updateSummaryCounts() {
+    const rows = Array.from(document.querySelectorAll('.quote-row'));
+    let pending = 0;
+    let received = 0;
+
+    rows.forEach((row) => {
+      const status = normalizeStatus(row.getAttribute('data-status') || '');
+      if (status === 'RECEIVED') {
+        received += 1;
+      } else if (status) {
+        pending += 1;
+      }
+    });
+
+    const pendingEl = byId('pendingCount');
+    const receivedEl = byId('receivedCount');
+    const totalEl = byId('totalCount');
+    if (pendingEl) pendingEl.textContent = pending;
+    if (receivedEl) receivedEl.textContent = received;
+    if (totalEl) totalEl.textContent = pending + received;
   }
 
   function escapeCsv(value) {
@@ -622,7 +492,6 @@
     const headers = [
       'Quotation #',
       'Client / Office Entity',
-      'Municipality',
       'Total Amount',
       'Filing Date',
       'Status',
@@ -637,7 +506,6 @@
       const line = [
         data.number || '',
         data.client || '',
-        data.municipality || '',
         formatMoney(data.amount || 0),
         data.date || '',
         statusLabel(data.status),
@@ -718,13 +586,12 @@
     if (editForm) editForm.addEventListener('submit', submitEditForm);
     normalizeStatusBadges();
     filterTable();
+    updateSummaryCounts();
     initCharts();
   }
 
   // Expose functions for inline handlers
-  window.openCreateModal = openCreateModal;
-  window.closeCreateModal = closeCreateModal;
-  window.submitQuotation = submitQuotation;
+  // Creation modal handlers removed for regional users
   window.viewQuotation = viewQuotation;
   window.closeViewModal = closeViewModal;
   window.openReceiveModal = openReceiveModal;

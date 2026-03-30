@@ -718,57 +718,6 @@ def api_update_quotation_municipal(quotation_id):
 
 
 # Unified quotation create endpoint
-@bp.route('/operations/quotations-municipal/api/create', methods=['POST'])
-@role_required('municipal','municipal_admin')
-def quotations_municipal_create():
-    from quotation_storage import add_quotation
-    user_municipality = (_resolve_municipality_from_user_context() or session.get('municipality') or session.get('user_municipality') or '').strip()
-    user_region = (_resolve_region_from_user_context() or session.get('region') or session.get('user_region') or '').strip()
-    data = request.get_json(silent=True) or {}
-    number = str(data.get('number') or '').strip()
-    client = str(data.get('client') or '').strip()
-    date = str(data.get('date') or '').strip()
-    deliver_to = str(data.get('deliver_to') or '').strip()
-    deliver_to_type = str(data.get('deliver_to_type') or 'municipality').strip().lower()
-    try:
-        amount = float(data.get('amount'))
-    except Exception:
-        amount = 0.0
-    status = str(data.get('status') or 'PENDING').strip().upper()
-    if status not in {'PENDING', 'APPROVED', 'REJECTED'}:
-        status = 'PENDING'
-    if not number or not client or not date or not deliver_to:
-        return jsonify({'success': False, 'error': 'Missing required quotation fields'}), 400
-    payload = {
-        'number': number,
-        'client': client,
-        'date': date,
-        'amount': amount,
-        'status': status,
-        'municipality': user_municipality,
-        'region': user_region,
-        'scope': 'municipal',
-        'deliver_from': user_municipality,
-        'deliver_to': deliver_to,
-        'deliver_to_type': deliver_to_type
-    }
-    try:
-        quotation = add_quotation(payload)
-        return jsonify({'success': True, 'quotation': {
-            'id': quotation['id'],
-            'number': number,
-            'client': client,
-            'date': date,
-            'amount': f"{amount:,.2f}",
-            'amount_value': amount,
-            'status': status,
-            'deliver_from': payload.get('deliver_from'),
-            'deliver_to': payload.get('deliver_to'),
-            'deliver_to_type': payload.get('deliver_to_type')
-        }})
-    except Exception as e:
-        print(f"[ERROR] quotations_municipal_create failed: {e}")
-        return jsonify({'success': False, 'error': 'Failed to create quotation'}), 500
 
 
 

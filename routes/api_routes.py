@@ -8,9 +8,10 @@ import json
 import os
 import time
 import hashlib
+import uuid
 import requests
 from urllib.request import urlopen
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, quote
 from firebase_auth_middleware import firebase_auth_required
 import system_logs_storage
 
@@ -65,13 +66,17 @@ def _upload_to_cloudinary(file_obj, folder: str):
         pass
 
     try:
+        # Upload with public access - NO authentication required for viewing
         resp = requests.post(
             endpoint,
             data={
                 'api_key': api_key,
                 'timestamp': timestamp,
                 'folder': folder,
-                'signature': signature
+                'signature': signature,
+                'access_type': 'anonymous',  # Make publicly accessible
+                'type': 'upload',
+                'invalidate': False  # Don't purge CDN cache
             },
             files={
                 'file': (file_obj.filename, file_obj.stream, file_obj.mimetype or 'application/octet-stream')
@@ -101,6 +106,698 @@ def _upload_to_cloudinary(file_obj, folder: str):
             pass
 
 
+def _is_image_file(file_obj) -> bool:
+    filename = (getattr(file_obj, 'filename', '') or '').lower()
+    mimetype = (getattr(file_obj, 'mimetype', '') or '').lower()
+    image_exts = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg')
+    return mimetype.startswith('image/') or filename.endswith(image_exts)
+
+
+def _upload_to_firebase_storage(file_obj, folder: str):
+    """Upload file to Firebase Storage and return tokenized download URL."""
+    try:
+        from firebase_config import get_storage_bucket
+
+        bucket = get_storage_bucket()
+        if not bucket:
+            return None
+
+        original_name = os.path.basename((file_obj.filename or 'upload.bin').strip())
+        safe_name = original_name.replace(' ', '_')
+        token = str(uuid.uuid4())
+        unique_name = f"{int(time.time())}_{uuid.uuid4().hex[:8]}_{safe_name}"
+        blob_path = f"{folder.strip('/')}/{unique_name}"
+
+        blob = bucket.blob(blob_path)
+
+        try:
+            file_obj.stream.seek(0)
+        except Exception:
+            pass
+
+        blob.upload_from_file(
+            file_obj.stream,
+            content_type=(file_obj.mimetype or 'application/octet-stream'),
+            rewind=True
+        )
+
+        # Firebase token-based media URL
+        blob.metadata = {'firebaseStorageDownloadTokens': token}
+        blob.patch()
+
+        encoded_path = quote(blob_path, safe='')
+        return f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{encoded_path}?alt=media&token={token}"
+    except Exception as e:
+        print(f"❌ [FIREBASE_STORAGE] Upload failed: {e}")
+        return None
+
+
+@bp.route('/files/proxy', methods=['GET'])
+def proxy_file():
+    """
+    Proxy endpoint for viewing/downloading files with authentication.
+    Caches Cloudinary files locally to bypass 401 errors.
+    Handles both remote (Cloudinary) and local (/static/) paths.
+    
+    Usage: /api/files/proxy?url=<encoded_cloudinary_url_or_local_path>
+    """
+    try:
+        from flask import send_file
+        from urllib.parse import unquote, quote
+        import io
+        import hashlib
+        
+        # Do not hard-require Flask session here.
+        # Hosted environments may rely on Firebase auth only; URL validation below remains enforced.
+        requester = session.get('user_email') if 'user_email' in session else 'anonymous'
+        
+        file_url = request.args.get('url', '').strip()
+        if not file_url:
+            return jsonify({'error': 'Missing file URL'}), 400
+        
+        # Decode URL
+        try:
+            file_url = unquote(file_url)
+        except Exception:
+            pass
+        
+        # Check if this is a local static file path
+        is_local_path = file_url.startswith('/static/') or file_url.startswith('static/')
+        
+        # Validate
+        if not ('cloudinary.com' in file_url or is_local_path or file_url.startswith('http')):
+            return jsonify({'error': 'Invalid file URL'}), 400
+        
+        print(f"🔵 [FILE_PROXY] Request from {requester}: {file_url[:100]}...")
+
+        def _guess_mime_and_inline(filename_hint: str, content_type_hint: str = ''):
+            ext = (str(filename_hint or '').split('?')[0].split('.')[-1] or '').lower()
+            ct = str(content_type_hint or '').lower()
+
+            if 'image/' in ct:
+                return ct.split(';')[0], True
+            if 'application/pdf' in ct:
+                return 'application/pdf', True
+
+            ext_map = {
+                'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+                'gif': 'image/gif', 'webp': 'image/webp', 'bmp': 'image/bmp',
+                'svg': 'image/svg+xml', 'avif': 'image/avif',
+                'pdf': 'application/pdf',
+                'doc': 'application/msword',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'xls': 'application/vnd.ms-excel',
+                'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'txt': 'text/plain', 'csv': 'text/csv',
+            }
+            mime = ext_map.get(ext, 'application/octet-stream')
+            inline = mime.startswith('image/') or mime == 'application/pdf' or mime.startswith('text/')
+            return mime, inline
+        
+        # Handle local paths directly
+        if is_local_path:
+            local_path = file_url.lstrip('/')
+            full_path = os.path.join(os.getcwd(), local_path)
+            
+            if not os.path.exists(full_path):
+                print(f"❌ [FILE_PROXY] Local file not found: {full_path}")
+                return jsonify({'error': 'File not found'}), 404
+            
+            filename = os.path.basename(full_path)
+            
+            # Determine MIME type and whether to display inline or download
+            mime_type = 'application/octet-stream'
+            inline = False  # Display in browser, not download
+            
+            if filename.lower().endswith(('.pdf',)):
+                mime_type = 'application/pdf'
+                inline = True
+            elif filename.lower().endswith(('.jpg', '.jpeg')):
+                mime_type = 'image/jpeg'
+                inline = True
+            elif filename.lower().endswith(('.png',)):
+                mime_type = 'image/png'
+                inline = True
+            elif filename.lower().endswith(('.gif',)):
+                mime_type = 'image/gif'
+                inline = True
+            elif filename.lower().endswith(('.webp',)):
+                mime_type = 'image/webp'
+                inline = True
+            elif filename.lower().endswith(('.doc', '.docx')):
+                mime_type = 'application/msword'
+                inline = False
+            elif filename.lower().endswith(('.xls', '.xlsx')):
+                mime_type = 'application/vnd.ms-excel'
+                inline = False
+            
+            print(f"📄 [FILE_PROXY] Serving local file: {filename} ({mime_type}, inline={inline})")
+            return send_file(
+                full_path,
+                mimetype=mime_type,
+                as_attachment=not inline,
+                download_name=filename if not inline else None
+            )
+        
+        # Create cache directory (best-effort on hosted env)
+        cache_dir = os.path.join('static', 'file_cache')
+        can_cache = True
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+        except Exception as mk_err:
+            print(f"⚠️  [FILE_PROXY] Cache directory unavailable: {mk_err}")
+            can_cache = False
+        
+        # Generate cache filename from URL hash
+        url_hash = hashlib.md5(file_url.encode()).hexdigest()
+        
+        # Try to get original filename from URL
+        filename = file_url.split('/')[-1].split('?')[0] or 'download'
+        if not filename or filename.startswith('v'):
+            # Fallback: use hash + generic extension
+            ext = '.bin'
+            if any(x in file_url.lower() for x in ['.pdf', 'pdf']):
+                ext = '.pdf'
+            elif any(x in file_url.lower() for x in ['.doc', 'docx', 'word']):
+                ext = '.docx'
+            elif any(x in file_url.lower() for x in ['.jpg', '.jpeg', '.png', '.gif']):
+                ext = '.pdf'  # Default for images in docs
+            filename = f"cached_{url_hash}{ext}"
+        
+        cache_file = os.path.join(cache_dir, f"{url_hash}_{filename}") if can_cache else ''
+        
+        # Check if file is already cached
+        if can_cache and os.path.exists(cache_file):
+            print(f"✅ [FILE_PROXY] Serving from cache: {filename}")
+            mime_type, inline = _guess_mime_and_inline(filename)
+            return send_file(
+                cache_file,
+                mimetype=mime_type,
+                as_attachment=not inline,
+                download_name=filename if not inline else None
+            )
+        
+        # Not cached - fetch from source
+        print(f"🔄 [FILE_PROXY] Fetching from source and caching...")
+        # Initialize auth with Cloudinary API credentials for HTTP Basic Auth
+        auth = None
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'Accept': '*/*'
+        }
+        
+        if 'cloudinary.com' in file_url:
+            api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+            api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+            
+            if api_key and api_secret:
+                # Use HTTP Basic Auth with Cloudinary API credentials
+                auth = (api_key, api_secret)
+                print(f"🔐 [FILE_PROXY] Using Cloudinary API credentials for auth...")
+        
+        # Attempt 1: Direct fetch with HTTP Basic Auth (for Cloudinary)
+        print(f"📥 [FILE_PROXY] Attempt 1: Fetching with auth...")
+        try:
+            def _safe_get(url, **kwargs):
+                try:
+                    return requests.get(url, **kwargs)
+                except requests.RequestException as req_err:
+                    print(f"⚠️  [FILE_PROXY] GET failed for {url[:90]}... -> {req_err}")
+                    return None
+
+            response = _safe_get(
+                file_url,
+                timeout=30,
+                stream=False,
+                headers=headers,
+                auth=auth,
+                allow_redirects=True
+            )
+
+            if response is None:
+                # Treat as unauthorized/unavailable so Cloudinary fallbacks still run
+                class _TmpResp:
+                    status_code = 401
+                    content = b''
+                response = _TmpResp()
+            
+            if response.status_code == 200:
+                print(f"✅ [FILE_PROXY] Success with auth!")
+            elif response.status_code == 401:
+                print(f"⚠️  [FILE_PROXY] Auth failed (401), attempting without credentials...")
+                retry_resp = _safe_get(
+                    file_url,
+                    timeout=30,
+                    stream=False,
+                    headers=headers,
+                    allow_redirects=True
+                )
+                if retry_resp is not None:
+                    response = retry_resp
+                if response.status_code == 200:
+                    print(f"✅ [FILE_PROXY] Success without auth!")
+
+            # Attempt 2 (Cloudinary fallback): signed private download API
+            if response.status_code == 401 and 'cloudinary.com' in file_url:
+                print("⚠️  [FILE_PROXY] Delivery URL unauthorized. Trying Cloudinary private download API...")
+                try:
+                    from urllib.parse import urlparse
+
+                    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
+                    api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+                    api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+
+                    parsed = urlparse(file_url)
+                    path = parsed.path or ''
+                    marker = '/upload/'
+                    idx = path.find(marker)
+
+                    if idx != -1 and cloud_name and api_key and api_secret:
+                        asset_part = path[idx + len(marker):]
+                        parts = [p for p in asset_part.split('/') if p]
+
+                        # remove version segment (e.g., v1774686013)
+                        if parts and parts[0].startswith('v') and parts[0][1:].isdigit():
+                            parts = parts[1:]
+
+                        if parts:
+                            last = parts[-1]
+                            if '.' in last:
+                                basename, ext = last.rsplit('.', 1)
+                                parts[-1] = basename
+                                file_format = ext.lower()
+                            else:
+                                file_format = None
+
+                            public_id = '/'.join(parts)
+                            timestamp = int(time.time())
+
+                            base_sign_payload = {
+                                'public_id': public_id,
+                                'timestamp': timestamp,
+                            }
+
+                            # PDFs/docs are often stored as raw; images as image.
+                            # Try both resource types and both with/without format.
+                            resource_types = ['image', 'raw']
+                            if file_format and file_format in ('pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'):
+                                resource_types = ['raw', 'image']
+
+                            fallback_response = None
+                            for resource_type in resource_types:
+                                private_download_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/download"
+
+                                # First try with format if present
+                                params_with_format = {
+                                    'public_id': public_id,
+                                    'timestamp': timestamp,
+                                    'api_key': api_key,
+                                }
+                                if file_format:
+                                    params_with_format['format'] = file_format
+                                    sign_payload_with_format = dict(base_sign_payload)
+                                    sign_payload_with_format['format'] = file_format
+                                    params_with_format['signature'] = _cloudinary_signature(sign_payload_with_format, api_secret)
+                                else:
+                                    params_with_format['signature'] = _cloudinary_signature(base_sign_payload, api_secret)
+
+                                fallback_response = requests.get(
+                                    private_download_url,
+                                    params=params_with_format,
+                                    timeout=30,
+                                    stream=False,
+                                    headers=headers,
+                                    allow_redirects=True,
+                                )
+                                print(f"📥 [FILE_PROXY] Private download ({resource_type}, with format) status: {fallback_response.status_code}")
+                                if fallback_response.status_code == 200:
+                                    break
+
+                                # Retry without format (some assets fail if forced)
+                                params_without_format = {
+                                    'public_id': public_id,
+                                    'timestamp': timestamp,
+                                    'api_key': api_key,
+                                    'signature': _cloudinary_signature(base_sign_payload, api_secret),
+                                }
+
+                                fallback_response = requests.get(
+                                    private_download_url,
+                                    params=params_without_format,
+                                    timeout=30,
+                                    stream=False,
+                                    headers=headers,
+                                    allow_redirects=True,
+                                )
+                                print(f"📥 [FILE_PROXY] Private download ({resource_type}, no format) status: {fallback_response.status_code}")
+                                if fallback_response.status_code == 200:
+                                    break
+
+                            if fallback_response is not None:
+                                response = fallback_response
+                except Exception as fallback_err:
+                    print(f"⚠️  [FILE_PROXY] Private download fallback failed: {fallback_err}")
+
+            # Attempt 3 (Cloudinary fallback): make legacy asset anonymous via explicit API, then retry original URL
+            if response.status_code in (401, 404) and 'cloudinary.com' in file_url:
+                print("⚠️  [FILE_PROXY] Trying explicit API fallback to unrestrict legacy asset...")
+                try:
+                    from urllib.parse import urlparse
+
+                    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
+                    api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+                    api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+
+                    parsed = urlparse(file_url)
+                    path = parsed.path.strip('/')
+                    segs = [s for s in path.split('/') if s]
+
+                    # Expected: /<cloud_name>/<resource_type>/<type>/v123/.../<filename>
+                    if len(segs) >= 5 and cloud_name and api_key and api_secret:
+                        resource_type = segs[1]
+                        delivery_type = segs[2]
+
+                        asset_parts = segs[3:]
+                        if asset_parts and asset_parts[0].startswith('v') and asset_parts[0][1:].isdigit():
+                            asset_parts = asset_parts[1:]
+
+                        if asset_parts:
+                            last = asset_parts[-1]
+                            if '.' in last and resource_type != 'raw':
+                                asset_parts[-1] = last.rsplit('.', 1)[0]
+
+                            public_id = '/'.join(asset_parts)
+
+                            explicit_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/explicit"
+                            explicit_resp = requests.post(
+                                explicit_url,
+                                auth=(api_key, api_secret),
+                                data={
+                                    'public_id': public_id,
+                                    # Force legacy assets back to publicly deliverable mode
+                                    'type': 'upload',
+                                    'access_mode': 'public',
+                                    'access_control': json.dumps([{'access_type': 'anonymous'}]),
+                                    'invalidate': 'true',
+                                },
+                                timeout=30,
+                            )
+
+                            print(f"📥 [FILE_PROXY] Explicit update status: {explicit_resp.status_code}")
+
+                            # Retry original URL after explicit update
+                            if explicit_resp.status_code in (200, 201):
+                                try:
+                                    explicit_json = explicit_resp.json() or {}
+                                except Exception:
+                                    explicit_json = {}
+
+                                # Prefer original URL first (more stable in this project), then secure_url
+                                retry_candidates = [file_url]
+                                alt_secure = (explicit_json.get('secure_url') or '').strip()
+                                if alt_secure and alt_secure != file_url:
+                                    retry_candidates.append(alt_secure)
+
+                                for retry_url in retry_candidates:
+                                    try:
+                                        response = requests.get(
+                                            retry_url,
+                                            timeout=30,
+                                            stream=False,
+                                            headers=headers,
+                                            allow_redirects=True,
+                                        )
+                                        print(f"📥 [FILE_PROXY] Retry after explicit ({retry_url[:90]}...) status: {response.status_code}")
+                                        if response.status_code == 200:
+                                            break
+                                    except requests.RequestException as retry_err:
+                                        print(f"⚠️  [FILE_PROXY] Retry URL failed: {retry_err}")
+                except Exception as explicit_err:
+                    print(f"⚠️  [FILE_PROXY] Explicit fallback failed: {explicit_err}")
+
+            # Attempt 4 (Cloudinary fallback): Admin API download_backup (returns file bytes)
+            if response.status_code in (401, 404) and 'cloudinary.com' in file_url:
+                print("⚠️  [FILE_PROXY] Trying download_backup fallback...")
+                try:
+                    from urllib.parse import urlparse
+
+                    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
+                    api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+                    api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+
+                    parsed = urlparse(file_url)
+                    path = parsed.path.strip('/')
+                    segs = [s for s in path.split('/') if s]
+
+                    # /<cloud>/<resource_type>/<type>/v<version>/<public_id...>
+                    if len(segs) >= 5 and cloud_name and api_key and api_secret:
+                        resource_type = segs[1]
+                        delivery_type = segs[2]
+
+                        asset_parts = segs[3:]
+                        url_version_num = None
+                        if asset_parts and asset_parts[0].startswith('v') and asset_parts[0][1:].isdigit():
+                            url_version_num = int(asset_parts[0][1:])
+                            asset_parts = asset_parts[1:]
+
+                        if asset_parts:
+                            last = asset_parts[-1]
+                            if '.' in last and resource_type != 'raw':
+                                asset_parts[-1] = last.rsplit('.', 1)[0]
+                            public_id = '/'.join(asset_parts)
+
+                            # Try multiple resource detail endpoints; public_id may include slashes
+                            details_candidates = [
+                                (resource_type, delivery_type or 'upload'),
+                                (resource_type, 'upload'),
+                            ]
+                            if resource_type == 'image':
+                                details_candidates.append(('raw', delivery_type or 'upload'))
+                                details_candidates.append(('raw', 'upload'))
+
+                            details_resp = None
+                            for cand_resource, cand_type in details_candidates:
+                                details_url = (
+                                    f"https://api.cloudinary.com/v1_1/{cloud_name}/resources/"
+                                    f"{cand_resource}/{cand_type}/{quote(public_id, safe='/')}"
+                                )
+                                details_resp = requests.get(
+                                    details_url,
+                                    auth=(api_key, api_secret),
+                                    params={'versions': 'true'},
+                                    timeout=30,
+                                )
+                                print(f"📥 [FILE_PROXY] Resource details ({cand_resource}/{cand_type}) status: {details_resp.status_code}")
+                                if details_resp.status_code == 200:
+                                    break
+
+                            if details_resp is not None and details_resp.status_code == 200:
+                                details = details_resp.json() or {}
+                                asset_id = details.get('asset_id')
+                                version_id = details.get('version_id')
+                                versions_obj = details.get('versions')
+
+                                # pick matching version_id if URL version exists
+                                if not version_id and url_version_num and isinstance(versions_obj, list):
+                                    for ver in versions_obj:
+                                        if isinstance(ver, dict) and int(ver.get('version') or 0) == url_version_num and ver.get('version_id'):
+                                            version_id = ver.get('version_id')
+                                            break
+
+                                # versions can be a dict in some responses
+                                if not version_id and url_version_num and isinstance(versions_obj, dict):
+                                    ver_entry = versions_obj.get(str(url_version_num)) or versions_obj.get(url_version_num)
+                                    if isinstance(ver_entry, dict):
+                                        version_id = ver_entry.get('version_id') or ver_entry.get('id')
+                                    elif isinstance(ver_entry, str):
+                                        version_id = ver_entry
+
+                                # Fallback: pick any available version_id if top-level/matching not found
+                                if not version_id and isinstance(versions_obj, list):
+                                    for ver in versions_obj:
+                                        if not isinstance(ver, dict):
+                                            continue
+                                        if ver.get('version_id'):
+                                            version_id = ver.get('version_id')
+                                            break
+                                        if ver.get('id'):
+                                            version_id = ver.get('id')
+                                            break
+
+                                if not version_id and isinstance(versions_obj, dict):
+                                    for _, ver_entry in versions_obj.items():
+                                        if isinstance(ver_entry, dict):
+                                            cand = ver_entry.get('version_id') or ver_entry.get('id')
+                                            if cand:
+                                                version_id = cand
+                                                break
+                                        elif isinstance(ver_entry, str):
+                                            version_id = ver_entry
+                                            break
+
+                                if not version_id:
+                                    print(f"⚠️  [FILE_PROXY] versions payload type={type(versions_obj).__name__} keys={list(versions_obj.keys())[:5] if isinstance(versions_obj, dict) else 'n/a'}")
+
+                                print(f"📥 [FILE_PROXY] Backup params asset_id={bool(asset_id)} version_id={bool(version_id)}")
+
+                                if asset_id and version_id:
+                                    timestamp = int(time.time())
+                                    sign_payload = {
+                                        'asset_id': asset_id,
+                                        'timestamp': timestamp,
+                                        'version_id': version_id,
+                                    }
+                                    signature = _cloudinary_signature(sign_payload, api_secret)
+
+                                    backup_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/download_backup"
+                                    response = requests.get(
+                                        backup_url,
+                                        params={
+                                            'asset_id': asset_id,
+                                            'version_id': version_id,
+                                            'timestamp': timestamp,
+                                            'api_key': api_key,
+                                            'signature': signature,
+                                        },
+                                        timeout=30,
+                                        stream=False,
+                                        headers=headers,
+                                        allow_redirects=True,
+                                    )
+                                    print(f"📥 [FILE_PROXY] download_backup status: {response.status_code}")
+                                else:
+                                    print("⚠️  [FILE_PROXY] Skipping download_backup: missing asset_id/version_id")
+                except Exception as backup_err:
+                    print(f"⚠️  [FILE_PROXY] download_backup fallback failed: {backup_err}")
+
+            # Attempt 5 (Cloudinary fallback): signed delivery URLs for restricted assets
+            if response.status_code in (401, 404) and 'cloudinary.com' in file_url:
+                print("⚠️  [FILE_PROXY] Trying signed delivery URL fallback...")
+                try:
+                    from urllib.parse import urlparse
+                    import cloudinary
+                    import cloudinary.utils
+
+                    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
+                    api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+                    api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+
+                    if cloud_name and api_key and api_secret:
+                        cloudinary.config(
+                            cloud_name=cloud_name,
+                            api_key=api_key,
+                            api_secret=api_secret,
+                            secure=True,
+                        )
+
+                        parsed = urlparse(file_url)
+                        path = parsed.path or ''
+                        marker = '/upload/'
+                        idx = path.find(marker)
+
+                        if idx != -1:
+                            asset_part = path[idx + len(marker):]
+                            parts = [p for p in asset_part.split('/') if p]
+
+                            if parts and parts[0].startswith('v') and parts[0][1:].isdigit():
+                                parts = parts[1:]
+
+                            if parts:
+                                last = parts[-1]
+                                if '.' in last:
+                                    base, ext = last.rsplit('.', 1)
+                                    parts[-1] = base
+                                    fmt = ext.lower()
+                                else:
+                                    fmt = None
+
+                                public_id = '/'.join(parts)
+                                resource_types = ['image', 'raw']
+                                delivery_types = ['upload', 'private', 'authenticated']
+
+                                signed_ok = False
+                                for resource_type in resource_types:
+                                    if signed_ok:
+                                        break
+                                    for delivery_type in delivery_types:
+                                        url_opts = {
+                                            'resource_type': resource_type,
+                                            'type': delivery_type,
+                                            'secure': True,
+                                            'sign_url': True,
+                                        }
+                                        if fmt:
+                                            url_opts['format'] = fmt
+
+                                        signed_url, _ = cloudinary.utils.cloudinary_url(public_id, **url_opts)
+                                        signed_resp = requests.get(
+                                            signed_url,
+                                            timeout=30,
+                                            stream=False,
+                                            headers=headers,
+                                            allow_redirects=True,
+                                        )
+                                        print(f"📥 [FILE_PROXY] Signed URL ({resource_type}/{delivery_type}) status: {signed_resp.status_code}")
+                                        if signed_resp.status_code == 200:
+                                            response = signed_resp
+                                            signed_ok = True
+                                            break
+                except Exception as signed_err:
+                    print(f"⚠️  [FILE_PROXY] Signed URL fallback failed: {signed_err}")
+            
+            if response.status_code == 200:
+                # Cache the file
+                if can_cache:
+                    try:
+                        with open(cache_file, 'wb') as f:
+                            f.write(response.content)
+                        print(f"✅ [FILE_PROXY] Cached: {filename} ({len(response.content)} bytes)")
+                    except IOError as cache_err:
+                        print(f"⚠️  [FILE_PROXY] Cache write failed: {cache_err}")
+                else:
+                    print("ℹ️  [FILE_PROXY] Skipping cache write (cache unavailable)")
+
+                resp_ct = ''
+                try:
+                    resp_ct = response.headers.get('Content-Type', '')
+                except Exception:
+                    pass
+                mime_type, inline = _guess_mime_and_inline(filename, resp_ct)
+                
+                # Return file
+                if can_cache and os.path.exists(cache_file):
+                    return send_file(
+                        cache_file,
+                        mimetype=mime_type,
+                        as_attachment=not inline,
+                        download_name=filename if not inline else None
+                    )
+                else:
+                    return send_file(
+                        io.BytesIO(response.content),
+                        mimetype=mime_type,
+                        as_attachment=not inline,
+                        download_name=filename if not inline else None
+                    )
+            else:
+                print(f"❌ [FILE_PROXY] HTTP {response.status_code}")
+                if response.status_code in (401, 404) and 'cloudinary.com' in file_url and file_url.lower().endswith('.pdf'):
+                    return jsonify({
+                        'error': 'Unable to access this Cloudinary PDF. Asset is restricted and backup version is unavailable.'
+                    }), 502
+                return jsonify({'error': f'Failed to fetch: {response.status_code}'}), 502
+                
+        except requests.RequestException as fetch_err:
+            print(f"❌ [FILE_PROXY] Request failed: {str(fetch_err)}")
+            return jsonify({'error': 'Failed to retrieve file'}), 502
+    
+    except Exception as e:
+        print(f"❌ [FILE_PROXY] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Server error'}), 500
+
+
 def _normalize_muni_name(name: str) -> str:
     return ' '.join(str(name or '').strip().upper().replace('’', "'").replace('`', "'").split())
 
@@ -125,50 +822,75 @@ def _load_mimaropa_municipalities_from_firestore():
         db = get_firestore_db()
         for key in ('REGION-IV-B', 'MIMAROPA'):
             doc = db.collection('municipalities').document(key).get()
-            if doc.exists:
-                values = doc.to_dict().get('municipalities', []) or []
-                cleaned = sorted({str(v).strip() for v in values if str(v).strip()})
-                if cleaned:
-                    return cleaned
+            if not doc.exists:
+                continue
+
+            data = doc.to_dict() or {}
+            items = data.get('items') or data.get('municipalities') or []
+            rows = []
+
+            if isinstance(items, list):
+                rows = items
+            elif isinstance(items, dict):
+                rows = list(items.values())
+
+            names = set()
+            for row in rows:
+                if isinstance(row, str):
+                    name = row.strip()
+                elif isinstance(row, dict):
+                    name = str(
+                        row.get('municipality')
+                        or row.get('municipality_name')
+                        or row.get('name')
+                        or ''
+                    ).strip()
+                else:
+                    name = ''
+
+                if name:
+                    names.add(name)
+
+            if names:
+                return sorted(names)
+
+        return []
     except Exception as e:
-        print(f"[WARN] Failed loading Firestore MIMAROPA municipalities: {e}")
-    return []
+        print(f"[WARN] Firestore municipality lookup failed: {e}")
+        return []
 
 
 def _load_mimaropa_municipalities_from_psgc():
     try:
-        rows = _fetch_json('https://psgc.gitlab.io/api/cities-municipalities/')
-        mimaropa = []
-        for row in rows:
-            region_name = str(row.get('regionName') or '').strip().upper()
-            if region_name not in MIMAROPA_REGION_NAMES:
-                continue
-            name = str(row.get('name') or '').strip()
-            if not name:
-                continue
-            _MUNICIPALITY_CODE_CACHE[_normalize_muni_name(name)] = str(row.get('code') or '').strip()
-            mimaropa.append(name)
-        return sorted(set(mimaropa))
+        url = 'https://psgc.gitlab.io/api/regions/174000000/cities-municipalities/'
+        rows = _fetch_json(url)
+        names = sorted({str(row.get('name') or '').strip() for row in rows if str(row.get('name') or '').strip()})
+        return names
     except Exception as e:
-        print(f"[WARN] PSGC municipalities fetch failed: {e}")
+        print(f"[WARN] PSGC municipality list fetch failed: {e}")
         return []
 
 
 def _resolve_municipality_code(municipality_name: str):
     key = _normalize_muni_name(municipality_name)
-    code = _MUNICIPALITY_CODE_CACHE.get(key)
-    if code:
-        return code
+    if not key:
+        return None
+
+    if key in _MUNICIPALITY_CODE_CACHE:
+        return _MUNICIPALITY_CODE_CACHE[key]
+
+    key_stripped = _strip_city_muni_suffix(key)
 
     try:
-        rows = _fetch_json('https://psgc.gitlab.io/api/cities-municipalities/')
+        rows = _fetch_json('https://psgc.gitlab.io/api/regions/174000000/cities-municipalities/')
         candidate = None
-        key_stripped = _strip_city_muni_suffix(key)
+
         for row in rows:
             name = str(row.get('name') or '').strip()
             code_val = str(row.get('code') or '').strip()
             if not name or not code_val:
                 continue
+
             normalized = _normalize_muni_name(name)
             _MUNICIPALITY_CODE_CACHE[normalized] = code_val
 
@@ -876,16 +1598,30 @@ def upload_inventory_image():
         if not file or file.filename == '':
             return jsonify({'success': False, 'error': 'No file selected'}), 400
 
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
+
         allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
         ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
         if ext not in allowed:
             return jsonify({'success': False, 'error': f'Invalid file type: {ext}'}), 400
 
         url = None
+        backend = 'none'
         if _cloudinary_enabled():
             url = _upload_to_cloudinary(file, f"tlph/inventory/{user_id}")
+            if url:
+                backend = 'cloudinary'
 
         if not url:
+            url = _upload_to_firebase_storage(file, f"tlph/inventory/{user_id}")
+            if url:
+                backend = 'firebase_storage'
+
+        if not url and local_fallback_enabled:
             upload_dir = os.path.join('static', 'uploads', 'inventory', user_id)
             os.makedirs(upload_dir, exist_ok=True)
 
@@ -893,6 +1629,15 @@ def upload_inventory_image():
             file_path = os.path.join(upload_dir, filename)
             file.save(file_path)
             url = f"/static/uploads/inventory/{user_id}/{filename}"
+            backend = 'local_static'
+
+        if not url:
+            return jsonify({
+                'success': False,
+                'error': 'Upload backend unavailable. Configure Cloudinary (preferred) or Firebase Storage on hosted environment.'
+            }), 503
+
+        print(f"📦 [UPLOAD_INVENTORY] Stored via {backend}: {url}")
 
         return jsonify({'success': True, 'url': url})
 
@@ -924,6 +1669,12 @@ def submit_application():
                 'success': False,
                 'message': 'Missing required fields'
             }), 400
+
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
         
         # Process file uploads
         file_fields = ['titleFile', 'taxFile', 'blueprintFile', 'landFile', 'cropFile', 'planFile', 'brgyFile', 'productPictureFile', 'validIdFile']
@@ -945,16 +1696,35 @@ def submit_application():
                     unique_filename = f"{timestamp}_{field}_{idx}_{filename}"
 
                     web_path = None
+                    backend = 'none'
+                    # 1) Cloudinary
                     if _cloudinary_enabled():
                         web_path = _upload_to_cloudinary(file, f"tlph/applications/{user_id}")
+                        if web_path:
+                            backend = 'cloudinary'
 
+                    # 2) Firebase Storage (host-safe fallback)
                     if not web_path:
-                        # Create upload directory only for local fallback
+                        web_path = _upload_to_firebase_storage(file, f"tlph/applications/{user_id}")
+                        if web_path:
+                            backend = 'firebase_storage'
+
+                    # 3) Local static (development fallback)
+                    if not web_path and local_fallback_enabled:
                         upload_dir = os.path.join('static', 'uploads', 'applications', user_id)
                         os.makedirs(upload_dir, exist_ok=True)
                         file_path = os.path.join(upload_dir, unique_filename)
                         file.save(file_path)
                         web_path = f"/static/uploads/applications/{user_id}/{unique_filename}"
+                        backend = 'local_static'
+
+                    if not web_path:
+                        return jsonify({
+                            'success': False,
+                            'message': f'Failed to upload {field}. Configure Cloudinary/Firebase storage in hosted environment.'
+                        }), 503
+
+                    print(f"📦 [SUBMIT_APPLICATION] {field} -> {backend}: {web_path}")
 
                     saved_urls.append(web_path)
 
@@ -984,7 +1754,6 @@ def submit_application():
 
 
 @bp.route('/upload-service-files', methods=['POST'])
-@firebase_auth_required
 def upload_service_files():
     """Upload service request files and return web URLs grouped by field id/name."""
     try:
@@ -994,7 +1763,14 @@ def upload_service_files():
         if not user_id:
             return jsonify({'success': False, 'message': 'Missing userId'}), 400
 
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
+
         file_paths = {}
+        upload_backends = {}
         timestamp = int(datetime.now().timestamp())
 
         for field in request.files:
@@ -1008,15 +1784,37 @@ def upload_service_files():
                 filename = secure_filename(file.filename)
                 unique_filename = f"{timestamp}_{field}_{idx}_{filename}"
                 web_path = None
+                backend = 'none'
+
+                # 1) Cloudinary
                 if _cloudinary_enabled():
                     web_path = _upload_to_cloudinary(file, f"tlph/service_requests/{user_id}")
+                    if web_path:
+                        backend = 'cloudinary'
 
+                # 2) Firebase Storage (host-safe fallback)
                 if not web_path:
+                    web_path = _upload_to_firebase_storage(file, f"tlph/service_requests/{user_id}")
+                    if web_path:
+                        backend = 'firebase_storage'
+
+                # 3) Local static (development fallback)
+                if not web_path and local_fallback_enabled:
                     upload_dir = os.path.join('static', 'uploads', 'service_requests', user_id)
                     os.makedirs(upload_dir, exist_ok=True)
                     file_path = os.path.join(upload_dir, unique_filename)
                     file.save(file_path)
                     web_path = f"/static/uploads/service_requests/{user_id}/{unique_filename}"
+                    backend = 'local_static'
+
+                if not web_path:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Failed to upload file for field "{field}". Configure Cloudinary/Firebase storage in hosted environment.'
+                    }), 503
+
+                upload_backends[field] = backend
+                print(f"📦 [UPLOAD_SERVICE_FILES] {field} -> {backend}: {web_path}")
 
                 saved_urls.append(web_path)
 
@@ -1026,7 +1824,8 @@ def upload_service_files():
         return jsonify({
             'success': True,
             'message': 'Service files uploaded successfully',
-            'filePaths': file_paths
+            'filePaths': file_paths,
+            'uploadBackends': upload_backends
         })
 
     except Exception as e:

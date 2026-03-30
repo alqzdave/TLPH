@@ -52,11 +52,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Deliver From *</label>
-            <select id="newDeliverFrom" class="gov-input w-full h-8 bg-white cursor-pointer" required>
-              <option value="national">National</option>
-              <option value="regional">Regional</option>
-              <option value="municipal">Municipal</option>
-            </select>
+            <div class="gov-input w-full h-8 bg-slate-100 text-slate-500 flex items-center" style="pointer-events: none;">National</div>
+            <input type="hidden" id="newDeliverFrom" value="national" name="deliver_from" />
           </div>
           <div>
             <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Deliver To *</label>
@@ -272,20 +269,27 @@
           </button>
         </header>
 
-        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 shrink-0">
-          <div class="gov-card p-2 px-3 border-l-4 border-l-slate-600">
-            <div class="flex items-center justify-between">
-              <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Total Quotations</span>
-              <span class="material-icons-round text-slate-400 text-[14px]">receipt_long</span>
-            </div>
-            <div class="text-lg font-black text-slate-800 mt-0.5 leading-none">{{ total_quotes|default('0') }}</div>
-          </div>
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-2 shrink-0">
           <div class="gov-card p-2 px-3 border-l-4 border-l-amber-500">
             <div class="flex items-center justify-between">
               <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Pending Approval</span>
               <span class="material-icons-round text-amber-600 text-[14px]">pending_actions</span>
             </div>
-            <div class="text-lg font-black text-amber-700 mt-0.5 leading-none">{{ pending_quotes|default('0') }}</div>
+            <div id="kpiPending" class="text-lg font-black text-amber-700 mt-0.5 leading-none">{{ pending_quotes|default('0') }}</div>
+          </div>
+          <div class="gov-card p-2 px-3 border-l-4 border-l-emerald-600">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Approved Quotations</span>
+              <span class="material-icons-round text-emerald-600 text-[14px]">check_circle</span>
+            </div>
+            <div id="kpiApproved" class="text-lg font-black text-emerald-700 mt-0.5 leading-none">{{ approved_quotes|default('0') }}</div>
+          </div>
+          <div class="gov-card p-2 px-3 border-l-4 border-l-slate-600">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Total Quotations</span>
+              <span class="material-icons-round text-slate-400 text-[14px]">receipt_long</span>
+            </div>
+            <div id="kpiTotal" class="text-lg font-black text-slate-800 mt-0.5 leading-none">{{ total_quotes|default('0') }}</div>
           </div>
         </section>
 
@@ -392,24 +396,33 @@
                   </td>
                   <td class="px-3 py-1.5 text-center no-print">
                     <div class="flex justify-center gap-1 flex-nowrap">
-                      <button type="button" class="btn-action btn-approve" onclick="openActionModal('approve', this)" title="Approve">
-                        <span class="material-icons-round text-[12px]">check_circle</span>
-                      </button>
-                      <button type="button" class="btn-action btn-reject" onclick="openActionModal('reject', this)" title="Reject">
-                        <span class="material-icons-round text-[12px]">block</span>
-                      </button>
-                      <button type="button" class="btn-action btn-forward" onclick="openAllocateModal('{{ q.id }}')" title="Forward">
-                        <span class="material-icons-round text-[12px]">send</span>
-                      </button>
-                      <button type="button" class="btn-action btn-edit" onclick="openEditDrawer('{{ q.id }}')" title="Edit">
-                        <span class="material-icons-round text-[12px]">edit</span>
-                      </button>
-                      <button type="button" class="btn-action btn-draft" onclick="openDraftPreview(this)" title="Draft">
-                        <span class="material-icons-round text-[12px]">description</span>
-                      </button>
-                      <button type="button" class="btn-action btn-status" onclick="openStatusModal('{{ q.id }}')" title="Change Status">
-                        <span class="material-icons-round text-[12px]">sync_alt</span>
-                      </button>
+                      {% if status not in ['APPROVED', 'REJECTED', 'FORWARDED'] %}
+                        <button type="button" class="btn-action btn-approve" onclick="openActionModal('approve', this)" title="Approve">
+                          <span class="material-icons-round text-[12px]">check_circle</span>
+                        </button>
+                        <button type="button" class="btn-action btn-reject" onclick="openActionModal('reject', this)" title="Reject">
+                          <span class="material-icons-round text-[12px]">block</span>
+                        </button>
+                        <button type="button" class="btn-action btn-forward" onclick="openAllocateModal('{{ q.id }}')" title="Forward">
+                          <span class="material-icons-round text-[12px]">send</span>
+                        </button>
+                        <button type="button" class="btn-action btn-edit" onclick="openEditDrawer('{{ q.id }}')" title="Edit">
+                          <span class="material-icons-round text-[12px]">edit</span>
+                        </button>
+                        <button type="button" class="btn-action btn-draft" onclick="openDraftPreview(this)" title="Draft">
+                          <span class="material-icons-round text-[12px]">description</span>
+                        </button>
+                        <button type="button" class="btn-action btn-status" onclick="openStatusModal('{{ q.id }}')" title="Change Status">
+                          <span class="material-icons-round text-[12px]">sync_alt</span>
+                        </button>
+                      {% else %}
+                        <button type="button" class="btn-action btn-edit" onclick="openEditDrawer('{{ q.id }}')" title="Edit">
+                          <span class="material-icons-round text-[12px]">edit</span>
+                        </button>
+                        <button type="button" class="btn-action btn-draft" onclick="openDraftPreview(this)" title="Draft">
+                          <span class="material-icons-round text-[12px]">description</span>
+                        </button>
+                      {% endif %}
                     </div>
                   </td>
                 </tr>
@@ -925,7 +938,7 @@
   function filterTable() {
     const q = document.getElementById('searchQuote').value.toLowerCase().trim();
     const status = document.getElementById('statusFilter').value.toLowerCase();
-    const rows = document.querySelectorAll('.quote-row');
+    const rows = document.querySelectorAll('tr.data-row');
 
     rows.forEach(row => {
       const text = row.innerText.toLowerCase();
@@ -1062,6 +1075,27 @@
     return 'bg-amber-100 text-amber-700 border-amber-300';
   }
 
+  function updateKpisFromRows() {
+    const rows = document.querySelectorAll('tr.data-row');
+    let approvedCount = 0;
+    let pendingCount = 0;
+    let totalCount = 0;
+    rows.forEach(row => {
+      totalCount += 1;
+      const s = String(row.dataset.status || '').toUpperCase();
+      if (s === 'PENDING') pendingCount += 1;
+      if (s === 'APPROVED') approvedCount += 1;
+    });
+    const kpi = document.getElementById('kpiApproved');
+    if (kpi) kpi.textContent = String(approvedCount);
+    const kpiPending = document.getElementById('kpiPending');
+    if (kpiPending) kpiPending.textContent = String(pendingCount);
+    const kpiTotal = document.getElementById('kpiTotal');
+    if (kpiTotal) kpiTotal.textContent = String(totalCount);
+  }
+
+  document.addEventListener('DOMContentLoaded', updateKpisFromRows);
+
   function updateStatusBadge(row, status) {
     if (!row) return;
     const badge = row.querySelector('.status-badge');
@@ -1069,6 +1103,7 @@
     badge.textContent = formatStatusLabel(status);
     badge.className = `status-badge border ${getStatusBadgeClass(status)}`;
     row.dataset.status = String(status || '').toUpperCase();
+    updateKpisFromRows();
   }
 
   function updateDeliverToCell(row, deliverTo, deliverToType) {

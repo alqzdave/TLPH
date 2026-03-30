@@ -32,11 +32,8 @@
         
         /* Action Buttons */
         .btn-action { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; transition: all 0.2s; border: 1px solid #e2e8f0; background: #f8fafc; color: #94a3b8; cursor: pointer; }
-        .btn-edit:hover { color: white; background: #f59e0b; border-color: #d97706; }
-        .btn-history:hover { color: white; background: #0ea5e9; border-color: #0284c7; }
-        .btn-forward:hover { color: white; background: #6366f1; border-color: #4f46e5; }
+        .btn-view:hover { color: white; background: #0ea5e9; border-color: #0284c7; }
         .btn-receive:hover { color: white; background: #10b981; border-color: #059669; }
-        .btn-cancel:hover { color: white; background: #64748b; border-color: #475569; }
     </style>
 </head>
 
@@ -63,9 +60,10 @@
             <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest m-0">Municipal Pricing & Billing Registry</p>
           </div>
         </div>
-        <button id="createQuoteBtn" type="button" class="gov-btn bg-blue-900 hover:bg-blue-900 text-white shadow-sm flex items-center gap-1.5">
+        <!-- Quotation creation disabled for municipal users -->
+        <!-- <button id="createQuoteBtn" type="button" class="gov-btn bg-blue-900 hover:bg-blue-900 text-white shadow-sm flex items-center gap-1.5">
           <span class="material-icons-round text-[14px]">add</span> Create Quotation
-        </button>
+        </button> -->
       </header>
 
       <section class="grid grid-cols-1 sm:grid-cols-4 gap-2 shrink-0 mb-2">
@@ -180,11 +178,8 @@
                               </td>
                               <td class="px-4 py-3 align-middle text-center">
                                   <div class="flex flex-nowrap justify-center gap-1">
-                                    <button type="button" class="btn-action btn-edit" title="Edit Quotation" data-action="edit"><span class="material-icons-round text-[14px]">edit</span></button>
-                                    <button type="button" class="btn-action btn-forward" title="Send / Forward Quotation" data-action="forward"><span class="material-icons-round text-[14px]">send</span></button>
+                                    <button type="button" class="btn-action btn-view" title="View Quotation" data-action="view"><span class="material-icons-round text-[14px]">visibility</span></button>
                                     <button type="button" class="btn-action btn-receive" title="Mark as Received" data-action="receive"><span class="material-icons-round text-[14px]">task_alt</span></button>
-                                    <button type="button" class="btn-action btn-cancel" title="Cancel Quotation" data-action="cancel"><span class="material-icons-round text-[14px]">block</span></button>
-                                    <button type="button" class="btn-action btn-history" title="History" data-action="history"><span class="material-icons-round text-[14px]">history</span></button>
                                   </div>
                               </td>
                             </tr>
@@ -210,124 +205,8 @@
     </main>
   </div>
 
-  <div id="quoteModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60">
-    <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-md mx-4 flex flex-col">
-      <div class="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-blue-900 text-white">
-        <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 m-0"><span class="material-icons-round text-[14px]">request_quote</span> Create Municipal Quotation</h2>
-        <button id="quoteCloseIcon" type="button" class="text-slate-300 hover:text-white"><span class="material-icons-round text-[16px]">close</span></button>
-      </div>
-      <form id="quoteForm" class="p-3 space-y-3">
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Quotation Number</label>
-          <input id="quoteNumberInput" type="text" class="gov-input w-full bg-slate-100" readonly>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Origin Municipality</label>
-            <input type="text" id="quoteOriginMuni" class="gov-input w-full bg-slate-100 text-slate-600" value="{{ user_municipality|default('Victoria') }}" readonly>
-          </div>
-          <div>
-            <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Origin Region</label>
-            <input type="text" id="quoteOriginRegion" class="gov-input w-full bg-slate-100 text-slate-600" value="{{ user_region|default('Region IV-B (MIMAROPA)') }}" readonly>
-          </div>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Client / Office (Auto-detected)</label>
-          <input id="quoteClientInput" type="text" class="gov-input w-full bg-slate-100 text-slate-600" readonly>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Destination Municipality (Deliver To) *</label>
-          <select id="quoteMunicipalityInput" class="gov-input w-full cursor-pointer" required>
-            <option value="">Loading destinations...</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Filing Date *</label>
-          <input id="quoteDateInput" type="date" class="gov-input w-full" required>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Total Amount (PHP) *</label>
-          <input id="quoteAmountInput" type="number" min="0" step="0.01" class="gov-input w-full" placeholder="25000.00" required>
-        </div>
-        <div class="flex justify-end gap-2 pt-2 mt-2 border-t border-slate-200">
-          <button id="quoteCancelBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Cancel</button>
-          <button type="submit" class="gov-btn bg-blue-800 hover:bg-blue-900 text-white">Save as Pending</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- Quotation creation modal removed for municipal users -->
 
-  <div id="quoteEditModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60">
-    <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-md mx-4 flex flex-col">
-      <div class="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-amber-600 text-white">
-        <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 m-0"><span class="material-icons-round text-[14px]">edit</span> Edit Quotation</h2>
-        <button id="quoteEditCloseIcon" type="button" class="text-slate-100 hover:text-white"><span class="material-icons-round text-[16px]">close</span></button>
-      </div>
-      <form id="quoteEditForm" class="p-3 space-y-3">
-        <input type="hidden" id="editQuoteId">
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Quotation Number</label>
-          <input id="editQuoteNumberInput" type="text" class="gov-input w-full bg-slate-100 text-slate-600" readonly>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Client / Office</label>
-          <input id="editQuoteClientInput" type="text" class="gov-input w-full bg-slate-100 text-slate-600" readonly>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Destination Municipality (Deliver To) *</label>
-          <select id="editQuoteMunicipalityInput" class="gov-input w-full cursor-pointer">
-            <option value="">Loading destinations...</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Filing Date *</label>
-          <input id="editQuoteDateInput" type="date" class="gov-input w-full" required>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Total Amount (PHP) *</label>
-          <input id="editQuoteAmountInput" type="number" min="0" step="0.01" class="gov-input w-full" placeholder="25000.00" required>
-        </div>
-        <div class="flex justify-end gap-2 pt-2 mt-2 border-t border-slate-200">
-          <button id="quoteEditCancelBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Cancel</button>
-          <button type="submit" class="gov-btn bg-amber-600 hover:bg-amber-700 text-white">Update Quotation</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div id="workflowForwardModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60">
-    <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-md mx-4 flex flex-col">
-      <div class="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-blue-900 text-white">
-        <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 m-0"><span class="material-icons-round text-[14px]">send</span> Forward Quotation</h2>
-        <button id="workflowForwardCloseIcon" type="button" class="text-slate-300 hover:text-white"><span class="material-icons-round text-[16px]">close</span></button>
-      </div>
-      <form id="workflowForwardForm" class="p-3 space-y-3">
-        <input type="hidden" id="forwardQuoteId">
-        <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 p-2 rounded border border-slate-200">
-          Quotation: <span id="forwardQuoteNumber" class="text-slate-900 font-bold"></span><br>
-          Origin/Client: <span id="forwardQuoteClient" class="text-slate-900 font-bold"></span>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">Deliver To (Pre-set Destination)</label>
-          <input id="forwardDeliverTo" type="text" class="gov-input w-full bg-slate-100 text-slate-600" readonly>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">Deliver To Type *</label>
-          <select id="forwardDeliverToType" class="gov-input w-full cursor-pointer" required>
-            <option value="">Select type</option>
-            <option value="municipality">Municipality</option>
-            <option value="regional">Regional</option>
-            <option value="national">National</option>
-            <option value="office">Office</option>
-          </select>
-        </div>
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button id="workflowForwardCancel" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Cancel</button>
-          <button type="submit" class="gov-btn bg-blue-900 text-white hover:bg-blue-800">Confirm & Send</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <div id="workflowReceiveModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60">
     <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-md mx-4 flex flex-col">
@@ -352,62 +231,6 @@
     </div>
   </div>
 
-  <div id="workflowCancelModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60">
-    <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-md mx-4 flex flex-col">
-      <div class="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-slate-600 text-white">
-        <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 m-0"><span class="material-icons-round text-[14px]">block</span> Cancel Quotation</h2>
-        <button id="workflowCancelCloseIcon" type="button" class="text-slate-300 hover:text-white"><span class="material-icons-round text-[16px]">close</span></button>
-      </div>
-      <form id="workflowCancelForm" class="p-3 space-y-2">
-        <input type="hidden" id="cancelQuoteId">
-        <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2">Are you sure you want to cancel this quotation?</div>
-        <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 p-2 bg-slate-50 border border-slate-200">
-          Quotation: <span id="cancelQuoteNumber" class="text-slate-900 font-bold"></span>
-        </div>
-        <div>
-          <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 mt-2">Reason for Cancellation</label>
-          <textarea id="cancelNotes" class="gov-input w-full h-16 resize-none" placeholder="State reason..." required></textarea>
-        </div>
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 mt-2">
-          <button id="workflowCancelCancelBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Go Back</button>
-          <button type="submit" class="gov-btn bg-slate-600 text-white hover:bg-slate-700">Yes, Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div id="workflowHistoryModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60">
-    <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-lg mx-4 flex flex-col">
-      <div class="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-blue-900 text-white">
-        <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 m-0"><span class="material-icons-round text-[14px]">history</span> Quotation Workflow History</h2>
-        <button id="workflowHistoryCloseIcon" type="button" class="text-slate-300 hover:text-white"><span class="material-icons-round text-[16px]">close</span></button>
-      </div>
-      <div class="p-3 text-[10px] text-slate-700 space-y-2">
-        <div id="workflowHistoryMeta" class="text-[9px] font-black uppercase tracking-widest text-slate-500"></div>
-        <div id="workflowHistoryDetails" class="grid grid-cols-[120px_1fr] gap-2 text-[9px] text-slate-700">
-          <div class="font-black uppercase text-slate-500 tracking-widest">Quotation #</div>
-          <div id="historyQuoteNumber" class="font-bold text-slate-900"></div>
-          <div class="font-black uppercase text-slate-500 tracking-widest">Origin / Client</div>
-          <div id="historyQuoteClient" class="font-bold text-slate-900"></div>
-          <div class="font-black uppercase text-slate-500 tracking-widest">Total Amount</div>
-          <div id="historyQuoteAmount" class="font-mono font-black text-blue-800"></div>
-          <div class="font-black uppercase text-slate-500 tracking-widest">Filing Date</div>
-          <div id="historyQuoteDate" class="font-mono text-slate-900"></div>
-          <div class="font-black uppercase text-slate-500 tracking-widest">Deliver From</div>
-          <div id="historyDeliverFrom" class="text-slate-900"></div>
-          <div class="font-black uppercase text-slate-500 tracking-widest">Deliver To</div>
-          <div id="historyDeliverTo" class="text-slate-900"></div>
-          <div class="font-black uppercase text-slate-500 tracking-widest">Deliver To Type</div>
-          <div id="historyDeliverToType" class="text-slate-900"></div>
-          <div class="font-black uppercase text-slate-500 tracking-widest">Status</div>
-          <div><span id="historyQuoteStatus" class="inline-block px-1.5 py-0.5 rounded-[1px] font-black text-[8px] uppercase w-24 text-center border bg-slate-100 text-slate-600 border-slate-200"></span></div>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
-        <button id="workflowHistoryCloseBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Close</button>
-      </div>
-    </div>
-  </div>
 
   <div id="quoteViewModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60">
     <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-md mx-4 flex flex-col">
@@ -529,60 +352,8 @@
     }
 
     // Modal Triggers
-    function openEditModalForRow(row) {
-      const quoteEditModal = document.getElementById('quoteEditModal');
-      if (!row || !quoteEditModal) return;
-      activeWorkflowRow = row;
-      document.getElementById('editQuoteId').value = row.dataset.id || '';
-      document.getElementById('editQuoteNumberInput').value = row.dataset.number || '';
-      document.getElementById('editQuoteClientInput').value = row.dataset.client || '';
-      
-      const deliverTo = row.dataset.deliverTo || '';
-      const selectElem = document.getElementById('editQuoteMunicipalityInput');
-      
-      // Load current value if it doesn't exist in options
-      if (selectElem && deliverTo) {
-          let found = false;
-          for (let i = 0; i < selectElem.options.length; i++) {
-              if (selectElem.options[i].value === deliverTo) { found = true; break; }
-          }
-          if (!found) {
-              const opt = document.createElement('option');
-              opt.value = deliverTo;
-              opt.textContent = deliverTo;
-              selectElem.appendChild(opt);
-          }
-          selectElem.value = deliverTo;
-      }
-      
-      document.getElementById('editQuoteDateInput').value = row.dataset.date || '';
-      document.getElementById('editQuoteAmountInput').value = row.dataset.amount || '';
-      openWorkflowModal(quoteEditModal);
-    }
 
-    function openCancelModalForRow(row) {
-      const modal = document.getElementById('workflowCancelModal');
-      if (!row || !modal) return;
-      activeWorkflowRow = row;
-      document.getElementById('cancelQuoteId').value = row.dataset.id || '';
-      document.getElementById('cancelQuoteNumber').textContent = row.dataset.number || '';
-      document.getElementById('cancelNotes').value = '';
-      openWorkflowModal(modal);
-    }
 
-    function openForwardModalForRow(row) {
-      const modal = document.getElementById('workflowForwardModal');
-      if (!row || !modal) return;
-      activeWorkflowRow = row;
-      document.getElementById('forwardQuoteId').value = row.dataset.id || '';
-      document.getElementById('forwardQuoteNumber').textContent = row.dataset.number || '';
-      document.getElementById('forwardQuoteClient').textContent = row.dataset.client || '';
-      const deliverToInput = document.getElementById('forwardDeliverTo');
-      if (deliverToInput) deliverToInput.value = row.dataset.deliverTo || '';
-      const deliverToTypeInput = document.getElementById('forwardDeliverToType');
-      if (deliverToTypeInput) deliverToTypeInput.value = (row.dataset.deliverToType || '').toLowerCase();
-      openWorkflowModal(modal);
-    }
 
     function openReceiveModalForRow(row) {
       const modal = document.getElementById('workflowReceiveModal');
@@ -595,25 +366,6 @@
       openWorkflowModal(modal);
     }
 
-    function openHistoryModalForRow(row) {
-      const modal = document.getElementById('workflowHistoryModal');
-      if (!row || !modal) return;
-      activeWorkflowRow = row;
-      const cells = row.querySelectorAll('td');
-      document.getElementById('workflowHistoryMeta').textContent = `Quotation ${row.dataset.number} • ${row.dataset.client}`;
-      document.getElementById('historyQuoteNumber').innerText = row.dataset.number || '--';
-      document.getElementById('historyQuoteClient').innerText = row.dataset.client || '--';
-      document.getElementById('historyQuoteAmount').innerText = cells[2] ? cells[2].innerText.trim() : '--';
-      document.getElementById('historyQuoteDate').innerText = cells[3] ? cells[3].innerText.trim() : '--';
-      document.getElementById('historyDeliverFrom').innerText = cells[4] ? cells[4].innerText.trim() : '--';
-      document.getElementById('historyDeliverTo').innerText = cells[5] ? cells[5].innerText.trim() : '--';
-      document.getElementById('historyDeliverToType').innerText = cells[6] ? cells[6].innerText.trim() : '--';
-      const badge = cells[7] ? cells[7].querySelector('span') : null;
-      const histStatus = document.getElementById('historyQuoteStatus');
-      histStatus.innerText = badge ? badge.innerText.trim() : 'Pending';
-      histStatus.className = badge ? badge.className : 'inline-block px-1.5 py-0.5 rounded-[1px] font-black text-[8px] uppercase border bg-slate-100 text-slate-600 border-slate-200';
-      openWorkflowModal(modal);
-    }
 
     function openQuoteViewModal(row) {
       const modal = document.getElementById('quoteViewModal');
@@ -663,11 +415,8 @@
         '<td class="px-4 py-3 align-middle text-center border-r border-slate-100">' + deliverToType + '</td>' +
         '<td class="px-4 py-3 align-middle text-center border-r border-slate-100"><span class="' + getStatusBadgeClass(row.dataset.stat) + '">' + statusLabel(row.dataset.stat) + '</span></td>' +
         '<td class="px-4 py-3 align-middle text-center"><div class="flex flex-nowrap justify-center gap-1">' +
-        '<button type="button" class="btn-action btn-edit" title="Edit Quotation" data-action="edit"><span class="material-icons-round text-[14px]">edit</span></button>' +
-        '<button type="button" class="btn-action btn-forward" title="Send / Forward Quotation" data-action="forward"><span class="material-icons-round text-[14px]">send</span></button>' +
+        '<button type="button" class="btn-action btn-view" title="View Quotation" data-action="view"><span class="material-icons-round text-[14px]">visibility</span></button>' +
         '<button type="button" class="btn-action btn-receive" title="Mark as Received" data-action="receive"><span class="material-icons-round text-[14px]">task_alt</span></button>' +
-        '<button type="button" class="btn-action btn-cancel" title="Cancel Quotation" data-action="cancel"><span class="material-icons-round text-[14px]">block</span></button>' +
-        '<button type="button" class="btn-action btn-history" title="History" data-action="history"><span class="material-icons-round text-[14px]">history</span></button>' +
         '</div></td>';
       return row;
     }
@@ -790,65 +539,7 @@
       } catch (error) { alert(error.message || 'Unable to save quotation.'); }
     }
 
-    async function handleEditSubmit(event) {
-      event.preventDefault();
-      const quoteId = document.getElementById('editQuoteId').value;
-      const dateInput = document.getElementById('editQuoteDateInput').value;
-      const amountInput = document.getElementById('editQuoteAmountInput').value;
-      const deliverTo = document.getElementById('editQuoteMunicipalityInput').value;
 
-      try {
-        const res = await fetch(`/municipal/api/quotation/${quoteId}/update`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ date: dateInput, amount: Number(amountInput), deliver_to: deliverTo })
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to update quotation');
-
-        if(activeWorkflowRow) {
-            activeWorkflowRow.dataset.date = dateInput;
-            activeWorkflowRow.dataset.amount = amountInput;
-            activeWorkflowRow.dataset.deliverTo = deliverTo;
-            activeWorkflowRow.children[2].innerText = '₱' + Number(amountInput).toLocaleString('en-PH', { minimumFractionDigits: 2 });
-            activeWorkflowRow.children[3].innerText = dateInput;
-            activeWorkflowRow.children[5].innerText = deliverTo;
-        }
-        closeWorkflowModal(document.getElementById('quoteEditModal'));
-        filterTable();
-      } catch (error) { alert(error.message || 'Unable to update quotation.'); }
-    }
-
-    async function handleForwardSubmit(event) {
-      event.preventDefault();
-      const quotationId = activeWorkflowRow.dataset.id;
-      const deliverTo = document.getElementById('forwardDeliverTo').value.trim();
-      const deliverToType = document.getElementById('forwardDeliverToType').value.trim();
-      const typeSelect = document.getElementById('forwardDeliverToType');
-      const deliverToTypeLabel = deliverToType ? typeSelect.options[typeSelect.selectedIndex].textContent : '';
-
-      if (!deliverToType) {
-          alert('Please select Deliver To Type');
-          return;
-      }
-
-      try {
-        const res = await fetch(`/municipal/api/quotation/${quotationId}/update`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ deliver_to: deliverTo, deliver_to_type: deliverToType, status: 'FORWARDED' })
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to forward quotation');
-
-        activeWorkflowRow.dataset.deliverTo = deliverTo;
-        activeWorkflowRow.dataset.deliverToType = deliverToType;
-        activeWorkflowRow.children[5].innerText = deliverTo;
-        activeWorkflowRow.children[6].innerText = deliverToTypeLabel;
-        updateStatusInRow(activeWorkflowRow, 'FORWARDED');
-
-        closeWorkflowModal(document.getElementById('workflowForwardModal'));
-        filterTable();
-      } catch (error) { alert(error.message || 'Unable to forward quotation.'); }
-    }
 
     async function handleReceiveSubmit(event) {
       event.preventDefault();
@@ -867,66 +558,46 @@
       } catch (error) { alert(error.message || 'Unable to receive quotation.'); }
     }
 
-    async function handleCancelSubmit(event) {
-      event.preventDefault();
-      const quotationId = activeWorkflowRow.dataset.id;
-      const notes = document.getElementById('cancelNotes').value.trim();
-      try {
-        const res = await fetch(`/municipal/api/quotation/${quotationId}/update`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'CANCELLED', notes: notes })
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to cancel');
-        updateStatusInRow(activeWorkflowRow, 'CANCELLED');
-        closeWorkflowModal(document.getElementById('workflowCancelModal'));
-        filterTable();
-      } catch (error) { alert(error.message || 'Unable to cancel quotation.'); }
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Create Modal Triggers
-      document.getElementById('createQuoteBtn').addEventListener('click', () => {
-        const modal = document.getElementById('quoteModal');
-        document.getElementById('quoteForm').reset();
-        const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
-        const randomStr = Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('quoteNumberInput').value = `MQ-${dateStr}-${randomStr}`;
-        const muni = document.getElementById('quoteOriginMuni');
-        if(muni) document.getElementById('quoteClientInput').value = 'LGU ' + muni.value.trim();
-        openWorkflowModal(modal);
-      });
-      document.getElementById('quoteCancelBtn').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
-      document.getElementById('quoteCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
-      document.getElementById('quoteForm').addEventListener('submit', handleQuoteSubmit);
+      // Create Modal Triggers (guarded for municipal view)
+      const createQuoteBtn = document.getElementById('createQuoteBtn');
+      const quoteForm = document.getElementById('quoteForm');
+      if (createQuoteBtn && quoteForm) {
+        createQuoteBtn.addEventListener('click', () => {
+          const modal = document.getElementById('quoteModal');
+          quoteForm.reset();
+          const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
+          const randomStr = Math.floor(1000 + Math.random() * 9000);
+          document.getElementById('quoteNumberInput').value = `MQ-${dateStr}-${randomStr}`;
+          const muni = document.getElementById('quoteOriginMuni');
+          if(muni) document.getElementById('quoteClientInput').value = 'LGU ' + muni.value.trim();
+          openWorkflowModal(modal);
+        });
+        const quoteCancelBtn = document.getElementById('quoteCancelBtn');
+        if (quoteCancelBtn) quoteCancelBtn.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
+        const quoteCloseIcon = document.getElementById('quoteCloseIcon');
+        if (quoteCloseIcon) quoteCloseIcon.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteModal')));
+        quoteForm.addEventListener('submit', handleQuoteSubmit);
+      }
 
       // Edit Modal Triggers
-      document.getElementById('quoteEditForm').addEventListener('submit', handleEditSubmit);
-      document.getElementById('quoteEditCancelBtn').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteEditModal')));
-      document.getElementById('quoteEditCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteEditModal')));
 
       // Forward Modal Triggers
-      document.getElementById('workflowForwardForm').addEventListener('submit', handleForwardSubmit);
-      document.getElementById('workflowForwardCancel').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowForwardModal')));
-      document.getElementById('workflowForwardCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowForwardModal')));
 
       // Receive Modal Triggers
-      document.getElementById('workflowReceiveForm').addEventListener('submit', handleReceiveSubmit);
-      document.getElementById('workflowReceiveCancel').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
-      document.getElementById('workflowReceiveCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
+      const workflowReceiveForm = document.getElementById('workflowReceiveForm');
+      if (workflowReceiveForm) workflowReceiveForm.addEventListener('submit', handleReceiveSubmit);
+      const workflowReceiveCancel = document.getElementById('workflowReceiveCancel');
+      if (workflowReceiveCancel) workflowReceiveCancel.addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
+      const workflowReceiveCloseIcon = document.getElementById('workflowReceiveCloseIcon');
+      if (workflowReceiveCloseIcon) workflowReceiveCloseIcon.addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowReceiveModal')));
 
-      // Cancel Modal Triggers
-      document.getElementById('workflowCancelForm').addEventListener('submit', handleCancelSubmit);
-      document.getElementById('workflowCancelCancelBtn').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowCancelModal')));
-      document.getElementById('workflowCancelCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowCancelModal')));
-
-      // History Modal Triggers
-      document.getElementById('workflowHistoryCloseBtn').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowHistoryModal')));
-      document.getElementById('workflowHistoryCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('workflowHistoryModal')));
-      
       // View Modal Triggers
-      document.getElementById('quoteViewCloseBtn').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
-      document.getElementById('quoteViewCloseIcon').addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
+      const quoteViewCloseBtn = document.getElementById('quoteViewCloseBtn');
+      if (quoteViewCloseBtn) quoteViewCloseBtn.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
+      const quoteViewCloseIcon = document.getElementById('quoteViewCloseIcon');
+      if (quoteViewCloseIcon) quoteViewCloseIcon.addEventListener('click', () => closeWorkflowModal(document.getElementById('quoteViewModal')));
 
       // Table Actions Delegation
       document.querySelector('#quoteTable tbody').addEventListener('click', event => {
@@ -936,11 +607,7 @@
         if (!row) return;
 
         const action = actionBtn.getAttribute('data-action');
-        if (action === 'edit') openEditModalForRow(row);
-        else if (action === 'forward') openForwardModalForRow(row);
-        else if (action === 'receive') openReceiveModalForRow(row);
-        else if (action === 'cancel') openCancelModalForRow(row);
-        else if (action === 'history') openHistoryModalForRow(row);
+        if (action === 'receive') openReceiveModalForRow(row);
         else if (action === 'view') openQuoteViewModal(row);
       });
       
@@ -954,8 +621,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       const destDropdowns = [
-          document.getElementById('quoteMunicipalityInput'),
-          document.getElementById('editQuoteMunicipalityInput')
+          document.getElementById('quoteMunicipalityInput')
       ];
       
       const currentMuni = document.getElementById('quoteOriginMuni') ? document.getElementById('quoteOriginMuni').value.trim() : '';
@@ -994,3 +660,5 @@
 
 </body>
 </html>
+
+
