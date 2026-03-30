@@ -169,6 +169,26 @@
                         </div>
                     </div>
 
+                    <!-- Farm Visit Details Panel -->
+                    <div class="gov-card p-3 shadow-sm" x-show="farmVisitDetails.show" x-cloak>
+                        <h3 class="label-text border-b pb-1 mb-2 flex items-center gap-2 text-emerald-800">
+                            <span class="material-icons-round text-[14px]">agriculture</span> Farm Visit Details
+                        </h3>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <template x-for="field in farmVisitDetails.fields" :key="field.label">
+                                <div>
+                                    <p class="label-text" x-text="field.label"></p>
+                                    <template x-if="!field.isLink">
+                                        <p class="data-text break-words" x-text="field.value"></p>
+                                    </template>
+                                    <template x-if="field.isLink">
+                                        <a :href="field.value" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-bold text-[11px]">🗺️ View on Map</a>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
                     <!-- Compensation Details Panel -->
                     <div class="gov-card p-3 shadow-sm" x-show="compensationDetails.show" x-cloak>
                         <h3 class="label-text border-b pb-1 mb-2 flex items-center gap-2 text-orange-700">
@@ -408,6 +428,11 @@
                         return acc;
                     }
                     if (typeof value === 'object') {
+                        const directUrl = String(value.url || value.webUrl || value.path || value.secure_url || value.downloadURL || '').trim();
+                        if (directUrl && this.isLikelyFilePath(directUrl)) {
+                            acc.push(directUrl);
+                            return acc;
+                        }
                         Object.values(value).forEach(item => this.collectFileStrings(item, acc));
                         return acc;
                     }
@@ -418,21 +443,7 @@
                 },
 
                 buildDocFiles(data) {
-                    // First try to get compensation documents using priority order
-                    if (Array.isArray(data?.supportingDocuments) && data.supportingDocuments.length) {
-                        return data.supportingDocuments.map(d => typeof d === 'string' ? { url: d, name: `Document` } : d);
-                    }
-                    if (Array.isArray(data?.supportingFiles) && data.supportingFiles.length) {
-                        return data.supportingFiles.map(d => typeof d === 'string' ? { url: d, name: `Document` } : d);
-                    }
-                    if (Array.isArray(data?.attachments) && data.attachments.length) {
-                        return data.attachments.map(d => typeof d === 'string' ? { url: d, name: `Document` } : d);
-                    }
-                    if (Array.isArray(data?.files) && data.files.length) {
-                        return data.files.map(d => typeof d === 'string' ? { url: d, name: `Document` } : d);
-                    }
-
-                    // Fallback to scanning all object entries for attachment keys
+                    // Aggregate all attachment-like fields (no early return) so multi-source files are all shown
                     const result = [];
                     const seen = new Set();
                     const userId = data?.userId || data?.userID || data?.uid || '';
@@ -578,6 +589,8 @@
                         'amount', 'invoiceId', 'externalId', 'paymentUrl',
                         // Compensation-specific fields (shown in Form-Specific Details panel)
                         'farmerIdNumber', 'costOfDamage', 'googlePinLocation', 'farmLatitude', 'farmLongitude',
+                        // Farm Visit-specific fields (shown in Farm Visit Details panel)
+                        'farmAddress', 'farmSize', 'productionType', 'farmProvince', 'farmMunicipality', 'farmBarangay', 'exactLocation', 'location',
                         // Document fields
                         'supportingDocuments', 'supportingFiles', 'attachments', 'files',
                         'productPhoto', 'registrationDocuments', 'emergencyPhotos', 'fieldPhotos', 'damagePhotos'
@@ -637,6 +650,35 @@
                     return {
                         show: fields.length > 0,
                         fields: fields
+                    };
+                },
+
+                get farmVisitDetails() {
+                    if (!this.serviceData) return { show: false, fields: [] };
+                    const d = this.serviceData;
+                    const svc = (d.serviceType || '').toLowerCase();
+                    const isFarmVisit = svc.includes('farm visit') || svc.includes('initial farm') || svc.includes('compliance inspection') || svc.includes('disease/pest investigation') || svc.includes('soil/crop evaluation') || svc.includes('follow-up / visit') || svc.includes('follow up visit');
+                    if (!isFarmVisit) return { show: false, fields: [] };
+
+                    const fields = [];
+                    const push = (label, value, isLink = false) => {
+                        const text = String(value ?? '').trim();
+                        if (!text) return;
+                        fields.push({ label, value: text, isLink });
+                    };
+
+                    push('Farm Address', d.farmAddress || d.exactLocation || d.location);
+                    push('Farm Size', d.farmSize || d.areaSize || d.affectedAreaHa);
+                    push('Production Type', d.productionType);
+                    push('Farmer ID', d.farmerIdNumber);
+                    push('Province', d.province || d.farmProvince);
+                    push('Municipality', d.municipality || d.farmMunicipality);
+                    push('Barangay', d.barangay || d.farmBarangay);
+                    if (d.googlePinLocation) push('Map Pin', d.googlePinLocation, true);
+
+                    return {
+                        show: fields.length > 0,
+                        fields
                     };
                 },
 
