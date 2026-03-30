@@ -3469,12 +3469,101 @@ def api_update_notification(notification_id):
 
 
 from inquiries_storage import get_conversations, get_messages, add_message
+
+
+def _extract_user_photo(user_data):
+    if not isinstance(user_data, dict):
+        return ''
+    return (
+        user_data.get('photoURL')
+        or user_data.get('photoUrl')
+        or user_data.get('profilePhoto')
+        or user_data.get('profile_photo')
+        or user_data.get('photo_url')
+        or user_data.get('photo')
+        or user_data.get('user_photo')
+        or ''
+    )
+
+
+def _extract_user_name(user_data):
+    if not isinstance(user_data, dict):
+        return ''
+    full_name = str(user_data.get('name') or '').strip()
+    if full_name:
+        return full_name
+
+    first_name = str(user_data.get('firstName') or user_data.get('first_name') or '').strip()
+    last_name = str(user_data.get('lastName') or user_data.get('last_name') or '').strip()
+    combined = f"{first_name} {last_name}".strip()
+    if combined:
+        return combined
+
+    return str(user_data.get('username') or user_data.get('displayName') or '').strip()
+
+
+def _resolve_user_profile(identity_key='', email_hint=''):
+    """Resolve user profile from users collection by document id first, then by email."""
+    db = firestore.client()
+    identity_key = str(identity_key or '').strip()
+    email = str(email_hint or '').strip().lower()
+
+    if not email and '@' in identity_key:
+        email = identity_key.lower()
+
+    # Try direct document id lookup first.
+    if identity_key and '@' not in identity_key:
+        try:
+            doc = db.collection('users').document(identity_key).get()
+            if doc.exists:
+                data = doc.to_dict() or {}
+                return {
+                    'name': _extract_user_name(data),
+                    'photo': _extract_user_photo(data),
+                    'email': str(data.get('email') or email or '').strip().lower(),
+                }
+        except Exception:
+            pass
+
+    # Email lookup fallback.
+    if email:
+        try:
+            docs = db.collection('users').where(filter=FieldFilter('email', '==', email)).limit(1).stream()
+            for doc in docs:
+                data = doc.to_dict() or {}
+                return {
+                    'name': _extract_user_name(data),
+                    'photo': _extract_user_photo(data),
+                    'email': str(data.get('email') or email or '').strip().lower(),
+                }
+        except Exception:
+            pass
+
+    return {'name': '', 'photo': '', 'email': email}
+
+
 # === INQUIRIES (MESSENGER) API ===
 @bp.route('/inquiries/conversations', methods=['GET'])
 @firebase_auth_required
 def api_get_inquiry_conversations():
     try:
         convos = get_conversations()
+
+        # Enrich conversation display data from users profile when missing.
+        for convo in convos:
+            convo_key = (convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
+            convo_email = (convo.get('email') or convo.get('user_email') or '').strip().lower()
+            if convo.get('user_photo') and convo.get('user_name'):
+                continue
+
+            profile = _resolve_user_profile(convo_key, convo_email)
+            if not convo.get('user_photo') and profile.get('photo'):
+                convo['user_photo'] = profile.get('photo')
+            if not convo.get('user_name') and profile.get('name'):
+                convo['user_name'] = profile.get('name')
+            if not convo.get('email') and profile.get('email'):
+                convo['email'] = profile.get('email')
+
         return jsonify({'success': True, 'conversations': convos})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -3487,6 +3576,21 @@ def api_get_inquiry_messages(user_id):
         if not convo_key:
             convo_key = (request.args.get('email') or session.get('user_email') or '').strip()
         msgs = get_messages(convo_key)
+
+        # Fill missing user profile info for end-user messages.
+        profile = _resolve_user_profile(convo_key, convo_key)
+        admin_roles = {'superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'}
+        for msg in msgs:
+            sender_role = str(msg.get('sender_role') or '').strip().lower()
+            is_admin_msg = bool(msg.get('is_admin')) or sender_role in admin_roles
+            if is_admin_msg:
+                continue
+
+            if not msg.get('user_photo') and profile.get('photo'):
+                msg['user_photo'] = profile.get('photo')
+            if not msg.get('user_name') and profile.get('name'):
+                msg['user_name'] = profile.get('name')
+
         return jsonify({'success': True, 'messages': msgs})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -3519,6 +3623,15 @@ def api_send_inquiry_message():
 
         message = request.form.get('message', '')
         user_photo = request.form.get('user_photo', '')
+
+        # Backfill sender profile for user-side messages when frontend has no photo yet.
+        if not user_photo:
+            resolved = _resolve_user_profile(user_id, user_email)
+            if resolved.get('photo'):
+                user_photo = resolved.get('photo')
+            if not user_name and resolved.get('name'):
+                user_name = resolved.get('name')
+
         file_url = ''
         file_type = ''
         if 'file' in request.files:
