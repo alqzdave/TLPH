@@ -1143,9 +1143,26 @@
     if (ok && err) err.style.display = 'none';
   };
 
+  function toNationalProxyUrl(rawUrl) {
+    const url = String(rawUrl || '').trim();
+    if (!url) return '';
+    if (/^\/api\/files\/proxy\?/i.test(url)) return url;
+    if (/^(\/static\/|static\/)/i.test(url)) {
+      return url.startsWith('static/') ? `/${url}` : url;
+    }
+    if (/^https?:\/\//i.test(url)) {
+      return `/api/files/proxy?url=${encodeURIComponent(url)}`;
+    }
+    if (url.startsWith('/')) {
+      return `/api/files/proxy?url=${encodeURIComponent(window.location.origin + url)}`;
+    }
+    return `/api/files/proxy?url=${encodeURIComponent(url)}`;
+  }
+
   window.openNationalAttachmentPreview = function(encodedUrl, encodedName) {
     try {
       const url = decodeURIComponent(encodedUrl || '');
+      const previewUrl = toNationalProxyUrl(url) || url;
       const name = decodeURIComponent(encodedName || 'Attachment');
       const ext = String(url).toLowerCase();
       const isImg = /\.(png|jpe?g|gif|webp|bmp|svg|avif)(\?|$)/i.test(ext);
@@ -1163,10 +1180,10 @@
       fallback.style.display = 'none';
 
       if (isImg) {
-        img.src = url;
+        img.src = previewUrl;
         img.style.display = 'block';
       } else if (isPdf) {
-        frame.src = `${url}#toolbar=0&navpanes=0&scrollbar=1`;
+        frame.src = `${previewUrl}#toolbar=0&navpanes=0&scrollbar=1`;
         frame.style.display = 'block';
       } else {
         fallback.style.display = 'block';

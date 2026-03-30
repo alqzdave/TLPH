@@ -617,6 +617,16 @@
             return `/${raw}`;
         }
 
+        function _toSuperAdminProxyUrl(rawUrl) {
+            const value = String(rawUrl || '').trim();
+            if (!value) return '';
+            if (/^\/api\/files\/proxy\?/i.test(value)) return value;
+            if (/^(\/static\/|static\/)/i.test(value)) return value.startsWith('static/') ? `/${value}` : value;
+            if (/^https?:\/\//i.test(value)) return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+            if (value.startsWith('/')) return `/api/files/proxy?url=${encodeURIComponent(window.location.origin + value)}`;
+            return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+        }
+
         function _collectAttachmentGroups(raw) {
             const grouped = new Map();
             const seenUrl = new Set();
@@ -675,6 +685,7 @@
 
             const add = (groupKey, label, url) => {
                 const normalizedUrl = _normalizeAttachmentUrl(url);
+                const previewUrl = _toSuperAdminProxyUrl(normalizedUrl) || normalizedUrl;
                 if (!normalizedUrl || seenUrl.has(normalizedUrl)) return;
                 seenUrl.add(normalizedUrl);
 
@@ -689,7 +700,8 @@
                 }
 
                 grouped.get(normalizedKey).files.push({
-                    url: normalizedUrl,
+                    url: previewUrl,
+                    sourceUrl: normalizedUrl,
                     fileName: normalizedUrl.split('/').pop() || 'file',
                     type: detectType(normalizedUrl)
                 });
@@ -747,31 +759,33 @@
             `;
         }
 
-        function openApplicationAttachmentPreview(url, label, fromGroup = false) {
+        function openApplicationAttachmentPreview(url, label, fromGroup = false, fileType = '') {
             const modal = document.getElementById('applicationAttachmentPreviewModal');
             const body = document.getElementById('applicationAttachmentPreviewBody');
             const title = document.getElementById('applicationAttachmentPreviewTitle');
             const backBtn = document.getElementById('applicationAttachmentPreviewBack');
 
             const cleanUrl = _normalizeAttachmentUrl(url);
-            if (!cleanUrl) return;
+            const previewUrl = _toSuperAdminProxyUrl(cleanUrl) || cleanUrl;
+            if (!previewUrl) return;
 
-            const isImage = /\.(png|jpg|jpeg|gif|webp|bmp|svg|avif)(\?.*)?$/i.test(cleanUrl);
-            const isPdf = /\.pdf(\?.*)?$/i.test(cleanUrl);
+            const resolvedType = String(fileType || '').toLowerCase();
+            const isImage = resolvedType ? resolvedType === 'image' : /\.(png|jpg|jpeg|gif|webp|bmp|svg|avif)(\?.*)?$/i.test(cleanUrl);
+            const isPdf = resolvedType ? resolvedType === 'pdf' : /\.pdf(\?.*)?$/i.test(cleanUrl);
             title.innerHTML = `<i class="fa-solid fa-file text-slate-400"></i> ${_safeHtml(label || 'Attachment Preview')}`;
             backBtn.style.display = fromGroup ? 'inline-flex' : 'none';
 
             attachmentPreviewState.mode = 'single';
 
             if (isImage) {
-                body.innerHTML = `<img src="${cleanUrl}" alt="Attachment" class="attachment-single-image" />`;
+                body.innerHTML = `<img src="${previewUrl}" alt="Attachment" class="attachment-single-image" />`;
             } else if (isPdf) {
-                body.innerHTML = `<iframe src="${cleanUrl}#toolbar=0&navpanes=0&scrollbar=1" class="w-full h-[74vh] border border-slate-300 bg-white"></iframe>`;
+                body.innerHTML = `<iframe src="${previewUrl}#toolbar=0&navpanes=0&scrollbar=1" class="w-full h-[74vh] border border-slate-300 bg-white"></iframe>`;
             } else {
                 body.innerHTML = `
                     <div class="bg-white border border-slate-200 p-6 text-center">
                         <p class="text-[10px] font-black uppercase text-slate-600 mb-2">Preview not supported for this file type.</p>
-                        <a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-gov-blue text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest no-underline">
+                        <a href="${previewUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-gov-blue text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest no-underline">
                             <i class="fa-solid fa-up-right-from-square"></i> Open File
                         </a>
                     </div>
@@ -787,7 +801,7 @@
             if (!group || !group.files || !group.files.length) return;
 
             if (group.files.length === 1) {
-                openApplicationAttachmentPreview(group.files[0].url, group.label || 'Attachment Preview', false);
+                openApplicationAttachmentPreview(group.files[0].url, group.label || 'Attachment Preview', false, group.files[0].type || '');
                 return;
             }
 
@@ -812,7 +826,7 @@
                     ${group.files.map((file, index) => `
                         <div class="attachment-gallery-item" onclick="openApplicationAttachmentFromGroup(${index})">
                             ${file.type === 'image'
-                                ? `<img src="${_safeHtml(file.url)}" alt="${_safeHtml(group.label)} ${index + 1}" class="attachment-gallery-thumb" />`
+                                ? `<img src="${_safeHtml(_toSuperAdminProxyUrl(file.sourceUrl || file.url) || file.url)}" alt="${_safeHtml(group.label)} ${index + 1}" class="attachment-gallery-thumb" />`
                                 : `<div class="attachment-gallery-thumb flex items-center justify-center"><i class="fa-solid fa-file text-slate-400 text-xl"></i></div>`}
                             <p class="text-[9px] font-black uppercase tracking-widest text-slate-600 m-0 mt-2">${_safeHtml(group.label)} ${index + 1}</p>
                         </div>
@@ -829,7 +843,7 @@
             const file = files[fileIndex];
             if (!file) return;
             attachmentPreviewState.selectedIndex = fileIndex;
-            openApplicationAttachmentPreview(file.url, `${attachmentPreviewState.groupLabel || 'Attachment'} ${fileIndex + 1}`, true);
+            openApplicationAttachmentPreview(file.url, `${attachmentPreviewState.groupLabel || 'Attachment'} ${fileIndex + 1}`, true, file.type || '');
         }
 
         function backToAttachmentGallery() {

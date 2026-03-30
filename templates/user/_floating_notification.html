@@ -1,202 +1,781 @@
-<!-- Floating Notification Icon (visible on all user pages) -->
-
 <style>
+/* Modern Messenger Inquiry Tab Styles */
+.inquiry-messenger {
+    display: flex;
+    flex-direction: column;
+    height: 380px; /* Fixed height for stability */
+    background: #ffffff;
+    border-radius: 0 0 16px 16px;
+    font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+    position: relative;
+    box-sizing: border-box;
+}
+.inquiry-messenger-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    background: #f8fafc; /* Lighter background for the chat area */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+/* Scrollbar styling for Webkit */
+.inquiry-messenger-body::-webkit-scrollbar { width: 6px; }
+.inquiry-messenger-body::-webkit-scrollbar-track { background: transparent; }
+.inquiry-messenger-body::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+
+/* Message bubble with avatar */
+.inquiry-msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    animation: msg-pop-in 0.3s cubic-bezier(.68,-0.55,.27,1.55);
+}
+.inquiry-msg-row.me {
+    flex-direction: row-reverse;
+}
+.inquiry-msg-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+.inquiry-msg {
+    max-width: 75%;
+    padding: 0.6rem 0.9rem;
+    border-radius: 16px 16px 16px 4px;
+    font-size: 0.95rem;
+    background: #ffffff;
+    color: #1e293b;
+    align-self: flex-start;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    position: relative;
+    word-break: break-word;
+    line-height: 1.4;
+}
+.inquiry-msg.me {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    align-self: flex-end;
+    border-radius: 16px 16px 4px 16px;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+@keyframes msg-pop-in {
+    0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Image styles inside messages */
+.inquiry-msg.image-only {
+    padding: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.inquiry-msg .msg-img {
+    max-width: 180px;
+    max-height: 180px;
+    border-radius: 12px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+.inquiry-msg .msg-img:hover { transform: scale(1.02); }
+.inquiry-msg.me .msg-img { border-color: rgba(255,255,255,0.2); }
+
+.inquiry-msg .msg-time {
+    display: block;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    margin-top: 0.3rem;
+    text-align: right;
+}
+.inquiry-msg.me .msg-time {
+    color: #bfdbfe;
+}
+
+/* Footer Inputs */
+.inquiry-messenger-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 0 0 16px 16px;
+}
+.inquiry-messenger-footer input[type="text"] {
+    flex: 1;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    background: #f8fafc;
+    outline: none;
+    transition: all 0.2s;
+}
+.inquiry-messenger-footer input[type="text"]:focus {
+    border-color: #93c5fd;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px #eff6ff;
+}
+.footer-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #64748b;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    flex-shrink: 0;
+    font-size: 1rem;
+    border: none;
+}
+.footer-btn:hover { background: #e2e8f0; color: #2563eb; transform: scale(1.05); }
+
+.footer-btn-send {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+.footer-btn-send:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+/* Link Previews */
+.inquiry-link-preview {
+    display: flex; width: 100%; max-width: 260px;
+    margin-top: 6px; border-radius: 10px; overflow: hidden;
+    background: #f8fafc; border: 1px solid #cbd5e1; text-decoration: none; 
+    color: inherit; transition: all 0.2s;
+    font-size: 0.85rem;
+}
+.inquiry-link-preview:hover { border-color: #94a3b8; }
+.inquiry-msg.me .inquiry-link-preview { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #fff; }
+.inquiry-link-preview-thumb { width: 36px; height: 36px; border-radius: 8px; margin: 8px 0 8px 8px; flex-shrink: 0; }
+.inquiry-link-preview-content { padding: 8px; min-width: 0; }
+.inquiry-link-preview-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inquiry-link-preview-desc { font-size: 0.75rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inquiry-msg.me .inquiry-link-preview-desc { color: #dbeafe; }
+.inquiry-link-preview-domain { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; opacity: 0.7; margin-top: 2px; }
+
+/* Lightbox */
+#inquiryLightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+#inquiryLightbox.show { opacity: 1; pointer-events: auto; }
+#inquiryLightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s; }
+#inquiryLightbox.show img { transform: scale(1); }
+#inquiryLightbox .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+
+/* Floating Notification Modal Tabs */
+.notif-modal-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
+    height: 48px;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+}
+.notif-modal-tab-btn {
+    flex: 1;
+    padding: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.notif-modal-tab-btn.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+.notif-modal-tab-btn:hover:not(.active) {
+    color: #0f172a;
+    background: #f8fafc;
+}
+
+/* Floating Notification Button */
 .floating-notification-btn {
     position: fixed;
     bottom: 24px;
     right: 24px;
     z-index: 2000;
-    background: rgba(255,255,255,0.18);
-    color: #0e7490;
+    background: #ffffff;
+    color: #0f172a;
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
+    width: 56px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 24px 0 rgba(16, 185, 129, 0.18), 0 1.5px 8px 0 rgba(34,211,238,0.10);
-    transition: box-shadow 0.2s, transform 0.18s, background 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.2s;
     cursor: pointer;
-    backdrop-filter: blur(12px) saturate(180%);
-    border: 1.5px solid rgba(255,255,255,0.35);
-    animation: notif-float-in 0.5s cubic-bezier(.68,-0.55,.27,1.55);
-    overflow: hidden;
-}
-.floating-notification-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(34,211,238,0.10) 100%);
-    pointer-events: none;
-    z-index: 1;
+    border: 1px solid #e2e8f0;
 }
 .floating-notification-btn:hover {
-    background: rgba(255,255,255,0.28);
-    box-shadow: 0 10px 32px 0 rgba(16, 185, 129, 0.28), 0 2px 12px 0 rgba(34,211,238,0.18);
-    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
 }
 .floating-notification-btn:active {
-    transform: scale(0.97);
+    transform: scale(0.95);
 }
 .floating-notification-btn i.fa-bell {
-    font-size: 1.35rem;
-    filter: drop-shadow(0 1px 3px #0e749055);
+    font-size: 1.5rem;
     transition: color 0.2s;
-    z-index: 2;
 }
 .floating-notification-badge {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    background: linear-gradient(90deg, #f43f5e 0%, #f59e42 100%);
+    top: 0;
+    right: 0;
+    background: #ef4444;
     color: #fff;
-    font-size: 10px;
-    font-weight: bold;
+    font-size: 11px;
+    font-weight: 700;
     border-radius: 9999px;
-    padding: 1.5px 6px;
-    border: 1.5px solid #fff;
-    box-shadow: 0 1px 4px rgba(244,63,94,0.13);
-    letter-spacing: 0.3px;
-    animation: notif-badge-pop 0.6s cubic-bezier(.68,-0.55,.27,1.55);
+    padding: 2px 6px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
     z-index: 3;
 }
-@keyframes notif-float-in {
-    0% { opacity: 0; transform: scale(0.7) translateY(60px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-@keyframes notif-badge-pop {
-    0% { transform: scale(0.5); opacity: 0; }
-    60% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-}
+
 @media (max-width: 600px) {
-    .floating-notification-btn { right: 10px; bottom: 10px; width: 38px; height: 38px; }
-    .floating-notification-badge { top: 2.5px; right: 2.5px; font-size: 8.5px; padding: 1px 4px; }
+    .floating-notification-btn { right: 16px; bottom: 16px; width: 48px; height: 48px; }
+    .floating-notification-badge { top: -2px; right: -2px; font-size: 10px; }
+}
+
+/* Notification List Styling */
+#notifTabContent {
+    height: 380px; 
+    background: #ffffff;
+    border-radius: 0 0 16px 16px;
+}
+#userNotificationList {
+    height: 100%;
+    overflow-y: auto;
+}
+/* Scrollbar styling for Webkit */
+#userNotificationList::-webkit-scrollbar { width: 6px; }
+#userNotificationList::-webkit-scrollbar-track { background: transparent; }
+#userNotificationList::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+
+/* Wider layout for inquiry tab */
+#notificationModal.inquiry-expanded .notif-modal-container {
+    width: 550px !important;
+    max-width: 95vw;
 }
 </style>
 
 
 <div class="floating-notification-btn group" title="Notifications" onclick="openNotificationModal()">
-    <i class="fa-solid fa-bell text-xl group-hover:text-yellow-300 transition" id="userNotifBell"></i>
+    <i class="fa-solid fa-bell" id="userNotifBell"></i>
     <span class="floating-notification-badge" id="userNotifBadge" style="display:none"></span>
 </div>
 
-<!-- Notification Modal -->
-<!-- Notification Modal (Chat Bubble Style) -->
-<div id="notificationModal" class="fixed z-[3000] hidden" style="bottom: 76px; right: 24px;">
+<div id="notificationModal" class="fixed z-[3000] hidden" style="bottom: 90px; right: 24px;">
     <div class="relative">
-        <!-- Arrow -->
-        <div style="position:absolute;bottom:-12px;right:18px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid #2563eb;z-index:2;"></div>
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-80 max-w-[90vw] p-0 border border-blue-200 animate-fade-in overflow-hidden" style="box-shadow:0 8px 32px 0 rgba(16, 185, 129, 0.18),0 1.5px 8px 0 rgba(34,211,238,0.10);">
-            <div class="bg-blue-600 text-white px-5 py-3 flex items-center gap-2">
-                <i class="fa-solid fa-bell text-lg"></i>
-                <span class="font-bold text-base tracking-tight">Messages</span>
-                <button onclick="closeNotificationModal()" class="ml-auto text-white/80 hover:text-white text-lg font-bold focus:outline-none" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        <div style="position:absolute; bottom:-8px; right:20px; width:16px; height:16px; background:#ffffff; transform:rotate(45deg); border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; z-index:2;"></div>
+        
+        <div class="notif-modal-container bg-white rounded-2xl shadow-xl w-80 max-w-[90vw] border border-slate-200 overflow-hidden flex flex-col transition-all duration-300" style="box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2);">
+            
+            <div class="notif-modal-tabs">
+                <button id="notifTabBtn" onclick="showNotifTab()" class="notif-modal-tab-btn active">
+                    <i class="fa-regular fa-bell mr-2"></i> Notifications
+                </button>
+                <button id="msgTabBtn" onclick="showMsgTab()" class="notif-modal-tab-btn">
+                    <i class="fa-regular fa-comment-dots mr-2"></i> Inquiry
+                </button>
+                <button onclick="closeNotificationModal()" class="text-slate-400 hover:text-slate-700 px-4 transition" title="Close">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
-            <div class="max-h-72 overflow-y-auto py-2 bg-white/70" id="userNotificationList">
-                <div class="text-slate-400 text-xs px-4 py-2">Loading notifications...</div>
-            </div>
-        <script>
-        function timeAgoUser(dateStr) {
-            const date = new Date(dateStr);
-            const now = new Date();
-            const seconds = Math.floor((now - date) / 1000);
-            const hours = Math.floor(seconds / 3600);
-            if (hours < 24) {
-                return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
-            }
-            const days = Math.floor(hours / 24);
-            return days === 1 ? '1 day ago' : `${days} days ago`;
-        }
-
-        function renderUserNotificationItem(notif) {
-            return `
-                <div class="flex items-start gap-3 px-4 py-2 hover:bg-blue-50/80 cursor-pointer border-b border-blue-50 last:border-b-0">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-                        <i class="fa-solid fa-bell"></i>
-                    </div>
-                    <div class="flex-grow min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="font-semibold text-sm text-blue-900 truncate">${notif.title || notif.type || 'Notification'}</span>
-                            <span class="ml-auto text-[10px] text-slate-400">${notif.post_date ? timeAgoUser(notif.post_date) : ''}</span>
-                        </div>
-                        <div class="text-xs text-slate-500 truncate">${notif.content || ''}</div>
-                    </div>
+            
+            <div id="notifTabContent">
+                <div id="userNotificationList">
+                    <div class="text-slate-400 text-sm text-center mt-10">Loading notifications...</div>
                 </div>
-            `;
-        }
+            </div>
+            
+            <div id="msgTabContent" style="display:none;">
+                <div class="inquiry-messenger">
+                    <div class="inquiry-messenger-body" id="userMessageList"></div>
+                    <form id="userMessageForm" class="inquiry-messenger-footer" onsubmit="sendUserMessage(event)">
+                        
+                        <input type="file" id="userPhotoInput" accept="image/*" onchange="sendUserPhoto(event)" hidden>
+                        <input type="file" id="userCameraInput" accept="image/*" capture="environment" onchange="sendUserPhoto(event)" hidden>
+                        <input type="file" id="userFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z" onchange="sendUserFile(event)" hidden>
+                        
+                        <label class="footer-btn" for="userPhotoInput" title="Upload Photo">
+                            <i class="fa-solid fa-image"></i>
+                        </label>
+                        
+                        <label class="footer-btn" for="userCameraInput" title="Take Photo">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
 
-        async function updateUserNotificationBadgeAndList() {
-            const badge = document.getElementById('userNotifBadge');
-            const bell = document.getElementById('userNotifBell');
-            const listDiv = document.getElementById('userNotificationList');
-            try {
-                const res = await fetch('/api/notifications/list');
-                const data = await res.json();
-                if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
-                const notifs = (data.notifications || []).filter(n => {
-                    if (n.status !== 'posted') return false;
-                    if (!(n.scope === 'all' || n.scope === 'user' || n.scope === 'end-user')) return false;
-                    if (!n.post_date) return false;
-                    const postDate = new Date(n.post_date);
-                    const now = new Date();
-                    const diffHrs = (now - postDate) / (1000 * 60 * 60);
-                    return diffHrs <= 5;
-                });
-                if (notifs.length > 0) {
-                    badge.textContent = notifs.length > 9 ? '9+' : notifs.length;
-                    badge.style.display = '';
-                    bell.classList.add('text-yellow-500', 'animate-bounce');
-                    bell.classList.remove('text-slate-400');
-                } else {
-                    badge.textContent = '';
-                    badge.style.display = 'none';
-                    bell.classList.remove('text-yellow-500', 'animate-bounce');
-                    bell.classList.add('text-slate-400');
-                }
-                if (listDiv) {
-                    if (notifs.length === 0) {
-                        listDiv.innerHTML = '<div class="text-slate-400 text-xs px-4 py-2">No notifications to display.</div>';
-                    } else {
-                        // Sort by post_date descending
-                        notifs.sort((a, b) => new Date(b.post_date) - new Date(a.post_date));
-                        listDiv.innerHTML = notifs.map(renderUserNotificationItem).join('');
-                    }
-                }
-            } catch (e) {
-                badge.textContent = '';
-                badge.style.display = 'none';
-                bell.classList.remove('text-yellow-500', 'animate-bounce');
-                bell.classList.add('text-slate-400');
-                if (listDiv) listDiv.innerHTML = '<div class="text-rose-500 text-xs px-4 py-2">Error loading notifications: ' + e.message + '</div>';
+                        <label class="footer-btn" for="userFileInput" title="Attach File">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </label>
+
+                        <input type="text" id="userMessageInput" placeholder="Message..." autocomplete="off" required />
+                        
+                        <button type="submit" class="footer-btn footer-btn-send" title="Send">
+                            <i class="fa-solid fa-paper-plane" style="margin-left: -2px; margin-top: 1px;"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <div id="inquiryLightbox" onclick="closeInquiryLightbox()">
+                    <span class="lightbox-close" onclick="closeInquiryLightbox()">&times;</span>
+                    <img id="inquiryLightboxImg" src="" alt="Preview" onclick="event.stopPropagation()">
+                </div>
+            </div>
+
+        <script>
+            // Tab switching logic
+            function showNotifTab() {
+                document.getElementById('notifTabContent').style.display = '';
+                document.getElementById('msgTabContent').style.display = 'none';
+                document.getElementById('notifTabBtn').classList.add('active');
+                document.getElementById('msgTabBtn').classList.remove('active');
+                document.getElementById('notificationModal').classList.remove('inquiry-expanded');
             }
-        }
-        document.addEventListener('DOMContentLoaded', updateUserNotificationBadgeAndList);
-        setInterval(updateUserNotificationBadgeAndList, 2 * 60 * 1000);
+            function showMsgTab() {
+                document.getElementById('notifTabContent').style.display = 'none';
+                document.getElementById('msgTabContent').style.display = '';
+                document.getElementById('notifTabBtn').classList.remove('active');
+                document.getElementById('msgTabBtn').classList.add('active');
+                document.getElementById('notificationModal').classList.add('inquiry-expanded');
+                
+                // Scroll to bottom when opening chat
+                const list = document.getElementById('userMessageList');
+                if(list) list.scrollTop = list.scrollHeight;
+            }
+
+
+            // --- Inquiry Messenger: Backend Integration ---
+            let userEmail = window.currentUserEmail || (window.user && window.user.email) || '';
+            if (!userEmail) {
+                try {
+                    userEmail = (localStorage.getItem('denr_user_email') || '').trim();
+                } catch (e) {
+                    userEmail = '';
+                }
+            }
+            let userId = userEmail || window.currentUserId || (window.user && window.user.id) || '';
+            let userName = window.currentUserName || (window.user && window.user.name) || '';
+            let userPhoto = window.currentUserPhoto
+                || (window.user && (window.user.photoURL || window.user.photoUrl || window.user.profilePhoto || window.user.profile_photo || window.user.photo))
+                || '';
+            if (!userPhoto) {
+                try {
+                    userPhoto = (localStorage.getItem('_navPhoto') || '').trim();
+                } catch (e) {
+                    userPhoto = '';
+                }
+            }
+
+            async function ensureInquiryIdentity() {
+                if (userId) return true;
+
+                try {
+                    const resp = await fetch('/api/check-session', {
+                        method: 'GET',
+                        credentials: 'same-origin'
+                    });
+                    if (!resp.ok) return false;
+
+                    const data = await resp.json();
+                    if (!data || !data.authenticated || !data.email) return false;
+
+                    userEmail = String(data.email).trim().toLowerCase();
+                    userId = userEmail;
+
+                    try {
+                        localStorage.setItem('denr_user_email', userEmail);
+                    } catch (e) {
+                        // Ignore storage errors (private mode, quota, etc.)
+                    }
+
+                    if (!userName) {
+                        userName = userEmail.split('@')[0] || 'User';
+                    }
+
+                    if (!userPhoto) {
+                        try {
+                            userPhoto = (localStorage.getItem('_navPhoto') || '').trim();
+                        } catch (e) {
+                            userPhoto = '';
+                        }
+                    }
+
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            async function fetchInquiryMessages() {
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
+                if (!userId) {
+                    const list = document.getElementById('userMessageList');
+                    if (list) list.innerHTML = `<div style='color:#dc2626;text-align:center;padding:1.5em 0;'>User email not set. Please log in or reload the page.</div>`;
+                    return;
+                }
+                fetch(`/api/inquiries/messages/${encodeURIComponent(userId)}`, { credentials: 'same-origin' })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) renderInquiryMessages(res.messages);
+                    });
+            }
+
+            function renderInquiryMessages(messages) {
+                const list = document.getElementById('userMessageList');
+                const defaultMessage = `<div class="inquiry-msg-row">
+                    <div class="inquiry-msg-avatar" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fa-solid fa-headset" style="font-size:0.9rem;"></i></div>
+                    <div class="inquiry-msg" style="background: #f0fdf4; border-left: 3px solid #10b981;">
+                        <strong style="color:#10b981;">Support Team</strong>
+                        <div style="margin-top:6px; font-size:0.9rem; color:#374151;">Hello! 👋 Welcome to our support chat. How can we help you today? We're here to answer any questions about your application or services.</div>
+                        <span class="msg-time">${new Date().toLocaleString()}</span>
+                    </div>
+                </div>`;
+                const messagesHtml = (messages||[]).map(m => {
+                    function isImageAttachment(fileType, fileUrl) {
+                        const ft = String(fileType || '').toLowerCase();
+                        if (ft.startsWith('image/')) return true;
+                        const url = String(fileUrl || '').toLowerCase();
+                        return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(url);
+                    }
+                    function attachmentName(msg) {
+                        if (msg.file_name) return msg.file_name;
+                        try {
+                            const u = new URL(msg.file_url || '', window.location.origin);
+                            return decodeURIComponent((u.pathname.split('/').pop() || 'Attachment').split('?')[0]);
+                        } catch (e) {
+                            return 'Attachment';
+                        }
+                    }
+                    const senderEmail = (m.sender_email || '').toLowerCase();
+                    const msgOwner = m.user_id || m.email || m.user_email || '';
+                    let isMe = senderEmail ? senderEmail === String(userId).toLowerCase() : (msgOwner === userId && !m.is_admin);
+                    let msgContent = formatInquiryText(m.message||'');
+                    const isImage = isImageAttachment(m.file_type, m.file_url);
+                    if (m.file_url && isImage) {
+                        msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
+                    } else if (m.file_url) {
+                        msgContent += `<a href="${m.file_url}" target="_blank" rel="noopener" class="inquiry-link-preview" style="max-width:220px;">
+                            <div class="inquiry-link-preview-content">
+                                <div class="inquiry-link-preview-title"><i class="fa-solid fa-file-lines" style="margin-right:6px;"></i>${attachmentName(m)}</div>
+                                <div class="inquiry-link-preview-domain">${(m.file_type || 'file').toUpperCase()}</div>
+                            </div>
+                        </a>`;
+                    }
+                    let extraClass = m.file_url && isImage && !(m.message||'').trim() ? ' image-only' : '';
+                    let time = m.timestamp ? new Date(m.timestamp.seconds ? m.timestamp.seconds*1000 : m.timestamp).toLocaleString() : '';
+                    const bubblePhoto = m.user_photo || (isMe ? userPhoto : '');
+                    let avatar = bubblePhoto ? `<img src="${bubblePhoto}" class="inquiry-msg-avatar" alt="avatar">` : `<div class="inquiry-msg-avatar"></div>`;
+                    return `<div class="inquiry-msg-row${isMe?' me':''}">`
+                        + avatar +
+                        `<div class="inquiry-msg${isMe?' me':''}${extraClass}">${msgContent}<span class="msg-time">${time}</span></div>` +
+                    `</div>`;
+                }).join('');
+                list.innerHTML = defaultMessage + messagesHtml;
+                setTimeout(()=>{ list.scrollTop = list.scrollHeight; }, 50);
+            }
+
+            async function sendUserMessage(e) {
+                e.preventDefault();
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
+                if (!userId) {
+                    alert('User email not set. Please log in or reload the page.');
+                    return;
+                }
+                const input = document.getElementById('userMessageInput');
+                const msg = input.value.trim();
+                if (!msg) return;
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('email', userId);
+                formData.append('user_name', userName);
+                formData.append('user_photo', userPhoto);
+                formData.append('message', msg);
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) {
+                        input.value = '';
+                        fetchInquiryMessages();
+                    }
+                });
+            }
+
+            async function sendUserPhoto(e) {
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
+                if (!userId) {
+                    alert('User email not set. Please log in or reload the page.');
+                    return;
+                }
+                const file = e.target.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('email', userId);
+                formData.append('user_name', userName);
+                formData.append('user_photo', userPhoto);
+                formData.append('message', '');
+                formData.append('file', file);
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) fetchInquiryMessages();
+                });
+                e.target.value = '';
+            }
+
+            async function sendUserFile(e) {
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
+                if (!userId) {
+                    alert('User email not set. Please log in or reload the page.');
+                    return;
+                }
+                const file = e.target.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('email', userId);
+                formData.append('user_name', userName);
+                formData.append('user_photo', userPhoto);
+                formData.append('message', '');
+                formData.append('file', file);
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) fetchInquiryMessages();
+                });
+                e.target.value = '';
+            }
+
+            function formatInquiryText(text) {
+                if (!text) return '';
+                function esc(v) {
+                    return String(v || '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
+                const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|(?:^|\s)([a-zA-Z0-9][-a-zA-Z0-9]*\.)+[a-zA-Z]{2,}[^\s]*)/g;
+                let previewHtml = '';
+                
+                const match = text.match(urlRegex);
+                if (match && match.length > 0) {
+                    let url = match[0].trim();
+                    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        url = 'https://' + url;
+                    }
+                    let domain = 'website.com';
+                    let pathText = url;
+                    let favicon = '';
+                    try {
+                        const parsed = new URL(url);
+                        domain = (parsed.hostname || 'website.com').replace(/^www\./i, '');
+                        pathText = (parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '') + (parsed.search || '');
+                        if (!pathText) pathText = parsed.origin;
+                        favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+                    } catch(e) {
+                        favicon = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                    }
+                    previewHtml = `
+                        <a href="${esc(url)}" target="_blank" rel="noopener" class="inquiry-link-preview">
+                            <img src="${favicon}" alt="icon" class="inquiry-link-preview-thumb">
+                            <div class="inquiry-link-preview-content">
+                                <div class="inquiry-link-preview-title">${esc(domain)}</div>
+                                <div class="inquiry-link-preview-desc">${esc(pathText)}</div>
+                                <div class="inquiry-link-preview-domain">Open Link</div>
+                            </div>
+                        </a>
+                    `;
+                }
+                const formattedText = text.replace(urlRegex, function(url) {
+                    const trimmedUrl = url.trim();
+                    let finalUrl = trimmedUrl;
+                    if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+                        finalUrl = 'https://' + trimmedUrl;
+                    }
+                    const safe = esc(trimmedUrl);
+                    return `<a href="${esc(finalUrl)}" target="_blank" rel="noopener" style="text-decoration:underline;">${safe}</a>`;
+                });
+                return formattedText + previewHtml;
+            }
+
+            function openInquiryLightbox(imgSrc) {
+                const lightbox = document.getElementById('inquiryLightbox');
+                const img = document.getElementById('inquiryLightboxImg');
+                img.src = imgSrc;
+                lightbox.classList.add('show');
+            }
+
+            function closeInquiryLightbox() {
+                document.getElementById('inquiryLightbox').classList.remove('show');
+                setTimeout(() => { document.getElementById('inquiryLightboxImg').src = ""; }, 300);
+            }
+
+            // Initial fetch
+            document.addEventListener('DOMContentLoaded', fetchInquiryMessages);
+
+
+            // --- Notification Logic ---
+            function timeAgoUser(dateStr) {
+                const date = new Date(dateStr);
+                const now = new Date();
+                const seconds = Math.floor((now - date) / 1000);
+                const hours = Math.floor(seconds / 3600);
+                if (hours < 24) {
+                    return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+                }
+                const days = Math.floor(hours / 24);
+                return days === 1 ? '1 day ago' : `${days} days ago`;
+            }
+
+            function renderUserNotificationItem(notif) {
+                return `
+                    <div class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 transition">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+                            <i class="fa-solid fa-bell text-sm"></i>
+                        </div>
+                        <div class="flex-grow min-w-0 pt-0.5">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-bold text-sm text-slate-800 truncate pr-2">${notif.title || notif.type || 'Notification'}</span>
+                                <span class="text-[10px] font-medium text-slate-400 whitespace-nowrap">${notif.post_date ? timeAgoUser(notif.post_date) : ''}</span>
+                            </div>
+                            <div class="text-[13px] text-slate-600 line-clamp-2 leading-tight">${notif.content || ''}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async function updateUserNotificationBadgeAndList() {
+                const badge = document.getElementById('userNotifBadge');
+                const bell = document.getElementById('userNotifBell');
+                const listDiv = document.getElementById('userNotificationList');
+                try {
+                    const res = await fetch('/api/notifications/list');
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
+                    
+                    const notifs = (data.notifications || []).filter(n => {
+                        if (n.status !== 'posted') return false;
+                        if (!(n.scope === 'all' || n.scope === 'user' || n.scope === 'end-user')) return false;
+                        if (!n.post_date) return false;
+                        const postDate = new Date(n.post_date);
+                        const now = new Date();
+                        const diffHrs = (now - postDate) / (1000 * 60 * 60);
+                        return diffHrs <= 5; // Show new badge if < 5 hrs old
+                    });
+                    
+                    if (notifs.length > 0) {
+                        badge.textContent = notifs.length > 9 ? '9+' : notifs.length;
+                        badge.style.display = '';
+                        bell.classList.add('text-blue-600');
+                    } else {
+                        badge.textContent = '';
+                        badge.style.display = 'none';
+                        bell.classList.remove('text-blue-600');
+                    }
+                    
+                    if (listDiv) {
+                        // Display all relevant posted notifications in the list
+                        const allActiveNotifs = (data.notifications || []).filter(n => 
+                            n.status === 'posted' && (n.scope === 'all' || n.scope === 'user' || n.scope === 'end-user')
+                        );
+                        
+                        if (allActiveNotifs.length === 0) {
+                            listDiv.innerHTML = '<div class="text-slate-400 text-sm text-center py-10">No notifications yet.</div>';
+                        } else {
+                            allActiveNotifs.sort((a, b) => new Date(b.post_date) - new Date(a.post_date));
+                            listDiv.innerHTML = allActiveNotifs.map(renderUserNotificationItem).join('');
+                        }
+                    }
+                } catch (e) {
+                    badge.style.display = 'none';
+                    if (listDiv) listDiv.innerHTML = '<div class="text-rose-500 text-xs px-4 py-2 text-center mt-4">Error loading notifications</div>';
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', updateUserNotificationBadgeAndList);
         </script>
         </div>
     </div>
 </div>
+
 <script>
+// Open/Close Modal Logic
 function openNotificationModal() {
-    document.getElementById('notificationModal').classList.remove('hidden');
-    setTimeout(() => {
-        document.addEventListener('mousedown', clickOutsideModal, true);
-    }, 10);
+    const modal = document.getElementById('notificationModal');
+    if(modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            document.addEventListener('mousedown', clickOutsideModal, true);
+        }, 10);
+    } else {
+        closeNotificationModal(); // Toggle behavior
+    }
 }
+
 function closeNotificationModal() {
     document.getElementById('notificationModal').classList.add('hidden');
     document.removeEventListener('mousedown', clickOutsideModal, true);
 }
+
 function clickOutsideModal(e) {
     const modal = document.getElementById('notificationModal');
-    if (modal && !modal.contains(e.target) && !e.target.closest('.floating-notification-btn')) {
+    const btn = document.querySelector('.floating-notification-btn');
+    if (modal && !modal.contains(e.target) && (!btn || !btn.contains(e.target))) {
         closeNotificationModal();
     }
 }
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeNotificationModal();
 });
 </script>
-<!-- End Floating Notification Icon and Modal -->

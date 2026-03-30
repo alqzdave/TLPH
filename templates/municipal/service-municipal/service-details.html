@@ -852,6 +852,7 @@
                             const displayName = String(f.name || 'Document');
                             const canOpen = isOpenableUrl(safeUrl);
                             const encodedUrl = encodeURIComponent(safeUrl);
+                            const proxiedUrl = `/api/files/proxy?url=${encodedUrl}`;
 
                             if (isImageFile(safeUrl)) {
                                 return `
@@ -868,7 +869,7 @@
                             <div class="doc-box rounded mb-2">
                                 <i class="fa-solid ${ext2icon(safeUrl)} text-sm"></i>
                                 <span class="text-xs font-bold text-slate-700 text-truncate flex-grow-1">${escapeHtml(displayName)}</span>
-                                ${canOpen ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</a>` : ''}
+                                ${canOpen ? `<a href="${proxiedUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold">VIEW</a>` : ''}
                             </div>`;
                         }).join('');
 

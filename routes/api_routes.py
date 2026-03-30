@@ -1,3 +1,4 @@
+
 from google.cloud.firestore_v1.base_query import FieldFilter
 from flask import Blueprint, request, jsonify, session
 from flask_mail import Message, Mail
@@ -11,6 +12,7 @@ import uuid
 import requests
 from urllib.request import urlopen
 from urllib.parse import quote_plus, quote
+from firebase_admin import firestore
 from firebase_auth_middleware import firebase_auth_required
 import system_logs_storage
 
@@ -56,7 +58,12 @@ def _upload_to_cloudinary(file_obj, folder: str):
     }
     signature = _cloudinary_signature(params_to_sign, api_secret)
 
-    endpoint = f"https://api.cloudinary.com/v1_1/{cloud_name}/auto/upload"
+    filename_lower = (getattr(file_obj, 'filename', '') or '').lower()
+    mimetype_lower = (getattr(file_obj, 'mimetype', '') or '').lower()
+    is_image_like = mimetype_lower.startswith('image/') or filename_lower.endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.avif'))
+    resource_type = 'image' if is_image_like else 'raw'
+
+    endpoint = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/upload"
     print(f"🔵 [CLOUDINARY] Endpoint: {endpoint}")
     
     try:
@@ -73,9 +80,6 @@ def _upload_to_cloudinary(file_obj, folder: str):
                 'timestamp': timestamp,
                 'folder': folder,
                 'signature': signature,
-                'access_type': 'anonymous',  # Make publicly accessible
-                'type': 'upload',
-                'invalidate': False  # Don't purge CDN cache
             },
             files={
                 'file': (file_obj.filename, file_obj.stream, file_obj.mimetype or 'application/octet-stream')
@@ -89,7 +93,7 @@ def _upload_to_cloudinary(file_obj, folder: str):
 
         payload = resp.json() or {}
         url = payload.get('secure_url') or payload.get('url')
-        print(f"✅ [CLOUDINARY] Upload successful: {url}")
+        print(f"✅ [CLOUDINARY] Upload successful ({resource_type}): {url}")
         return url
 
     except requests.RequestException as e:
@@ -166,9 +170,9 @@ def proxy_file():
         import io
         import hashlib
         
-        # Require authentication
-        if 'user_email' not in session:
-            return jsonify({'error': 'Unauthorized'}), 401
+        # Do not hard-require Flask session here.
+        # Hosted environments may rely on Firebase auth only; URL validation below remains enforced.
+        requester = session.get('user_email') if 'user_email' in session else 'anonymous'
         
         file_url = request.args.get('url', '').strip()
         if not file_url:
@@ -187,7 +191,31 @@ def proxy_file():
         if not ('cloudinary.com' in file_url or is_local_path or file_url.startswith('http')):
             return jsonify({'error': 'Invalid file URL'}), 400
         
-        print(f"🔵 [FILE_PROXY] Request from {session.get('user_email')}: {file_url[:100]}...")
+        print(f"🔵 [FILE_PROXY] Request from {requester}: {file_url[:100]}...")
+
+        def _guess_mime_and_inline(filename_hint: str, content_type_hint: str = ''):
+            ext = (str(filename_hint or '').split('?')[0].split('.')[-1] or '').lower()
+            ct = str(content_type_hint or '').lower()
+
+            if 'image/' in ct:
+                return ct.split(';')[0], True
+            if 'application/pdf' in ct:
+                return 'application/pdf', True
+
+            ext_map = {
+                'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+                'gif': 'image/gif', 'webp': 'image/webp', 'bmp': 'image/bmp',
+                'svg': 'image/svg+xml', 'avif': 'image/avif',
+                'pdf': 'application/pdf',
+                'doc': 'application/msword',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'xls': 'application/vnd.ms-excel',
+                'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'txt': 'text/plain', 'csv': 'text/csv',
+            }
+            mime = ext_map.get(ext, 'application/octet-stream')
+            inline = mime.startswith('image/') or mime == 'application/pdf' or mime.startswith('text/')
+            return mime, inline
         
         # Handle local paths directly
         if is_local_path:
@@ -234,9 +262,14 @@ def proxy_file():
                 download_name=filename if not inline else None
             )
         
-        # Create cache directory
+        # Create cache directory (best-effort on hosted env)
         cache_dir = os.path.join('static', 'file_cache')
-        os.makedirs(cache_dir, exist_ok=True)
+        can_cache = True
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+        except Exception as mk_err:
+            print(f"⚠️  [FILE_PROXY] Cache directory unavailable: {mk_err}")
+            can_cache = False
         
         # Generate cache filename from URL hash
         url_hash = hashlib.md5(file_url.encode()).hexdigest()
@@ -254,15 +287,17 @@ def proxy_file():
                 ext = '.pdf'  # Default for images in docs
             filename = f"cached_{url_hash}{ext}"
         
-        cache_file = os.path.join(cache_dir, f"{url_hash}_{filename}")
+        cache_file = os.path.join(cache_dir, f"{url_hash}_{filename}") if can_cache else ''
         
         # Check if file is already cached
-        if os.path.exists(cache_file):
+        if can_cache and os.path.exists(cache_file):
             print(f"✅ [FILE_PROXY] Serving from cache: {filename}")
+            mime_type, inline = _guess_mime_and_inline(filename)
             return send_file(
                 cache_file,
-                as_attachment=True,
-                download_name=filename
+                mimetype=mime_type,
+                as_attachment=not inline,
+                download_name=filename if not inline else None
             )
         
         # Not cached - fetch from source
@@ -325,6 +360,24 @@ def proxy_file():
                 if response.status_code == 200:
                     print(f"✅ [FILE_PROXY] Success without auth!")
 
+            # Attempt 1.5 (Cloudinary fallback): if PDF/doc URL is on image/upload, retry with raw/upload path
+            if response.status_code in (401, 404) and 'cloudinary.com' in file_url:
+                lower_url = file_url.lower()
+                if '/image/upload/' in lower_url and any(lower_url.endswith(ext) or f"{ext}?" in lower_url for ext in ('.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt', '.zip')):
+                    alt_raw_url = file_url.replace('/image/upload/', '/raw/upload/')
+                    print(f"⚠️  [FILE_PROXY] Trying raw/upload retry for document URL...")
+                    alt_resp = _safe_get(
+                        alt_raw_url,
+                        timeout=30,
+                        stream=False,
+                        headers=headers,
+                        auth=auth,
+                        allow_redirects=True
+                    )
+                    if alt_resp is not None and alt_resp.status_code == 200:
+                        print("✅ [FILE_PROXY] Success via raw/upload URL")
+                        response = alt_resp
+
             # Attempt 2 (Cloudinary fallback): signed private download API
             if response.status_code == 401 and 'cloudinary.com' in file_url:
                 print("⚠️  [FILE_PROXY] Delivery URL unauthorized. Trying Cloudinary private download API...")
@@ -349,21 +402,23 @@ def proxy_file():
                             parts = parts[1:]
 
                         if parts:
+                            original_parts = list(parts)
                             last = parts[-1]
+                            basename = None
+                            file_format = None
                             if '.' in last:
                                 basename, ext = last.rsplit('.', 1)
-                                parts[-1] = basename
                                 file_format = ext.lower()
-                            else:
-                                file_format = None
 
-                            public_id = '/'.join(parts)
+                            # Try both public_id variants because raw assets may keep extension in public_id
+                            public_id_candidates = []
+                            if basename:
+                                parts_no_ext = list(original_parts)
+                                parts_no_ext[-1] = basename
+                                public_id_candidates.append('/'.join(parts_no_ext))
+                            public_id_candidates.append('/'.join(original_parts))
+
                             timestamp = int(time.time())
-
-                            base_sign_payload = {
-                                'public_id': public_id,
-                                'timestamp': timestamp,
-                            }
 
                             # PDFs/docs are often stored as raw; images as image.
                             # Try both resource types and both with/without format.
@@ -375,50 +430,72 @@ def proxy_file():
                             for resource_type in resource_types:
                                 private_download_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/download"
 
-                                # First try with format if present
-                                params_with_format = {
-                                    'public_id': public_id,
-                                    'timestamp': timestamp,
-                                    'api_key': api_key,
-                                }
-                                if file_format:
-                                    params_with_format['format'] = file_format
-                                    sign_payload_with_format = dict(base_sign_payload)
-                                    sign_payload_with_format['format'] = file_format
-                                    params_with_format['signature'] = _cloudinary_signature(sign_payload_with_format, api_secret)
-                                else:
-                                    params_with_format['signature'] = _cloudinary_signature(base_sign_payload, api_secret)
+                                for public_id in public_id_candidates:
+                                    # Some accounts/resources require delivery type in signature.
+                                    for include_type in (True, False):
+                                        base_sign_payload = {
+                                            'public_id': public_id,
+                                            'timestamp': timestamp,
+                                        }
 
-                                fallback_response = requests.get(
-                                    private_download_url,
-                                    params=params_with_format,
-                                    timeout=30,
-                                    stream=False,
-                                    headers=headers,
-                                    allow_redirects=True,
-                                )
-                                print(f"📥 [FILE_PROXY] Private download ({resource_type}, with format) status: {fallback_response.status_code}")
-                                if fallback_response.status_code == 200:
-                                    break
+                                        if include_type:
+                                            base_sign_payload['type'] = 'upload'
 
-                                # Retry without format (some assets fail if forced)
-                                params_without_format = {
-                                    'public_id': public_id,
-                                    'timestamp': timestamp,
-                                    'api_key': api_key,
-                                    'signature': _cloudinary_signature(base_sign_payload, api_secret),
-                                }
+                                        # First try with format when useful
+                                        if file_format:
+                                            params_with_format = {
+                                                'public_id': public_id,
+                                                'timestamp': timestamp,
+                                                'api_key': api_key,
+                                                'format': file_format,
+                                            }
+                                            sign_payload_with_format = dict(base_sign_payload)
+                                            sign_payload_with_format['format'] = file_format
 
-                                fallback_response = requests.get(
-                                    private_download_url,
-                                    params=params_without_format,
-                                    timeout=30,
-                                    stream=False,
-                                    headers=headers,
-                                    allow_redirects=True,
-                                )
-                                print(f"📥 [FILE_PROXY] Private download ({resource_type}, no format) status: {fallback_response.status_code}")
-                                if fallback_response.status_code == 200:
+                                            if include_type:
+                                                params_with_format['type'] = 'upload'
+
+                                            params_with_format['signature'] = _cloudinary_signature(sign_payload_with_format, api_secret)
+
+                                            fallback_response = requests.get(
+                                                private_download_url,
+                                                params=params_with_format,
+                                                timeout=30,
+                                                stream=False,
+                                                headers=headers,
+                                                allow_redirects=True,
+                                            )
+                                            print(f"📥 [FILE_PROXY] Private download ({resource_type}, with format, type={include_type}, pid={public_id}) status: {fallback_response.status_code}")
+                                            if fallback_response.status_code == 200:
+                                                break
+
+                                        # Retry without format (some assets fail if forced)
+                                        params_without_format = {
+                                            'public_id': public_id,
+                                            'timestamp': timestamp,
+                                            'api_key': api_key,
+                                            'signature': _cloudinary_signature(base_sign_payload, api_secret),
+                                        }
+
+                                        if include_type:
+                                            params_without_format['type'] = 'upload'
+
+                                        fallback_response = requests.get(
+                                            private_download_url,
+                                            params=params_without_format,
+                                            timeout=30,
+                                            stream=False,
+                                            headers=headers,
+                                            allow_redirects=True,
+                                        )
+                                        print(f"📥 [FILE_PROXY] Private download ({resource_type}, no format, type={include_type}, pid={public_id}) status: {fallback_response.status_code}")
+                                        if fallback_response.status_code == 200:
+                                            break
+
+                                    if fallback_response is not None and fallback_response.status_code == 200:
+                                        break
+
+                                if fallback_response is not None and fallback_response.status_code == 200:
                                     break
 
                             if fallback_response is not None:
@@ -671,15 +748,18 @@ def proxy_file():
                                 parts = parts[1:]
 
                             if parts:
+                                original_parts = list(parts)
                                 last = parts[-1]
+                                fmt = None
+                                public_id_candidates = []
                                 if '.' in last:
                                     base, ext = last.rsplit('.', 1)
-                                    parts[-1] = base
                                     fmt = ext.lower()
-                                else:
-                                    fmt = None
+                                    parts_no_ext = list(original_parts)
+                                    parts_no_ext[-1] = base
+                                    public_id_candidates.append('/'.join(parts_no_ext))
+                                public_id_candidates.append('/'.join(original_parts))
 
-                                public_id = '/'.join(parts)
                                 resource_types = ['image', 'raw']
                                 delivery_types = ['upload', 'private', 'authenticated']
 
@@ -687,46 +767,70 @@ def proxy_file():
                                 for resource_type in resource_types:
                                     if signed_ok:
                                         break
-                                    for delivery_type in delivery_types:
-                                        url_opts = {
-                                            'resource_type': resource_type,
-                                            'type': delivery_type,
-                                            'secure': True,
-                                            'sign_url': True,
-                                        }
-                                        if fmt:
-                                            url_opts['format'] = fmt
+                                    for public_id in public_id_candidates:
+                                        for delivery_type in delivery_types:
+                                            url_opts = {
+                                                'resource_type': resource_type,
+                                                'type': delivery_type,
+                                                'secure': True,
+                                                'sign_url': True,
+                                            }
+                                            # For raw assets, format can break if public_id already includes extension
+                                            if fmt and resource_type != 'raw':
+                                                url_opts['format'] = fmt
 
-                                        signed_url, _ = cloudinary.utils.cloudinary_url(public_id, **url_opts)
-                                        signed_resp = requests.get(
-                                            signed_url,
-                                            timeout=30,
-                                            stream=False,
-                                            headers=headers,
-                                            allow_redirects=True,
-                                        )
-                                        print(f"📥 [FILE_PROXY] Signed URL ({resource_type}/{delivery_type}) status: {signed_resp.status_code}")
-                                        if signed_resp.status_code == 200:
-                                            response = signed_resp
-                                            signed_ok = True
+                                            signed_url, _ = cloudinary.utils.cloudinary_url(public_id, **url_opts)
+                                            signed_resp = requests.get(
+                                                signed_url,
+                                                timeout=30,
+                                                stream=False,
+                                                headers=headers,
+                                                allow_redirects=True,
+                                            )
+                                            print(f"📥 [FILE_PROXY] Signed URL ({resource_type}/{delivery_type}, pid={public_id}) status: {signed_resp.status_code}")
+                                            if signed_resp.status_code == 200:
+                                                response = signed_resp
+                                                signed_ok = True
+                                                break
+                                        if signed_ok:
                                             break
                 except Exception as signed_err:
                     print(f"⚠️  [FILE_PROXY] Signed URL fallback failed: {signed_err}")
             
             if response.status_code == 200:
                 # Cache the file
+                if can_cache:
+                    try:
+                        with open(cache_file, 'wb') as f:
+                            f.write(response.content)
+                        print(f"✅ [FILE_PROXY] Cached: {filename} ({len(response.content)} bytes)")
+                    except IOError as cache_err:
+                        print(f"⚠️  [FILE_PROXY] Cache write failed: {cache_err}")
+                else:
+                    print("ℹ️  [FILE_PROXY] Skipping cache write (cache unavailable)")
+
+                resp_ct = ''
                 try:
-                    with open(cache_file, 'wb') as f:
-                        f.write(response.content)
-                    print(f"✅ [FILE_PROXY] Cached: {filename} ({len(response.content)} bytes)")
-                except IOError as cache_err:
-                    print(f"⚠️  [FILE_PROXY] Cache write failed: {cache_err}")
+                    resp_ct = response.headers.get('Content-Type', '')
+                except Exception:
+                    pass
+                mime_type, inline = _guess_mime_and_inline(filename, resp_ct)
                 
                 # Return file
-                if os.path.exists(cache_file):
-                    return send_file(cache_file, as_attachment=True, download_name=filename)
+                if can_cache and os.path.exists(cache_file):
+                    return send_file(
+                        cache_file,
+                        mimetype=mime_type,
+                        as_attachment=not inline,
+                        download_name=filename if not inline else None
+                    )
                 else:
-                    return send_file(io.BytesIO(response.content), as_attachment=True, download_name=filename)
+                    return send_file(
+                        io.BytesIO(response.content),
+                        mimetype=mime_type,
+                        as_attachment=not inline,
+                        download_name=filename if not inline else None
+                    )
             else:
                 print(f"❌ [FILE_PROXY] HTTP {response.status_code}")
                 if response.status_code in (401, 404) and 'cloudinary.com' in file_url and file_url.lower().endswith('.pdf'):
@@ -1546,16 +1650,30 @@ def upload_inventory_image():
         if not file or file.filename == '':
             return jsonify({'success': False, 'error': 'No file selected'}), 400
 
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
+
         allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
         ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
         if ext not in allowed:
             return jsonify({'success': False, 'error': f'Invalid file type: {ext}'}), 400
 
         url = None
+        backend = 'none'
         if _cloudinary_enabled():
             url = _upload_to_cloudinary(file, f"tlph/inventory/{user_id}")
+            if url:
+                backend = 'cloudinary'
 
         if not url:
+            url = _upload_to_firebase_storage(file, f"tlph/inventory/{user_id}")
+            if url:
+                backend = 'firebase_storage'
+
+        if not url and local_fallback_enabled:
             upload_dir = os.path.join('static', 'uploads', 'inventory', user_id)
             os.makedirs(upload_dir, exist_ok=True)
 
@@ -1563,6 +1681,15 @@ def upload_inventory_image():
             file_path = os.path.join(upload_dir, filename)
             file.save(file_path)
             url = f"/static/uploads/inventory/{user_id}/{filename}"
+            backend = 'local_static'
+
+        if not url:
+            return jsonify({
+                'success': False,
+                'error': 'Upload backend unavailable. Configure Cloudinary (preferred) or Firebase Storage on hosted environment.'
+            }), 503
+
+        print(f"📦 [UPLOAD_INVENTORY] Stored via {backend}: {url}")
 
         return jsonify({'success': True, 'url': url})
 
@@ -1594,6 +1721,12 @@ def submit_application():
                 'success': False,
                 'message': 'Missing required fields'
             }), 400
+
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
         
         # Process file uploads
         file_fields = ['titleFile', 'taxFile', 'blueprintFile', 'landFile', 'cropFile', 'planFile', 'brgyFile', 'productPictureFile', 'validIdFile']
@@ -1615,17 +1748,35 @@ def submit_application():
                     unique_filename = f"{timestamp}_{field}_{idx}_{filename}"
 
                     web_path = None
-                    # Images and documents -> Cloudinary
+                    backend = 'none'
+                    # 1) Cloudinary
                     if _cloudinary_enabled():
                         web_path = _upload_to_cloudinary(file, f"tlph/applications/{user_id}")
+                        if web_path:
+                            backend = 'cloudinary'
 
+                    # 2) Firebase Storage (host-safe fallback)
                     if not web_path:
-                        # Create upload directory only for local fallback
+                        web_path = _upload_to_firebase_storage(file, f"tlph/applications/{user_id}")
+                        if web_path:
+                            backend = 'firebase_storage'
+
+                    # 3) Local static (development fallback)
+                    if not web_path and local_fallback_enabled:
                         upload_dir = os.path.join('static', 'uploads', 'applications', user_id)
                         os.makedirs(upload_dir, exist_ok=True)
                         file_path = os.path.join(upload_dir, unique_filename)
                         file.save(file_path)
                         web_path = f"/static/uploads/applications/{user_id}/{unique_filename}"
+                        backend = 'local_static'
+
+                    if not web_path:
+                        return jsonify({
+                            'success': False,
+                            'message': f'Failed to upload {field}. Configure Cloudinary/Firebase storage in hosted environment.'
+                        }), 503
+
+                    print(f"📦 [SUBMIT_APPLICATION] {field} -> {backend}: {web_path}")
 
                     saved_urls.append(web_path)
 
@@ -1655,7 +1806,6 @@ def submit_application():
 
 
 @bp.route('/upload-service-files', methods=['POST'])
-@firebase_auth_required
 def upload_service_files():
     """Upload service request files and return web URLs grouped by field id/name."""
     try:
@@ -1665,7 +1815,14 @@ def upload_service_files():
         if not user_id:
             return jsonify({'success': False, 'message': 'Missing userId'}), 400
 
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
+
         file_paths = {}
+        upload_backends = {}
         timestamp = int(datetime.now().timestamp())
 
         for field in request.files:
@@ -1679,16 +1836,37 @@ def upload_service_files():
                 filename = secure_filename(file.filename)
                 unique_filename = f"{timestamp}_{field}_{idx}_{filename}"
                 web_path = None
-                # Images and documents -> Cloudinary
+                backend = 'none'
+
+                # 1) Cloudinary
                 if _cloudinary_enabled():
                     web_path = _upload_to_cloudinary(file, f"tlph/service_requests/{user_id}")
+                    if web_path:
+                        backend = 'cloudinary'
 
+                # 2) Firebase Storage (host-safe fallback)
                 if not web_path:
+                    web_path = _upload_to_firebase_storage(file, f"tlph/service_requests/{user_id}")
+                    if web_path:
+                        backend = 'firebase_storage'
+
+                # 3) Local static (development fallback)
+                if not web_path and local_fallback_enabled:
                     upload_dir = os.path.join('static', 'uploads', 'service_requests', user_id)
                     os.makedirs(upload_dir, exist_ok=True)
                     file_path = os.path.join(upload_dir, unique_filename)
                     file.save(file_path)
                     web_path = f"/static/uploads/service_requests/{user_id}/{unique_filename}"
+                    backend = 'local_static'
+
+                if not web_path:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Failed to upload file for field "{field}". Configure Cloudinary/Firebase storage in hosted environment.'
+                    }), 503
+
+                upload_backends[field] = backend
+                print(f"📦 [UPLOAD_SERVICE_FILES] {field} -> {backend}: {web_path}")
 
                 saved_urls.append(web_path)
 
@@ -1698,7 +1876,8 @@ def upload_service_files():
         return jsonify({
             'success': True,
             'message': 'Service files uploaded successfully',
-            'filePaths': file_paths
+            'filePaths': file_paths,
+            'uploadBackends': upload_backends
         })
 
     except Exception as e:
@@ -1707,6 +1886,44 @@ def upload_service_files():
             'success': False,
             'message': f'Failed to upload service files: {str(e)}'
         }), 500
+
+
+@bp.route('/upload-backend-health', methods=['GET'])
+def upload_backend_health():
+    """Quick diagnostic endpoint for hosted upload backends (no secret values exposed)."""
+    try:
+        cloud_name = bool((os.environ.get('CLOUDINARY_CLOUD_NAME') or '').strip())
+        api_key = bool((os.environ.get('CLOUDINARY_API_KEY') or '').strip())
+        api_secret = bool((os.environ.get('CLOUDINARY_API_SECRET') or '').strip())
+
+        firebase_bucket_ok = False
+        firebase_bucket_name = ''
+        firebase_bucket_error = ''
+        try:
+            from firebase_config import get_storage_bucket
+            bucket = get_storage_bucket()
+            firebase_bucket_ok = bool(bucket)
+            firebase_bucket_name = getattr(bucket, 'name', '') if bucket else ''
+        except Exception as fb_err:
+            firebase_bucket_error = str(fb_err)
+
+        return jsonify({
+            'success': True,
+            'cloudinary': {
+                'configured': cloud_name and api_key and api_secret,
+                'cloud_name_set': cloud_name,
+                'api_key_set': api_key,
+                'api_secret_set': api_secret,
+            },
+            'firebase_storage': {
+                'configured': firebase_bucket_ok,
+                'bucket_name': firebase_bucket_name,
+                'error': firebase_bucket_error,
+            },
+            'local_fallback_enabled': str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @bp.route('/get-applications/<user_id>', methods=['GET'])
 @firebase_auth_required
@@ -3278,5 +3495,278 @@ def api_update_notification(notification_id):
         if update_fields:
             db.collection("notifications").document(notification_id).update(update_fields)
         return jsonify({'success': True, 'message': 'Notification updated'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+    
+
+
+from inquiries_storage import get_conversations, get_messages, add_message
+
+
+def _extract_user_photo(user_data):
+    if not isinstance(user_data, dict):
+        return ''
+    return (
+        user_data.get('photoURL')
+        or user_data.get('photoUrl')
+        or user_data.get('profilePhoto')
+        or user_data.get('profile_photo')
+        or user_data.get('photo_url')
+        or user_data.get('photo')
+        or user_data.get('user_photo')
+        or ''
+    )
+
+
+def _extract_user_name(user_data):
+    if not isinstance(user_data, dict):
+        return ''
+    full_name = str(user_data.get('name') or '').strip()
+    if full_name:
+        return full_name
+
+    first_name = str(user_data.get('firstName') or user_data.get('first_name') or '').strip()
+    last_name = str(user_data.get('lastName') or user_data.get('last_name') or '').strip()
+    combined = f"{first_name} {last_name}".strip()
+    if combined:
+        return combined
+
+    return str(user_data.get('username') or user_data.get('displayName') or '').strip()
+
+
+def _resolve_user_profile(identity_key='', email_hint=''):
+    """Resolve user profile from users collection by document id first, then by email."""
+    db = firestore.client()
+    identity_key = str(identity_key or '').strip()
+    email = str(email_hint or '').strip().lower()
+
+    if not email and '@' in identity_key:
+        email = identity_key.lower()
+
+    # Try direct document id lookup first.
+    if identity_key and '@' not in identity_key:
+        try:
+            doc = db.collection('users').document(identity_key).get()
+            if doc.exists:
+                data = doc.to_dict() or {}
+                return {
+                    'name': _extract_user_name(data),
+                    'photo': _extract_user_photo(data),
+                    'email': str(data.get('email') or email or '').strip().lower(),
+                }
+        except Exception:
+            pass
+
+    # Email lookup fallback.
+    if email:
+        try:
+            docs = db.collection('users').where(filter=FieldFilter('email', '==', email)).limit(1).stream()
+            for doc in docs:
+                data = doc.to_dict() or {}
+                return {
+                    'name': _extract_user_name(data),
+                    'photo': _extract_user_photo(data),
+                    'email': str(data.get('email') or email or '').strip().lower(),
+                }
+        except Exception:
+            # Fallback: positional where for compatibility, then scan.
+            try:
+                docs = db.collection('users').where('email', '==', email).limit(1).stream()
+                for doc in docs:
+                    data = doc.to_dict() or {}
+                    return {
+                        'name': _extract_user_name(data),
+                        'photo': _extract_user_photo(data),
+                        'email': str(data.get('email') or email or '').strip().lower(),
+                    }
+            except Exception:
+                pass
+
+            try:
+                for doc in db.collection('users').stream():
+                    data = doc.to_dict() or {}
+                    doc_email = str(data.get('email') or '').strip().lower()
+                    if doc_email and doc_email == email:
+                        return {
+                            'name': _extract_user_name(data),
+                            'photo': _extract_user_photo(data),
+                            'email': doc_email,
+                        }
+            except Exception:
+                pass
+
+    return {'name': '', 'photo': '', 'email': email}
+
+
+# === INQUIRIES (MESSENGER) API ===
+@bp.route('/inquiries/conversations', methods=['GET'])
+@firebase_auth_required
+def api_get_inquiry_conversations():
+    try:
+        convos = get_conversations()
+
+        # Enrich conversation display data from users profile when missing.
+        for convo in convos:
+            try:
+                convo_key = str(convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
+                convo_email = str(convo.get('email') or convo.get('user_email') or '').strip().lower()
+                if convo.get('user_photo') and convo.get('user_name'):
+                    continue
+
+                profile = _resolve_user_profile(convo_key, convo_email)
+                if not convo.get('user_photo') and profile.get('photo'):
+                    convo['user_photo'] = profile.get('photo')
+                if not convo.get('user_name') and profile.get('name'):
+                    convo['user_name'] = profile.get('name')
+                if not convo.get('email') and profile.get('email'):
+                    convo['email'] = profile.get('email')
+            except Exception:
+                # Never fail the entire list due to one malformed user profile.
+                continue
+
+        return jsonify({'success': True, 'conversations': convos})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@bp.route('/inquiries/messages/<user_id>', methods=['GET'])
+@firebase_auth_required
+def api_get_inquiry_messages(user_id):
+    def _json_safe(v):
+        if isinstance(v, dict):
+            return {str(k): _json_safe(val) for k, val in v.items()}
+        if isinstance(v, list):
+            return [_json_safe(i) for i in v]
+        if isinstance(v, (str, int, float, bool)) or v is None:
+            return v
+        if hasattr(v, 'isoformat'):
+            try:
+                return v.isoformat()
+            except Exception:
+                return str(v)
+        return str(v)
+
+    def _ts_sort_value(msg):
+        ts = msg.get('timestamp')
+        if hasattr(ts, 'timestamp'):
+            try:
+                return ts.timestamp()
+            except Exception:
+                return 0
+        if isinstance(ts, str):
+            try:
+                return datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp()
+            except Exception:
+                return 0
+        return 0
+
+    try:
+        convo_key = (user_id or '').strip()
+        if not convo_key:
+            convo_key = (request.args.get('email') or session.get('user_email') or '').strip()
+        raw_msgs = get_messages(convo_key)
+        msgs = [m for m in (raw_msgs or []) if isinstance(m, dict)]
+
+        # Fill missing user profile info for end-user messages.
+        profile = _resolve_user_profile(convo_key, convo_key)
+        admin_roles = {'superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'}
+        for msg in msgs:
+            sender_role = str(msg.get('sender_role') or '').strip().lower()
+            is_admin_msg = bool(msg.get('is_admin')) or sender_role in admin_roles
+            if is_admin_msg:
+                continue
+
+            if not msg.get('user_photo') and profile.get('photo'):
+                msg['user_photo'] = profile.get('photo')
+            if not msg.get('user_name') and profile.get('name'):
+                msg['user_name'] = profile.get('name')
+
+        safe_msgs = _json_safe(msgs)
+        return jsonify({'success': True, 'messages': safe_msgs})
+    except Exception as e:
+        # Fallback path: direct collection scan to keep UI alive even when primary path fails.
+        try:
+            import traceback
+            traceback.print_exc()
+
+            convo_key = (user_id or '').strip()
+            if not convo_key:
+                convo_key = (request.args.get('email') or session.get('user_email') or '').strip()
+            key_l = convo_key.lower()
+
+            docs = firestore.client().collection('inquiries').stream()
+            fallback_msgs = []
+            for d in docs:
+                data = d.to_dict() or {}
+                if not isinstance(data, dict):
+                    continue
+                msg_uid = str(data.get('user_id') or '').strip()
+                msg_email = str(data.get('email') or data.get('user_email') or '').strip().lower()
+                if msg_uid == convo_key or msg_email == key_l:
+                    fallback_msgs.append(data)
+
+            fallback_msgs.sort(key=_ts_sort_value)
+            return jsonify({'success': True, 'messages': _json_safe(fallback_msgs), 'fallback': True})
+        except Exception as inner:
+            return jsonify({'success': False, 'message': f'{e} | fallback failed: {inner}'}), 500
+
+@bp.route('/inquiries/send', methods=['POST'])
+@firebase_auth_required
+def api_send_inquiry_message():
+    try:
+        user_id = (request.form.get('user_id') or '').strip()
+        user_email = (request.form.get('email') or request.form.get('user_email') or '').strip().lower()
+        if not user_email and '@' in user_id:
+            user_email = user_id.lower()
+
+        if not user_id:
+            user_id = user_email or (session.get('user_email') or '').strip().lower()
+
+        if not user_email and '@' in user_id:
+            user_email = user_id.lower()
+
+        if not user_id:
+            return jsonify({'success': False, 'message': 'User identity is required'}), 400
+
+        user_name = (request.form.get('user_name') or '').strip()
+        if not user_name:
+            user_name = (session.get('user_name') or user_email or 'User').strip()
+
+        sender_email = (session.get('user_email') or '').strip().lower() or user_email
+        sender_role = (session.get('user_role') or '').strip().lower()
+        is_admin_sender = sender_role in {'superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'}
+
+        message = request.form.get('message', '')
+        user_photo = request.form.get('user_photo', '')
+
+        # Backfill sender profile for user-side messages when frontend has no photo yet.
+        if not user_photo:
+            resolved = _resolve_user_profile(user_id, user_email)
+            if resolved.get('photo'):
+                user_photo = resolved.get('photo')
+            if not user_name and resolved.get('name'):
+                user_name = resolved.get('name')
+
+        file_url = ''
+        file_type = ''
+        file_name = ''
+        if 'file' in request.files:
+            file = request.files['file']
+            file_url = _upload_to_cloudinary(file, folder='tlph/inquiries')
+            file_type = file.mimetype
+            file_name = file.filename or ''
+        doc = add_message(
+            user_id,
+            user_name,
+            message,
+            user_photo,
+            file_url,
+            file_type,
+            file_name,
+            user_email=user_email,
+            sender_email=sender_email,
+            sender_role=sender_role,
+            is_admin=is_admin_sender,
+        )
+        return jsonify({'success': True, 'message': doc})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

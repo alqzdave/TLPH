@@ -27,7 +27,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 overflow-x-hidden">
+<body class="bg-gray-50 overflow-x-hidden min-h-screen flex flex-col">
 
     <nav id="navbar" class="navbar fixed top-0 left-0 w-full z-[1000] bg-white transition-all duration-300 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 md:px-12 flex justify-between items-center h-16 md:h-20">
@@ -90,7 +90,7 @@
         </div>
     </nav>
     
-        <section class="w-full mt-32 mb-16 px-0 md:px-8 py-10 bg-gray-100 rounded-xl shadow-lg flex flex-col lg:flex-row items-center gap-8">
+        <section class="w-full mt-32 mb-0 px-0 md:px-8 py-10 bg-gray-100 rounded-xl shadow-lg flex flex-col lg:flex-row items-center gap-8 flex-shrink-0">
         <div class="w-full lg:w-1/2 flex justify-center items-center px-4 lg:px-12">
             <img src="{{ url_for('static', filename='images/climate1.png') }}" alt="Climate Change" class="rounded-lg shadow-md w-full h-auto max-h-[32rem] object-cover">
         </div>
@@ -105,7 +105,7 @@
         </div>
     </section>
 
-<footer class="footer bg-slate-900 text-white py-8 md:py-12 px-6">
+<footer class="footer bg-slate-900 text-white py-8 md:py-12 px-6 mt-auto">
         <div class="max-w-6xl mx-auto text-center">
             <div class="text-xl md:text-3xl font-black mb-2">DENR</div>
             <p class="opacity-70 mb-6 text-[10px] md:text-sm max-w-md mx-auto">Official Portal for Environmental Monitoring and Resource Management.</p>
