@@ -269,6 +269,8 @@
         let currentServiceId = null;
         let serviceData = null;
         let userData = null;
+        let currentGalleryPhotos = [];  // Store current gallery for navigation
+        let currentPhotoIndex = 0;
 
         // Get service ID from URL
         const pathParts = window.location.pathname.split('/');
@@ -835,6 +837,7 @@
                 // ── Build and display Photo Gallery ──────────────────────────────
                 const allPhotos = buildPhotoGallery();
                 if (allPhotos.length > 0) {
+                    currentGalleryPhotos = allPhotos;  // Store for navigation
                     const photoGallerySection = document.getElementById('photoGallerySection');
                     const photoGalleryGrid = document.getElementById('photoGalleryGrid');
                     const photoCountBadge = document.getElementById('photoCountBadge');
@@ -1086,9 +1089,32 @@
         window.openMunicipalImageViewer = function(encodedUrl) {
             try {
                 const url = decodeURIComponent(encodedUrl || '');
+                
+                // Find index of this image in gallery
+                const index = currentGalleryPhotos.findIndex(p => p.url === url);
+                if (index !== -1) {
+                    currentPhotoIndex = index;
+                }
+                
                 const modal = document.getElementById('municipalImageViewerModal');
                 const img = document.getElementById('municipalImageViewerImg');
+                const counter = document.getElementById('municipalImageViewerCounter');
+                const prevBtn = document.getElementById('municipalImageViewerPrev');
+                const nextBtn = document.getElementById('municipalImageViewerNext');
+                
                 img.src = url;
+                
+                // Update counter and buttons
+                if (currentGalleryPhotos.length > 0) {
+                    counter.textContent = `${currentPhotoIndex + 1} / ${currentGalleryPhotos.length}`;
+                    prevBtn.style.display = currentPhotoIndex > 0 ? '' : 'none';
+                    nextBtn.style.display = currentPhotoIndex < currentGalleryPhotos.length - 1 ? '' : 'none';
+                } else {
+                    counter.textContent = '';
+                    prevBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                }
+                
                 modal.classList.remove('hidden');
             } catch (err) {
                 console.error('Failed to open municipal image viewer:', err);
@@ -1100,6 +1126,16 @@
             const img = document.getElementById('municipalImageViewerImg');
             img.src = '';
             modal.classList.add('hidden');
+        };
+
+        window.navigateMunicipalGallery = function(direction) {
+            if (currentGalleryPhotos.length === 0) return;
+            
+            currentPhotoIndex += direction;
+            if (currentPhotoIndex < 0) currentPhotoIndex = currentGalleryPhotos.length - 1;
+            if (currentPhotoIndex >= currentGalleryPhotos.length) currentPhotoIndex = 0;
+            
+            openMunicipalImageViewer(encodeURIComponent(currentGalleryPhotos[currentPhotoIndex].url));
         };
 
         window.forwardToRegional = async function() {
@@ -1168,7 +1204,20 @@
 <div id="municipalImageViewerModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-4 hidden">
     <div class="relative w-full max-w-4xl" onclick="event.stopPropagation()">
         <button onclick="closeMunicipalImageViewer()" class="absolute -top-3 -right-3 bg-white text-gray-700 hover:text-black rounded-full w-8 h-8 shadow font-bold">&times;</button>
+        
+        <!-- Image Counter -->
+        <div id="municipalImageViewerCounter" class="absolute top-3 left-3 bg-black/70 text-white px-3 py-1 rounded text-xs font-bold"></div>
+        
+        <!-- Main Image -->
         <img id="municipalImageViewerImg" src="" alt="Service Attachment" class="w-full max-h-[85vh] object-contain bg-white rounded shadow-2xl" />
+        
+        <!-- Navigation Buttons -->
+        <button id="municipalImageViewerPrev" onclick="navigateMunicipalGallery(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 bg-white/80 text-black hover:bg-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg transition-all">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button id="municipalImageViewerNext" onclick="navigateMunicipalGallery(1)" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 bg-white/80 text-black hover:bg-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg transition-all">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
     </div>
 </div>
 
