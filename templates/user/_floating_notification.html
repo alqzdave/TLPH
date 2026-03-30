@@ -364,7 +364,7 @@
 
 
             // --- Inquiry Messenger: Backend Integration ---
-            let userEmail = window.currentUserEmail || (window.user && (window.user.email || window.user.user_email)) || '';
+            let userEmail = window.currentUserEmail || (window.user && window.user.email) || '';
             if (!userEmail) {
                 try {
                     userEmail = (localStorage.getItem('denr_user_email') || '').trim();
@@ -392,7 +392,7 @@
             function renderInquiryMessages(messages) {
                 const list = document.getElementById('userMessageList');
                 list.innerHTML = (messages||[]).map(m => {
-                    const msgOwner = m.user_id || m.user_email || m.email || '';
+                    const msgOwner = m.user_id || m.email || m.user_email || '';
                     let isMe = msgOwner === userId;
                     let msgContent = formatInquiryText(m.message||'');
                     if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
@@ -418,7 +418,7 @@
                 if (!msg) return;
                 const formData = new FormData();
                 formData.append('user_id', userId);
-                formData.append('user_email', userId);
+                formData.append('email', userId);
                 formData.append('user_name', userName);
                 formData.append('user_photo', userPhoto);
                 formData.append('message', msg);
@@ -443,7 +443,7 @@
                 if (!file) return;
                 const formData = new FormData();
                 formData.append('user_id', userId);
-                formData.append('user_email', userId);
+                formData.append('email', userId);
                 formData.append('user_name', userName);
                 formData.append('user_photo', userPhoto);
                 formData.append('message', '');

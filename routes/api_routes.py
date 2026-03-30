@@ -3477,7 +3477,7 @@ def api_get_inquiry_messages(user_id):
 def api_send_inquiry_message():
     try:
         user_id = (request.form.get('user_id') or '').strip()
-        user_email = (request.form.get('user_email') or '').strip().lower()
+        user_email = (request.form.get('email') or request.form.get('user_email') or '').strip().lower()
         if not user_email and '@' in user_id:
             user_email = user_id.lower()
 
