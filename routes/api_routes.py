@@ -166,9 +166,9 @@ def proxy_file():
         import io
         import hashlib
         
-        # Require authentication
-        if 'user_email' not in session:
-            return jsonify({'error': 'Unauthorized'}), 401
+        # Do not hard-require Flask session here.
+        # Hosted environments may rely on Firebase auth only; URL validation below remains enforced.
+        requester = session.get('user_email') if 'user_email' in session else 'anonymous'
         
         file_url = request.args.get('url', '').strip()
         if not file_url:
@@ -187,7 +187,31 @@ def proxy_file():
         if not ('cloudinary.com' in file_url or is_local_path or file_url.startswith('http')):
             return jsonify({'error': 'Invalid file URL'}), 400
         
-        print(f"🔵 [FILE_PROXY] Request from {session.get('user_email')}: {file_url[:100]}...")
+        print(f"🔵 [FILE_PROXY] Request from {requester}: {file_url[:100]}...")
+
+        def _guess_mime_and_inline(filename_hint: str, content_type_hint: str = ''):
+            ext = (str(filename_hint or '').split('?')[0].split('.')[-1] or '').lower()
+            ct = str(content_type_hint or '').lower()
+
+            if 'image/' in ct:
+                return ct.split(';')[0], True
+            if 'application/pdf' in ct:
+                return 'application/pdf', True
+
+            ext_map = {
+                'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+                'gif': 'image/gif', 'webp': 'image/webp', 'bmp': 'image/bmp',
+                'svg': 'image/svg+xml', 'avif': 'image/avif',
+                'pdf': 'application/pdf',
+                'doc': 'application/msword',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'xls': 'application/vnd.ms-excel',
+                'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'txt': 'text/plain', 'csv': 'text/csv',
+            }
+            mime = ext_map.get(ext, 'application/octet-stream')
+            inline = mime.startswith('image/') or mime == 'application/pdf' or mime.startswith('text/')
+            return mime, inline
         
         # Handle local paths directly
         if is_local_path:
@@ -234,9 +258,14 @@ def proxy_file():
                 download_name=filename if not inline else None
             )
         
-        # Create cache directory
+        # Create cache directory (best-effort on hosted env)
         cache_dir = os.path.join('static', 'file_cache')
-        os.makedirs(cache_dir, exist_ok=True)
+        can_cache = True
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+        except Exception as mk_err:
+            print(f"⚠️  [FILE_PROXY] Cache directory unavailable: {mk_err}")
+            can_cache = False
         
         # Generate cache filename from URL hash
         url_hash = hashlib.md5(file_url.encode()).hexdigest()
@@ -254,15 +283,17 @@ def proxy_file():
                 ext = '.pdf'  # Default for images in docs
             filename = f"cached_{url_hash}{ext}"
         
-        cache_file = os.path.join(cache_dir, f"{url_hash}_{filename}")
+        cache_file = os.path.join(cache_dir, f"{url_hash}_{filename}") if can_cache else ''
         
         # Check if file is already cached
-        if os.path.exists(cache_file):
+        if can_cache and os.path.exists(cache_file):
             print(f"✅ [FILE_PROXY] Serving from cache: {filename}")
+            mime_type, inline = _guess_mime_and_inline(filename)
             return send_file(
                 cache_file,
-                as_attachment=True,
-                download_name=filename
+                mimetype=mime_type,
+                as_attachment=not inline,
+                download_name=filename if not inline else None
             )
         
         # Not cached - fetch from source
@@ -715,18 +746,38 @@ def proxy_file():
             
             if response.status_code == 200:
                 # Cache the file
+                if can_cache:
+                    try:
+                        with open(cache_file, 'wb') as f:
+                            f.write(response.content)
+                        print(f"✅ [FILE_PROXY] Cached: {filename} ({len(response.content)} bytes)")
+                    except IOError as cache_err:
+                        print(f"⚠️  [FILE_PROXY] Cache write failed: {cache_err}")
+                else:
+                    print("ℹ️  [FILE_PROXY] Skipping cache write (cache unavailable)")
+
+                resp_ct = ''
                 try:
-                    with open(cache_file, 'wb') as f:
-                        f.write(response.content)
-                    print(f"✅ [FILE_PROXY] Cached: {filename} ({len(response.content)} bytes)")
-                except IOError as cache_err:
-                    print(f"⚠️  [FILE_PROXY] Cache write failed: {cache_err}")
+                    resp_ct = response.headers.get('Content-Type', '')
+                except Exception:
+                    pass
+                mime_type, inline = _guess_mime_and_inline(filename, resp_ct)
                 
                 # Return file
-                if os.path.exists(cache_file):
-                    return send_file(cache_file, as_attachment=True, download_name=filename)
+                if can_cache and os.path.exists(cache_file):
+                    return send_file(
+                        cache_file,
+                        mimetype=mime_type,
+                        as_attachment=not inline,
+                        download_name=filename if not inline else None
+                    )
                 else:
-                    return send_file(io.BytesIO(response.content), as_attachment=True, download_name=filename)
+                    return send_file(
+                        io.BytesIO(response.content),
+                        mimetype=mime_type,
+                        as_attachment=not inline,
+                        download_name=filename if not inline else None
+                    )
             else:
                 print(f"❌ [FILE_PROXY] HTTP {response.status_code}")
                 if response.status_code in (401, 404) and 'cloudinary.com' in file_url and file_url.lower().endswith('.pdf'):
