@@ -504,7 +504,30 @@
         i.inScope(MY_MUNICIPALITY) &&
         (cat === "All" || i.category === cat) &&
         i.matches(q)
-      );
+      ).sort((a, b) => toTimestampMs(b.createdAt) - toTimestampMs(a.createdAt));
+    }
+
+    function toTimestampMs(rawDate) {
+      if (!rawDate) return 0;
+      try {
+        if (typeof rawDate?.toDate === 'function') {
+          const d = rawDate.toDate();
+          return d instanceof Date && !Number.isNaN(d.getTime()) ? d.getTime() : 0;
+        }
+        if (rawDate?.seconds) {
+          return Number(rawDate.seconds) * 1000;
+        }
+        if (rawDate instanceof Date) {
+          return Number.isNaN(rawDate.getTime()) ? 0 : rawDate.getTime();
+        }
+        if (typeof rawDate === 'string' || typeof rawDate === 'number') {
+          const d = new Date(rawDate);
+          return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+        }
+      } catch (_) {
+        return 0;
+      }
+      return 0;
     }
 
     function renderKpis(list) {
