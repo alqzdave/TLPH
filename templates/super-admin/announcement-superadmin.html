@@ -884,178 +884,124 @@
                 return `<div class="messenger-msg${m.me?' me':''}${extraClass}">${msgContent}</div>`;
             }).join('');
             
-            document.getElementById('messengerChatForm').style.display = 'flex';
-            document.getElementById('messengerMsgInput').focus();
-            convo.unread = 0; 
-        }
-
-        function sendMessengerMsg(e) {
-            e.preventDefault();
-            const input = document.getElementById('messengerMsgInput');
-            const msg = input.value.trim();
-            if (!msg || !selectedConvoId) return;
-            const convo = mockConvos.find(c=>c.id===selectedConvoId);
-            convo.messages.push({me:true, text:msg});
-            convo.last = msg; 
-            input.value = '';
-            selectMessengerConvo(selectedConvoId);
-            setTimeout(()=>{
-                document.getElementById('messengerChatBody').scrollTop = 99999;
-            }, 50);
-        }
-
-        function handleChatImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file || !selectedConvoId) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgDataUrl = e.target.result;
-                const convo = mockConvos.find(c => c.id === selectedConvoId);
-                
-                convo.messages.push({ me: true, text: "", image: imgDataUrl });
-                convo.last = "Sent a photo";
-                
-                selectMessengerConvo(selectedConvoId);
-                
-                setTimeout(()=>{
-                    document.getElementById('messengerChatBody').scrollTop = 99999;
-                }, 100);
-            };
-            reader.readAsDataURL(file);
-            event.target.value = ''; 
-        }
-
-        function handleChatFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file || !selectedConvoId) return;
-
-            const convo = mockConvos.find(c => c.id === selectedConvoId);
-            
-            let size = (file.size / 1024).toFixed(1) + ' KB';
-            if (file.size > 1024 * 1024) size = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
-
-            convo.messages.push({ 
-                me: true, 
-                text: "", 
-                file: { name: file.name, size: size } 
-            });
-            convo.last = "Sent an attachment";
-            
-            selectMessengerConvo(selectedConvoId);
-            
-            setTimeout(()=>{
-                document.getElementById('messengerChatBody').scrollTop = 99999;
-            }, 100);
-            
-            event.target.value = ''; 
-        }
-
-
-        // ==========================================
-        // DOM LOADED EVENT
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // Render mock convos now that DOM is ready
-            renderMessengerConvos();
-
-            // --- 1. Fetch & Render Table ---
-            async function fetchAndRenderNotifications() {
-                const tbody = document.getElementById('tbody');
-                const recordCount = document.getElementById('recordCount');
-                const statTotal = document.getElementById('statTotal');
-                const statActive = document.getElementById('statActive');
-                const statUpcoming = document.getElementById('statUpcoming');
-                const statExpired = document.getElementById('statExpired');
-                
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-3">Loading...</td></tr>';
-                
-                try {
-                    const resp = await fetch('/api/notifications/list');
-                    const data = await resp.json();
-                    if (!data.success) throw new Error(data.message || 'Failed to load notifications');
-                    
-                    let notifications = data.notifications || [];
-                    
-                    // Sort: posted > to_post > inactive, then by post_date desc
-                    const statusOrder = { posted: 0, to_post: 1, inactive: 2 };
-                    notifications.sort((a, b) => {
-                        const sa = statusOrder[a.status] ?? 99;
-                        const sb = statusOrder[b.status] ?? 99;
-                        if (sa !== sb) return sa - sb;
-                        const da = new Date(a.post_date);
-                        const db = new Date(b.post_date);
-                        return db - da;
+            // --- Messenger Backend Integration ---
+            let selectedConvoUserId = null;
+            let conversations = [];
+            function fetchMessengerConvos() {
+                fetch('/api/inquiries/conversations', { credentials: 'same-origin' })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            conversations = res.conversations || [];
+                            renderMessengerConvos();
+                        }
                     });
-
-                    // Update Stats
-                    if (statTotal) statTotal.innerText = notifications.length;
-                    if (statActive) statActive.innerText = notifications.filter(n => n.status === 'posted').length;
-                    if (statUpcoming) statUpcoming.innerText = notifications.filter(n => n.status === 'to_post').length;
-                    if (statExpired) statExpired.innerText = notifications.filter(n => n.status === 'inactive').length;
-
-                    if (notifications.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 p-3">No notifications found.</td></tr>';
-                    } else {
-                        tbody.innerHTML = notifications.map(n => {
-                            let statusPill = '';
-                            let rowClass = 'js-row'; // Needed for local filter search
-                            let actionBtn = '';
-
-                            if (n.status === 'posted') {
-                                statusPill = '<span class="status-pill status-active">Posted</span>';
-                                rowClass += ' table-success';
-                                actionBtn = `<button class="btn btn-action" title="Cancel & Delete" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-secondary'></i></button>`;
-                            } else if (n.status === 'to_post') {
-                                statusPill = '<span class="status-pill status-draft" style="background:#fef9c3;color:#b45309;border-color:#fde047;">Scheduled</span>';
-                                rowClass += ' table-warning';
-                                actionBtn = `
-                                    <button class="btn btn-action" title="Edit" onclick="editNotification('${n.id}')"><i class='fa fa-edit text-primary'></i></button>
-                                    <button class="btn btn-action" title="Cancel & Delete" onclick="cancelNotification('${n.id}')"><i class='fa fa-ban text-warning'></i></button>
-                                `;
-                            } else if (n.status === 'inactive') {
-                                statusPill = '<span class="status-pill status-inactive">Inactive</span>';
-                                rowClass += ' table-secondary';
-                                actionBtn = `<button class="btn btn-action" title="Delete" onclick="deleteNotification('${n.id}')"><i class='fa fa-trash text-danger'></i></button>`;
-                            } else {
-                                statusPill = `<span class="status-pill">${n.status || ''}</span>`;
-                            }
-
-                            // data-category attribute added for the client-side search/filter
-                            return `
-                            <tr class="${rowClass}" data-category="${n.type}">
-                                <td class="data-title">${n.type}</td>
-                                <td>${n.scope}</td>
-                                <td><span class="data-excerpt">${n.content}</span></td>
-                                <td>${formatDate(n.post_date)}</td>
-                                <td>${formatDate(n.end_date)}</td>
-                                <td>${statusPill}</td>
-                                <td class="text-center">${actionBtn}</td>
-                            </tr>
-                            `;
-                        }).join('');
-                    }
-                    recordCount.innerText = notifications.length + ' Notifications';
-                    
-                    // Re-apply filters if any are set
-                    filterTable();
-                    
-                } catch (err) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger p-3">Error loading notifications.</td></tr>';
-                    recordCount.innerText = '0 Notifications';
-                    if (statTotal) statTotal.innerText = 0;
-                    if (statActive) statActive.innerText = 0;
-                    if (statUpcoming) statUpcoming.innerText = 0;
-                    if (statExpired) statExpired.innerText = 0;
-                }
             }
-
-
-            // --- 2. Create New Notification (Sidebar Form) ---
-            document.getElementById('notificationForm').addEventListener('submit', async function(e) {
+            function renderMessengerConvos() {
+                const list = document.getElementById('messengerConvoList');
+                list.innerHTML = (conversations||[]).map(c => {
+                    let avatar = c.user_photo ? `<img src="${c.user_photo}" class="messenger-convo-avatar" style="object-fit:cover;">` : `<div class="messenger-convo-avatar">${(c.user_name||'')[0]||'?'}</div>`;
+                    let active = c.user_id === selectedConvoUserId ? 'active' : '';
+                    let lastTime = c.last_time ? formatDateTime(c.last_time) : '';
+                    return `<div class="messenger-convo-item ${active}" onclick="selectMessengerConvo('${c.user_id}')">${avatar}<div class="messenger-convo-info"><div class="messenger-convo-name">${c.user_name||'Unknown'}</div><div class="messenger-convo-last">${c.last_message||''} <span style='color:#64748b;font-size:0.75em;'>${lastTime}</span></div></div></div>`;
+                }).join('');
+            }
+            function selectMessengerConvo(userId) {
+                selectedConvoUserId = userId;
+                const convo = conversations.find(c => c.user_id === userId);
+                document.getElementById('messengerChatHeader').style.display = '';
+                document.getElementById('chatHeaderName').textContent = convo ? convo.user_name : 'Conversation';
+                document.getElementById('messengerChatForm').style.display = '';
+                fetch(`/api/inquiries/messages/${userId}`, { credentials: 'same-origin' })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) renderMessengerMessages(res.messages);
+                    });
+            }
+            function renderMessengerMessages(messages) {
+                const body = document.getElementById('messengerChatBody');
+                if (!messages || messages.length === 0) {
+                    body.innerHTML = `<div style='margin:auto; color:#94a3b8; font-size:1rem; text-align:center;'><i class='fa-regular fa-comments' style='font-size:3rem; margin-bottom:10px; color:#cbd5e1;'></i><br>No messages yet</div>`;
+                    return;
+                }
+                body.innerHTML = messages.map(m => {
+                    let isMe = m.is_admin || false;
+                    let msgContent = formatMessageText(m.message||'');
+                    if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openLightbox('${m.file_url}')">`;
+                    let extraClass = m.file_url && !(m.message||'').trim() ? ' image-only' : '';
+                    let time = m.timestamp ? formatDateTime(m.timestamp) : '';
+                    let sender = m.user_name || '';
+                    let senderPhoto = m.user_photo ? `<img src='${m.user_photo}' style='width:22px;height:22px;border-radius:50%;object-fit:cover;margin-right:6px;'>` : `<span style='width:22px;height:22px;display:inline-block;border-radius:50%;background:#2563eb;color:#fff;text-align:center;line-height:22px;font-size:0.9em;margin-right:6px;'>${(sender||'?')[0]}</span>`;
+                    return `<div class="messenger-msg${isMe?' me':''}${extraClass}">${senderPhoto}<span style='font-weight:600;'>${sender}</span><br>${msgContent}<span class="msg-time">${time}</span></div>`;
+                }).join('');
+                setTimeout(()=>{ body.scrollTop = body.scrollHeight; }, 50);
+            }
+            function sendMessengerMsg(e) {
                 e.preventDefault();
-                const type = document.getElementById('notificationTypeNew').value;
+                const input = document.getElementById('messengerMsgInput');
+                const msg = input.value.trim();
+                if (!msg || !selectedConvoUserId) return;
+                const formData = new FormData();
+                formData.append('user_id', selectedConvoUserId);
+                formData.append('user_name', 'Superadmin');
+                formData.append('message', msg);
+                formData.append('user_photo', '');
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) {
+                        input.value = '';
+                        selectMessengerConvo(selectedConvoUserId);
+                    }
+                });
+            }
+            function handleChatImageUpload(event) {
+                const file = event.target.files[0];
+                if (!file || !selectedConvoUserId) return;
+                const formData = new FormData();
+                formData.append('user_id', selectedConvoUserId);
+                formData.append('user_name', 'Superadmin');
+                formData.append('message', '');
+                formData.append('user_photo', '');
+                formData.append('file', file);
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) selectMessengerConvo(selectedConvoUserId);
+                });
+            }
+            function handleChatFileUpload(event) {
+                // For now, treat as image upload (can extend for other file types)
+                handleChatImageUpload(event);
+            }
+            function formatMessageText(text) {
+                if (!text) return '';
+                // Linkify URLs and add preview for first link
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                let previewHtml = '';
+                const match = text.match(urlRegex);
+                if (match && match.length > 0) {
+                    const url = match[0];
+                    let domain = '';
+                    try { domain = new URL(url).hostname; } catch(e) { domain = 'website.com'; }
+                    previewHtml = `<a href="${url}" target="_blank" class="chat-link-preview"><img src='https://www.google.com/s2/favicons?domain=${domain}' style='width:20px;height:20px;margin-right:6px;vertical-align:middle;'><span style='font-weight:600;'>${domain}</span><br><span style='font-size:0.85em;color:#64748b;'>${url}</span></a>`;
+                }
+                const formattedText = text.replace(urlRegex, function(url) {
+                    return `<a href="${url}" target="_blank" class="chat-link">${url}</a>`;
+                });
+                return formattedText + previewHtml;
+            }
+            function formatDateTime(ts) {
+                // Firestore timestamp or ISO string
+                let d = ts && ts.seconds ? new Date(ts.seconds*1000) : new Date(ts);
+                return d.toLocaleString();
+            }
+            // Initial fetch
+            fetchMessengerConvos();
                 const scope = document.getElementById('notificationScopeNew').value;
                 const content = document.getElementById('notificationContentNew').value;
                 const post_date = getManilaISOString(document.getElementById('notificationPostDateNew').value);
