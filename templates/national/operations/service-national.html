@@ -455,6 +455,12 @@
               <div id="mCompensationFields" class="row g-2"></div>
             </div>
 
+            <!-- Form-Specific Details (Farm Visit) -->
+            <div class="border p-2 mb-3" id="mFarmBlock" style="display:none; border-radius:2px;">
+              <div class="text-muted fw-bold text-uppercase mb-2" style="font-size:0.55rem; letter-spacing:1px; color:#047857;">🌾 Farm Visit Details</div>
+              <div id="mFarmFields" class="row g-2"></div>
+            </div>
+
             <!-- Documents -->
             <div class="border p-2 mb-3" style="border-radius:2px;">
               <div class="text-muted fw-bold text-uppercase mb-2" style="font-size:0.55rem; letter-spacing:1px;">Attached Documents</div>
@@ -751,6 +757,8 @@
         'photoURL', 'photoUrl', 'profilePhoto', 'profile_photo', 'photo',
         // Compensation-specific fields (shown in separate Form-Specific Details)
         'farmerIdNumber', 'costOfDamage', 'googlePinLocation', 'farmLatitude', 'farmLongitude', 'farmAddress',
+        // Farm Visit-specific fields (shown in separate Farm Visit Details)
+        'farmSize', 'productionType', 'farmProvince', 'farmMunicipality', 'farmBarangay', 'exactLocation', 'location',
         // Document fields
         'supportingDocuments', 'supportingFiles', 'attachments', 'files',
         'productPhoto', 'registrationDocuments', 'emergencyPhotos', 'fieldPhotos', 'damagePhotos'
@@ -846,6 +854,62 @@
         compensationBlock.style.display = 'none';
       }
 
+      // Form-Specific Details (Farm Visit)
+      const farmBlock = document.getElementById('mFarmBlock');
+      const farmEl = document.getElementById('mFarmFields');
+      farmEl.innerHTML = '';
+      const isFarmVisit = svcType.includes('farm visit')
+        || svcType.includes('initial farm')
+        || svcType.includes('compliance inspection')
+        || svcType.includes('disease/pest investigation')
+        || svcType.includes('soil/crop evaluation')
+        || svcType.includes('follow-up / visit')
+        || svcType.includes('follow up visit');
+
+      if (isFarmVisit) {
+        const farmFields = [];
+        const farmPin = d.googlePinLocation || d.pinLocation || d.mapLocation || d.mapLink || '';
+        const farmLat = d.farmLatitude ?? d.latitude;
+        const farmLng = d.farmLongitude ?? d.longitude;
+        const derivedFarmPin = (!farmPin && farmLat && farmLng)
+          ? `https://maps.google.com/?q=${encodeURIComponent(String(farmLat) + ',' + String(farmLng))}`
+          : '';
+        const finalFarmPin = farmPin || derivedFarmPin;
+
+        const addFarm = (label, value, isLink = false) => {
+          const text = String(value ?? '').trim();
+          if (!text) return;
+          farmFields.push({ label, value: text, isLink });
+        };
+
+        addFarm('Farm Address', d.farmAddress || d.exactLocation || d.location);
+        addFarm('Farm Size', d.farmSize || d.areaSize || d.affectedAreaHa);
+        addFarm('Production Type', d.productionType);
+        addFarm('Farmer ID', d.farmerIdNumber || d.farmerId);
+        addFarm('Province', d.province || d.farmProvince);
+        addFarm('Municipality', d.municipality || d.farmMunicipality);
+        addFarm('Barangay', d.barangay || d.farmBarangay);
+        if (finalFarmPin) addFarm('Pin Location', finalFarmPin, true);
+
+        farmFields.forEach(field => {
+          let content = '';
+          if (field.isLink) {
+            content = `<a href="${field.value}" target="_blank" rel="noopener" class="text-primary fw-bold" style="font-size:0.68rem;">🗺️ View on Map</a>`;
+          } else {
+            content = `<div class="fw-bold" style="font-size:0.68rem;">${field.value}</div>`;
+          }
+          farmEl.innerHTML += `
+            <div class="col-md-6">
+              <div class="text-muted" style="font-size:0.55rem;">${field.label}</div>
+              ${content}
+            </div>`;
+        });
+
+        farmBlock.style.display = farmFields.length > 0 ? '' : 'none';
+      } else {
+        farmBlock.style.display = 'none';
+      }
+
       // Documents — scan all array/string fields with file extensions
       const fileExts = /\.(pdf|jpg|jpeg|png|gif|webp|bmp|svg|avif|doc|docx|xls|xlsx|csv|txt|zip)$/i;
       const docsEl = document.getElementById('mDocs');
@@ -895,39 +959,44 @@
           </div>`;
       };
 
-      // Show only applicant attachment source (priority order) to avoid duplicates
-      const preferredDocSource = [
-        ['supportingDocuments', d.supportingDocuments],
-        ['supportingFiles', d.supportingFiles],
-        ['attachments', d.attachments],
-        ['files', d.files],
-      ].find(([, arr]) => Array.isArray(arr) && arr.length);
-
-      if (preferredDocSource) {
-        const [sourceKey, sourceVal] = preferredDocSource;
-        sourceVal.forEach(item => {
-          if (item && typeof item === 'object' && item.url) {
-            pushDoc(item.url, item.name || '', sourceKey);
-            return;
-          }
-          if (typeof item === 'string') {
-            const resolved = normalizeFileUrl(item, d.userId || d.userID || d.uid || '');
-            pushDoc(resolved || item, '', sourceKey);
-          }
-        });
-      } else {
-        // Safe fallback for older records with single URL fields only
-        const fallbackKeys = ['document', 'attachment', 'file', 'photo', 'image'];
-        for (const [key, val] of Object.entries(d || {})) {
-          const lower = String(key || '').toLowerCase();
-          if (!fallbackKeys.some(k => lower.includes(k))) continue;
-          const items = Array.isArray(val) ? val : [val];
-          items.forEach(item => {
-            if (typeof item !== 'string') return;
-            const resolved = normalizeFileUrl(item, d.userId || d.userID || d.uid || '');
-            pushDoc(resolved || item, '', key);
-          });
+      const isAttachmentKey = (key) => /(file|files|photo|photos|image|images|document|documents|attachment|attachments|report|permit|certificate|proposal|plan|record|history|result|picture)/i.test(String(key || '').toLowerCase());
+      const collectFileStrings = (value, acc = []) => {
+        if (value == null) return acc;
+        if (Array.isArray(value)) {
+          value.forEach(v => collectFileStrings(v, acc));
+          return acc;
         }
+        if (typeof value === 'object') {
+          const directUrl = String(value.url || value.webUrl || value.path || value.secure_url || value.downloadURL || '').trim();
+          if (directUrl) {
+            acc.push(directUrl);
+            return acc;
+          }
+          Object.values(value).forEach(v => collectFileStrings(v, acc));
+          return acc;
+        }
+        if (typeof value === 'string') {
+          const text = value.trim();
+          if (!text) return acc;
+          if ((text.startsWith('[') && text.endsWith(']')) || (text.startsWith('{') && text.endsWith('}'))) {
+            try {
+              collectFileStrings(JSON.parse(text), acc);
+              return acc;
+            } catch (_) {}
+          }
+          if (fileExts.test(text)) acc.push(text);
+        }
+        return acc;
+      };
+
+      for (const [key, val] of Object.entries(d || {})) {
+        if (String(key).endsWith('Count')) continue;
+        if (!isAttachmentKey(key)) continue;
+        const files = collectFileStrings(val, []);
+        files.forEach(raw => {
+          const resolved = normalizeFileUrl(raw, d.userId || d.userID || d.uid || '');
+          pushDoc(resolved || raw, '', key);
+        });
       }
       if (fileCount === 0) docsEl.innerHTML = '<div class="col-12 text-muted text-center py-2" style="font-size:0.65rem;">No documents attached.</div>';
 
