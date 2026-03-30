@@ -21,6 +21,10 @@
     .gov-btn { padding: 0.25rem 0.75rem; border-radius: 2px; font-weight: 700; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; transition: all 0.2s; }
     .gov-input { padding: 0.25rem 0.5rem; border-radius: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; }
 
+    /* Action Buttons (match expense-category) */
+    .btn-action { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; border-radius:2px; transition:all 0.2s; border:1px solid #e2e8f0; background:#f8fafc; color:#94a3b8; cursor:pointer; }
+    .btn-delete:hover { color:#ffffff; background:#ef4444; border-color:#dc2626; }
+
     th { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.75rem; background: #f8fafc; color: #64748b; font-weight: 800; }
     td { padding: 0.35rem 0.75rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     html, body { height: 100%; }
@@ -201,7 +205,14 @@
                         </span>
                       </td>
                       <td class="text-center">
-                        <button @click="deleteAccount(account.id)" class="text-rose-600 hover:text-rose-900 transition font-bold text-[9px]">Delete</button>
+                        <div class="inline-flex items-center justify-center gap-2">
+                          <button type="button" class="btn-action" title="Edit" aria-label="Edit">
+                            <span class="material-icons-round text-[16px]">edit</span>
+                          </button>
+                          <button @click="deleteAccount(account.id)" class="btn-action btn-delete" title="Delete" aria-label="Delete">
+                            <span class="material-icons-round text-[16px]">delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   </template>
