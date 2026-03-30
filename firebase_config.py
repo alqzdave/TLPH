@@ -1,5 +1,5 @@
 import firebase_admin
-from firebase_admin import credentials, db, firestore
+from firebase_admin import credentials, db, firestore, storage
 import pyrebase
 from config import Config
 import os
@@ -16,7 +16,8 @@ def initialize_firebase_admin():
 
         cred = credentials.Certificate(Config.FIREBASE_CREDENTIALS)
         firebase_admin.initialize_app(cred, {
-            'databaseURL': Config.FIREBASE_CONFIG['databaseURL']
+            'databaseURL': Config.FIREBASE_CONFIG['databaseURL'],
+            'storageBucket': Config.FIREBASE_CONFIG.get('storageBucket')
         })
         print("Firebase Admin initialized successfully!")
     except Exception as e:
@@ -43,3 +44,9 @@ def get_firestore_db():
 def get_realtime_db():
     """Get Realtime Database reference"""
     return db.reference()
+
+
+def get_storage_bucket():
+    """Get Firebase Storage bucket reference"""
+    initialize_firebase_admin()
+    return storage.bucket()
