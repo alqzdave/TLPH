@@ -1581,10 +1581,20 @@ def check_session():
                 device_type=detect_device_from_request(),
                 user_agent=request.headers.get('User-Agent', '')
             )
+
+        profile_name = ''
+        try:
+            profile = _resolve_user_profile(user_id or '', user_email)
+            profile_name = str(profile.get('name') or '').strip()
+        except Exception:
+            profile_name = ''
+
         return jsonify({
             'authenticated': True,
             'role': role,
-            'email': user_email
+            'email': user_email,
+            'user_id': user_id,
+            'name': profile_name,
         })
     return jsonify({'authenticated': False}), 401
 
@@ -3539,6 +3549,21 @@ def _looks_like_email(value):
     return '@' in text and '.' in text
 
 
+def _is_placeholder_name(name_value, email_value=''):
+    name_text = str(name_value or '').strip()
+    if not name_text:
+        return True
+    if _looks_like_email(name_text):
+        return True
+
+    email_text = str(email_value or '').strip().lower()
+    if email_text and '@' in email_text:
+        local_part = email_text.split('@', 1)[0].strip().lower()
+        if local_part and name_text.lower() == local_part:
+            return True
+    return False
+
+
 def _resolve_user_profile(identity_key='', email_hint=''):
     """Resolve user profile from users collection by document id first, then by email."""
     db = firestore.client()
@@ -3590,12 +3615,16 @@ def _resolve_user_profile(identity_key='', email_hint=''):
             try:
                 for doc in db.collection('users').stream():
                     data = doc.to_dict() or {}
-                    doc_email = str(data.get('email') or '').strip().lower()
-                    if doc_email and doc_email == email:
+                    candidate_emails = [
+                        str(data.get('email') or '').strip().lower(),
+                        str(data.get('user_email') or '').strip().lower(),
+                        str(data.get('userEmail') or '').strip().lower(),
+                    ]
+                    if email in [e for e in candidate_emails if e]:
                         return {
                             'name': _extract_user_name(data),
                             'photo': _extract_user_photo(data),
-                            'email': doc_email,
+                            'email': email,
                         }
             except Exception:
                 pass
@@ -3616,7 +3645,7 @@ def api_get_inquiry_conversations():
                 convo_key = str(convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
                 convo_email = str(convo.get('email') or convo.get('user_email') or '').strip().lower()
                 convo_name = str(convo.get('user_name') or '').strip()
-                needs_name = not convo_name or _looks_like_email(convo_name)
+                needs_name = _is_placeholder_name(convo_name, convo_email)
                 needs_photo = not convo.get('user_photo')
                 needs_email = not convo.get('email')
 
@@ -3688,7 +3717,8 @@ def api_get_inquiry_messages(user_id):
             if not msg.get('user_photo') and profile.get('photo'):
                 msg['user_photo'] = profile.get('photo')
             current_name = str(msg.get('user_name') or '').strip()
-            if (not current_name or _looks_like_email(current_name)) and profile.get('name'):
+            msg_email = str(msg.get('email') or msg.get('user_email') or convo_key or '').strip().lower()
+            if _is_placeholder_name(current_name, msg_email) and profile.get('name'):
                 msg['user_name'] = profile.get('name')
 
         safe_msgs = _json_safe(msgs)
@@ -3742,6 +3772,9 @@ def api_send_inquiry_message():
         if not user_name:
             user_name = (session.get('user_name') or user_email or 'User').strip()
 
+        session_user_id = str(session.get('user_id') or '').strip()
+        session_user_email = str(session.get('user_email') or '').strip().lower()
+
         sender_email = (session.get('user_email') or '').strip().lower() or user_email
         sender_role = (session.get('user_role') or '').strip().lower()
         is_admin_sender = sender_role in {'superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'}
@@ -3749,10 +3782,21 @@ def api_send_inquiry_message():
         message = request.form.get('message', '')
         user_photo = request.form.get('user_photo', '')
 
-        # Backfill sender profile when photo/name is missing or name is still email-like.
-        needs_name = not user_name or _looks_like_email(user_name)
+        # Backfill sender profile when photo/name is missing or name is placeholder-like.
+        needs_name = _is_placeholder_name(user_name, user_email or session_user_email)
         if not user_photo or needs_name:
-            resolved = _resolve_user_profile(user_id, user_email)
+            resolved = {'name': '', 'photo': '', 'email': user_email}
+            identity_candidates = [session_user_id, user_id]
+            email_candidates = [user_email, session_user_email, sender_email]
+
+            for identity in identity_candidates:
+                for email_candidate in email_candidates:
+                    resolved = _resolve_user_profile(identity, email_candidate)
+                    if resolved.get('name') or resolved.get('photo'):
+                        break
+                if resolved.get('name') or resolved.get('photo'):
+                    break
+
             if not user_photo and resolved.get('photo'):
                 user_photo = resolved.get('photo')
             if needs_name and resolved.get('name'):
