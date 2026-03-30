@@ -104,7 +104,7 @@
             <div class="flex justify-between items-start">
               <div>
                 <div class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Total Reports</div>
-                <div class="text-xl font-black text-slate-900 leading-none mt-1" id="kpiTotal">64</div>
+                <div class="text-xl font-black text-slate-900 leading-none mt-1" id="kpiTotal">0</div>
               </div>
               <span class="material-icons-round text-slate-300 text-[20px]">assignment</span>
             </div>
@@ -117,7 +117,7 @@
             <div class="flex justify-between items-start">
               <div>
                 <div class="text-[9px] font-black uppercase text-rose-800 tracking-widest">Logged This Month</div>
-                <div class="text-xl font-black text-rose-700 leading-none mt-1" id="kpiMonth">9</div>
+                <div class="text-xl font-black text-rose-700 leading-none mt-1" id="kpiMonth">0</div>
               </div>
               <span class="material-icons-round text-rose-200 text-[20px]">calendar_month</span>
             </div>
@@ -130,7 +130,7 @@
             <div class="flex justify-between items-start">
               <div>
                 <div class="text-[9px] font-black uppercase text-amber-800 tracking-widest">Most Common Factor</div>
-                <div class="text-lg font-black text-amber-700 leading-none mt-1 uppercase" id="kpiCommon">Flood</div>
+                <div class="text-lg font-black text-amber-700 leading-none mt-1 uppercase" id="kpiCommon">-</div>
               </div>
               <span class="material-icons-round text-amber-200 text-[20px]">bolt</span>
             </div>
@@ -384,10 +384,64 @@
     const searchDist = document.getElementById('searchDamage');
     const incidentFilter = document.getElementById('incidentFilter');
 
+    function parseRowDate(dateText) {
+      const cleaned = (dateText || '').trim();
+      if (!cleaned) return null;
+      const parsed = new Date(cleaned);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return parsed;
+    }
+
+    function updateKpis(rows) {
+      const totalEl = document.getElementById('kpiTotal');
+      const monthEl = document.getElementById('kpiMonth');
+      const commonEl = document.getElementById('kpiCommon');
+
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      let total = 0;
+      let monthCount = 0;
+      const incidentCounts = {};
+
+      rows.forEach((row) => {
+        total++;
+        const cells = row.querySelectorAll('td');
+        const incident = cells[1] ? cells[1].innerText.trim() : '';
+        const dateText = cells[4] ? cells[4].innerText.trim() : '';
+
+        if (incident) {
+          const key = incident.toUpperCase();
+          incidentCounts[key] = (incidentCounts[key] || 0) + 1;
+        }
+
+        const parsedDate = parseRowDate(dateText);
+        if (parsedDate && parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
+          monthCount++;
+        }
+      });
+
+      if (totalEl) totalEl.innerText = total.toString();
+      if (monthEl) monthEl.innerText = monthCount.toString();
+
+      if (commonEl) {
+        let common = '-';
+        let max = 0;
+        Object.entries(incidentCounts).forEach(([incident, count]) => {
+          if (count > max) {
+            max = count;
+            common = incident;
+          }
+        });
+        commonEl.innerText = common;
+      }
+    }
+
     function applyFilter() {
       const filter = (searchDist.value || '').toLowerCase().trim();
       const inc = (incidentFilter.value || '').toLowerCase().trim();
-      const rows = document.querySelectorAll('.damage-row');
+      const rows = Array.from(document.querySelectorAll('.damage-row'));
 
       let visible = 0;
       let total = 0;
@@ -406,6 +460,7 @@
 
       document.getElementById('visibleCount').innerText = visible;
       document.getElementById('totalCount').innerText = total;
+      updateKpis(rows);
     }
 
     searchDist.addEventListener('input', applyFilter);
