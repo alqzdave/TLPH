@@ -52,11 +52,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Deliver From *</label>
-            <select id="newDeliverFrom" class="gov-input w-full h-8 bg-white cursor-pointer" required>
-              <option value="national">National</option>
-              <option value="regional">Regional</option>
-              <option value="municipal">Municipal</option>
-            </select>
+            <div class="gov-input w-full h-8 bg-slate-100 text-slate-500 flex items-center" style="pointer-events: none;">National</div>
+            <input type="hidden" id="newDeliverFrom" value="national" name="deliver_from" />
           </div>
           <div>
             <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Deliver To *</label>

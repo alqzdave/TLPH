@@ -233,10 +233,10 @@
                   <td class="text-center border-r border-slate-100">{{ q.deliver_to_type }}</td>
                   <td class="text-center">
                     <div class="flex flex-wrap gap-1 justify-center">
-                      <button class="gov-btn text-[8px] border border-slate-300 bg-white hover:bg-slate-100 px-1 py-0.5" title="View" onclick="viewQuotation(this)"><span class="material-icons-round text-[12px]">visibility</span></button>
-                      {% if (q.status or 'PENDING')|upper != 'RECEIVED' %}
-                        <button class="gov-btn text-[8px] border border-slate-300 bg-white hover:bg-emerald-100 px-1 py-0.5" title="Mark as Received" onclick="openReceiveModal(this)"><span class="material-icons-round text-[12px]">task_alt</span></button>
-                      {% endif %}
+                        <button class="gov-btn text-[8px] border border-slate-300 bg-white hover:bg-slate-100 px-1 py-0.5" title="View" onclick="viewQuotation(this)"><span class="material-icons-round text-[12px]">visibility</span></button>
+                        {% if (q.status or 'PENDING')|upper != 'RECEIVED' %}
+                          <button class="gov-btn text-[8px] border border-slate-300 bg-white hover:bg-emerald-100 px-1 py-0.5" title="Mark as Received" onclick="openReceiveModal(this)"><span class="material-icons-round text-[12px]">task_alt</span></button>
+                        {% endif %}
                     </div>
                   </td>
                 </tr>
