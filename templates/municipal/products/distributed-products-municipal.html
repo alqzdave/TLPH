@@ -394,6 +394,7 @@
 
       document.getElementById('visibleCount').innerText = visible;
       document.getElementById('totalCount').innerText = total;
+      updateKpis(rows);
     }
 
     searchDist.addEventListener('input', applyFilter);
@@ -401,6 +402,49 @@
     function resetFilters() {
       searchDist.value = '';
       applyFilter();
+    }
+
+    function parseRowDate(row) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 5) return null;
+      const raw = cells[4].innerText.trim();
+      if (!raw) return null;
+      const parsed = new Date(raw);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function parseRowQuantity(row) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 3) return null;
+      const raw = cells[2].innerText.trim();
+      if (!raw) return null;
+      const normalized = raw.replace(/,/g, '');
+      const value = Number(normalized);
+      return Number.isNaN(value) ? null : value;
+    }
+
+    function updateKpis(rows) {
+      if (!kpiTotalEl || !kpiMonthEl) return;
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      let monthCount = 0;
+      let totalQuantity = 0;
+
+      rows.forEach((row) => {
+        const date = parseRowDate(row);
+        const quantity = parseRowQuantity(row);
+        if (quantity !== null) {
+          totalQuantity += quantity;
+        }
+        if (!date) return;
+        if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
+          monthCount += 1;
+        }
+      });
+
+      kpiTotalEl.innerText = totalQuantity.toLocaleString('en-PH');
+      kpiMonthEl.innerText = monthCount;
     }
 
     const addDistRecordBtn = document.getElementById('addDistRecordBtn');
@@ -424,6 +468,8 @@
     const viewQuantityEl = document.getElementById('viewQuantity');
     const viewMunicipalityEl = document.getElementById('viewMunicipality');
     const viewDateEl = document.getElementById('viewDate');
+    const kpiTotalEl = document.getElementById('kpiTotal');
+    const kpiMonthEl = document.getElementById('kpiMonth');
 
     function csvEscape(value) {
       const text = String(value ?? '').replace(/\r?\n|\r/g, ' ').trim();
@@ -668,3 +714,4 @@
 
 </body>
 </html>
+
