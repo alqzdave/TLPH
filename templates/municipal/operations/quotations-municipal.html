@@ -34,6 +34,7 @@
         .btn-action { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; transition: all 0.2s; border: 1px solid #e2e8f0; background: #f8fafc; color: #94a3b8; cursor: pointer; }
         .btn-edit:hover { color: white; background: #f59e0b; border-color: #d97706; }
         .btn-history:hover { color: white; background: #0ea5e9; border-color: #0284c7; }
+        .btn-view:hover { color: white; background: #0ea5e9; border-color: #0284c7; }
         .btn-forward:hover { color: white; background: #6366f1; border-color: #4f46e5; }
         .btn-receive:hover { color: white; background: #10b981; border-color: #059669; }
         .btn-cancel:hover { color: white; background: #64748b; border-color: #475569; }
@@ -181,11 +182,8 @@
                               </td>
                               <td class="px-4 py-3 align-middle text-center">
                                   <div class="flex flex-nowrap justify-center gap-1">
-                                    <button type="button" class="btn-action btn-edit" title="Edit Quotation" data-action="edit"><span class="material-icons-round text-[14px]">edit</span></button>
-                                    <button type="button" class="btn-action btn-forward" title="Send / Forward Quotation" data-action="forward"><span class="material-icons-round text-[14px]">send</span></button>
+                                    <button type="button" class="btn-action btn-view" title="View Quotation" data-action="view"><span class="material-icons-round text-[14px]">visibility</span></button>
                                     <button type="button" class="btn-action btn-receive" title="Mark as Received" data-action="receive"><span class="material-icons-round text-[14px]">task_alt</span></button>
-                                    <button type="button" class="btn-action btn-cancel" title="Cancel Quotation" data-action="cancel"><span class="material-icons-round text-[14px]">block</span></button>
-                                    <button type="button" class="btn-action btn-history" title="History" data-action="history"><span class="material-icons-round text-[14px]">history</span></button>
                                   </div>
                               </td>
                             </tr>
@@ -619,11 +617,8 @@
         '<td class="px-4 py-3 align-middle text-center border-r border-slate-100">' + deliverToType + '</td>' +
         '<td class="px-4 py-3 align-middle text-center border-r border-slate-100"><span class="' + getStatusBadgeClass(row.dataset.stat) + '">' + statusLabel(row.dataset.stat) + '</span></td>' +
         '<td class="px-4 py-3 align-middle text-center"><div class="flex flex-nowrap justify-center gap-1">' +
-        '<button type="button" class="btn-action btn-edit" title="Edit Quotation" data-action="edit"><span class="material-icons-round text-[14px]">edit</span></button>' +
-        '<button type="button" class="btn-action btn-forward" title="Send / Forward Quotation" data-action="forward"><span class="material-icons-round text-[14px]">send</span></button>' +
+        '<button type="button" class="btn-action btn-view" title="View Quotation" data-action="view"><span class="material-icons-round text-[14px]">visibility</span></button>' +
         '<button type="button" class="btn-action btn-receive" title="Mark as Received" data-action="receive"><span class="material-icons-round text-[14px]">task_alt</span></button>' +
-        '<button type="button" class="btn-action btn-cancel" title="Cancel Quotation" data-action="cancel"><span class="material-icons-round text-[14px]">block</span></button>' +
-        '<button type="button" class="btn-action btn-history" title="History" data-action="history"><span class="material-icons-round text-[14px]">history</span></button>' +
         '</div></td>';
       return row;
     }
