@@ -92,7 +92,7 @@
             <p class="text-[8px] font-black uppercase tracking-widest text-amber-800 m-0">Pending Review</p>
             <span class="material-icons-round text-amber-600 text-[14px]">pending_actions</span>
           </div>
-          <div class="mt-1 text-[16px] font-black text-amber-700 leading-none">{{ pending_count or 0 }}</div>
+          <div id="pendingCount" class="mt-1 text-[16px] font-black text-amber-700 leading-none">{{ pending_count or 0 }}</div>
           <p class="text-[8px] text-amber-600 mt-1 uppercase font-bold tracking-widest">For regional review</p>
         </div>
 
@@ -101,7 +101,7 @@
             <p class="text-[8px] font-black uppercase tracking-widest text-emerald-800 m-0">Received / Issued</p>
             <span class="material-icons-round text-emerald-600 text-[14px]">assignment_turned_in</span>
           </div>
-          <div class="mt-1 text-[16px] font-black text-emerald-700 leading-none">{{ received_count or 0 }}</div>
+          <div id="receivedCount" class="mt-1 text-[16px] font-black text-emerald-700 leading-none">{{ received_count or 0 }}</div>
           <p class="text-[8px] text-emerald-600 mt-1 uppercase font-bold tracking-widest">Issued / Received</p>
         </div>
 
@@ -110,7 +110,7 @@
             <p class="text-[8px] font-black uppercase tracking-widest text-slate-700 m-0">Total Quotations</p>
             <span class="material-icons-round text-slate-500 text-[14px]">receipt_long</span>
           </div>
-          <div class="mt-1 text-[16px] font-black text-slate-700 leading-none">{{ total_count or (pending_count or 0) + (received_count or 0) }}</div>
+          <div id="totalCount" class="mt-1 text-[16px] font-black text-slate-700 leading-none">{{ total_count or (pending_count or 0) + (received_count or 0) }}</div>
           <p class="text-[8px] text-slate-500 mt-1 uppercase font-bold tracking-widest">All records</p>
         </div>
       </section>

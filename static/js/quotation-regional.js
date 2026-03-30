@@ -202,6 +202,7 @@
     writeRowData(currentStatusRow, data);
     closeStatusModal();
     filterTable();
+    updateSummaryCounts();
   }
 
   // --- Receive Modal ---
@@ -348,6 +349,7 @@
     data.amount = totalAmount;
     data.fy = issueDate ? `FY ${issueDate.slice(0, 4)}` : data.fy;
     writeRowData(currentEditRow, data);
+    updateSummaryCounts();
     closeQuoteDrawer();
   }
 
@@ -363,6 +365,7 @@
       if (receiveBtn) receiveBtn.remove();
     }
     filterTable();
+    updateSummaryCounts();
   }
 
   // --- Draft Preview ---
@@ -447,6 +450,28 @@
         setStatusCell(cells[4], row.dataset.status || 'PENDING');
       }
     });
+  }
+
+  function updateSummaryCounts() {
+    const rows = Array.from(document.querySelectorAll('.quote-row'));
+    let pending = 0;
+    let received = 0;
+
+    rows.forEach((row) => {
+      const status = normalizeStatus(row.getAttribute('data-status') || '');
+      if (status === 'RECEIVED') {
+        received += 1;
+      } else if (status) {
+        pending += 1;
+      }
+    });
+
+    const pendingEl = byId('pendingCount');
+    const receivedEl = byId('receivedCount');
+    const totalEl = byId('totalCount');
+    if (pendingEl) pendingEl.textContent = pending;
+    if (receivedEl) receivedEl.textContent = received;
+    if (totalEl) totalEl.textContent = pending + received;
   }
 
   function escapeCsv(value) {
@@ -561,6 +586,7 @@
     if (editForm) editForm.addEventListener('submit', submitEditForm);
     normalizeStatusBadges();
     filterTable();
+    updateSummaryCounts();
     initCharts();
   }
 
