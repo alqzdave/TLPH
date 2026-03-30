@@ -369,6 +369,11 @@
             let userPhoto = window.currentUserPhoto || (window.user && window.user.photo) || '';
 
             function fetchInquiryMessages() {
+                if (!userId) {
+                    const list = document.getElementById('userMessageList');
+                    if (list) list.innerHTML = `<div style='color:#dc2626;text-align:center;padding:1.5em 0;'>User ID not set. Please log in or reload the page.</div>`;
+                    return;
+                }
                 fetch(`/api/inquiries/messages/${userId}`, { credentials: 'same-origin' })
                     .then(r => r.json())
                     .then(res => {
@@ -395,6 +400,10 @@
 
             function sendUserMessage(e) {
                 e.preventDefault();
+                if (!userId) {
+                    alert('User ID not set. Please log in or reload the page.');
+                    return;
+                }
                 const input = document.getElementById('userMessageInput');
                 const msg = input.value.trim();
                 if (!msg) return;
@@ -416,6 +425,10 @@
             }
 
             function sendUserPhoto(e) {
+                if (!userId) {
+                    alert('User ID not set. Please log in or reload the page.');
+                    return;
+                }
                 const file = e.target.files[0];
                 if (!file) return;
                 const formData = new FormData();
