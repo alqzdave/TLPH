@@ -104,7 +104,9 @@
             <div class="flex justify-between items-start">
               <div>
                 <div class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Total Purchases</div>
-                <div class="text-xl font-black text-slate-900 leading-none mt-1">62</div>
+                <div class="text-xl font-black text-slate-900 leading-none mt-1">
+                  <span id="totalPurchasesCount">0</span>
+                </div>
               </div>
               <span class="material-icons-round text-slate-300 text-[20px]">receipt_long</span>
             </div>
@@ -117,7 +119,9 @@
             <div class="flex justify-between items-start">
               <div>
                 <div class="text-[9px] font-black uppercase text-indigo-800 tracking-widest">Active Suppliers</div>
-                <div class="text-xl font-black text-indigo-700 leading-none mt-1">18</div>
+                <div class="text-xl font-black text-indigo-700 leading-none mt-1">
+                  <span id="activeSuppliersCount">0</span>
+                </div>
               </div>
               <span class="material-icons-round text-indigo-200 text-[20px]">storefront</span>
             </div>
@@ -130,7 +134,9 @@
             <div class="flex justify-between items-start">
               <div>
                 <div class="text-[9px] font-black uppercase text-blue-800 tracking-widest">Acquired This Month</div>
-                <div class="text-xl font-black text-blue-700 leading-none mt-1">9</div>
+                <div class="text-xl font-black text-blue-700 leading-none mt-1">
+                  <span id="acquiredThisMonthCount">0</span>
+                </div>
               </div>
               <span class="material-icons-round text-blue-200 text-[20px]">calendar_month</span>
             </div>
@@ -335,6 +341,44 @@
     const searchEl = document.getElementById('searchPurchase');
     const resetBtn = document.getElementById('resetBtn');
 
+    const totalPurchasesCountEl = document.getElementById('totalPurchasesCount');
+    const activeSuppliersCountEl = document.getElementById('activeSuppliersCount');
+    const acquiredThisMonthCountEl = document.getElementById('acquiredThisMonthCount');
+
+    function parseRowDate(dateText) {
+      const trimmed = (dateText || '').trim();
+      if (!trimmed) return null;
+      const date = new Date(trimmed);
+      if (!Number.isNaN(date.getTime())) return date;
+      return null;
+    }
+
+    function updateSummaryFromRows() {
+      const rows = document.querySelectorAll('#tbodyReturns tr.purchase-row');
+      const supplierSet = new Set();
+      let acquiredThisMonth = 0;
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 5) return;
+
+        const supplier = cells[0].innerText.trim().toLowerCase();
+        if (supplier) supplierSet.add(supplier);
+
+        const date = parseRowDate(cells[4].innerText);
+        if (date && date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
+          acquiredThisMonth++;
+        }
+      });
+
+      if (totalPurchasesCountEl) totalPurchasesCountEl.textContent = rows.length.toString();
+      if (activeSuppliersCountEl) activeSuppliersCountEl.textContent = supplierSet.size.toString();
+      if (acquiredThisMonthCountEl) acquiredThisMonthCountEl.textContent = acquiredThisMonth.toString();
+    }
+
     function applyFilter() {
       const filter = (searchEl.value || '').toLowerCase().trim();
       const rows = document.querySelectorAll('.purchase-row');
@@ -474,6 +518,7 @@
 
       closePurchaseModal();
       applyFilter();
+      updateSummaryFromRows();
     }
 
     if (addPurchaseBtn && purchaseModal && purchaseForm && purchaseCancelBtn && purchaseCloseBtn) {
@@ -506,6 +551,7 @@
           if (!row) return;
           row.remove();
           applyFilter();
+          updateSummaryFromRows();
         }
       });
     }
@@ -533,6 +579,7 @@
       if (!row || !row.classList.contains('purchase-row')) return;
       row.remove();
       applyFilter();
+      updateSummaryFromRows();
     });
 
     // Export to CSV
@@ -574,6 +621,7 @@
 
     // Init
     applyFilter();
+    updateSummaryFromRows();
   </script>
 
 </body>
