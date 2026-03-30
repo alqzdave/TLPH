@@ -49,7 +49,6 @@
       id: row.dataset.id || '',
       number: row.dataset.number || '',
       client: row.dataset.client || '',
-      municipality: row.dataset.municipality || '',
       amount: toNumber(row.dataset.amount || 0),
       date: row.dataset.date || '',
       status: normalizeStatus(row.dataset.status || 'PENDING'),
@@ -74,7 +73,6 @@
     row.dataset.id = data.id || row.dataset.id || '';
     row.dataset.number = data.number || '';
     row.dataset.client = data.client || '';
-    row.dataset.municipality = data.municipality || '';
     row.dataset.amount = String(Number.isFinite(data.amount) ? data.amount : 0);
     row.dataset.date = data.date || '';
     row.dataset.status = normalizeStatus(data.status || 'PENDING');
@@ -96,13 +94,12 @@
     if (cells.length >= 9) {
       cells[0].textContent = data.number || '';
       cells[1].textContent = data.client || '';
-      cells[2].textContent = data.municipality || '';
-      cells[3].textContent = `${peso}${formatMoney(data.amount || 0)}`;
-      cells[4].textContent = data.date || '';
-      setStatusCell(cells[5], data.status);
-      cells[6].textContent = data.deliverFrom || '';
-      cells[7].textContent = data.deliverTo || '';
-      cells[8].textContent = data.deliverToType || '';
+      cells[2].textContent = `${peso}${formatMoney(data.amount || 0)}`;
+      cells[3].textContent = data.date || '';
+      setStatusCell(cells[4], data.status);
+      cells[5].textContent = data.deliverFrom || '';
+      cells[6].textContent = data.deliverTo || '';
+      cells[7].textContent = data.deliverToType || '';
     }
   }
 
@@ -148,7 +145,6 @@
     if (!data) return;
     byId('vqNumber').textContent = data.number || 'N/A';
     byId('vqClient').textContent = data.client || 'N/A';
-    byId('vqMunicipality').textContent = data.municipality || 'N/A';
     byId('vqStatus').textContent = data.status || 'N/A';
     byId('vqDate').textContent = data.date || 'N/A';
     byId('vqDeliverFrom').textContent = data.deliverFrom || 'N/A';
@@ -183,7 +179,7 @@
     const modal = byId('forwardModal');
     if (!modal) return;
     byId('forwardQuotationId').value = rowData?.id || '';
-    byId('forwardMunicipality').value = rowData?.municipality || '';
+    byId('forwardMunicipality').value = '';
     modal.classList.remove('hidden');
     modal.classList.add('flex');
   }
@@ -440,7 +436,6 @@
   function filterTable() {
     const q = (byId('searchQuote')?.value || '').toLowerCase().trim();
     const status = (byId('statusFilter')?.value || 'ALL').toUpperCase();
-    const mun = (byId('municipalityFilter')?.value || 'ALL').toUpperCase();
     const fy = (byId('fyFilter')?.value || 'ALL').toUpperCase();
 
     const rows = document.querySelectorAll('.quote-row');
@@ -449,15 +444,13 @@
     rows.forEach((row) => {
       const text = row.innerText.toLowerCase();
       const rowStatus = normalizeStatus(row.getAttribute('data-status') || '');
-      const rowMun = (row.getAttribute('data-municipality') || '').toUpperCase();
       const rowFY = (row.getAttribute('data-fy') || 'ALL').toUpperCase();
 
       const matchQ = text.includes(q);
       const matchStatus = status === 'ALL' || rowStatus.includes(status);
-      const matchMun = mun === 'ALL' || rowMun.includes(mun);
       const matchFY = fy === 'ALL' || rowFY.includes(fy);
 
-      if (matchQ && matchStatus && matchMun && matchFY) {
+      if (matchQ && matchStatus && matchFY) {
         row.style.display = '';
         count++;
       } else {
@@ -474,7 +467,6 @@
   function resetFilters() {
     if (byId('searchQuote')) byId('searchQuote').value = '';
     if (byId('statusFilter')) byId('statusFilter').value = 'ALL';
-    if (byId('municipalityFilter')) byId('municipalityFilter').value = 'ALL';
     if (byId('fyFilter')) byId('fyFilter').value = 'ALL';
     filterTable();
   }
@@ -483,8 +475,8 @@
     const rows = document.querySelectorAll('.quote-row');
     rows.forEach((row) => {
       const cells = row.querySelectorAll('td');
-      if (cells.length >= 6) {
-        setStatusCell(cells[5], row.dataset.status || 'PENDING');
+      if (cells.length >= 5) {
+        setStatusCell(cells[4], row.dataset.status || 'PENDING');
       }
     });
   }
@@ -507,7 +499,6 @@
     const headers = [
       'Quotation #',
       'Client / Office Entity',
-      'Municipality',
       'Total Amount',
       'Filing Date',
       'Status',
@@ -522,7 +513,6 @@
       const line = [
         data.number || '',
         data.client || '',
-        data.municipality || '',
         formatMoney(data.amount || 0),
         data.date || '',
         statusLabel(data.status),

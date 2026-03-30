@@ -190,7 +190,6 @@
                   data-id="{{ q.id }}"
                   data-number="{{ q.number or q.id }}"
                   data-client="{{ q.client or q.buyer or '' }}"
-                  data-municipality="{{ q.municipality or '' }}"
                   data-amount="{{ q.amount|float if q.amount is defined else 0 }}"
                   data-date="{{ q.date or q.created_at or '' }}"
                   data-status="{{ (q.status or 'PENDING')|upper }}"
