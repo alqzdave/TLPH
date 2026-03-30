@@ -397,6 +397,20 @@
       applyLiveFilter();
     }
 
+    function sortInventoryRowsByDateDesc() {
+      const tbody = document.getElementById('inventoryBody');
+      const rows = Array.from(tbody.querySelectorAll('tr.data-row'));
+      rows.sort((a, b) => {
+        const aDate = String(a.dataset.createdAt || '').trim();
+        const bDate = String(b.dataset.createdAt || '').trim();
+        const aTs = aDate ? new Date(aDate).getTime() : 0;
+        const bTs = bDate ? new Date(bDate).getTime() : 0;
+        return (Number.isNaN(bTs) ? 0 : bTs) - (Number.isNaN(aTs) ? 0 : aTs);
+      });
+      const emptyRow = document.getElementById('emptyStateRow');
+      rows.forEach(row => tbody.insertBefore(row, emptyRow));
+    }
+
 
     // --- MODAL & ROW LOGIC ---
     let editingRow = null;
@@ -815,6 +829,7 @@
         });
 
         // Initialize counters on load
+        sortInventoryRowsByDateDesc();
         applyLiveFilter();
     });
 

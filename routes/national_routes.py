@@ -739,6 +739,11 @@ def inventory_national_view():
                 'attachmentsJson': json.dumps(data.get('attachments') or data.get('documents') or data.get('files') or data.get('filePaths') or data.get('uploadedFiles') or {})
             })
 
+        inventory_records.sort(
+            key=lambda item: str(item.get('createdAtIso') or ''),
+            reverse=True
+        )
+
         chemical_count = category_count.get('Chemical Inventory', 0)
         natural_resources_count = category_count.get('Natural Resources', 0)
         protected_area_count = category_count.get('Protected Area', 0)
