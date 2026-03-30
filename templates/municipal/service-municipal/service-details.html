@@ -9,7 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 
     <style>
         /* OFFICIAL ARIAL FORCE BOI (Except for icons) */
@@ -175,14 +174,10 @@
                                 <div id="specificFieldsGrid" class="row"></div>
                             </div>
 
-                            <div id="photoGallerySection" style="display:none;">
+                            <div id="photosSection" style="display:none;">
                                 <hr class="my-4 opacity-10">
-                                <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-emerald-700">
-                                    <i class="fa-solid fa-images me-2"></i> 
-                                    Photo Gallery 
-                                    <span class="text-[10px] text-slate-500 font-normal" id="photoCountBadge">(0 photos)</span>
-                                </h3>
-                                <div id="photoGalleryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                                <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-green-800"><i class="fa-solid fa-images me-2"></i> Photos</h3>
+                                <div id="photosGrid" class="grid grid-cols-3 gap-2"></div>
                             </div>
 
                             <div id="documentsSection" style="display:none;">
@@ -194,14 +189,6 @@
                     </div>
 
                     <div class="col-lg-4">
-                        <div id="mapSection" class="gov-card p-6 shadow-sm border-t-green-800 mb-4" style="display:none;">
-                            <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-green-800">
-                                <i class="fa-solid fa-location-dot me-2"></i> Location Map
-                            </h3>
-                            <div id="mapContainer" style="width:100%;height:300px;border:1px solid #cbd5e1;border-radius:4px;background:#f1f5f9;"></div>
-                            <p class="text-[9px] text-slate-500 mt-2 mb-0"><i class="fa-solid fa-info-circle me-1"></i> Click on the pin to view address</p>
-                        </div>
-
                         <div class="gov-card p-6 shadow-sm border-t-slate-800 mb-4">
                             <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-slate-800">Requester Profile</h3>
                             <p class="info-label">Full Name</p>
@@ -250,12 +237,6 @@
         import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-        // Load Leaflet library
-        const leafletScript = document.createElement('script');
-        leafletScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-        leafletScript.onload = () => console.log('Leaflet loaded');
-        document.head.appendChild(leafletScript);
-
         console.log('Service details script loaded');
         
         // Ensure all modals are closed when page loads
@@ -269,8 +250,6 @@
         let currentServiceId = null;
         let serviceData = null;
         let userData = null;
-        let currentGalleryPhotos = [];  // Store current gallery for navigation
-        let currentPhotoIndex = 0;
 
         // Get service ID from URL
         const pathParts = window.location.pathname.split('/');
@@ -334,43 +313,6 @@
                     </div>
                 `;
             }
-        }
-
-        // Build photo gallery from all image fields
-        function buildPhotoGallery() {
-            const isImageFile = (url) => /\.(jpg|jpeg|png|gif|webp|avif|bmp|svg)(\?|$)/i.test(String(url || '').toLowerCase());
-            const normalizeFileEntries = (value) => {
-                const raw = Array.isArray(value) ? value : (value ? [value] : []);
-                return raw.map((item, idx) => {
-                    if (typeof item === 'string') {
-                        const url = item.trim();
-                        return url ? { url, name: `Photo ${idx + 1}` } : null;
-                    }
-                    if (item && typeof item === 'object') {
-                        const url = String(item.url || item.webUrl || item.path || '').trim();
-                        return url ? { url, name: String(item.name || `Photo ${idx + 1}`) } : null;
-                    }
-                    return null;
-                }).filter(Boolean);
-            };
-
-            // Collect images from all possible fields
-            const imageFields = [
-                'supportingDocuments', 'supportingFiles', 'attachments', 'files',
-                'productPhoto', 'registrationDocuments', 'emergencyPhotos', 'fieldPhotos',
-                'damagePhotos', 'closeUpPhoto', 'farmPhotos', 'latestSitePhoto',
-                'documents', 'previousPermit'
-            ];
-
-            let allPhotos = [];
-            imageFields.forEach(field => {
-                if (serviceData[field]) {
-                    const entries = normalizeFileEntries(serviceData[field]);
-                    allPhotos = allPhotos.concat(entries.filter(e => isImageFile(e.url)));
-                }
-            });
-
-            return allPhotos;
         }
 
         function displayServiceDetails() {
@@ -770,6 +712,33 @@
                     `;
                 }
                 
+                // ── Photos Section (Simple Grid) ──────────────────────────
+                const photosSection = document.getElementById('photosSection');
+                const photosGrid = document.getElementById('photosGrid');
+                const photoFields = ['fieldPhotos', 'damagePhotos', 'emergencyPhotos', 'farmPhotos', 'productPhoto', 'latestSitePhoto', 'closeUpPhoto'];
+                const allPhotos = [];
+                photoFields.forEach(field => {
+                    if (serviceData[field]) {
+                        const files = Array.isArray(serviceData[field]) ? serviceData[field] : [serviceData[field]];
+                        files.forEach(file => {
+                            if (file && String(file || '').length > 0) {
+                                const url = typeof file === 'string' ? file : (file.url || file.webUrl || file.path);
+                                if (/\.(jpg|jpeg|png|avif|webp|gif|bmp)(\?|$)/i.test(String(url))) {
+                                    allPhotos.push(url);
+                                }
+                            }
+                        });
+                    }
+                });
+                if (allPhotos.length > 0) {
+                    photosSection.style.display = '';
+                    photosGrid.innerHTML = allPhotos.map((url, idx) => `
+                        <div class="cursor-pointer overflow-hidden rounded-lg" onclick="openMunicipalImageViewer('${encodeURIComponent(url)}')">
+                            <img src="${url}" alt="Photo ${idx+1}" style="width:100%; height:120px; object-fit:cover; object-position:center;" class="hover:scale-105 transition-transform">
+                        </div>
+                    `).join('');
+                }
+
                 // ── Uploaded Documents Section ──────────────────────────────
                 const docsSection = document.getElementById('documentsSection');
                 const docsGrid = document.getElementById('documentsGrid');
@@ -834,35 +803,6 @@
                     .map(([key, val]) => ({ key, files: normalizeFileEntries(val) }))
                     .filter(({ files }) => files.length > 0);
 
-                // ── Build and display Photo Gallery ──────────────────────────────
-                const allPhotos = buildPhotoGallery();
-                if (allPhotos.length > 0) {
-                    currentGalleryPhotos = allPhotos;  // Store for navigation
-                    const photoGallerySection = document.getElementById('photoGallerySection');
-                    const photoGalleryGrid = document.getElementById('photoGalleryGrid');
-                    const photoCountBadge = document.getElementById('photoCountBadge');
-                    
-                    photoCountBadge.textContent = `(${allPhotos.length} photo${allPhotos.length !== 1 ? 's' : ''})`;
-                    photoGallerySection.style.display = '';
-                    
-                    photoGalleryGrid.innerHTML = allPhotos.map((photo, idx) => {
-                        const encodedUrl = encodeURIComponent(photo.url);
-                        return `
-                        <div class="relative group">
-                            <img src="/api/files/proxy?url=${encodedUrl}" 
-                                 alt="Photo ${idx + 1}" 
-                                 class="w-full h-40 object-cover rounded border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity" 
-                                 loading="lazy"
-                                 onclick="openMunicipalImageViewer('${encodedUrl}')"/>
-                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded transition-all flex items-center justify-center">
-                                <span class="opacity-0 group-hover:opacity-100 text-white font-bold text-sm transition-opacity bg-black/50 px-3 py-1 rounded">
-                                    <i class="fa-solid fa-expand"></i>
-                                </span>
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-
                 if (docFields.length > 0) {
                     docsSection.style.display = '';
                     docsGrid.innerHTML = docFields.map(({ key, files }) => {
@@ -881,12 +821,11 @@
                             const displayName = String(f.name || 'Document');
                             const canOpen = isOpenableUrl(safeUrl);
                             const encodedUrl = encodeURIComponent(safeUrl);
-                            const isImg = isImageFile(safeUrl);
 
-                            if (isImg) {
+                            if (isImageFile(safeUrl)) {
                                 return `
                                 <div class="doc-box rounded mb-2 align-items-start">
-                                    <img src="/api/files/proxy?url=${encodedUrl}" alt="${escapeHtml(displayName)}" class="rounded border border-slate-200 object-cover" style="width:70px;height:70px;" loading="lazy"/>
+                                    <img src="${escapeHtml(safeUrl)}" alt="${escapeHtml(displayName)}" class="rounded border border-slate-200 object-cover" style="width:70px;height:70px;" loading="lazy"/>
                                     <div class="flex-grow-1 min-w-0">
                                         <div class="text-xs font-bold text-slate-700 text-break">${escapeHtml(displayName)}</div>
                                         ${canOpen ? `<button type="button" onclick="openMunicipalImageViewer('${encodedUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold mt-1">VIEW</button>` : ''}
@@ -906,77 +845,9 @@
                     }).join('');
                 }
 
-                const docFields = Object.entries(serviceData)
-                    .filter(([key]) => {
-                        // Only include known document field keys
-                        const docKeys = ['supportingDocuments', 'supportingFiles', 'attachments', 'files',
-                            'productPhoto', 'registrationDocuments', 'emergencyPhotos', 'fieldPhotos',
-                            'damagePhotos', 'issueReport', 'closeUpPhoto', 'sprayRecord',
-                            'fertilizationHistory', 'soilTestResult', 'farmPhotos', 'revisedDocuments',
-                            'latestSitePhoto', 'documents', 'previousPermit', 'supportingPermits',
-                            'budgetEstimate', 'projectProposal', 'budgetBreakdown', 'workFinancialPlan',
-                            'legalCertificate', 'incomeFile', 'existingFile', 'riskHistory',
-                            'farmPermits', 'businessPlanFile', 'quotesFile'];
-                        return docKeys.includes(key);
-                    })
-                    .map(([key, val]) => ({ key, files: normalizeFileEntries(val) }))
-                    .filter(({ files }) => files.length > 0);
+                console.log('Service details set successfully');
 
-                // ── Display Location Map if coordinates available ──────────────────
-                const mapSection = document.getElementById('mapSection');
-                const googlePinLocation = serviceData.googlePinLocation || '';
-                const farmAddress = serviceData.farmAddress || 'Farm Location';
-                
-                // Parse coordinates from googlePinLocation URL
-                // Expected format: https://maps.google.com/?q=14.3421,121.0123 or similar
-                const parseCoordinatesFromUrl = (url) => {
-                    if (!url) return null;
-                    const patterns = [
-                        /q=(-?\d+\.?\d*),(-?\d+\.?\d*)/,  // q=lat,lng
-                        /(-?\d+\.?\d*),(-?\d+\.?\d*)/       // lat,lng anywhere
-                    ];
-                    for (let pattern of patterns) {
-                        const match = url.match(pattern);
-                        if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
-                    }
-                    return null;
-                };
-
-                const coords = parseCoordinatesFromUrl(googlePinLocation);
-                if (coords && window.L) {  // Check if Leaflet is loaded
-                    mapSection.style.display = '';
-                    setTimeout(() => {
-                        const map = window.L.map('mapContainer').setView([coords.lat, coords.lng], 15);
-                        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '© OpenStreetMap contributors',
-                            maxZoom: 19
-                        }).addTo(map);
-                        
-                        const marker = window.L.marker([coords.lat, coords.lng]).addTo(map);
-                        marker.bindPopup(`
-                            <div style="font-size:12px;font-weight:bold;">
-                                <p style="margin:0 0 5px 0;">${farmAddress}</p>
-                                <p style="margin:0;color:#0066cc;"><a href="${googlePinLocation}" target="_blank" rel="noopener">🗺️ Open in Google Maps</a></p>
-                            </div>
-                        `).openPopup();
-                    }, 100);
-                } else if (googlePinLocation) {
-                    // Fallback: show map section with direct link if coordinates not parsed
-                    mapSection.style.display = '';
-                    const mapContainer = document.getElementById('mapContainer');
-                    mapContainer.innerHTML = `
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#f8fafc;">
-                            <i class="fa-solid fa-location-dot" style="font-size:40px;color:#1e40af;margin-bottom:10px;"></i>
-                            <p style="text-align:center;font-size:12px;font-weight:bold;color:#0f172a;margin:0;">
-                                ${farmAddress}
-                            </p>
-                            <a href="${googlePinLocation}" target="_blank" rel="noopener" 
-                               style="margin-top:10px;padding:8px 16px;background:#0066cc;color:white;text-decoration:none;border-radius:4px;font-weight:bold;font-size:11px;display:inline-block;">
-                                🗺️ Open in Google Maps
-                            </a>
-                        </div>
-                    `;
-                }
+                // Requester details
                 console.log('Setting requester details...');
                 if (userData) {
                     const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || 'N/A';
@@ -1089,32 +960,9 @@
         window.openMunicipalImageViewer = function(encodedUrl) {
             try {
                 const url = decodeURIComponent(encodedUrl || '');
-                
-                // Find index of this image in gallery
-                const index = currentGalleryPhotos.findIndex(p => p.url === url);
-                if (index !== -1) {
-                    currentPhotoIndex = index;
-                }
-                
                 const modal = document.getElementById('municipalImageViewerModal');
                 const img = document.getElementById('municipalImageViewerImg');
-                const counter = document.getElementById('municipalImageViewerCounter');
-                const prevBtn = document.getElementById('municipalImageViewerPrev');
-                const nextBtn = document.getElementById('municipalImageViewerNext');
-                
                 img.src = url;
-                
-                // Update counter and buttons
-                if (currentGalleryPhotos.length > 0) {
-                    counter.textContent = `${currentPhotoIndex + 1} / ${currentGalleryPhotos.length}`;
-                    prevBtn.style.display = currentPhotoIndex > 0 ? '' : 'none';
-                    nextBtn.style.display = currentPhotoIndex < currentGalleryPhotos.length - 1 ? '' : 'none';
-                } else {
-                    counter.textContent = '';
-                    prevBtn.style.display = 'none';
-                    nextBtn.style.display = 'none';
-                }
-                
                 modal.classList.remove('hidden');
             } catch (err) {
                 console.error('Failed to open municipal image viewer:', err);
@@ -1126,16 +974,6 @@
             const img = document.getElementById('municipalImageViewerImg');
             img.src = '';
             modal.classList.add('hidden');
-        };
-
-        window.navigateMunicipalGallery = function(direction) {
-            if (currentGalleryPhotos.length === 0) return;
-            
-            currentPhotoIndex += direction;
-            if (currentPhotoIndex < 0) currentPhotoIndex = currentGalleryPhotos.length - 1;
-            if (currentPhotoIndex >= currentGalleryPhotos.length) currentPhotoIndex = 0;
-            
-            openMunicipalImageViewer(encodeURIComponent(currentGalleryPhotos[currentPhotoIndex].url));
         };
 
         window.forwardToRegional = async function() {
@@ -1204,20 +1042,7 @@
 <div id="municipalImageViewerModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-4 hidden">
     <div class="relative w-full max-w-4xl" onclick="event.stopPropagation()">
         <button onclick="closeMunicipalImageViewer()" class="absolute -top-3 -right-3 bg-white text-gray-700 hover:text-black rounded-full w-8 h-8 shadow font-bold">&times;</button>
-        
-        <!-- Image Counter -->
-        <div id="municipalImageViewerCounter" class="absolute top-3 left-3 bg-black/70 text-white px-3 py-1 rounded text-xs font-bold"></div>
-        
-        <!-- Main Image -->
         <img id="municipalImageViewerImg" src="" alt="Service Attachment" class="w-full max-h-[85vh] object-contain bg-white rounded shadow-2xl" />
-        
-        <!-- Navigation Buttons -->
-        <button id="municipalImageViewerPrev" onclick="navigateMunicipalGallery(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 bg-white/80 text-black hover:bg-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg transition-all">
-            <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <button id="municipalImageViewerNext" onclick="navigateMunicipalGallery(1)" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 bg-white/80 text-black hover:bg-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg transition-all">
-            <i class="fa-solid fa-chevron-right"></i>
-        </button>
     </div>
 </div>
 
