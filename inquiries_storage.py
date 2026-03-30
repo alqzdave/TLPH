@@ -10,6 +10,8 @@ def get_inquiries_collection():
 
 
 def _conversation_key_from_doc(data):
+    if not isinstance(data, dict):
+        return ''
     return (data.get('user_id') or data.get('email') or data.get('user_email') or '').strip()
 
 
@@ -31,7 +33,9 @@ def get_conversations():
     docs = get_inquiries_collection().stream()
     users = {}
     for doc in docs:
-        data = doc.to_dict()
+        data = doc.to_dict() or {}
+        if not isinstance(data, dict):
+            continue
         user_id = str(_conversation_key_from_doc(data) or '').strip()
         user_email = str(data.get('email') or data.get('user_email') or '').strip().lower()
         if not user_email and '@' in user_id:
@@ -70,14 +74,45 @@ def get_messages(user_id):
 
     key = str(user_id).strip()
 
-    # Avoid Firestore composite index dependency by querying first, then sorting in Python.
-    docs = list(get_inquiries_collection().where('user_id', '==', key).stream())
-    if not docs:
-        docs = list(get_inquiries_collection().where('email', '==', key.lower()).stream())
-    if not docs:
-        docs = list(get_inquiries_collection().where('user_email', '==', key.lower()).stream())
+    docs = []
 
-    messages = [doc.to_dict() for doc in docs]
+    # Query fast path first.
+    try:
+        docs = list(get_inquiries_collection().where('user_id', '==', key).stream())
+    except Exception:
+        docs = []
+    if not docs:
+        try:
+            docs = list(get_inquiries_collection().where('email', '==', key.lower()).stream())
+        except Exception:
+            docs = []
+    if not docs:
+        try:
+            docs = list(get_inquiries_collection().where('user_email', '==', key.lower()).stream())
+        except Exception:
+            docs = []
+
+    # Ultimate fallback: full scan filter to avoid hard failures from query/index issues.
+    if not docs:
+        try:
+            all_docs = list(get_inquiries_collection().stream())
+            key_l = key.lower()
+            for d in all_docs:
+                data = d.to_dict() or {}
+                if not isinstance(data, dict):
+                    continue
+                convo_id = str(data.get('user_id') or '').strip()
+                convo_email = str(data.get('email') or data.get('user_email') or '').strip().lower()
+                if convo_id == key or convo_email == key_l:
+                    docs.append(d)
+        except Exception:
+            docs = []
+
+    messages = []
+    for doc in docs:
+        data = doc.to_dict() or {}
+        if isinstance(data, dict):
+            messages.append(data)
 
     def _ts_value(msg):
         ts = msg.get('timestamp')

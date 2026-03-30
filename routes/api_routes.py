@@ -12,6 +12,7 @@ import uuid
 import requests
 from urllib.request import urlopen
 from urllib.parse import quote_plus, quote
+from firebase_admin import firestore
 from firebase_auth_middleware import firebase_auth_required
 import system_logs_storage
 
@@ -3537,7 +3538,31 @@ def _resolve_user_profile(identity_key='', email_hint=''):
                     'email': str(data.get('email') or email or '').strip().lower(),
                 }
         except Exception:
-            pass
+            # Fallback: positional where for compatibility, then scan.
+            try:
+                docs = db.collection('users').where('email', '==', email).limit(1).stream()
+                for doc in docs:
+                    data = doc.to_dict() or {}
+                    return {
+                        'name': _extract_user_name(data),
+                        'photo': _extract_user_photo(data),
+                        'email': str(data.get('email') or email or '').strip().lower(),
+                    }
+            except Exception:
+                pass
+
+            try:
+                for doc in db.collection('users').stream():
+                    data = doc.to_dict() or {}
+                    doc_email = str(data.get('email') or '').strip().lower()
+                    if doc_email and doc_email == email:
+                        return {
+                            'name': _extract_user_name(data),
+                            'photo': _extract_user_photo(data),
+                            'email': doc_email,
+                        }
+            except Exception:
+                pass
 
     return {'name': '', 'photo': '', 'email': email}
 
@@ -3551,18 +3576,22 @@ def api_get_inquiry_conversations():
 
         # Enrich conversation display data from users profile when missing.
         for convo in convos:
-            convo_key = str(convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
-            convo_email = str(convo.get('email') or convo.get('user_email') or '').strip().lower()
-            if convo.get('user_photo') and convo.get('user_name'):
-                continue
+            try:
+                convo_key = str(convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
+                convo_email = str(convo.get('email') or convo.get('user_email') or '').strip().lower()
+                if convo.get('user_photo') and convo.get('user_name'):
+                    continue
 
-            profile = _resolve_user_profile(convo_key, convo_email)
-            if not convo.get('user_photo') and profile.get('photo'):
-                convo['user_photo'] = profile.get('photo')
-            if not convo.get('user_name') and profile.get('name'):
-                convo['user_name'] = profile.get('name')
-            if not convo.get('email') and profile.get('email'):
-                convo['email'] = profile.get('email')
+                profile = _resolve_user_profile(convo_key, convo_email)
+                if not convo.get('user_photo') and profile.get('photo'):
+                    convo['user_photo'] = profile.get('photo')
+                if not convo.get('user_name') and profile.get('name'):
+                    convo['user_name'] = profile.get('name')
+                if not convo.get('email') and profile.get('email'):
+                    convo['email'] = profile.get('email')
+            except Exception:
+                # Never fail the entire list due to one malformed user profile.
+                continue
 
         return jsonify({'success': True, 'conversations': convos})
     except Exception as e:
@@ -3571,11 +3600,40 @@ def api_get_inquiry_conversations():
 @bp.route('/inquiries/messages/<user_id>', methods=['GET'])
 @firebase_auth_required
 def api_get_inquiry_messages(user_id):
+    def _json_safe(v):
+        if isinstance(v, dict):
+            return {str(k): _json_safe(val) for k, val in v.items()}
+        if isinstance(v, list):
+            return [_json_safe(i) for i in v]
+        if isinstance(v, (str, int, float, bool)) or v is None:
+            return v
+        if hasattr(v, 'isoformat'):
+            try:
+                return v.isoformat()
+            except Exception:
+                return str(v)
+        return str(v)
+
+    def _ts_sort_value(msg):
+        ts = msg.get('timestamp')
+        if hasattr(ts, 'timestamp'):
+            try:
+                return ts.timestamp()
+            except Exception:
+                return 0
+        if isinstance(ts, str):
+            try:
+                return datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp()
+            except Exception:
+                return 0
+        return 0
+
     try:
         convo_key = (user_id or '').strip()
         if not convo_key:
             convo_key = (request.args.get('email') or session.get('user_email') or '').strip()
-        msgs = get_messages(convo_key)
+        raw_msgs = get_messages(convo_key)
+        msgs = [m for m in (raw_msgs or []) if isinstance(m, dict)]
 
         # Fill missing user profile info for end-user messages.
         profile = _resolve_user_profile(convo_key, convo_key)
@@ -3591,9 +3649,34 @@ def api_get_inquiry_messages(user_id):
             if not msg.get('user_name') and profile.get('name'):
                 msg['user_name'] = profile.get('name')
 
-        return jsonify({'success': True, 'messages': msgs})
+        safe_msgs = _json_safe(msgs)
+        return jsonify({'success': True, 'messages': safe_msgs})
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        # Fallback path: direct collection scan to keep UI alive even when primary path fails.
+        try:
+            import traceback
+            traceback.print_exc()
+
+            convo_key = (user_id or '').strip()
+            if not convo_key:
+                convo_key = (request.args.get('email') or session.get('user_email') or '').strip()
+            key_l = convo_key.lower()
+
+            docs = firestore.client().collection('inquiries').stream()
+            fallback_msgs = []
+            for d in docs:
+                data = d.to_dict() or {}
+                if not isinstance(data, dict):
+                    continue
+                msg_uid = str(data.get('user_id') or '').strip()
+                msg_email = str(data.get('email') or data.get('user_email') or '').strip().lower()
+                if msg_uid == convo_key or msg_email == key_l:
+                    fallback_msgs.append(data)
+
+            fallback_msgs.sort(key=_ts_sort_value)
+            return jsonify({'success': True, 'messages': _json_safe(fallback_msgs), 'fallback': True})
+        except Exception as inner:
+            return jsonify({'success': False, 'message': f'{e} | fallback failed: {inner}'}), 500
 
 @bp.route('/inquiries/send', methods=['POST'])
 @firebase_auth_required
