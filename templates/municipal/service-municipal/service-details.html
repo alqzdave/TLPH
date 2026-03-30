@@ -174,12 +174,6 @@
                                 <div id="specificFieldsGrid" class="row"></div>
                             </div>
 
-                            <div id="photosSection" style="display:none;">
-                                <hr class="my-4 opacity-10">
-                                <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-green-800"><i class="fa-solid fa-images me-2"></i> Photos</h3>
-                                <div id="photosGrid" class="grid grid-cols-3 gap-2"></div>
-                            </div>
-
                             <div id="documentsSection" style="display:none;">
                                 <hr class="my-4 opacity-10">
                                 <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-teal-800"><i class="fa-solid fa-paperclip me-2"></i> Uploaded Documents</h3>
@@ -712,33 +706,6 @@
                     `;
                 }
                 
-                // ── Photos Section (Simple Grid) ──────────────────────────
-                const photosSection = document.getElementById('photosSection');
-                const photosGrid = document.getElementById('photosGrid');
-                const photoFields = ['fieldPhotos', 'damagePhotos', 'emergencyPhotos', 'farmPhotos', 'productPhoto', 'latestSitePhoto', 'closeUpPhoto'];
-                const allPhotos = [];
-                photoFields.forEach(field => {
-                    if (serviceData[field]) {
-                        const files = Array.isArray(serviceData[field]) ? serviceData[field] : [serviceData[field]];
-                        files.forEach(file => {
-                            if (file && String(file || '').length > 0) {
-                                const url = typeof file === 'string' ? file : (file.url || file.webUrl || file.path);
-                                if (/\.(jpg|jpeg|png|avif|webp|gif|bmp)(\?|$)/i.test(String(url))) {
-                                    allPhotos.push(url);
-                                }
-                            }
-                        });
-                    }
-                });
-                if (allPhotos.length > 0) {
-                    photosSection.style.display = '';
-                    photosGrid.innerHTML = allPhotos.map((url, idx) => `
-                        <div class="cursor-pointer overflow-hidden rounded-lg" onclick="openMunicipalImageViewer('${encodeURIComponent(url)}')">
-                            <img src="${url}" alt="Photo ${idx+1}" style="width:100%; height:120px; object-fit:cover; object-position:center;" class="hover:scale-105 transition-transform">
-                        </div>
-                    `).join('');
-                }
-
                 // ── Uploaded Documents Section ──────────────────────────────
                 const docsSection = document.getElementById('documentsSection');
                 const docsGrid = document.getElementById('documentsGrid');
