@@ -1,3 +1,4 @@
+
 from google.cloud.firestore_v1.base_query import FieldFilter
 from flask import Blueprint, request, jsonify, session
 from flask_mail import Message, Mail
@@ -2605,5 +2606,47 @@ def api_update_notification(notification_id):
         if update_fields:
             db.collection("notifications").document(notification_id).update(update_fields)
         return jsonify({'success': True, 'message': 'Notification updated'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+    
+
+
+from inquiries_storage import get_conversations, get_messages, add_message
+from cloudinary_utils import upload_file_to_cloudinary
+# === INQUIRIES (MESSENGER) API ===
+@bp.route('/inquiries/conversations', methods=['GET'])
+@firebase_auth_required
+def api_get_inquiry_conversations():
+    try:
+        convos = get_conversations()
+        return jsonify({'success': True, 'conversations': convos})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@bp.route('/inquiries/messages/<user_id>', methods=['GET'])
+@firebase_auth_required
+def api_get_inquiry_messages(user_id):
+    try:
+        msgs = get_messages(user_id)
+        return jsonify({'success': True, 'messages': msgs})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@bp.route('/inquiries/send', methods=['POST'])
+@firebase_auth_required
+def api_send_inquiry_message():
+    try:
+        user_id = request.form.get('user_id')
+        user_name = request.form.get('user_name')
+        message = request.form.get('message', '')
+        user_photo = request.form.get('user_photo', '')
+        file_url = ''
+        file_type = ''
+        if 'file' in request.files:
+            file = request.files['file']
+            file_url = upload_file_to_cloudinary(file, folder='inquiries')
+            file_type = file.mimetype
+        doc = add_message(user_id, user_name, message, user_photo, file_url, file_type)
+        return jsonify({'success': True, 'message': doc})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
