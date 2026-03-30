@@ -362,6 +362,44 @@
         });
     </script>
 
+    <!-- Script for desktop Programs dropdown -->
+    <script>
+        const programsDropdownBtn = document.getElementById('programsDropdownBtn');
+        const programsDropdownMenu = document.getElementById('programsDropdownMenu');
+        const programsDropdown = document.getElementById('programsDropdown');
+
+        if (programsDropdownBtn && programsDropdownMenu) {
+            // Toggle dropdown on button click
+            programsDropdownBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const isOpen = programsDropdownMenu.classList.contains('opacity-100');
+                if (isOpen) {
+                    programsDropdownMenu.classList.remove('opacity-100');
+                    programsDropdownMenu.classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                    programsDropdownMenu.classList.remove('opacity-0', 'pointer-events-none');
+                    programsDropdownMenu.classList.add('opacity-100');
+                }
+            });
+
+            // Hide dropdown on outside click
+            document.addEventListener('click', (e) => {
+                if (!programsDropdown.contains(e.target) && programsDropdownMenu.classList.contains('opacity-100')) {
+                    programsDropdownMenu.classList.remove('opacity-100');
+                    programsDropdownMenu.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+
+            // Hide dropdown on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && programsDropdownMenu.classList.contains('opacity-100')) {
+                    programsDropdownMenu.classList.remove('opacity-100');
+                    programsDropdownMenu.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+        }
+    </script>
+
     <script>
         const applyModal = document.getElementById('hiringApplyModal');
         const applyForm = document.getElementById('hiringApplyForm');
@@ -587,5 +625,7 @@
             });
         }
     </script>
+
+    
 </body>
 </html>
