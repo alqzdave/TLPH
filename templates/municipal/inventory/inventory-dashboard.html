@@ -271,6 +271,25 @@
               </div>
             </div>
 
+            <div class="rounded-[4px] border border-slate-200 p-3 bg-slate-50">
+              <p class="text-[9px] font-black uppercase tracking-widest text-slate-500 m-0 mb-2">Farmer & Location</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">Farmer ID</p>
+                  <p id="modalFarmerId" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                </div>
+                <div>
+                  <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">GPS Coordinates</p>
+                  <p id="modalGpsCoords" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                </div>
+              </div>
+              <div class="mt-2">
+                <button id="btnViewMap" class="w-full rounded-[2px] border border-blue-500 bg-blue-50 px-2 py-1.5 text-[8px] font-bold uppercase tracking-widest text-blue-700 hover:bg-blue-100">
+                  📍 View on Map
+                </button>
+              </div>
+            </div>
+
             <div class="rounded-[4px] border border-slate-200 p-3">
               <p class="text-[9px] font-black uppercase tracking-widest text-slate-500 m-0 mb-2">Description</p>
               <p id="modalDescription" class="text-[10px] font-semibold text-slate-700 m-0 leading-relaxed">—</p>
@@ -321,7 +340,7 @@
     let activeModalItemId = null;
 
     class InventoryItem {
-      constructor({ id, category, description, quantity, region, municipality, province, owner, status, nationalStatus, regionalStatus, registrationFee, unitOfMeasure, imageUrl, permitUrl, createdAt, attachments }) {
+      constructor({ id, category, description, quantity, region, municipality, province, owner, status, nationalStatus, regionalStatus, registrationFee, unitOfMeasure, imageUrl, permitUrl, createdAt, attachments, farmerIdNumber, stockLatitude, stockLongitude, stockGpsLink, newStockImageUrls, visitApprovalUrl, scientificStudyUrl }) {
         this.id = String(id);
         this.category = String(category);
         this.description = String(description);
@@ -339,6 +358,13 @@
         this.permitUrl = String(permitUrl || "");
         this.createdAt = createdAt || null;
         this.attachments = attachments || null;
+        this.farmerIdNumber = String(farmerIdNumber || "");
+        this.stockLatitude = String(stockLatitude || "");
+        this.stockLongitude = String(stockLongitude || "");
+        this.stockGpsLink = String(stockGpsLink || "");
+        this.newStockImageUrls = Array.isArray(newStockImageUrls) ? newStockImageUrls : [];
+        this.visitApprovalUrl = String(visitApprovalUrl || "");
+        this.scientificStudyUrl = String(scientificStudyUrl || "");
       }
       inScope(municipality) {
         return this.municipality.toLowerCase() === String(municipality || '').toLowerCase();
@@ -399,7 +425,14 @@
               imageUrl: data.imageUrl || data.image || data.photoUrl || data.photo || '',
               permitUrl: data.permitUrl || data.permit || data.permitFile || data.permitFileUrl || '',
               createdAt: data.createdAt || data.submittedAt || null,
-              attachments: data.attachments || data.documents || data.files || data.filePaths || data.uploadedFiles || null
+              attachments: data.attachments || data.documents || data.files || data.filePaths || data.uploadedFiles || null,
+              farmerIdNumber: data.farmerIdNumber || '',
+              stockLatitude: data.stockLatitude || '',
+              stockLongitude: data.stockLongitude || '',
+              stockGpsLink: data.stockGpsLink || `https://maps.google.com/?q=${data.stockLatitude || 0},${data.stockLongitude || 0}`,
+              newStockImageUrls: data.newStockImageUrls || data.files?.newStockImages || [],
+              visitApprovalUrl: data.visitApprovalUrl || data.files?.visitApproval || '',
+              scientificStudyUrl: data.scientificStudyUrl || data.files?.scientificStudies || ''
             }));
           });
           
@@ -446,6 +479,8 @@
       modalDescription: $("modalDescription"),
       modalDocuments: $("modalDocuments"),
       modalOwner: $("modalOwner"),
+      modalFarmerId: $("modalFarmerId"),
+      modalGpsCoords: $("modalGpsCoords"),
       modalActionNote: $("modalActionNote"),
       btnApproveStock: $("btnApproveStock"),
       btnForwardStock: $("btnForwardStock"),
@@ -697,6 +732,25 @@
       els.modalStatus.className = `text-[11px] font-black uppercase m-0 mt-1 ${statusMeta.className}`;
       els.modalDescription.textContent = item.description || 'N/A';
       els.modalOwner.textContent = item.owner || 'Unknown User';
+      
+      const farmerId = els.modalFarmerId || document.getElementById('modalFarmerId');
+      if (farmerId) farmerId.textContent = item.farmerIdNumber || 'N/A';
+      
+      const gpsCoords = els.modalGpsCoords || document.getElementById('modalGpsCoords');
+      if (gpsCoords && item.stockLatitude && item.stockLongitude) {
+        gpsCoords.textContent = `${item.stockLatitude}, ${item.stockLongitude}`;
+      } else if (gpsCoords) {
+        gpsCoords.textContent = 'N/A';
+      }
+      
+      const btnViewMap = document.getElementById('btnViewMap');
+      if (btnViewMap && item.stockGpsLink) {
+        btnViewMap.onclick = () => window.open(item.stockGpsLink, '_blank');
+        btnViewMap.style.display = 'block';
+      } else if (btnViewMap) {
+        btnViewMap.style.display = 'none';
+      }
+      
       els.modalActionNote.textContent = 'Decisions are logged and reflected in workflow.';
 
       const nationalFinal = ['approved', 'rejected'].includes((item.nationalStatus || '').toLowerCase());
