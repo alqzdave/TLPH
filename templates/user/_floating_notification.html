@@ -137,10 +137,16 @@
         <div style="position:absolute;bottom:-12px;right:18px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid #2563eb;z-index:2;"></div>
         <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-80 max-w-[90vw] p-0 border border-blue-200 animate-fade-in overflow-hidden" style="box-shadow:0 8px 32px 0 rgba(16, 185, 129, 0.18),0 1.5px 8px 0 rgba(34,211,238,0.10);">
             <!-- Tabs -->
-            <div class="flex border-b border-blue-200 bg-blue-600 text-white">
-                <button id="notifTabBtn" onclick="showNotifTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn active" style="background:transparent;border:none;outline:none;cursor:pointer;">Notification</button>
-                <button id="msgTabBtn" onclick="showMsgTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn" style="background:transparent;border:none;outline:none;cursor:pointer;">Inquiry</button>
-                <button onclick="closeNotificationModal()" class="ml-auto text-white/80 hover:text-white text-lg font-bold focus:outline-none px-3" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            <div class="notif-modal-tabs">
+                <button id="notifTabBtn" onclick="showNotifTab()" class="notif-modal-tab-btn active">
+                    <span>Notification</span>
+                    <span class="tab-bg"></span>
+                </button>
+                <button id="msgTabBtn" onclick="showMsgTab()" class="notif-modal-tab-btn">
+                    <span>Inquiry</span>
+                    <span class="tab-bg"></span>
+                </button>
+                <button onclick="closeNotificationModal()" class="ml-auto text-white/80 hover:text-white text-lg font-bold focus:outline-none px-3" title="Close" style="background:transparent;border:none;outline:none;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <!-- Tab Content -->
             <div id="notifTabContent">
