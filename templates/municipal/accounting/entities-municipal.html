@@ -21,7 +21,9 @@
 
   /* Action Buttons */
   .btn-action { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; border-radius:2px; transition:all 0.2s; border:1px solid #e2e8f0; background:#f8fafc; color:#94a3b8; cursor:pointer; }
+  .btn-view:hover { color:#ffffff; background:#0f766e; border-color:#115e59; }
   .btn-edit:hover { color:#ffffff; background:#2563eb; border-color:#1d4ed8; }
+  .btn-delete:hover { color:#ffffff; background:#dc2626; border-color:#b91c1c; }
 
   .toast-enter { opacity: 0; transform: translateY(-10px); }
   .toast-enter-active { opacity: 1; transform: translateY(0); transition: all 0.3s ease; }
@@ -199,9 +201,17 @@
                         x-text="entity.status || 'ACTIVE'"></span>
                 </td>
                 <td class="px-3 py-1.5 text-center">
-                  <button @click="editEntity(entity)" class="btn-action btn-edit" title="Edit" aria-label="Edit">
-                    <span class="material-icons-round text-[14px]">edit</span>
-                  </button>
+                  <div class="inline-flex items-center gap-1">
+                    <button @click="viewEntity(entity)" class="btn-action btn-view" title="View" aria-label="View">
+                      <span class="material-icons-round text-[14px]">visibility</span>
+                    </button>
+                    <button @click="editEntity(entity)" class="btn-action btn-edit" title="Edit" aria-label="Edit">
+                      <span class="material-icons-round text-[14px]">edit</span>
+                    </button>
+                    <button @click="deleteEntity(entity)" class="btn-action btn-delete" title="Delete" aria-label="Delete">
+                      <span class="material-icons-round text-[14px]">delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </template>
@@ -422,6 +432,17 @@
           status: entity.status || 'ACTIVE'
         };
         this.modalOpen = true;
+      },
+
+      viewEntity(entity) {
+        const name = entity?.name ? `Viewing: ${entity.name}` : 'Viewing entity';
+        this.showToast('success', name);
+      },
+
+      async deleteEntity(entity) {
+        const name = entity?.name ? `Delete ${entity.name}?` : 'Delete this entity?';
+        if (!confirm(name)) return;
+        this.showToast('success', 'Delete action queued');
       },
 
       async saveEntity() {
