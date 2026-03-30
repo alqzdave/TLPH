@@ -458,7 +458,15 @@
 
             function renderInquiryMessages(messages) {
                 const list = document.getElementById('userMessageList');
-                list.innerHTML = (messages||[]).map(m => {
+                const defaultMessage = `<div class="inquiry-msg-row">
+                    <div class="inquiry-msg-avatar" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fa-solid fa-headset" style="font-size:0.9rem;"></i></div>
+                    <div class="inquiry-msg" style="background: #f0fdf4; border-left: 3px solid #10b981;">
+                        <strong style="color:#10b981;">Support Team</strong>
+                        <div style="margin-top:6px; font-size:0.9rem; color:#374151;">Hello! 👋 Welcome to our support chat. How can we help you today? We're here to answer any questions about your application or services.</div>
+                        <span class="msg-time">${new Date().toLocaleString()}</span>
+                    </div>
+                </div>`;
+                const messagesHtml = (messages||[]).map(m => {
                     function isImageAttachment(fileType, fileUrl) {
                         const ft = String(fileType || '').toLowerCase();
                         if (ft.startsWith('image/')) return true;
