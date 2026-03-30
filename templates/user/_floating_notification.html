@@ -376,7 +376,42 @@
             let userName = window.currentUserName || (window.user && window.user.name) || '';
             let userPhoto = window.currentUserPhoto || (window.user && window.user.photo) || '';
 
-            function fetchInquiryMessages() {
+            async function ensureInquiryIdentity() {
+                if (userId) return true;
+
+                try {
+                    const resp = await fetch('/api/check-session', {
+                        method: 'GET',
+                        credentials: 'same-origin'
+                    });
+                    if (!resp.ok) return false;
+
+                    const data = await resp.json();
+                    if (!data || !data.authenticated || !data.email) return false;
+
+                    userEmail = String(data.email).trim().toLowerCase();
+                    userId = userEmail;
+
+                    try {
+                        localStorage.setItem('denr_user_email', userEmail);
+                    } catch (e) {
+                        // Ignore storage errors (private mode, quota, etc.)
+                    }
+
+                    if (!userName) {
+                        userName = userEmail.split('@')[0] || 'User';
+                    }
+
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            async function fetchInquiryMessages() {
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
                 if (!userId) {
                     const list = document.getElementById('userMessageList');
                     if (list) list.innerHTML = `<div style='color:#dc2626;text-align:center;padding:1.5em 0;'>User email not set. Please log in or reload the page.</div>`;
@@ -407,8 +442,11 @@
                 setTimeout(()=>{ list.scrollTop = list.scrollHeight; }, 50);
             }
 
-            function sendUserMessage(e) {
+            async function sendUserMessage(e) {
                 e.preventDefault();
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
                 if (!userId) {
                     alert('User email not set. Please log in or reload the page.');
                     return;
@@ -434,7 +472,10 @@
                 });
             }
 
-            function sendUserPhoto(e) {
+            async function sendUserPhoto(e) {
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
                 if (!userId) {
                     alert('User email not set. Please log in or reload the page.');
                     return;
