@@ -174,6 +174,16 @@
                                 <div id="specificFieldsGrid" class="row"></div>
                             </div>
 
+                            <div id="photoGallerySection" style="display:none;">
+                                <hr class="my-4 opacity-10">
+                                <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-emerald-700">
+                                    <i class="fa-solid fa-images me-2"></i> 
+                                    Photo Gallery 
+                                    <span class="text-[10px] text-slate-500 font-normal" id="photoCountBadge">(0 photos)</span>
+                                </h3>
+                                <div id="photoGalleryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                            </div>
+
                             <div id="documentsSection" style="display:none;">
                                 <hr class="my-4 opacity-10">
                                 <h3 class="text-xs font-black uppercase border-b pb-2 mb-4 text-teal-800"><i class="fa-solid fa-paperclip me-2"></i> Uploaded Documents</h3>
@@ -307,6 +317,43 @@
                     </div>
                 `;
             }
+        }
+
+        // Build photo gallery from all image fields
+        function buildPhotoGallery() {
+            const isImageFile = (url) => /\.(jpg|jpeg|png|gif|webp|avif|bmp|svg)(\?|$)/i.test(String(url || '').toLowerCase());
+            const normalizeFileEntries = (value) => {
+                const raw = Array.isArray(value) ? value : (value ? [value] : []);
+                return raw.map((item, idx) => {
+                    if (typeof item === 'string') {
+                        const url = item.trim();
+                        return url ? { url, name: `Photo ${idx + 1}` } : null;
+                    }
+                    if (item && typeof item === 'object') {
+                        const url = String(item.url || item.webUrl || item.path || '').trim();
+                        return url ? { url, name: String(item.name || `Photo ${idx + 1}`) } : null;
+                    }
+                    return null;
+                }).filter(Boolean);
+            };
+
+            // Collect images from all possible fields
+            const imageFields = [
+                'supportingDocuments', 'supportingFiles', 'attachments', 'files',
+                'productPhoto', 'registrationDocuments', 'emergencyPhotos', 'fieldPhotos',
+                'damagePhotos', 'closeUpPhoto', 'farmPhotos', 'latestSitePhoto',
+                'documents', 'previousPermit'
+            ];
+
+            let allPhotos = [];
+            imageFields.forEach(field => {
+                if (serviceData[field]) {
+                    const entries = normalizeFileEntries(serviceData[field]);
+                    allPhotos = allPhotos.concat(entries.filter(e => isImageFile(e.url)));
+                }
+            });
+
+            return allPhotos;
         }
 
         function displayServiceDetails() {
@@ -770,6 +817,34 @@
                     .map(([key, val]) => ({ key, files: normalizeFileEntries(val) }))
                     .filter(({ files }) => files.length > 0);
 
+                // ── Build and display Photo Gallery ──────────────────────────────
+                const allPhotos = buildPhotoGallery();
+                if (allPhotos.length > 0) {
+                    const photoGallerySection = document.getElementById('photoGallerySection');
+                    const photoGalleryGrid = document.getElementById('photoGalleryGrid');
+                    const photoCountBadge = document.getElementById('photoCountBadge');
+                    
+                    photoCountBadge.textContent = `(${allPhotos.length} photo${allPhotos.length !== 1 ? 's' : ''})`;
+                    photoGallerySection.style.display = '';
+                    
+                    photoGalleryGrid.innerHTML = allPhotos.map((photo, idx) => {
+                        const encodedUrl = encodeURIComponent(photo.url);
+                        return `
+                        <div class="relative group">
+                            <img src="/api/files/proxy?url=${encodedUrl}" 
+                                 alt="Photo ${idx + 1}" 
+                                 class="w-full h-40 object-cover rounded border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity" 
+                                 loading="lazy"
+                                 onclick="openMunicipalImageViewer('${encodedUrl}')"/>
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded transition-all flex items-center justify-center">
+                                <span class="opacity-0 group-hover:opacity-100 text-white font-bold text-sm transition-opacity bg-black/50 px-3 py-1 rounded">
+                                    <i class="fa-solid fa-expand"></i>
+                                </span>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+
                 if (docFields.length > 0) {
                     docsSection.style.display = '';
                     docsGrid.innerHTML = docFields.map(({ key, files }) => {
@@ -788,11 +863,12 @@
                             const displayName = String(f.name || 'Document');
                             const canOpen = isOpenableUrl(safeUrl);
                             const encodedUrl = encodeURIComponent(safeUrl);
+                            const isImg = isImageFile(safeUrl);
 
-                            if (isImageFile(safeUrl)) {
+                            if (isImg) {
                                 return `
                                 <div class="doc-box rounded mb-2 align-items-start">
-                                    <img src="${escapeHtml(safeUrl)}" alt="${escapeHtml(displayName)}" class="rounded border border-slate-200 object-cover" style="width:70px;height:70px;" loading="lazy"/>
+                                    <img src="/api/files/proxy?url=${encodedUrl}" alt="${escapeHtml(displayName)}" class="rounded border border-slate-200 object-cover" style="width:70px;height:70px;" loading="lazy"/>
                                     <div class="flex-grow-1 min-w-0">
                                         <div class="text-xs font-bold text-slate-700 text-break">${escapeHtml(displayName)}</div>
                                         ${canOpen ? `<button type="button" onclick="openMunicipalImageViewer('${encodedUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 text-[9px] font-bold mt-1">VIEW</button>` : ''}
@@ -811,6 +887,22 @@
                         return `<div class="col-md-6 mb-3"><p class="info-label">${label}</p>${fileList}</div>`;
                     }).join('');
                 }
+
+                const docFields = Object.entries(serviceData)
+                    .filter(([key]) => {
+                        // Only include known document field keys
+                        const docKeys = ['supportingDocuments', 'supportingFiles', 'attachments', 'files',
+                            'productPhoto', 'registrationDocuments', 'emergencyPhotos', 'fieldPhotos',
+                            'damagePhotos', 'issueReport', 'closeUpPhoto', 'sprayRecord',
+                            'fertilizationHistory', 'soilTestResult', 'farmPhotos', 'revisedDocuments',
+                            'latestSitePhoto', 'documents', 'previousPermit', 'supportingPermits',
+                            'budgetEstimate', 'projectProposal', 'budgetBreakdown', 'workFinancialPlan',
+                            'legalCertificate', 'incomeFile', 'existingFile', 'riskHistory',
+                            'farmPermits', 'businessPlanFile', 'quotesFile'];
+                        return docKeys.includes(key);
+                    })
+                    .map(([key, val]) => ({ key, files: normalizeFileEntries(val) }))
+                    .filter(({ files }) => files.length > 0);
 
                 console.log('Service details set successfully');
 
