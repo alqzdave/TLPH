@@ -274,11 +274,24 @@ def update_inventory_status_regional(inventory_id):
         current_status = str(inv_data.get('status') or '').strip().lower()
         current_regional = str(inv_data.get('regionalStatus') or '').strip().lower()
         current_national = str(inv_data.get('nationalStatus') or '').strip().lower()
+        current_approved_by = str(inv_data.get('approvedByLevel') or '').strip().lower()
+        current_rejected_by = str(inv_data.get('rejectedByLevel') or '').strip().lower()
+
+        # IMPORTANT: Do not treat plain status='approved' as region-final when it was
+        # approved at municipal level. Regional should still be able to act.
+        approved_final_by_regional_or_national = (
+            current_status == 'approved' and current_approved_by in {'regional', 'national'}
+        )
+        rejected_final_by_regional_or_national = (
+            current_status == 'rejected' and current_rejected_by in {'regional', 'national'}
+        )
 
         is_final = (
-            current_status in {'approved', 'rejected', 'forwarded-to-national'}
+            current_status == 'forwarded-to-national'
             or current_regional in {'approved', 'rejected'}
             or current_national in {'approved', 'rejected'}
+            or approved_final_by_regional_or_national
+            or rejected_final_by_regional_or_national
         )
         if is_final:
             return jsonify({
