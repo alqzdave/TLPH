@@ -138,6 +138,7 @@ def add_message(
     user_photo=None,
     file_url=None,
     file_type=None,
+    file_name=None,
     user_email=None,
     sender_email=None,
     sender_role=None,
@@ -161,6 +162,7 @@ def add_message(
         'user_photo': user_photo or '',
         'file_url': file_url or '',
         'file_type': file_type or '',
+        'file_name': file_name or '',
     }
     get_inquiries_collection().add(doc)
     return doc

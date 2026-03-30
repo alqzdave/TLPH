@@ -1017,6 +1017,23 @@
                 return;
             }
 
+            function isImageAttachment(fileType, fileUrl) {
+                const ft = String(fileType || '').toLowerCase();
+                if (ft.startsWith('image/')) return true;
+                const url = String(fileUrl || '').toLowerCase();
+                return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(url);
+            }
+
+            function attachmentName(msg) {
+                if (msg.file_name) return msg.file_name;
+                try {
+                    const u = new URL(msg.file_url || '', window.location.origin);
+                    return decodeURIComponent((u.pathname.split('/').pop() || 'Attachment').split('?')[0]);
+                } catch (e) {
+                    return 'Attachment';
+                }
+            }
+
             body.innerHTML = messages.map(m => {
                 const sender = m.user_name || '';
                 const senderAvatar = m.user_photo
@@ -1036,9 +1053,20 @@
 
                 let msgContent = formatMessageText(m.message || '');
                 if (m.file_url) {
-                    msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openLightbox('${m.file_url}')">`;
+                    if (isImageAttachment(m.file_type, m.file_url)) {
+                        msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openLightbox('${m.file_url}')">`;
+                    } else {
+                        msgContent += `<a href="${m.file_url}" target="_blank" rel="noopener" class="chat-file-attachment" title="Open ${attachmentName(m)}">
+                            <i class="fa-solid fa-file-lines chat-file-icon"></i>
+                            <div class="chat-file-info">
+                                <div class="chat-file-name">${attachmentName(m)}</div>
+                                <div class="chat-file-size">${(m.file_type || 'file').toUpperCase()}</div>
+                            </div>
+                            <i class="fa-solid fa-download chat-file-download"></i>
+                        </a>`;
+                    }
                 }
-                const extraClass = m.file_url && !(m.message || '').trim() ? ' image-only' : '';
+                const extraClass = m.file_url && isImageAttachment(m.file_type, m.file_url) && !(m.message || '').trim() ? ' image-only' : '';
                 const time = m.timestamp ? formatDateTime(m.timestamp) : '';
                 const senderHtml = isMe ? '' : `<div class="msg-sender">${sender || 'User'}</div>`;
                 const adminAvatar = `<img src='${DENR_LOGO_URL}' class='messenger-msg-avatar' alt='DENR'>`;

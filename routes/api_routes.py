@@ -3717,10 +3717,12 @@ def api_send_inquiry_message():
 
         file_url = ''
         file_type = ''
+        file_name = ''
         if 'file' in request.files:
             file = request.files['file']
             file_url = _upload_to_cloudinary(file, folder='tlph/inquiries')
             file_type = file.mimetype
+            file_name = file.filename or ''
         doc = add_message(
             user_id,
             user_name,
@@ -3728,6 +3730,7 @@ def api_send_inquiry_message():
             user_photo,
             file_url,
             file_type,
+            file_name,
             user_email=user_email,
             sender_email=sender_email,
             sender_role=sender_role,

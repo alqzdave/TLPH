@@ -320,6 +320,7 @@
                         
                         <input type="file" id="userPhotoInput" accept="image/*" onchange="sendUserPhoto(event)" hidden>
                         <input type="file" id="userCameraInput" accept="image/*" capture="environment" onchange="sendUserPhoto(event)" hidden>
+                        <input type="file" id="userFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z" onchange="sendUserFile(event)" hidden>
                         
                         <label class="footer-btn" for="userPhotoInput" title="Upload Photo">
                             <i class="fa-solid fa-image"></i>
@@ -327,6 +328,10 @@
                         
                         <label class="footer-btn" for="userCameraInput" title="Take Photo">
                             <i class="fa-solid fa-camera"></i>
+                        </label>
+
+                        <label class="footer-btn" for="userFileInput" title="Attach File">
+                            <i class="fa-solid fa-paperclip"></i>
                         </label>
 
                         <input type="text" id="userMessageInput" placeholder="Message..." autocomplete="off" required />
@@ -444,12 +449,37 @@
             function renderInquiryMessages(messages) {
                 const list = document.getElementById('userMessageList');
                 list.innerHTML = (messages||[]).map(m => {
+                    function isImageAttachment(fileType, fileUrl) {
+                        const ft = String(fileType || '').toLowerCase();
+                        if (ft.startsWith('image/')) return true;
+                        const url = String(fileUrl || '').toLowerCase();
+                        return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(url);
+                    }
+                    function attachmentName(msg) {
+                        if (msg.file_name) return msg.file_name;
+                        try {
+                            const u = new URL(msg.file_url || '', window.location.origin);
+                            return decodeURIComponent((u.pathname.split('/').pop() || 'Attachment').split('?')[0]);
+                        } catch (e) {
+                            return 'Attachment';
+                        }
+                    }
                     const senderEmail = (m.sender_email || '').toLowerCase();
                     const msgOwner = m.user_id || m.email || m.user_email || '';
                     let isMe = senderEmail ? senderEmail === String(userId).toLowerCase() : (msgOwner === userId && !m.is_admin);
                     let msgContent = formatInquiryText(m.message||'');
-                    if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
-                    let extraClass = m.file_url && !(m.message||'').trim() ? ' image-only' : '';
+                    const isImage = isImageAttachment(m.file_type, m.file_url);
+                    if (m.file_url && isImage) {
+                        msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
+                    } else if (m.file_url) {
+                        msgContent += `<a href="${m.file_url}" target="_blank" rel="noopener" class="inquiry-link-preview" style="max-width:220px;">
+                            <div class="inquiry-link-preview-content">
+                                <div class="inquiry-link-preview-title"><i class="fa-solid fa-file-lines" style="margin-right:6px;"></i>${attachmentName(m)}</div>
+                                <div class="inquiry-link-preview-domain">${(m.file_type || 'file').toUpperCase()}</div>
+                            </div>
+                        </a>`;
+                    }
+                    let extraClass = m.file_url && isImage && !(m.message||'').trim() ? ' image-only' : '';
                     let time = m.timestamp ? new Date(m.timestamp.seconds ? m.timestamp.seconds*1000 : m.timestamp).toLocaleString() : '';
                     const bubblePhoto = m.user_photo || (isMe ? userPhoto : '');
                     let avatar = bubblePhoto ? `<img src="${bubblePhoto}" class="inquiry-msg-avatar" alt="avatar">` : `<div class="inquiry-msg-avatar"></div>`;
@@ -515,6 +545,34 @@
                 }).then(r => r.json()).then(res => {
                     if (res.success) fetchInquiryMessages();
                 });
+                e.target.value = '';
+            }
+
+            async function sendUserFile(e) {
+                if (!userId) {
+                    await ensureInquiryIdentity();
+                }
+                if (!userId) {
+                    alert('User email not set. Please log in or reload the page.');
+                    return;
+                }
+                const file = e.target.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('email', userId);
+                formData.append('user_name', userName);
+                formData.append('user_photo', userPhoto);
+                formData.append('message', '');
+                formData.append('file', file);
+                fetch('/api/inquiries/send', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                }).then(r => r.json()).then(res => {
+                    if (res.success) fetchInquiryMessages();
+                });
+                e.target.value = '';
             }
 
             function formatInquiryText(text) {
