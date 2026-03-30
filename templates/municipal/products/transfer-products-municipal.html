@@ -363,6 +363,38 @@
     </div>
   </div>
 
+  <!-- Delete Confirmation Modal -->
+  <div id="transferDeleteModal" class="fixed inset-0 z-50 bg-slate-900/50 items-center justify-center px-4 hidden">
+    <div class="bg-white rounded-[2px] shadow-lg w-full max-w-sm border border-slate-300">
+      <div class="flex items-center justify-between px-3 py-2 border-b border-rose-700 bg-rose-700">
+        <div class="flex items-center gap-2">
+          <span class="material-icons-round text-[16px] text-white">delete</span>
+          <div class="leading-tight">
+            <h2 class="text-[11px] font-black text-white uppercase tracking-tight m-0">Delete Transfer</h2>
+            <p class="text-[9px] font-bold text-rose-100 uppercase tracking-widest m-0">Confirm removal</p>
+          </div>
+        </div>
+        <button id="transferDeleteCloseBtn" type="button" class="btn-action btn-action-inverse" title="Close">
+          <span class="material-icons-round text-[16px]">close</span>
+        </button>
+      </div>
+
+      <div class="px-3 py-3 text-[10px] text-slate-700 space-y-2">
+        <div class="font-black uppercase text-slate-700">Are you sure you want to delete this transfer?</div>
+        <div class="text-[9px] text-slate-500">This action cannot be undone.</div>
+        <div class="mt-2 p-2 border border-slate-200 bg-slate-50 rounded-[2px] space-y-1">
+          <div class="text-[9px] font-black uppercase text-slate-500">Selected Transfer</div>
+          <div id="deleteTransferSummary" class="text-[10px] font-black uppercase text-slate-800"></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
+        <button id="transferDeleteCancelBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Cancel</button>
+        <button id="transferDeleteConfirmBtn" type="button" class="gov-btn bg-rose-700 hover:bg-rose-800 text-white">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const searchInput = document.getElementById('searchTransfer');
     const statusSelect = document.getElementById('statusFilter');
@@ -430,6 +462,12 @@
     const viewTransferMunicipality = document.getElementById('viewTransferMunicipality');
     const viewTransferDate = document.getElementById('viewTransferDate');
     const viewTransferStatus = document.getElementById('viewTransferStatus');
+    const transferDeleteModal = document.getElementById('transferDeleteModal');
+    const transferDeleteCloseBtn = document.getElementById('transferDeleteCloseBtn');
+    const transferDeleteCancelBtn = document.getElementById('transferDeleteCancelBtn');
+    const transferDeleteConfirmBtn = document.getElementById('transferDeleteConfirmBtn');
+    const deleteTransferSummary = document.getElementById('deleteTransferSummary');
+    let pendingDeleteRow = null;
 
     function openTransferModal() {
       if (!transferModal || !transferForm) return;
@@ -483,6 +521,29 @@
       if (!transferViewModal) return;
       transferViewModal.classList.add('hidden');
       transferViewModal.classList.remove('flex');
+    }
+
+    function openTransferDeleteModal(row) {
+      if (!transferDeleteModal || !row) return;
+      pendingDeleteRow = row;
+
+      if (deleteTransferSummary) {
+        const cells = row.querySelectorAll('td');
+        const productText = cells[0] ? cells[0].innerText.trim() : 'Selected transfer';
+        const fromText = cells[1] ? cells[1].innerText.trim() : '';
+        const toText = cells[2] ? cells[2].innerText.trim() : '';
+        deleteTransferSummary.innerText = `${productText} (${fromText} → ${toText})`;
+      }
+
+      transferDeleteModal.classList.remove('hidden');
+      transferDeleteModal.classList.add('flex');
+    }
+
+    function closeTransferDeleteModal() {
+      if (!transferDeleteModal) return;
+      transferDeleteModal.classList.add('hidden');
+      transferDeleteModal.classList.remove('flex');
+      pendingDeleteRow = null;
     }
 
     function createStatusBadge(statusText) {
@@ -651,8 +712,7 @@
         if (deleteBtn) {
           const row = deleteBtn.closest('tr');
           if (!row) return;
-          row.remove();
-          applyFilters();
+          openTransferDeleteModal(row);
         }
       });
     }
@@ -664,6 +724,25 @@
       transferViewModal.addEventListener('click', (event) => {
         if (event.target === transferViewModal) {
           closeTransferViewModal();
+        }
+      });
+    }
+
+    if (transferDeleteModal && transferDeleteCloseBtn && transferDeleteCancelBtn && transferDeleteConfirmBtn) {
+      transferDeleteCloseBtn.addEventListener('click', closeTransferDeleteModal);
+      transferDeleteCancelBtn.addEventListener('click', closeTransferDeleteModal);
+
+      transferDeleteConfirmBtn.addEventListener('click', () => {
+        if (pendingDeleteRow) {
+          pendingDeleteRow.remove();
+          applyFilters();
+        }
+        closeTransferDeleteModal();
+      });
+
+      transferDeleteModal.addEventListener('click', (event) => {
+        if (event.target === transferDeleteModal) {
+          closeTransferDeleteModal();
         }
       });
     }
