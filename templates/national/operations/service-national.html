@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -18,25 +18,30 @@
       --gov-border: #cbd5e1;
     }
     
-    /* Layout Reset para sa Compact One-View */
+    /* Layout Reset para sa Compact One-View (aligned w/ Licensing & Permit) */
     html, body { height: 100vh; overflow: hidden; }
     body { 
-      font-family: "Inter", Verdana, sans-serif; 
-      background-color: var(--gov-bg); 
-      font-size: 0.72rem; 
+      font-family: "Verdana", "Arial", sans-serif; 
+      background-color: #e2e8f0; 
+      font-size: 11px; 
       color: #1e293b; 
     }
-    
-    .wrapper { display: flex; height: 100vh; overflow: hidden; }
-    main { flex: 1; min-width: 0; padding: 0.5rem 1rem; display: flex; flex-direction: column; overflow: hidden; }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 2px; }
 
     /* Government Style Components */
     .gov-card { 
       background: #ffffff; 
       border: 1px solid var(--gov-border); 
       border-radius: 2px;
-      margin-bottom: 0.5rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
+
+    .gov-input { padding: 4px 8px; font-size: 10px; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 2px; background: #ffffff; outline: none; transition: border-color 0.2s; }
+    .gov-input:focus { border-color: #1e40af; }
+    .gov-btn { padding: 4px 12px; border-radius: 2px; font-weight: 800; text-transform: uppercase; font-size: 9px; letter-spacing: 0.05em; transition: all 0.2s; cursor: pointer; }
 
     /* Side-Border Metric Cards */
     .metric-card { border: none; border-left: 5px solid var(--gov-navy); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
@@ -44,7 +49,7 @@
     .metric-value { font-size: 1.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
 
     /* Table Density & Sticky Header */
-    .table-responsive { flex-grow: 1; overflow-y: auto; background: white; border: 1px solid var(--gov-border); }
+    .table-responsive { flex-grow: 1; min-height: 0; overflow-y: auto; background: white; border: 1px solid var(--gov-border); }
     .table-registry thead th { 
       background: #f8fafc; 
       color: var(--gov-navy); 
@@ -143,141 +148,112 @@
     </aside>
 
     <main class="flex-1 flex flex-col min-w-0 bg-slate-100 p-3 gap-3 overflow-y-auto custom-scrollbar">
-    <section class="gov-card p-2 px-3 border-0 border-b bg-white rounded-0 mb-2">
-      <div class="row g-2 align-items-center">
-        <div class="col-xl-4">
-          <h6 class="fw-bold m-0" style="color: var(--gov-navy); letter-spacing: 0.5px;">SERVICE REQUESTS - FROM REGIONAL (APPROVE/REJECT)</h6>
-          <div class="text-muted text-uppercase" style="font-size: 0.55rem;">Republic of the Philippines • National Management Dashboard</div>
-        </div>
-        <div class="col-xl-8">
-          <div class="row g-1 justify-content-end">
-            <div class="col-auto">
-               <button class="btn btn-outline-secondary btn-sm fw-bold h-full px-3">
-                 <span class="material-icons-round fs-6 align-middle">file_download</span> EXPORT
-               </button>
-            </div>
+    <header class="gov-card p-2 px-3 flex justify-between items-center shrink-0 border-b-4 border-b-blue-900">
+      <div class="flex flex-col">
+        <h1 class="text-[12px] font-black text-blue-900 uppercase tracking-tight m-0">National Service Requests - Regional Review</h1>
+        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest m-0">Republic of the Philippines &bull; National Management Dashboard</p>
+      </div>
+      <button class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1 shadow-sm h-7">
+        <span class="material-icons-round text-[12px]">file_download</span> Export
+      </button>
+    </header>
+
+    <section class="grid grid-cols-1 sm:grid-cols-4 gap-2 shrink-0">
+      <div class="gov-card p-2 px-3 border-l-4 border-l-blue-900 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-[9px] font-black uppercase text-slate-500 tracking-widest">From Regional</div>
+            <div class="text-xl font-black text-blue-900 leading-none mt-1">{{ total_count }}</div>
           </div>
+          <span class="material-icons-round text-slate-300 text-[20px]">summarize</span>
         </div>
+        <div class="mt-1 pt-1 border-t border-slate-100 text-[9px]"><span class="font-black text-slate-800">Total</span> <span class="text-slate-500">from regional</span></div>
+      </div>
+      <div class="gov-card p-2 px-3 border-l-4 border-l-emerald-600 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-[9px] font-black uppercase text-slate-500 tracking-widest">National Approved</div>
+            <div class="text-xl font-black text-emerald-600 leading-none mt-1">{{ completed_count }}</div>
+          </div>
+          <span class="material-icons-round text-emerald-200 text-[20px]">check_circle</span>
+        </div>
+        <div class="mt-1 pt-1 border-t border-slate-100 text-[9px] font-black text-emerald-600">By National Admin</div>
+      </div>
+      <div class="gov-card p-2 px-3 border-l-4 border-l-amber-500 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Pending Action</div>
+            <div class="text-xl font-black text-amber-600 leading-none mt-1">{{ pending_count }}</div>
+          </div>
+          <span class="material-icons-round text-amber-200 text-[20px]">pending_actions</span>
+        </div>
+        <div class="mt-1 pt-1 border-t border-slate-100 text-[9px] font-black text-amber-600">Awaiting Decision</div>
+      </div>
+      <div class="gov-card p-2 px-3 border-l-4 border-l-rose-700 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-[9px] font-black uppercase text-slate-500 tracking-widest">Rejected</div>
+            <div class="text-xl font-black text-rose-700 leading-none mt-1">{{ rejected_count }}</div>
+          </div>
+          <span class="material-icons-round text-rose-200 text-[20px]">cancel</span>
+        </div>
+        <div class="mt-1 pt-1 border-t border-slate-100 text-[9px] font-black text-slate-800">Rejected by National</div>
       </div>
     </section>
 
-    <div class="row g-2 mb-2">
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="metric-title">From Regional</div>
-              <div class="metric-value" style="color: var(--gov-navy);">{{ total_count }}</div>
-            </div>
-            <span class="material-icons-round text-slate-300">summarize</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-muted">Total From Regional</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #157347;">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="metric-title">National Approved</div>
-              <div class="metric-value text-success">{{ completed_count }}</div>
-            </div>
-            <span class="material-icons-round text-success opacity-20">check_circle</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-muted">By National Admin</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #e67e22;">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="metric-title">Pending Action</div>
-              <div class="metric-value" style="color: #d35400;">{{ pending_count }}</div>
-            </div>
-            <span class="material-icons-round text-warning opacity-20">pending_actions</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-muted">Awaiting National Decision</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="gov-card metric-card p-2 px-3" style="border-left-color: #b91c1c;">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="metric-title">Rejected</div>
-              <div class="metric-value text-danger">{{ rejected_count }}</div>
-            </div>
-            <span class="material-icons-round text-danger opacity-20">cancel</span>
-          </div>
-          <div class="mt-1 border-t pt-1 text-[10px] text-muted">Rejected by National</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row g-2 flex-grow-1 overflow-hidden">
-      <div class="col-lg-3 d-flex flex-column gap-1">
-        <div class="gov-card p-2 flex-grow-1 flex flex-col overflow-hidden">
-          <div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">6-Month Filing Trend</div>
+    <div class="flex-1 flex flex-col xl:flex-row gap-2 min-h-0">
+      <div class="w-full xl:w-[240px] flex flex-col gap-2 shrink-0">
+        <div class="gov-card p-2 flex-1 flex flex-col min-h-[130px] xl:min-h-0">
+          <div class="text-[9px] font-black uppercase text-slate-600 border-l-2 border-blue-900 pl-1 mb-1 shrink-0">6-Month Filing Trend</div>
           <div class="chart-safe-zone">
             <div class="chart-container"><canvas id="srTrendChart"></canvas></div>
           </div>
         </div>
-        <div class="gov-card p-2 flex-grow-1 flex flex-col overflow-hidden">
-          <div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Requests by Service</div>
+        <div class="gov-card p-2 flex-1 flex flex-col min-h-[130px] xl:min-h-0">
+          <div class="text-[9px] font-black uppercase text-slate-600 border-l-2 border-blue-900 pl-1 mb-1 shrink-0">Requests by Service</div>
           <div class="chart-safe-zone">
             <div class="chart-container"><canvas id="srTypeChart"></canvas></div>
           </div>
         </div>
-        <div class="gov-card p-2 flex-grow-1 flex flex-col overflow-hidden">
-          <div class="fw-bold text-uppercase mb-2 text-slate-500" style="font-size: 0.55rem;">Resolution Mix</div>
+        <div class="gov-card p-2 flex-1 flex flex-col min-h-[130px] xl:min-h-0">
+          <div class="text-[9px] font-black uppercase text-slate-600 border-l-2 border-blue-900 pl-1 mb-1 shrink-0">Resolution Mix</div>
           <div class="chart-safe-zone">
             <div class="chart-container"><canvas id="srStatusChart"></canvas></div>
           </div>
         </div>
       </div>
 
-      <div class="col-lg-9 d-flex flex-column overflow-hidden">
+      <div class="flex-1 flex flex-col min-h-[400px] xl:min-h-0 overflow-hidden">
         <div class="gov-card flex-grow-1 d-flex flex-column overflow-hidden m-0">
           
-          <div class="p-2 px-3 bg-slate-50 border-b">
-            <div class="row g-2 align-items-center">
-              <div class="col-md-4">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white border-end-0 text-muted">
-                    <span class="material-icons-round fs-6">search</span>
-                  </span>
-                  <input type="text" id="masterSearch" class="form-control border-start-0 ps-0" placeholder="Search Ref ID or Applicant...">
-                </div>
-              </div>
-              <div class="col-md-3">
-                <select id="typeFilter" class="form-select form-select-sm">
-                  <option value="ALL">All Service Types</option>
-                  <option value="FARM VISIT">Farm Visit</option>
-                  <option value="COMPLIANCE">Compliance Inspection</option>
-                  <option value="INSPECTION">Pest/Disease Investigation</option>
-                  <option value="SOIL">Soil/Crop Evaluation</option>
-                  <option value="GOOD AGRICULTURAL">GAP Training</option>
-                  <option value="PEST & DISEASE">Pest & Disease Management Seminar</option>
-                  <option value="SAFE PESTICIDE">Safe Pesticide Handling Training</option>
-                  <option value="NURSERY">Nursery/Propagation Seminar</option>
-                  <option value="REGULATORY COMPLIANCE">Regulatory Compliance Orientation</option>
-                  <option value="TYPHOON">Typhoon Damage Compensation</option>
-                  <option value="PEST DAMAGE">Pest Damage Compensation</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <select id="statusFilter" class="form-select form-select-sm">
-                  <option value="ALL">All Status</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="REJECTED">Rejected</option>
-                </select>
-              </div>
-              <div class="col-md-2 text-end">
-                <button onclick="clearFilters()" class="btn btn-light btn-sm border fw-bold w-100">RESET</button>
-              </div>
+          <div class="p-2 border-b border-slate-200 shrink-0 flex flex-wrap gap-1.5 items-center bg-slate-50">
+            <div class="relative flex-1 min-w-[160px]">
+              <span class="material-icons-round absolute left-1.5 top-1/2 -translate-y-1/2 text-slate-400 text-[12px]">search</span>
+              <input type="text" id="masterSearch" class="gov-input pl-6 w-full" placeholder="Search Ref ID or Applicant...">
             </div>
+            <select id="typeFilter" class="gov-input cursor-pointer min-w-[150px]">
+              <option value="ALL">All Service Types</option>
+              <option value="FARM VISIT">Farm Visit</option>
+              <option value="COMPLIANCE">Compliance Inspection</option>
+              <option value="INSPECTION">Pest/Disease Investigation</option>
+              <option value="SOIL">Soil/Crop Evaluation</option>
+              <option value="GOOD AGRICULTURAL">GAP Training</option>
+              <option value="PEST & DISEASE">Pest & Disease Management Seminar</option>
+              <option value="SAFE PESTICIDE">Safe Pesticide Handling Training</option>
+              <option value="NURSERY">Nursery/Propagation Seminar</option>
+              <option value="REGULATORY COMPLIANCE">Regulatory Compliance Orientation</option>
+              <option value="TYPHOON">Typhoon Damage Compensation</option>
+              <option value="PEST DAMAGE">Pest Damage Compensation</option>
+            </select>
+            <select id="statusFilter" class="gov-input cursor-pointer min-w-[120px]">
+              <option value="ALL">All Status</option>
+              <option value="APPROVED">Approved</option>
+              <option value="PENDING">Pending</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+            <button onclick="clearFilters()" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 h-7">Reset</button>
           </div>
-          
-          <div class="table-responsive">
+          <div class="table-responsive custom-scrollbar">
             <table id="masterTable" class="table table-sm table-hover table-registry mb-0">
               <thead>
                 <tr>
@@ -334,8 +310,8 @@
             </table>
           </div>
           
-          <div class="p-1 px-3 bg-white border-top d-flex justify-content-between align-items-center">
-            <span id="rowCountLabel" class="text-muted" style="font-size: 0.6rem;">Showing: <b>{{ service_requests|length }} records</b></span>
+          <div class="bg-white border-t border-slate-200 p-2 flex justify-between items-center shrink-0">
+            <span id="rowCountLabel" class="text-[9px] text-slate-500 font-bold uppercase tracking-wider italic">Showing: <b>{{ service_requests|length }} records</b></span>
             <nav>
               <ul class="pagination pagination-sm m-0" style="--bs-pagination-font-size: 0.6rem;">
                 <li class="page-item disabled"><a class="page-link" href="#">Prev</a></li>
@@ -348,8 +324,8 @@
       </div>
     </div>
 
-    <footer class="mt-2 text-center text-muted" style="font-size: 0.55rem;">
-      REPUBLIC OF THE PHILIPPINES • NATIONAL SERVICE REGISTRY • CONFIDENTIAL DATA
+    <footer class="text-center text-[9px] text-slate-400 uppercase font-bold tracking-widest py-1 shrink-0">
+      REPUBLIC OF THE PHILIPPINES &bull; NATIONAL SERVICE REGISTRY &bull; CONFIDENTIAL DATA
     </footer>
   </main>
 </div>
@@ -451,13 +427,13 @@
 
             <!-- Form-Specific Details (Compensation) -->
             <div class="border p-2 mb-3" id="mCompensationBlock" style="display:none; border-radius:2px;">
-              <div class="text-muted fw-bold text-uppercase mb-2" style="font-size:0.55rem; letter-spacing:1px; color:#b45309;">📋 Form-Specific Details</div>
+              <div class="text-muted fw-bold text-uppercase mb-2" style="font-size:0.55rem; letter-spacing:1px; color:#b45309;">ðŸ“‹ Form-Specific Details</div>
               <div id="mCompensationFields" class="row g-2"></div>
             </div>
 
             <!-- Form-Specific Details (Farm Visit) -->
             <div class="border p-2 mb-3" id="mFarmBlock" style="display:none; border-radius:2px;">
-              <div class="text-muted fw-bold text-uppercase mb-2" style="font-size:0.55rem; letter-spacing:1px; color:#047857;">🌾 Farm Visit Details</div>
+              <div class="text-muted fw-bold text-uppercase mb-2" style="font-size:0.55rem; letter-spacing:1px; color:#047857;">ðŸŒ¾ Farm Visit Details</div>
               <div id="mFarmFields" class="row g-2"></div>
             </div>
 
@@ -665,13 +641,13 @@
       const banner = document.getElementById('modalStatusBanner');
       if (status === 'approved') {
         banner.className = 'px-3 py-2 fw-bold text-uppercase bg-success bg-opacity-10 text-success';
-        banner.textContent = level ? `✓ Approved by ${level}` : '✓ Approved';
+        banner.textContent = level ? `âœ“ Approved by ${level}` : 'âœ“ Approved';
       } else if (status === 'rejected') {
         banner.className = 'px-3 py-2 fw-bold text-uppercase bg-danger bg-opacity-10 text-danger';
-        banner.textContent = rejLevel ? `✗ Rejected by ${rejLevel}` : '✗ Rejected';
+        banner.textContent = rejLevel ? `âœ— Rejected by ${rejLevel}` : 'âœ— Rejected';
       } else if (status === 'forwarded-national') {
         banner.className = 'px-3 py-2 fw-bold text-uppercase bg-warning bg-opacity-10 text-warning';
-        banner.textContent = '⏳ Pending National Action';
+        banner.textContent = 'â³ Pending National Action';
       } else {
         banner.className = 'px-3 py-2 fw-bold text-uppercase bg-secondary bg-opacity-10 text-secondary';
         banner.textContent = status.toUpperCase();
@@ -826,7 +802,7 @@
         if (d.costOfDamage || d.lossValue) {
           const rawCost = d.costOfDamage || d.lossValue;
           const cost = Number(rawCost).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          compFields.push({ label: 'Cost of Damage', value: '₱ ' + cost, color: 'text-success' });
+          compFields.push({ label: 'Cost of Damage', value: 'â‚± ' + cost, color: 'text-success' });
         }
         if (finalPinUrl) {
           compFields.push({ label: 'Pin Location', value: finalPinUrl, isLink: true });
@@ -838,7 +814,7 @@
         compFields.forEach(field => {
           let content = '';
           if (field.isLink) {
-            content = `<a href="${field.value}" target="_blank" rel="noopener" class="text-primary fw-bold" style="font-size:0.68rem;">🗺️ View on Map</a>`;
+            content = `<a href="${field.value}" target="_blank" rel="noopener" class="text-primary fw-bold" style="font-size:0.68rem;">ðŸ—ºï¸ View on Map</a>`;
           } else {
             content = `<div class="fw-bold ${field.color || ''}" style="font-size:0.68rem;">${field.value}</div>`;
           }
@@ -894,7 +870,7 @@
         farmFields.forEach(field => {
           let content = '';
           if (field.isLink) {
-            content = `<a href="${field.value}" target="_blank" rel="noopener" class="text-primary fw-bold" style="font-size:0.68rem;">🗺️ View on Map</a>`;
+            content = `<a href="${field.value}" target="_blank" rel="noopener" class="text-primary fw-bold" style="font-size:0.68rem;">ðŸ—ºï¸ View on Map</a>`;
           } else {
             content = `<div class="fw-bold" style="font-size:0.68rem;">${field.value}</div>`;
           }
@@ -910,7 +886,7 @@
         farmBlock.style.display = 'none';
       }
 
-      // Documents — scan all array/string fields with file extensions
+      // Documents â€” scan all array/string fields with file extensions
       const fileExts = /\.(pdf|jpg|jpeg|png|gif|webp|bmp|svg|avif|doc|docx|xls|xlsx|csv|txt|zip)$/i;
       const docsEl = document.getElementById('mDocs');
       const normalizeFileUrl = (raw, userId) => {
@@ -1005,21 +981,21 @@
       if (d.createdAt || d.submittedAt) {
         const dt = (d.createdAt || d.submittedAt);
         const t  = dt.toDate ? dt.toDate() : dt.seconds ? new Date(dt.seconds * 1000) : new Date(dt);
-        if (!isNaN(t)) auditLines.push(`<div><span class="badge bg-secondary" style="font-size:0.5rem;">SUBMITTED</span> ${t.toLocaleString('en-PH')} ${d.userEmail ? '• ' + d.userEmail : ''}</div>`);
+        if (!isNaN(t)) auditLines.push(`<div><span class="badge bg-secondary" style="font-size:0.5rem;">SUBMITTED</span> ${t.toLocaleString('en-PH')} ${d.userEmail ? 'â€¢ ' + d.userEmail : ''}</div>`);
       }
       if (d.forwardedAt) {
         const t = d.forwardedAt.toDate ? d.forwardedAt.toDate() : new Date(d.forwardedAt.seconds*1000);
-        auditLines.push(`<div><span class="badge bg-indigo" style="font-size:0.5rem; background:#4f46e5;">FWD→REGIONAL</span> ${t.toLocaleString('en-PH')} ${d.forwardedByEmail ? '• ' + d.forwardedByEmail : ''}</div>`);
+        auditLines.push(`<div><span class="badge bg-indigo" style="font-size:0.5rem; background:#4f46e5;">FWDâ†’REGIONAL</span> ${t.toLocaleString('en-PH')} ${d.forwardedByEmail ? 'â€¢ ' + d.forwardedByEmail : ''}</div>`);
       }
       if (d.forwardedToNationalAt) {
         const t = d.forwardedToNationalAt.toDate ? d.forwardedToNationalAt.toDate() : new Date(d.forwardedToNationalAt.seconds*1000);
-        auditLines.push(`<div><span class="badge" style="font-size:0.5rem; background:#7c3aed; color:#fff;">FWD→NATIONAL</span> ${t.toLocaleString('en-PH')} ${d.forwardedToNationalBy ? '• ' + d.forwardedToNationalBy : ''}</div>`);
+        auditLines.push(`<div><span class="badge" style="font-size:0.5rem; background:#7c3aed; color:#fff;">FWDâ†’NATIONAL</span> ${t.toLocaleString('en-PH')} ${d.forwardedToNationalBy ? 'â€¢ ' + d.forwardedToNationalBy : ''}</div>`);
       }
       if (d.reviewedAt) {
         const t = d.reviewedAt.toDate ? d.reviewedAt.toDate() : new Date(d.reviewedAt.seconds*1000);
         const lvl = d.approvedByLevel || 'National';
         const cls = status === 'approved' ? 'bg-success' : 'bg-danger';
-        auditLines.push(`<div><span class="badge ${cls}" style="font-size:0.5rem;">${status.toUpperCase()} BY ${lvl.toUpperCase()}</span> ${t.toLocaleString('en-PH')} ${d.reviewedByEmail ? '• ' + d.reviewedByEmail : ''}</div>`);
+        auditLines.push(`<div><span class="badge ${cls}" style="font-size:0.5rem;">${status.toUpperCase()} BY ${lvl.toUpperCase()}</span> ${t.toLocaleString('en-PH')} ${d.reviewedByEmail ? 'â€¢ ' + d.reviewedByEmail : ''}</div>`);
       }
       document.getElementById('mAudit').innerHTML = auditLines.length
         ? auditLines.join('<div style="height:4px;"></div>')
@@ -1250,3 +1226,8 @@
 
 </body>
 </html>
+
+
+
+
+
