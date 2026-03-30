@@ -495,19 +495,52 @@
                         }
                     });
 
+                    const parseJsonResponse = async (response, defaultErrorMessage) => {
+                        const rawText = await response.text();
+                        let payload = null;
+
+                        try {
+                            payload = rawText ? JSON.parse(rawText) : null;
+                        } catch (_) {
+                            payload = null;
+                        }
+
+                        if (!response.ok) {
+                            if (payload && typeof payload === 'object' && payload.message) {
+                                throw new Error(payload.message);
+                            }
+                            if (/^\s*</.test(rawText || '')) {
+                                throw new Error('Session expired or unauthorized response received. Please sign in again and retry.');
+                            }
+                            throw new Error(defaultErrorMessage);
+                        }
+
+                        if (!payload || typeof payload !== 'object') {
+                            throw new Error('Invalid server response format.');
+                        }
+
+                        return payload;
+                    };
+
                     const uploadResponse = await fetch('/api/submit-application', {
                         method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
                         body: uploadFormData
                     });
-                    const uploadData = await uploadResponse.json();
+                    const uploadData = await parseJsonResponse(uploadResponse, 'Failed to upload application files');
                     if (!uploadResponse.ok || !uploadData.success) {
                         throw new Error(uploadData.message || 'Failed to upload application files');
                     }
 
                     const invoiceResponse = await fetch('/api/payments/create-invoice', {
                         method: 'POST',
+                        credentials: 'include',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({
                             amount: amount,
@@ -523,7 +556,7 @@
                         })
                     });
 
-                    const invoiceData = await invoiceResponse.json();
+                    const invoiceData = await parseJsonResponse(invoiceResponse, 'Failed to create invoice');
 
                     if (invoiceData.status !== 'success') {
                         throw new Error(invoiceData.message || 'Failed to create invoice');

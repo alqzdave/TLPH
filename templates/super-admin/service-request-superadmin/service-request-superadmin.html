@@ -531,6 +531,22 @@
             }
         }
 
+        function toSuperAdminProxyUrl(rawUrl) {
+            const url = String(rawUrl || '').trim();
+            if (!url) return '';
+            if (/^\/api\/files\/proxy\?/i.test(url)) return url;
+            if (/^(\/static\/|static\/)/i.test(url)) {
+                return url.startsWith('static/') ? `/${url}` : url;
+            }
+            if (/^https?:\/\//i.test(url)) {
+                return `/api/files/proxy?url=${encodeURIComponent(url)}`;
+            }
+            if (url.startsWith('/')) {
+                return `/api/files/proxy?url=${encodeURIComponent(window.location.origin + url)}`;
+            }
+            return `/api/files/proxy?url=${encodeURIComponent(url)}`;
+        }
+
         function renderDetailValue(label, value, rowData) {
             const normalized = formatFieldValue(value);
             if (normalized === '') return '';
@@ -663,6 +679,7 @@
                     alert('Attachment URL is missing or invalid.');
                     return;
                 }
+                const previewUrl = toSuperAdminProxyUrl(url) || url;
                 const name = decodeURIComponent(encodedName || 'Attachment');
                 const modal = document.getElementById('superAdminAttachmentViewerModal');
                 const title = document.getElementById('saViewerTitle');
@@ -673,7 +690,7 @@
                 const openNewTab = document.getElementById('saViewerOpenNewTab');
 
                 title.textContent = name;
-                if (openNewTab) openNewTab.href = url;
+                if (openNewTab) openNewTab.href = previewUrl;
                 image.style.display = 'none';
                 frame.style.display = 'none';
                 fallback.style.display = 'none';
@@ -682,7 +699,7 @@
                 image.onerror = function() {
                     image.style.display = 'none';
                     // fallback to iframe when image decode fails
-                    frame.src = url;
+                    frame.src = previewUrl;
                     frame.style.display = 'block';
                     if (loading) loading.style.display = 'none';
                 };
@@ -697,15 +714,15 @@
                 };
 
                 if (isImagePath(url)) {
-                    image.src = url;
+                    image.src = previewUrl;
                     image.style.display = 'block';
                     if (loading) loading.style.display = 'none';
                 } else if (/\.pdf(\?|$)/i.test(url)) {
-                    frame.src = `${url}#toolbar=0&navpanes=0&scrollbar=1`;
+                    frame.src = `${previewUrl}#toolbar=0&navpanes=0&scrollbar=1`;
                     frame.style.display = 'block';
                 } else {
                     // Try iframe for any file type first; if browser can't render, show fallback text.
-                    frame.src = url;
+                    frame.src = previewUrl;
                     frame.style.display = 'block';
                     setTimeout(() => {
                         if (loading && loading.style.display !== 'none') {
