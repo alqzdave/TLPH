@@ -171,38 +171,6 @@
     modal.classList.remove('flex');
   }
 
-  // --- Forward Modal ---
-  let currentForwardRow = null;
-  function openForwardModal(btn) {
-    currentForwardRow = btn?.closest('tr') || null;
-    const rowData = readRowData(currentForwardRow);
-    const modal = byId('forwardModal');
-    if (!modal) return;
-    byId('forwardQuotationId').value = rowData?.id || '';
-    byId('forwardMunicipality').value = '';
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  }
-
-  function closeForwardModal() {
-    const modal = byId('forwardModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    currentForwardRow = null;
-  }
-
-  function submitForward(e) {
-    e.preventDefault();
-    if (!currentForwardRow) return;
-    const target = byId('forwardMunicipality')?.value || '';
-    const data = readRowData(currentForwardRow);
-    if (!data) return;
-    data.deliverTo = target;
-    data.deliverToType = 'municipal';
-    writeRowData(currentForwardRow, data);
-    closeForwardModal();
-  }
-
   // --- Status Modal ---
   let currentStatusRow = null;
   function openStatusModal(btn) {

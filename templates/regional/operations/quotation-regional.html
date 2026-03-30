@@ -235,34 +235,6 @@
                 {% endfor %}
 
               <!-- Move all modals and scripts outside the table and after the table -->
-              <!-- Forward Modal -->
-              <div id="forwardModal" class="gov-modal no-print">
-                <div class="absolute inset-0 cursor-pointer" onclick="closeForwardModal()"></div>
-                <div class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-xs flex flex-col max-h-[90vh] relative z-10" onclick="event.stopPropagation()">
-                  <div class="bg-blue-900 text-white px-4 py-3 flex justify-between items-center shrink-0 border-b border-blue-800">
-                    <h3 class="text-[11px] font-black uppercase tracking-widest m-0 flex items-center gap-2">
-                        <span class="material-icons-round text-blue-200">forward_to_inbox</span> Forward Quotation
-                    </h3>
-                    <button onclick="closeForwardModal()" class="text-slate-300 hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer">
-                        <span class="material-icons-round text-sm">close</span>
-                    </button>
-                  </div>
-                  <div class="p-4 bg-slate-50 flex-1 overflow-y-auto custom-scrollbar">
-                    <form id="forwardForm" onsubmit="submitForward(event)">
-                      <input type="hidden" id="forwardQuotationId" />
-                      <label class="block text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Forward to Municipality</label>
-                      <select id="forwardMunicipality" class="gov-input w-full mb-3" required>
-                        <option value="">Select Municipality</option>
-                        {% for m in municipalities %}
-                          <option value="{{ m }}">{{ m }}</option>
-                        {% endfor %}
-                      </select>
-                      <button type="submit" class="gov-btn bg-blue-800 text-white hover:bg-blue-900 w-full py-2 mt-2">Forward</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-
               <!-- Status Modal -->
               <div id="statusModal" class="gov-modal no-print">
                 <div class="absolute inset-0 cursor-pointer" onclick="closeStatusModal()"></div>
