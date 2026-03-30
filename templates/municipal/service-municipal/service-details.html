@@ -568,6 +568,32 @@
                             <p class="info-value">${serviceData.distributionProvince || 'N/A'}</p>
                         </div>
                     `;
+                } else if (svcType.includes('farm visit') || svcType.includes('initial farm') || svcType.includes('compliance inspection') || svcType.includes('disease/pest investigation') || svcType.includes('soil/crop evaluation') || svcType.includes('follow up visit')) {
+                    specificSection.style.display = '';
+                    specificGrid.innerHTML = `
+                        <div class="col-md-6">
+                            <p class="info-label">Farm Size (ha)</p>
+                            <p class="info-value">${serviceData.farmSize ? serviceData.farmSize + ' ha' : 'N/A'}</p>
+                            <p class="info-label">Production Type</p>
+                            <p class="info-value">${serviceData.productionType || 'N/A'}</p>
+                            <p class="info-label">Farmer ID</p>
+                            <p class="info-value">${serviceData.farmerIdNumber || 'N/A'}</p>
+                            <p class="info-label" style="margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 15px;">Farm Address / Pin Location</p>
+                            <p class="info-value">${serviceData.farmAddress || 'N/A'} ${serviceData.googlePinLocation ? `<a href="${serviceData.googlePinLocation}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-bold" style="font-size:11px;">🗺️ View Map</a>` : ''}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="info-label">Province</p>
+                            <p class="info-value">${serviceData.farmProvince || 'N/A'}</p>
+                            <p class="info-label">Municipality</p>
+                            <p class="info-value">${serviceData.farmMunicipality || 'N/A'}</p>
+                            <p class="info-label">Barangay</p>
+                            <p class="info-value">${serviceData.farmBarangay || 'N/A'}</p>
+                            <p class="info-label" style="margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 15px;">Issues Report</p>
+                            <p class="info-value">${fileCountText(serviceData.issueFile)}</p>
+                            <p class="info-label">Field Photos</p>
+                            <p class="info-value">${fileCountText(serviceData.photoFile)}</p>
+                        </div>
+                    `;
                 } else if (svcType.includes('emergency pest')) {
                     specificSection.style.display = '';
                     specificGrid.innerHTML = `
