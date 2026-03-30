@@ -19,6 +19,10 @@
 
   html, body { height:100%; }
 
+  /* Action Buttons */
+  .btn-action { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; border-radius:2px; transition:all 0.2s; border:1px solid #e2e8f0; background:#f8fafc; color:#94a3b8; cursor:pointer; }
+  .btn-edit:hover { color:#ffffff; background:#2563eb; border-color:#1d4ed8; }
+
   .toast-enter { opacity: 0; transform: translateY(-10px); }
   .toast-enter-active { opacity: 1; transform: translateY(0); transition: all 0.3s ease; }
   .toast-exit { opacity: 1; transform: translateY(0); }
@@ -195,7 +199,9 @@
                         x-text="entity.status || 'ACTIVE'"></span>
                 </td>
                 <td class="px-3 py-1.5 text-center">
-                  <button @click="editEntity(entity)" class="text-blue-700 hover:text-blue-900 font-bold uppercase text-[9px]">Edit</button>
+                  <button @click="editEntity(entity)" class="btn-action btn-edit" title="Edit" aria-label="Edit">
+                    <span class="material-icons-round text-[14px]">edit</span>
+                  </button>
                 </td>
               </tr>
             </template>
