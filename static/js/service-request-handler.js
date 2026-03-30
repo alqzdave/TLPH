@@ -23,12 +23,30 @@ async function uploadServiceFiles(form, userId) {
 
   const res = await fetch('/api/upload-service-files', {
     method: 'POST',
-    body: formData
+    body: formData,
+    credentials: 'include'
   });
 
-  const payload = await res.json();
-  if (!res.ok || !payload.success) {
-    throw new Error(payload.message || 'Failed to upload service files');
+  const raw = await res.text();
+  let payload = null;
+  try {
+    payload = raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    payload = null;
+  }
+
+  if (!res.ok) {
+    if (payload && payload.message) {
+      throw new Error(payload.message);
+    }
+    if (/<!doctype html|<html/i.test(raw || '')) {
+      throw new Error('Session expired or unauthorized in hosted environment. Please login again and retry.');
+    }
+    throw new Error(`Failed to upload service files (HTTP ${res.status}).`);
+  }
+
+  if (!payload || !payload.success) {
+    throw new Error((payload && payload.message) || 'Failed to upload service files');
   }
 
   return payload.filePaths || {};
