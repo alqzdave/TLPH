@@ -3534,6 +3534,11 @@ def _extract_user_name(user_data):
     return str(user_data.get('username') or user_data.get('displayName') or '').strip()
 
 
+def _looks_like_email(value):
+    text = str(value or '').strip()
+    return '@' in text and '.' in text
+
+
 def _resolve_user_profile(identity_key='', email_hint=''):
     """Resolve user profile from users collection by document id first, then by email."""
     db = firestore.client()
@@ -3610,15 +3615,20 @@ def api_get_inquiry_conversations():
             try:
                 convo_key = str(convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
                 convo_email = str(convo.get('email') or convo.get('user_email') or '').strip().lower()
-                if convo.get('user_photo') and convo.get('user_name'):
+                convo_name = str(convo.get('user_name') or '').strip()
+                needs_name = not convo_name or _looks_like_email(convo_name)
+                needs_photo = not convo.get('user_photo')
+                needs_email = not convo.get('email')
+
+                if not needs_name and not needs_photo and not needs_email:
                     continue
 
                 profile = _resolve_user_profile(convo_key, convo_email)
-                if not convo.get('user_photo') and profile.get('photo'):
+                if needs_photo and profile.get('photo'):
                     convo['user_photo'] = profile.get('photo')
-                if not convo.get('user_name') and profile.get('name'):
+                if needs_name and profile.get('name'):
                     convo['user_name'] = profile.get('name')
-                if not convo.get('email') and profile.get('email'):
+                if needs_email and profile.get('email'):
                     convo['email'] = profile.get('email')
             except Exception:
                 # Never fail the entire list due to one malformed user profile.
@@ -3677,7 +3687,8 @@ def api_get_inquiry_messages(user_id):
 
             if not msg.get('user_photo') and profile.get('photo'):
                 msg['user_photo'] = profile.get('photo')
-            if not msg.get('user_name') and profile.get('name'):
+            current_name = str(msg.get('user_name') or '').strip()
+            if (not current_name or _looks_like_email(current_name)) and profile.get('name'):
                 msg['user_name'] = profile.get('name')
 
         safe_msgs = _json_safe(msgs)
@@ -3738,12 +3749,13 @@ def api_send_inquiry_message():
         message = request.form.get('message', '')
         user_photo = request.form.get('user_photo', '')
 
-        # Backfill sender profile for user-side messages when frontend has no photo yet.
-        if not user_photo:
+        # Backfill sender profile when photo/name is missing or name is still email-like.
+        needs_name = not user_name or _looks_like_email(user_name)
+        if not user_photo or needs_name:
             resolved = _resolve_user_profile(user_id, user_email)
-            if resolved.get('photo'):
+            if not user_photo and resolved.get('photo'):
                 user_photo = resolved.get('photo')
-            if not user_name and resolved.get('name'):
+            if needs_name and resolved.get('name'):
                 user_name = resolved.get('name')
 
         file_url = ''
