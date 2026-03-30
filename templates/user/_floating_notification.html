@@ -160,7 +160,7 @@
 
 /* Link Previews */
 .inquiry-link-preview {
-    display: flex; flex-direction: column; width: 100%; max-width: 200px;
+    display: flex; width: 100%; max-width: 260px;
     margin-top: 6px; border-radius: 10px; overflow: hidden;
     background: #f8fafc; border: 1px solid #cbd5e1; text-decoration: none; 
     color: inherit; transition: all 0.2s;
@@ -168,10 +168,12 @@
 }
 .inquiry-link-preview:hover { border-color: #94a3b8; }
 .inquiry-msg.me .inquiry-link-preview { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #fff; }
-.inquiry-link-preview img { width: 100%; height: 100px; object-fit: cover; }
-.inquiry-link-preview-content { padding: 8px; }
+.inquiry-link-preview-thumb { width: 36px; height: 36px; border-radius: 8px; margin: 8px 0 8px 8px; flex-shrink: 0; }
+.inquiry-link-preview-content { padding: 8px; min-width: 0; }
 .inquiry-link-preview-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.inquiry-link-preview-domain { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; opacity: 0.7; }
+.inquiry-link-preview-desc { font-size: 0.75rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inquiry-msg.me .inquiry-link-preview-desc { color: #dbeafe; }
+.inquiry-link-preview-domain { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; opacity: 0.7; margin-top: 2px; }
 
 /* Lightbox */
 #inquiryLightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
@@ -577,26 +579,46 @@
 
             function formatInquiryText(text) {
                 if (!text) return '';
+                function esc(v) {
+                    return String(v || '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 let previewHtml = '';
                 
                 const match = text.match(urlRegex);
                 if (match && match.length > 0) {
                     const url = match[0];
-                    let domain = '';
-                    try { domain = new URL(url).hostname; } catch(e) { domain = 'website.com'; }
+                    let domain = 'website.com';
+                    let pathText = url;
+                    let favicon = '';
+                    try {
+                        const parsed = new URL(url);
+                        domain = (parsed.hostname || 'website.com').replace(/^www\./i, '');
+                        pathText = (parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '') + (parsed.search || '');
+                        if (!pathText) pathText = parsed.origin;
+                        favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+                    } catch(e) {
+                        favicon = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                    }
                     previewHtml = `
-                        <a href="${url}" target="_blank" class="inquiry-link-preview">
-                            <img src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=400&h=200" alt="Preview">
+                        <a href="${esc(url)}" target="_blank" rel="noopener" class="inquiry-link-preview">
+                            <img src="${favicon}" alt="icon" class="inquiry-link-preview-thumb">
                             <div class="inquiry-link-preview-content">
-                                <div class="inquiry-link-preview-title">${domain} Link</div>
-                                <div class="inquiry-link-preview-domain">${domain}</div>
+                                <div class="inquiry-link-preview-title">${esc(domain)}</div>
+                                <div class="inquiry-link-preview-desc">${esc(pathText)}</div>
+                                <div class="inquiry-link-preview-domain">Open Link</div>
                             </div>
                         </a>
                     `;
                 }
                 const formattedText = text.replace(urlRegex, function(url) {
-                    return `<a href="${url}" target="_blank" style="text-decoration:underline;">${url}</a>`;
+                    const safe = esc(url);
+                    return `<a href="${safe}" target="_blank" rel="noopener" style="text-decoration:underline;">${safe}</a>`;
                 });
                 return formattedText + previewHtml;
             }
