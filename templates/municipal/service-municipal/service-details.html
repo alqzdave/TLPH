@@ -571,23 +571,16 @@
                 } else if (svcType.includes('farm visit') || svcType.includes('initial farm') || svcType.includes('compliance inspection') || svcType.includes('disease/pest investigation') || svcType.includes('soil/crop evaluation') || svcType.includes('follow up visit')) {
                     specificSection.style.display = '';
                     specificGrid.innerHTML = `
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <p class="info-label">Farm Size (ha)</p>
                             <p class="info-value">${serviceData.farmSize ? serviceData.farmSize + ' ha' : 'N/A'}</p>
                             <p class="info-label">Production Type</p>
                             <p class="info-value">${serviceData.productionType || 'N/A'}</p>
                             <p class="info-label">Farmer ID</p>
                             <p class="info-value">${serviceData.farmerIdNumber || 'N/A'}</p>
+                            ${serviceData.referenceNumber ? `<p class="info-label">Reference Number</p><p class="info-value">${serviceData.referenceNumber}</p>` : ''}
                             <p class="info-label" style="margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 15px;">Farm Address / Pin Location</p>
                             <p class="info-value">${serviceData.farmAddress || 'N/A'} ${serviceData.googlePinLocation ? `<a href="${serviceData.googlePinLocation}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-bold" style="font-size:11px;">🗺️ View Map</a>` : ''}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="info-label">Province</p>
-                            <p class="info-value">${serviceData.province || 'N/A'}</p>
-                            <p class="info-label">Municipality</p>
-                            <p class="info-value">${serviceData.municipality || 'N/A'}</p>
-                            <p class="info-label">Barangay</p>
-                            <p class="info-value">${serviceData.barangay || 'N/A'}</p>
                         </div>
                     `;
                 } else if (svcType.includes('emergency pest')) {
@@ -756,22 +749,62 @@
                 };
 
                 const normalizeFileEntries = (value) => {
-                    const raw = Array.isArray(value) ? value : (value ? [value] : []);
-                    return raw
-                        .map((item, idx) => {
-                            if (typeof item === 'string') {
-                                const url = item.trim();
-                                if (!url) return null;
-                                const name = decodeURIComponent(url.split('/').pop()?.split('?')[0] || `File ${idx + 1}`);
-                                return { url, name };
+                    const flattened = [];
+
+                    const pushAny = (item) => {
+                        if (item == null) return;
+
+                        if (Array.isArray(item)) {
+                            item.forEach(pushAny);
+                            return;
+                        }
+
+                        if (typeof item === 'string') {
+                            const trimmed = item.trim();
+                            if (!trimmed) return;
+
+                            // Handle JSON-encoded arrays/objects from older records
+                            if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+                                try {
+                                    pushAny(JSON.parse(trimmed));
+                                    return;
+                                } catch (_) {
+                                    // Fall through as plain string URL
+                                }
                             }
-                            if (item && typeof item === 'object') {
-                                const url = String(item.url || item.webUrl || item.path || '').trim();
-                                if (!url) return null;
-                                const name = String(item.name || item.fileName || decodeURIComponent(url.split('/').pop()?.split('?')[0] || `File ${idx + 1}`));
-                                return { url, name };
+
+                            flattened.push({ url: trimmed, name: '' });
+                            return;
+                        }
+
+                        if (typeof item === 'object') {
+                            const directUrl = String(item.url || item.webUrl || item.path || item.secure_url || item.downloadURL || '').trim();
+                            if (directUrl) {
+                                flattened.push({
+                                    url: directUrl,
+                                    name: String(item.name || item.fileName || item.original_filename || '')
+                                });
+                                return;
                             }
-                            return null;
+
+                            // Handle map-like objects: {0:url1,1:url2} or nested lists
+                            Object.values(item).forEach(pushAny);
+                        }
+                    };
+
+                    pushAny(value);
+
+                    const seen = new Set();
+                    return flattened
+                        .map((entry, idx) => {
+                            const url = String(entry.url || '').trim();
+                            if (!url) return null;
+                            if (seen.has(url)) return null;
+                            seen.add(url);
+
+                            const autoName = decodeURIComponent(url.split('/').pop()?.split('?')[0] || `File ${idx + 1}`);
+                            const name = String(entry.name || autoName);
+                            return { url, name };
                         })
                         .filter(Boolean);
                 };
