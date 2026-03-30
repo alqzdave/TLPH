@@ -1023,22 +1023,30 @@
                     : `<span class='messenger-msg-avatar'>${(sender || '?')[0]}</span>`;
 
                 const senderRole = String(m.sender_role || '').toLowerCase();
-                const isMe = Boolean(m.is_admin) || ['superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'].includes(senderRole);
+                const senderEmail = String(m.sender_email || '').toLowerCase();
+                const convoEmail = String(selectedConvoUserId || '').toLowerCase();
+                const senderName = String(sender || '').toLowerCase();
+                const adminRoles = ['superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'];
+                const isMe = Boolean(m.is_admin)
+                    || adminRoles.includes(senderRole)
+                    || (senderEmail && convoEmail && senderEmail !== convoEmail)
+                    || senderName.includes('superadmin')
+                    || senderName.includes('super-admin');
+
                 let msgContent = formatMessageText(m.message || '');
                 if (m.file_url) {
                     msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openLightbox('${m.file_url}')">`;
                 }
                 const extraClass = m.file_url && !(m.message || '').trim() ? ' image-only' : '';
                 const time = m.timestamp ? formatDateTime(m.timestamp) : '';
-
-                return `<div class="messenger-msg${isMe ? ' me' : ''}${extraClass}">${senderPhoto}<span style='font-weight:600;'>${sender}</span><br>${msgContent}<span class="msg-time">${time}</span></div>`;
-            }).join('');
                 const senderHtml = isMe ? '' : `<div class="msg-sender">${sender || 'User'}</div>`;
 
                 return `<div class="messenger-msg-row${isMe ? ' me' : ''}">`
                     + (isMe ? '' : senderAvatar)
                     + `<div class="messenger-msg${isMe ? ' me' : ''}${extraClass}">${senderHtml}${msgContent}<span class="msg-time">${time}</span></div>`
                     + `</div>`;
+            }).join('');
+
             setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
         }
 
