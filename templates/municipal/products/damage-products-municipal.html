@@ -349,6 +349,37 @@
     </div>
   </div>
 
+  <!-- Delete Confirmation Modal -->
+  <div id="damageDeleteModal" class="fixed inset-0 z-50 bg-slate-900/50 items-center justify-center px-4 hidden">
+    <div class="bg-white rounded-[2px] shadow-lg w-full max-w-sm border border-slate-300">
+      <div class="flex items-center justify-between px-3 py-2 border-b border-rose-800 bg-rose-700 text-white">
+        <div class="flex items-center gap-2">
+          <span class="material-icons-round text-[16px] text-rose-100">delete</span>
+          <div class="leading-tight">
+            <h2 class="text-[11px] font-black uppercase tracking-tight m-0">Confirm Delete</h2>
+            <p class="text-[9px] font-bold text-rose-100 uppercase tracking-widest m-0">This action cannot be undone</p>
+          </div>
+        </div>
+        <button id="damageDeleteCloseBtn" type="button" class="btn-action border-rose-200 bg-rose-600 text-rose-50 hover:bg-rose-500" title="Close">
+          <span class="material-icons-round text-[16px]">close</span>
+        </button>
+      </div>
+
+      <div class="px-3 py-3 text-[10px] text-slate-700 space-y-2">
+        <p class="font-bold text-slate-800">Delete this damage record?</p>
+        <div class="bg-slate-50 border border-slate-200 rounded-[2px] p-2 text-[9px] uppercase">
+          <div class="text-slate-500 font-black">Asset / Product</div>
+          <div id="deleteDamageProduct" class="text-slate-900 font-black"></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
+        <button id="damageDeleteCancelBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Cancel</button>
+        <button id="damageDeleteConfirmBtn" type="button" class="gov-btn bg-rose-700 hover:bg-rose-800 text-white">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const searchDist = document.getElementById('searchDamage');
     const incidentFilter = document.getElementById('incidentFilter');
@@ -403,6 +434,12 @@
     const viewDamageQuantity = document.getElementById('viewDamageQuantity');
     const viewDamageMunicipality = document.getElementById('viewDamageMunicipality');
     const viewDamageDate = document.getElementById('viewDamageDate');
+    const damageDeleteModal = document.getElementById('damageDeleteModal');
+    const damageDeleteCloseBtn = document.getElementById('damageDeleteCloseBtn');
+    const damageDeleteCancelBtn = document.getElementById('damageDeleteCancelBtn');
+    const damageDeleteConfirmBtn = document.getElementById('damageDeleteConfirmBtn');
+    const deleteDamageProduct = document.getElementById('deleteDamageProduct');
+    let pendingDeleteRow = null;
 
     function csvEscape(value) {
       const str = (value ?? '').toString().replace(/\r?\n|\r/g, ' ');
@@ -484,6 +521,31 @@
       if (!damageViewModal) return;
       damageViewModal.classList.add('hidden');
       damageViewModal.classList.remove('flex');
+    }
+
+    function openDamageDeleteModal(row) {
+      if (!damageDeleteModal || !row) return;
+      pendingDeleteRow = row;
+      const cells = row.querySelectorAll('td');
+      const productText = cells[0] ? cells[0].innerText.trim() : 'Selected record';
+      if (deleteDamageProduct) deleteDamageProduct.innerText = productText;
+      damageDeleteModal.classList.remove('hidden');
+      damageDeleteModal.classList.add('flex');
+    }
+
+    function closeDamageDeleteModal() {
+      if (!damageDeleteModal) return;
+      pendingDeleteRow = null;
+      damageDeleteModal.classList.add('hidden');
+      damageDeleteModal.classList.remove('flex');
+    }
+
+    function confirmDamageDelete() {
+      if (!pendingDeleteRow) return;
+      pendingDeleteRow.remove();
+      pendingDeleteRow = null;
+      closeDamageDeleteModal();
+      applyFilter();
     }
 
     function handleDamageSubmit(event) {
@@ -572,8 +634,7 @@
         if (deleteBtn) {
           const row = deleteBtn.closest('tr');
           if (!row) return;
-          row.remove();
-          applyFilter();
+          openDamageDeleteModal(row);
         }
       });
     }
@@ -585,6 +646,18 @@
       damageViewModal.addEventListener('click', (event) => {
         if (event.target === damageViewModal) {
           closeDamageViewModal();
+        }
+      });
+    }
+
+    if (damageDeleteModal && damageDeleteCloseBtn && damageDeleteCancelBtn && damageDeleteConfirmBtn) {
+      damageDeleteCloseBtn.addEventListener('click', closeDamageDeleteModal);
+      damageDeleteCancelBtn.addEventListener('click', closeDamageDeleteModal);
+      damageDeleteConfirmBtn.addEventListener('click', confirmDamageDelete);
+
+      damageDeleteModal.addEventListener('click', (event) => {
+        if (event.target === damageDeleteModal) {
+          closeDamageDeleteModal();
         }
       });
     }
