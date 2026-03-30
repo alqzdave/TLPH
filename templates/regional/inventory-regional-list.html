@@ -504,7 +504,11 @@
             modalEls.modalDocuments.innerHTML = docs.map(d => `
                 <div class="rounded-[3px] border border-slate-200 bg-slate-50 p-2 flex items-center justify-between gap-2">
                     <p class="text-[9px] font-bold uppercase tracking-widest text-slate-700 m-0">${d.label}</p>
-                    <a href="${toProxyUrl(d.url) || d.url}" target="_blank" rel="noopener noreferrer" class="rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100 no-underline">View</a>
+                    ${(() => {
+                        const encodedUrl = encodeURIComponent(d.url || '');
+                        const encodedLabel = encodeURIComponent(d.label || 'Attachment Preview');
+                        return `<button type="button" onclick="openRegionalAttachmentFromEncoded('${encodedUrl}','${encodedLabel}')" class="rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100">View</button>`;
+                    })()}
                 </div>
             `).join('');
         }
