@@ -1,6 +1,53 @@
 <!-- Floating Notification Icon (visible on all user pages) -->
 
 <style>
+/* Floating Notification Modal Tabs */
+.notif-modal-tabs {
+    display: flex;
+    border-bottom: 1.5px solid #2563eb22;
+    background: #2563eb;
+    color: #fff;
+    height: 38px;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+}
+.notif-modal-tab-btn {
+    flex: 1 1 0%;
+    padding: 0 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: color 0.18s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.notif-modal-tab-btn.active {
+    color: #2563eb;
+}
+.notif-modal-tab-btn .tab-bg {
+    display: none;
+}
+.notif-modal-tab-btn.active .tab-bg {
+    display: block;
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, #fff 60%, #e0eaff 100%);
+    border-radius: 0 0 12px 12px;
+    z-index: -1;
+    animation: tab-bg-fade-in 0.32s cubic-bezier(.68,-0.55,.27,1.55);
+}
+@keyframes tab-bg-fade-in {
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 .floating-notification-btn {
     position: fixed;
     bottom: 24px;
@@ -91,8 +138,8 @@
         <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-80 max-w-[90vw] p-0 border border-blue-200 animate-fade-in overflow-hidden" style="box-shadow:0 8px 32px 0 rgba(16, 185, 129, 0.18),0 1.5px 8px 0 rgba(34,211,238,0.10);">
             <!-- Tabs -->
             <div class="flex border-b border-blue-200 bg-blue-600 text-white">
-                <button id="notifTabBtn" onclick="showNotifTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn active" style="background:transparent;border:none;outline:none;cursor:pointer;">Messages</button>
-                <button id="msgTabBtn" onclick="showMsgTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn" style="background:transparent;border:none;outline:none;cursor:pointer;">Messaging</button>
+                <button id="notifTabBtn" onclick="showNotifTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn active" style="background:transparent;border:none;outline:none;cursor:pointer;">Notification</button>
+                <button id="msgTabBtn" onclick="showMsgTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn" style="background:transparent;border:none;outline:none;cursor:pointer;">Inquiry</button>
                 <button onclick="closeNotificationModal()" class="ml-auto text-white/80 hover:text-white text-lg font-bold focus:outline-none px-3" title="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <!-- Tab Content -->
