@@ -318,6 +318,27 @@
         </div>
     </div>
 
+    <div id="attachmentPreviewModal" class="fixed inset-0 z-[140] hidden bg-slate-900/70 backdrop-blur-sm p-4">
+        <div class="h-full w-full flex items-center justify-center">
+            <div class="w-full max-w-5xl rounded-[4px] border border-slate-300 bg-white shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+                    <h3 id="attachmentPreviewTitle" class="text-[11px] font-black uppercase tracking-widest text-slate-700 m-0">Attachment Preview</h3>
+                    <button id="attachmentPreviewCloseBtn" class="inline-flex items-center justify-center rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100">Close</button>
+                </div>
+                <div class="p-3 bg-slate-100 max-h-[78vh] overflow-auto flex items-center justify-center">
+                    <img id="attachmentPreviewImage" src="" alt="Attachment Preview" class="hidden max-w-full max-h-[70vh] object-contain rounded" />
+                    <iframe id="attachmentPreviewFrame" src="" class="hidden w-full h-[70vh] bg-white rounded border border-slate-200"></iframe>
+                    <div id="attachmentPreviewFallback" class="hidden text-center">
+                        <p class="text-xs text-slate-600 font-semibold mb-3">Preview not available for this file type.</p>
+                        <a id="attachmentPreviewOpenLink" href="#" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded text-[10px] font-black uppercase no-underline">
+                            <span class="material-icons-round text-[12px]">download</span> Open / Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { auth, db } from '/static/js/firebase-config.js';
         import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -356,7 +377,14 @@
             modalActionNote: document.getElementById('modalActionNote'),
             btnApproveStock: document.getElementById('btnApproveStock'),
             btnForwardStock: document.getElementById('btnForwardStock'),
-            btnRejectStock: document.getElementById('btnRejectStock')
+            btnRejectStock: document.getElementById('btnRejectStock'),
+            attachmentPreviewModal: document.getElementById('attachmentPreviewModal'),
+            attachmentPreviewTitle: document.getElementById('attachmentPreviewTitle'),
+            attachmentPreviewCloseBtn: document.getElementById('attachmentPreviewCloseBtn'),
+            attachmentPreviewImage: document.getElementById('attachmentPreviewImage'),
+            attachmentPreviewFrame: document.getElementById('attachmentPreviewFrame'),
+            attachmentPreviewFallback: document.getElementById('attachmentPreviewFallback'),
+            attachmentPreviewOpenLink: document.getElementById('attachmentPreviewOpenLink')
         };
 
         function toProxyUrl(rawUrl) {
@@ -367,6 +395,59 @@
             if (!trimmed.startsWith('http')) return trimmed;
             return `/api/files/proxy?url=${encodeURIComponent(trimmed)}`;
         }
+
+        function isImageFile(url) {
+            return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url || '');
+        }
+
+        function isPreviewableDoc(url) {
+            return /\.(pdf|doc|docx|txt)(\?.*)?$/i.test(url || '');
+        }
+
+        function showAttachmentPreview(rawUrl, label) {
+            const previewUrl = toProxyUrl(rawUrl) || rawUrl;
+            if (!previewUrl) return;
+
+            modalEls.attachmentPreviewTitle.textContent = label || 'Attachment Preview';
+            modalEls.attachmentPreviewImage.classList.add('hidden');
+            modalEls.attachmentPreviewFrame.classList.add('hidden');
+            modalEls.attachmentPreviewFallback.classList.add('hidden');
+            modalEls.attachmentPreviewImage.src = '';
+            modalEls.attachmentPreviewFrame.src = '';
+            modalEls.attachmentPreviewOpenLink.href = previewUrl;
+
+            if (isImageFile(rawUrl)) {
+                modalEls.attachmentPreviewImage.src = previewUrl;
+                modalEls.attachmentPreviewImage.onerror = function() {
+                    modalEls.attachmentPreviewImage.classList.add('hidden');
+                    modalEls.attachmentPreviewFallback.classList.remove('hidden');
+                };
+                modalEls.attachmentPreviewImage.classList.remove('hidden');
+            } else if (isPreviewableDoc(rawUrl)) {
+                modalEls.attachmentPreviewFrame.src = previewUrl;
+                modalEls.attachmentPreviewFrame.classList.remove('hidden');
+            } else {
+                modalEls.attachmentPreviewFallback.classList.remove('hidden');
+            }
+
+            modalEls.attachmentPreviewModal.classList.remove('hidden');
+        }
+
+        function closeAttachmentPreview() {
+            modalEls.attachmentPreviewImage.src = '';
+            modalEls.attachmentPreviewFrame.src = '';
+            modalEls.attachmentPreviewModal.classList.add('hidden');
+        }
+
+        window.openRegionalAttachmentFromEncoded = function(encodedUrl, encodedLabel = '') {
+            try {
+                const url = decodeURIComponent(encodedUrl || '');
+                const label = decodeURIComponent(encodedLabel || 'Attachment Preview');
+                showAttachmentPreview(url, label);
+            } catch (err) {
+                console.error('Failed to open regional attachment preview:', err);
+            }
+        };
 
         function extractAttachmentLinks(item) {
             const docs = [];
@@ -802,9 +883,19 @@
         modalEls.inventoryDetailsModal.addEventListener('click', (event) => {
             if (event.target === modalEls.inventoryDetailsModal) closeInventoryModal();
         });
+        modalEls.attachmentPreviewCloseBtn.addEventListener('click', closeAttachmentPreview);
+        modalEls.attachmentPreviewModal.addEventListener('click', (event) => {
+            if (event.target === modalEls.attachmentPreviewModal) closeAttachmentPreview();
+        });
         modalEls.btnApproveStock.addEventListener('click', () => updateInventoryStatus('approved'));
         modalEls.btnForwardStock.addEventListener('click', () => updateInventoryStatus('forwarded-to-national'));
         modalEls.btnRejectStock.addEventListener('click', () => updateInventoryStatus('rejected'));
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modalEls.attachmentPreviewModal.classList.contains('hidden')) {
+                closeAttachmentPreview();
+            }
+        });
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
