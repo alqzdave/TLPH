@@ -330,9 +330,9 @@
                     <iframe id="attachmentPreviewFrame" src="" class="hidden w-full h-[70vh] bg-white rounded border border-slate-200"></iframe>
                     <div id="attachmentPreviewFallback" class="hidden text-center">
                         <p class="text-xs text-slate-600 font-semibold mb-3">Preview not available for this file type.</p>
-                        <a id="attachmentPreviewOpenLink" href="#" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded text-[10px] font-black uppercase no-underline">
+                        <button type="button" id="attachmentPreviewDownloadBtn" class="inline-flex items-center gap-2 bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded text-[10px] font-black uppercase">
                             <span class="material-icons-round text-[12px]">download</span> Open / Download
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -384,7 +384,7 @@
             attachmentPreviewImage: document.getElementById('attachmentPreviewImage'),
             attachmentPreviewFrame: document.getElementById('attachmentPreviewFrame'),
             attachmentPreviewFallback: document.getElementById('attachmentPreviewFallback'),
-            attachmentPreviewOpenLink: document.getElementById('attachmentPreviewOpenLink')
+            attachmentPreviewDownloadBtn: document.getElementById('attachmentPreviewDownloadBtn')
         };
 
         function toProxyUrl(rawUrl) {
@@ -400,8 +400,28 @@
             return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url || '');
         }
 
-        function isPreviewableDoc(url) {
-            return /\.(pdf|doc|docx|txt)(\?.*)?$/i.test(url || '');
+        let activeAttachmentDownloadUrl = '';
+
+        async function downloadAttachmentInBackground(rawUrl, label) {
+            const sourceUrl = toProxyUrl(rawUrl) || rawUrl;
+            if (!sourceUrl) return;
+            try {
+                const response = await fetch(sourceUrl, { credentials: 'same-origin' });
+                if (!response.ok) throw new Error('Failed to download file');
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const safeLabel = String(label || 'attachment').replace(/[^a-z0-9._-]/gi, '_');
+                a.href = objectUrl;
+                a.download = safeLabel || 'attachment';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+            } catch (err) {
+                console.error('Attachment download failed:', err);
+                alert('Unable to download this file right now.');
+            }
         }
 
         function showAttachmentPreview(rawUrl, label) {
@@ -414,7 +434,7 @@
             modalEls.attachmentPreviewFallback.classList.add('hidden');
             modalEls.attachmentPreviewImage.src = '';
             modalEls.attachmentPreviewFrame.src = '';
-            modalEls.attachmentPreviewOpenLink.href = previewUrl;
+            activeAttachmentDownloadUrl = rawUrl || '';
 
             if (isImageFile(rawUrl)) {
                 modalEls.attachmentPreviewImage.src = previewUrl;
@@ -423,11 +443,9 @@
                     modalEls.attachmentPreviewFallback.classList.remove('hidden');
                 };
                 modalEls.attachmentPreviewImage.classList.remove('hidden');
-            } else if (isPreviewableDoc(rawUrl)) {
+            } else {
                 modalEls.attachmentPreviewFrame.src = previewUrl;
                 modalEls.attachmentPreviewFrame.classList.remove('hidden');
-            } else {
-                modalEls.attachmentPreviewFallback.classList.remove('hidden');
             }
 
             modalEls.attachmentPreviewModal.classList.remove('hidden');
@@ -436,6 +454,7 @@
         function closeAttachmentPreview() {
             modalEls.attachmentPreviewImage.src = '';
             modalEls.attachmentPreviewFrame.src = '';
+            activeAttachmentDownloadUrl = '';
             modalEls.attachmentPreviewModal.classList.add('hidden');
         }
 
@@ -886,6 +905,11 @@
         modalEls.btnCloseModal.addEventListener('click', closeInventoryModal);
         modalEls.inventoryDetailsModal.addEventListener('click', (event) => {
             if (event.target === modalEls.inventoryDetailsModal) closeInventoryModal();
+        });
+        modalEls.attachmentPreviewDownloadBtn.addEventListener('click', () => {
+            if (activeAttachmentDownloadUrl) {
+                downloadAttachmentInBackground(activeAttachmentDownloadUrl, modalEls.attachmentPreviewTitle.textContent || 'attachment');
+            }
         });
         modalEls.attachmentPreviewCloseBtn.addEventListener('click', closeAttachmentPreview);
         modalEls.attachmentPreviewModal.addEventListener('click', (event) => {
