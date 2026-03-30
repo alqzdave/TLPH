@@ -600,11 +600,22 @@
               return 'file';
             };
 
+            const toNationalProxyUrl = (rawUrl) => {
+              const value = String(rawUrl || '').trim();
+              if (!value) return '';
+              if (/^\/api\/files\/proxy\?/i.test(value)) return value;
+              if (/^(\/static\/|static\/)/i.test(value)) return value.startsWith('static/') ? `/${value}` : value;
+              if (/^https?:\/\//i.test(value)) return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+              if (value.startsWith('/')) return `/api/files/proxy?url=${encodeURIComponent(window.location.origin + value)}`;
+              return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+            };
+
             const addGroupedDocument = (groupKey, label, icon, url) => {
               if (!url || typeof url !== 'string' || !url.trim()) return;
-              const normalizedUrl = url.trim();
-              if (globalSeenUrls.has(normalizedUrl)) return;
-              globalSeenUrls.add(normalizedUrl);
+              const sourceUrl = url.trim();
+              const previewUrl = toNationalProxyUrl(sourceUrl) || sourceUrl;
+              if (globalSeenUrls.has(sourceUrl)) return;
+              globalSeenUrls.add(sourceUrl);
 
               const normalizedKey = normalizeGroupKey(groupKey, label);
               const normalizedName = labelMap[normalizedKey] || label || 'Document';
@@ -620,12 +631,13 @@
               }
 
               groupedDocsMap.get(normalizedKey).files.push({
-                url: normalizedUrl,
-                type: detectFileType(normalizedUrl),
+                url: previewUrl,
+                sourceUrl,
+                type: detectFileType(sourceUrl),
                 name: normalizedName
               });
 
-              docs.push({ name: normalizedName, icon: normalizedIcon, url: normalizedUrl });
+              docs.push({ name: normalizedName, icon: normalizedIcon, url: previewUrl, sourceUrl });
             };
 
             if (appData.files && typeof appData.files === 'object') {
