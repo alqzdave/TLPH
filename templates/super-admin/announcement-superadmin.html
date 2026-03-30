@@ -65,14 +65,13 @@
             --text-muted: #475569; 
         }
 
-                .messenger-mock {
-                    display: flex;
-                    height: 100%;
-                    background: rgba(255,255,255,0.85);
-                    border-radius: 18px;
-                    box-shadow: 0 8px 32px 0 rgba(16, 42, 67, 0.10), 0 1.5px 8px 0 rgba(34,211,238,0.10);
-                    overflow: hidden;
-                    backdrop-filter: blur(8px) saturate(180%);
+        /* MODAL Z-INDEX */
+        .modal { z-index: 1080 !important; }
+        .modal-backdrop { z-index: 1070 !important; }
+
+        /* 100VH NO SCROLL SETUP */
+        html, body {
+            height: 100vh;
             overflow: hidden; 
             margin: 0;
             display: flex;
@@ -82,13 +81,12 @@
             color: var(--text-main);
             font-size: 0.8125rem;
         }
-                .messenger-convos {
-                    width: 290px;
-                    background: rgba(255,255,255,0.95);
-                    border-right: 1.5px solid #e2e8f0;
-                    display: flex;
-                    flex-direction: column;
-                    position: relative;
+
+        /* HEADER */
+        .admin-header {
+            background-color: var(--gov-primary);
+            color: white;
+            padding: 0.6rem 0; 
             border-bottom: 3px solid #f59e0b; 
             flex-shrink: 0; 
         }
@@ -100,48 +98,29 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-                .messenger-convo-item {
-                    padding: 0.8rem 1rem;
-                    border-bottom: 1px solid #f1f5f9;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.7rem;
-                    transition: background 0.13s, box-shadow 0.18s;
-                    border-radius: 12px;
-                    margin: 0.2rem 0.5rem;
+            overflow: hidden;
+            padding: 0.75rem 1rem;
+        }
+        .panel {
+            background: var(--gov-surface);
+            border: 1px solid var(--gov-border);
+            border-radius: 4px;
+            display: flex;
             flex-direction: column;
-                .messenger-convo-item.active, .messenger-convo-item:hover {
-                    background: linear-gradient(90deg, #e0e7ef 60%, #f1f5f9 100%);
-                    box-shadow: 0 2px 8px 0 rgba(34,211,238,0.08);
+        }
+
+        /* TOP INSIGHT CARDS */
         .insight-card {
             background: var(--gov-surface);
             border: 1px solid var(--gov-border);
             border-radius: 4px;
             padding: 0.6rem 0.8rem;
-                .messenger-convo-avatar {
-                    width: 44px; height: 44px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #2563eb; font-weight: 700; overflow: hidden;
-                }
-                .messenger-convo-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+            display: flex;
+            flex-direction: row;
             align-items: center;
             height: 100%;
         }
         .insight-icon { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; margin-right: 0.75rem; }
-                .messenger-convos .messenger-new-btn {
-                    position: absolute;
-                    bottom: 18px; right: 18px;
-                    background: #2563eb;
-                    color: #fff;
-                    border: none;
-                    border-radius: 50%;
-                    width: 44px; height: 44px;
-                    font-size: 1.5rem;
-                    box-shadow: 0 2px 8px 0 rgba(34,211,238,0.13);
-                    display: flex; align-items: center; justify-content: center;
-                    cursor: pointer;
-                    transition: background 0.18s;
-                }
-                .messenger-convos .messenger-new-btn:hover { background: #1d4ed8; }
         .insight-value { font-size: 1.25rem; font-weight: 700; line-height: 1; color: var(--text-main); margin-bottom: 0.1rem;}
         .insight-label { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;}
 
@@ -209,33 +188,6 @@
 
         .btn-clear { border-color: var(--gov-border); color: #94a3b8; background: white; padding: 0.2rem 0.5rem;}
         .btn-clear:hover { color: #ef4444; background: #f8fafc; }
-
-        /* IMAGE PREVIEW STYLE */
-        #imagePreviewContainer {
-            width: 100%;
-            max-height: 150px;
-            border: 1px dashed var(--gov-border);
-            border-radius: 4px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: #f8fafc;
-            margin-top: 5px;
-        }
-        #imagePreviewContainer img {
-            max-width: 100%;
-            max-height: 140px;
-            object-fit: contain;
-        }
-        .view-image {
-            width: 100%;
-            max-height: 250px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            border: 1px solid var(--gov-border);
-        }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col bg-slate-50 relative">
@@ -255,6 +207,7 @@
             <button id="tabAnnouncements" class="tab-btn-ann active" onclick="showTab('announcements')">Announcements</button>
             <button id="tabInquiries" class="tab-btn-ann" onclick="showTab('inquiries')">Inquiries</button>
         </div>
+        
         <style>
         .tab-btn-ann {
             background: #2563eb;
@@ -274,102 +227,282 @@
             border-bottom: 2.5px solid #2563eb;
             z-index: 2;
         }
+
+        /* ---------------------------------
+           MODERN MESSENGER / INQUIRIES UI
+           --------------------------------- */
         .messenger-mock {
             display: flex;
             height: 100%;
-            background: #f8fafc;
-            border-radius: 14px;
-            box-shadow: 0 1.5px 6px 0 rgba(16, 42, 67, 0.06);
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.02);
             overflow: hidden;
+            border: 1px solid #e2e8f0;
         }
+        
+        /* Sidebar List */
         .messenger-convos {
-            width: 270px;
-            background: #fff;
-            border-right: 1.5px solid #e2e8f0;
+            width: 300px;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
         }
+        .messenger-convos-header {
+            padding: 1.2rem 1rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .messenger-convo-list-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
         .messenger-convo-item {
-            padding: 0.8rem 1rem;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 0.8rem;
+            border-radius: 12px;
+            margin-bottom: 0.3rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.7rem;
-            transition: background 0.13s;
+            gap: 0.8rem;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
         }
-        .messenger-convo-item.active, .messenger-convo-item:hover {
-            background: #e0e7ef;
+        .messenger-convo-item.active {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            box-shadow: 0 2px 5px rgba(37, 99, 235, 0.05);
+        }
+        .messenger-convo-item:hover:not(.active) {
+            background: #f1f5f9;
         }
         .messenger-convo-avatar {
-            width: 38px; height: 38px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #2563eb; font-weight: 700;
+            width: 44px; height: 44px; border-radius: 50%; 
+            background: linear-gradient(135deg, #60a5fa, #3b82f6); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.2rem; color: #fff; font-weight: 700;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
         }
         .messenger-convo-info { flex: 1; min-width: 0; }
-        .messenger-convo-name { font-weight: 700; font-size: 0.98rem; color: #1e293b; }
-        .messenger-convo-last { font-size: 0.82rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .messenger-convo-unread { background: #2563eb; color: #fff; font-size: 0.7rem; border-radius: 999px; padding: 2px 7px; margin-left: 6px; font-weight: 700; }
+        .messenger-convo-name { font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 0.1rem; }
+        .messenger-convo-last { font-size: 0.8rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .messenger-convo-unread { 
+            background: #ef4444; color: #fff; font-size: 0.7rem; 
+            border-radius: 999px; padding: 2px 7px; margin-left: 6px; 
+            font-weight: 700; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Chat Area */
         .messenger-chat {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #f1f5f9;
+            background: #ffffff;
+            position: relative;
         }
         .messenger-chat-header {
-            padding: 1rem;
-            border-bottom: 1.5px solid #e2e8f0;
-            background: #fff;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #ffffff;
             font-weight: 700;
-            color: #2563eb;
+            color: #0f172a;
             font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+        .messenger-chat-header .chat-status-dot {
+            width: 8px; height: 8px; background: #22c55e; border-radius: 50%;
+            box-shadow: 0 0 0 3px #dcfce7;
         }
         .messenger-chat-body {
             flex: 1;
             overflow-y: auto;
-            padding: 1.2rem 1rem 0.5rem 1rem;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 0.7rem;
+            gap: 1rem;
+            background: #f8fafc;
         }
         .messenger-msg {
             max-width: 70%;
-            padding: 0.7rem 1.1rem;
-            border-radius: 16px;
-            font-size: 0.97rem;
-            background: #fff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.4;
             color: #1e293b;
+            background: #ffffff;
             align-self: flex-start;
-            box-shadow: 0 1.5px 6px 0 rgba(16, 42, 67, 0.06);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+            border-bottom-left-radius: 4px;
+            word-wrap: break-word;
         }
         .messenger-msg.me {
-            background: #2563eb;
-            color: #fff;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
             align-self: flex-end;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 3px 8px rgba(37, 99, 235, 0.2);
         }
-        .messenger-chat-footer {
-            padding: 0.7rem 1rem;
-            border-top: 1.5px solid #e2e8f0;
-            background: #fff;
+
+        /* Message Image Specific Styling */
+        .messenger-msg.image-only {
+            padding: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        .messenger-msg img {
+            max-width: 250px;
+            border-radius: 16px;
+            display: block;
+            margin-top: 5px;
+            border: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+        .messenger-msg.image-only img {
+            margin-top: 0;
+            max-width: 280px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .messenger-msg img:hover { transform: scale(1.02); filter: brightness(0.95); }
+        .messenger-msg.me img { border-color: rgba(255,255,255,0.2); }
+
+        /* Lightbox CSS */
+        #customLightbox {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
             display: flex;
-            gap: 0.7rem;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        .messenger-chat-footer input {
-            flex: 1;
+        #customLightbox.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #customLightbox img {
+            max-width: 90%;
+            max-height: 90%;
             border-radius: 8px;
-            border: 1.5px solid #cbd5e1;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
-        .messenger-chat-footer button {
+        #customLightbox.show img {
+            transform: scale(1);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px; right: 30px;
+            color: white; font-size: 40px;
+            cursor: pointer; font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .lightbox-close:hover { transform: scale(1.1); }
+        
+        /* Links in messages */
+        .messenger-msg a.chat-link { color: #2563eb; text-decoration: underline; word-break: break-all; font-weight: 500;}
+        .messenger-msg.me a.chat-link { color: #dbeafe; }
+
+        /* File Attachment Styling */
+        .chat-file-attachment {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+            background: rgba(0,0,0,0.04); border-radius: 12px; margin-top: 5px; 
+            cursor: pointer; border: 1px solid rgba(0,0,0,0.05); transition: background 0.2s;
+            text-decoration: none; color: inherit;
+        }
+        .chat-file-attachment:hover { background: rgba(0,0,0,0.08); }
+        .messenger-msg.me .chat-file-attachment { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: #fff;}
+        .messenger-msg.me .chat-file-attachment:hover { background: rgba(255,255,255,0.25); }
+        
+        .chat-file-icon { font-size: 1.8rem; color: #ef4444; } 
+        .messenger-msg.me .chat-file-icon { color: #fff; }
+        
+        .chat-file-info { flex: 1; min-width: 0; }
+        .chat-file-name { font-size: 0.9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        .chat-file-size { font-size: 0.75rem; opacity: 0.7; }
+        .chat-file-download { font-size: 1.1rem; opacity: 0.7; }
+
+        /* Link Preview Card Styling */
+        .chat-link-preview {
+            display: flex; flex-direction: column; width: 100%; max-width: 320px;
+            margin-top: 8px; border-radius: 12px; overflow: hidden;
+            background: #f8fafc; border: 1px solid #cbd5e1; text-decoration: none; 
+            color: inherit; transition: all 0.2s;
+        }
+        .chat-link-preview:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #94a3b8; color: inherit;}
+        .messenger-msg.me .chat-link-preview { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #fff; }
+        .messenger-msg.me .chat-link-preview:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        
+        .chat-link-preview img { width: 100%; height: 140px; object-fit: cover; border-radius: 0; margin: 0; border: none; }
+        .chat-link-preview-content { padding: 12px; }
+        .chat-link-preview-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .chat-link-preview-desc { font-size: 0.8rem; opacity: 0.8; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3;}
+        .chat-link-preview-domain { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; opacity: 0.6; letter-spacing: 0.5px; }
+
+        /* Chat Footer (Inputs) */
+        .messenger-chat-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            z-index: 10;
+        }
+        .chat-action-btn {
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 40px; height: 40px; border-radius: 50%;
+            color: #64748b; background: #f1f5f9; cursor: pointer; transition: 0.2s;
+            flex-shrink: 0; font-size: 1.1rem;
+        }
+        .chat-action-btn:hover { background: #e2e8f0; color: #2563eb; transform: scale(1.05); }
+        
+        .messenger-chat-footer input[type="text"] {
+            flex: 1;
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .messenger-chat-footer input[type="text"]:focus {
+            outline: none;
+            border-color: #93c5fd;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px #eff6ff;
+        }
+        .btn-send {
             background: #2563eb;
             color: #fff;
             border: none;
-            border-radius: 8px;
-            padding: 0.5rem 1.2rem;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: background 0.18s;
+            border-radius: 50%;
+            width: 44px; height: 44px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+            flex-shrink: 0;
         }
-        .messenger-chat-footer button:hover { background: #1d4ed8; }
+        .btn-send:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 12px rgba(37, 99, 235, 0.4); }
+        .btn-send:active { transform: translateY(0); }
         </style>
 
         <div id="tabContentAnnouncements" class="flex flex-col flex-1 overflow-hidden">
@@ -515,24 +648,57 @@
 
         <div id="tabContentInquiries" class="flex-col flex-1 overflow-hidden" style="display:none;">
             <div class="messenger-mock h-full">
-                <div class="messenger-convos" id="messengerConvoList">
-                        <button class="messenger-new-btn" title="New Conversation" onclick="alert('Demo only: Add new conversation logic here.')"><i class="fa fa-plus"></i></button>
-                    </div>
+                <div class="messenger-convos">
+                    <div class="messenger-convos-header">Inquiries</div>
+                    <div class="messenger-convo-list-scroll" id="messengerConvoList">
+                        </div>
+                </div>
                 <div class="messenger-chat">
-                    <div class="messenger-chat-header" id="messengerChatHeader">Select a conversation</div>
-                        <a href="#" id="openCameraLink" style="display:none;font-size:1.1rem;color:#2563eb;margin-left:auto;" title="Open Camera" onclick="openCamera(event)"><i class="fa fa-camera"></i></a>
-                    <div class="messenger-chat-body" id="messengerChatBody"></div>
+                    <div class="messenger-chat-header" id="messengerChatHeader" style="display:none;">
+                        <div class="chat-status-dot"></div>
+                        <span id="chatHeaderName">Select a conversation</span>
+                    </div>
+                    
+                    <div class="messenger-chat-body" id="messengerChatBody">
+                        <div style="margin:auto; color:#94a3b8; font-size:1rem; text-align:center;">
+                            <i class="fa-regular fa-comments" style="font-size:3rem; margin-bottom:10px; color:#cbd5e1;"></i><br>
+                            Select a conversation to start chatting
+                        </div>
+                    </div>
+                    
                     <form class="messenger-chat-footer" id="messengerChatForm" onsubmit="sendMessengerMsg(event)" style="display:none;">
-                        <label class="footer-btn" for="messengerPhotoInput" title="Attach Photo"><i class="fa fa-paperclip"></i></label>
-                        <input type="file" id="messengerPhotoInput" accept="image/*" onchange="sendMessengerPhoto(event)">
-                        <input type="text" id="messengerMsgInput" placeholder="Type a message..." autocomplete="off" />
-                        <button type="submit" class="footer-btn" title="Send"><i class="fa fa-paper-plane"></i></button>
+                        
+                        <label class="chat-action-btn" title="Attach File">
+                            <i class="fa-solid fa-paperclip"></i>
+                            <input type="file" id="chatFileInput" hidden onchange="handleChatFileUpload(event)">
+                        </label>
+                        
+                        <label class="chat-action-btn" title="Upload Photo">
+                            <i class="fa-solid fa-image"></i>
+                            <input type="file" id="chatUploadInput" accept="image/*" hidden onchange="handleChatImageUpload(event)">
+                        </label>
+                        
+                        <label class="chat-action-btn" title="Take Photo">
+                            <i class="fa-solid fa-camera"></i>
+                            <input type="file" id="chatCameraInput" accept="image/*" capture="environment" hidden onchange="handleChatImageUpload(event)">
+                        </label>
+
+                        <input type="text" id="messengerMsgInput" placeholder="Message..." autocomplete="off" />
+                        
+                        <button type="submit" class="btn-send" title="Send">
+                            <i class="fa-solid fa-paper-plane" style="margin-right:2px; margin-top:1px;"></i>
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
 
     </main>
+
+    <div id="customLightbox" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img id="lightboxImage" src="" alt="Full Screen Preview" onclick="event.stopPropagation()">
+    </div>
 
     <div class="modal fade" id="announcementModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -592,52 +758,41 @@
         </div>
     </div>
 
-    <div class="modal fade" id="viewAnnouncementModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-md modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 4px;">
-                <div class="modal-header bg-slate-800 text-white px-4 py-2">
-                    <h6 class="modal-title fw-bold text-uppercase" style="font-size: 0.8rem;">Announcement Detail</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div id="viewImageDisplay"></div>
-                    <div class="mb-2">
-                        <span id="viewBadge" class="badge-gov"></span>
-                        <small class="text-muted ms-2" id="viewAudienceLabel"></small>
-                    </div>
-                    <h5 class="fw-bold text-slate-900 mb-3" id="viewTitle"></h5>
-                    <div class="text-slate-600" id="viewContent" style="white-space: pre-wrap; font-size: 0.85rem; line-height: 1.6;"></div>
-                </div>
-                <div class="modal-footer bg-light p-2">
-                    <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // --- Lightbox Functions ---
+        function openLightbox(imgSrc) {
+            const lightbox = document.getElementById('customLightbox');
+            const img = document.getElementById('lightboxImage');
+            img.src = imgSrc;
+            lightbox.classList.add('show');
+        }
+        function closeLightbox() {
+            document.getElementById('customLightbox').classList.remove('show');
+            setTimeout(() => { document.getElementById('lightboxImage').src = ""; }, 300);
+        }
+
         // --- Tab Switch Logic ---
         function showTab(tab) {
             document.getElementById('tabAnnouncements').classList.toggle('active', tab==='announcements');
             document.getElementById('tabInquiries').classList.toggle('active', tab==='inquiries');
             
-            // Updated to 'flex' so flexbox layout remains active instead of defaulting to block
             document.getElementById('tabContentAnnouncements').style.display = tab==='announcements' ? 'flex' : 'none';
             document.getElementById('tabContentInquiries').style.display = tab==='inquiries' ? 'flex' : 'none';
         }
         
         // --- Messenger Mock Data & Logic ---
         const mockConvos = [
-            {id:1, name:'Juan Dela Cruz', avatar:'J', unread:2, last:'Hello, I need help with...', messages:[
+            {id:1, name:'Juan Dela Cruz', avatar:'J', unread:2, last:'Check out this link!', messages:[
                 {me:false, text:'Hello, I need help with my account.'},
                 {me:true, text:'Hi Juan! How can I assist you?'},
-                {me:false, text:'I cannot login.'}
+                {me:false, text:'Check out this documentation: https://denr.gov.ph'}
             ]},
-            {id:2, name:'Maria Santos', avatar:'M', unread:0, last:'Thank you!', messages:[
-                {me:true, text:'Your request has been processed.'},
-                {me:false, text:'Thank you!'}
+            {id:2, name:'Maria Santos', avatar:'M', unread:0, last:'Sent a photo', messages:[
+                {me:true, text:'Can you send me the screenshot of the error?'},
+                {me:false, text:'', image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&h=300&fit=crop'},
+                {me:false, text:'Here is the error code I am seeing.'}
             ]},
             {id:3, name:'Pedro Reyes', avatar:'P', unread:1, last:'Can I update my info?', messages:[
                 {me:false, text:'Can I update my info?'},
@@ -645,6 +800,7 @@
             ]}
         ];
         let selectedConvoId = null;
+
         function renderMessengerConvos() {
             const list = document.getElementById('messengerConvoList');
             list.innerHTML = mockConvos.map(c => `
@@ -658,71 +814,158 @@
                 </div>
             `).join('');
         }
+
+        // Helper function to detect URLs and convert to links + rich preview
+        function formatMessageText(text) {
+            if (!text) return '';
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let previewHtml = '';
+            
+            // Extract the first link to create a mock rich preview
+            const match = text.match(urlRegex);
+            if (match && match.length > 0) {
+                const url = match[0];
+                let domain = '';
+                try { domain = new URL(url).hostname; } catch(e) { domain = 'website.com'; }
+                
+                previewHtml = `
+                    <a href="${url}" target="_blank" class="chat-link-preview">
+                        <img src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=400&h=200" alt="Preview">
+                        <div class="chat-link-preview-content">
+                            <div class="chat-link-preview-title">${domain} Page Info</div>
+                            <div class="chat-link-preview-desc">Click here to view the contents of the shared webpage. This is a secure external link.</div>
+                            <div class="chat-link-preview-domain">${domain}</div>
+                        </div>
+                    </a>
+                `;
+            }
+
+            // Replace URLs with clickable a tags
+            const formattedText = text.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" class="chat-link">${url}</a>`;
+            });
+
+            return formattedText + previewHtml;
+        }
+
         function selectMessengerConvo(id) {
             selectedConvoId = id;
             renderMessengerConvos();
             const convo = mockConvos.find(c=>c.id===id);
-            document.getElementById('messengerChatHeader').textContent = convo.name;
-            // Show camera link
-            document.getElementById('openCameraLink').style.display = '';
-            document.getElementById('messengerChatBody').innerHTML = convo.messages.map(m =>
-                `<div class="messenger-msg${m.me?' me':''}">`
-                + (m.text ? m.text.replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>') : '')
-                + (m.img ? `<img src="${m.img}" class="msg-img" alt="photo">` : '')
-                + `<span class="msg-time">${m.time ? m.time : ''}</span>`
-                + `</div>`
-            ).join('');
-            document.getElementById('messengerChatForm').style.display = '';
+            
+            document.getElementById('messengerChatHeader').style.display = 'flex';
+            document.getElementById('chatHeaderName').textContent = convo.name;
+            
+            document.getElementById('messengerChatBody').innerHTML = convo.messages.map(m => {
+                let msgContent = formatMessageText(m.text);
+                let hasText = m.text && m.text.trim().length > 0;
+                
+                // If message has an image attached
+                if (m.image) {
+                    msgContent += `<img src="${m.image}" alt="Attached Image" onclick="openLightbox('${m.image}')">`;
+                }
+                
+                // If message has a file attached
+                if (m.file) {
+                    msgContent += `
+                        <a href="#" class="chat-file-attachment" title="Download ${m.file.name}">
+                            <i class="fa-solid fa-file-pdf chat-file-icon"></i>
+                            <div class="chat-file-info">
+                                <div class="chat-file-name">${m.file.name}</div>
+                                <div class="chat-file-size">${m.file.size}</div>
+                            </div>
+                            <i class="fa-solid fa-download chat-file-download"></i>
+                        </a>
+                    `;
+                }
+
+                // If it's ONLY an image, apply special styling class
+                let extraClass = (!hasText && m.image) ? ' image-only' : '';
+
+                return `<div class="messenger-msg${m.me?' me':''}${extraClass}">${msgContent}</div>`;
+            }).join('');
+            
+            document.getElementById('messengerChatForm').style.display = 'flex';
             document.getElementById('messengerMsgInput').focus();
-            convo.unread = 0;
-            setTimeout(()=>{
-                document.getElementById('messengerChatBody').scrollTop = 99999;
-            }, 50);
+            convo.unread = 0; // Clear unread on select
         }
+
         function sendMessengerMsg(e) {
             e.preventDefault();
             const input = document.getElementById('messengerMsgInput');
             const msg = input.value.trim();
             if (!msg || !selectedConvoId) return;
             const convo = mockConvos.find(c=>c.id===selectedConvoId);
-            convo.messages.push({me:true, text:msg, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+            convo.messages.push({me:true, text:msg});
+            convo.last = msg; // update last message preview
             input.value = '';
             selectMessengerConvo(selectedConvoId);
+            setTimeout(()=>{
+                document.getElementById('messengerChatBody').scrollTop = 99999;
+            }, 50);
         }
-        function sendMessengerPhoto(e) {
-            const file = e.target.files[0];
+
+        // --- Handle Image Uploads & Camera ---
+        function handleChatImageUpload(event) {
+            const file = event.target.files[0];
             if (!file || !selectedConvoId) return;
+
             const reader = new FileReader();
-            reader.onload = function(ev) {
-                const convo = mockConvos.find(c=>c.id===selectedConvoId);
-                convo.messages.push({me:true, img:ev.target.result, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+            reader.onload = function(e) {
+                const imgDataUrl = e.target.result;
+                const convo = mockConvos.find(c => c.id === selectedConvoId);
+                
+                // Add message with image
+                convo.messages.push({ me: true, text: "", image: imgDataUrl });
+                convo.last = "Sent a photo";
+                
                 selectMessengerConvo(selectedConvoId);
+                
+                // Scroll to bottom
+                setTimeout(()=>{
+                    document.getElementById('messengerChatBody').scrollTop = 99999;
+                }, 100);
             };
             reader.readAsDataURL(file);
-            e.target.value = '';
+            
+            // Reset input so the same file can be uploaded again if needed
+            event.target.value = ''; 
         }
-        function openCamera(e) {
-            e.preventDefault();
-            // Open file input with camera
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.capture = 'environment';
-            input.onchange = function(ev) {
-                const file = ev.target.files[0];
-                if (!file || !selectedConvoId) return;
-                const reader = new FileReader();
-                reader.onload = function(ev2) {
-                    const convo = mockConvos.find(c=>c.id===selectedConvoId);
-                    convo.messages.push({me:true, img:ev2.target.result, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
-                    selectMessengerConvo(selectedConvoId);
-                };
-                reader.readAsDataURL(file);
-            };
-            input.click();
+
+        // --- Handle Generic File Attachments ---
+        function handleChatFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !selectedConvoId) return;
+
+            const convo = mockConvos.find(c => c.id === selectedConvoId);
+            
+            // Calculate friendly file size
+            let size = (file.size / 1024).toFixed(1) + ' KB';
+            if (file.size > 1024 * 1024) size = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+
+            // Add message with file data
+            convo.messages.push({ 
+                me: true, 
+                text: "", 
+                file: { name: file.name, size: size } 
+            });
+            convo.last = "Sent an attachment";
+            
+            selectMessengerConvo(selectedConvoId);
+            
+            // Scroll to bottom
+            setTimeout(()=>{
+                document.getElementById('messengerChatBody').scrollTop = 99999;
+            }, 100);
+            
+            // Reset input
+            event.target.value = ''; 
         }
+
         // Initial render
         renderMessengerConvos();
+
+
     document.addEventListener('DOMContentLoaded', () => {
 
         // --- 1. Fetch & Render Table ---
