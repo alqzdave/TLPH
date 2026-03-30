@@ -368,10 +368,10 @@
     <div class="bg-white rounded-[2px] shadow-lg w-full max-w-sm border border-slate-300">
       <div class="flex items-center justify-between px-3 py-2 border-b border-rose-700 bg-rose-700">
         <div class="flex items-center gap-2">
-          <span class="material-icons-round text-[16px] text-white">delete</span>
+          <span class="material-icons-round text-[16px] text-white">warning</span>
           <div class="leading-tight">
-            <h2 class="text-[11px] font-black text-white uppercase tracking-tight m-0">Delete Transfer</h2>
-            <p class="text-[9px] font-bold text-rose-100 uppercase tracking-widest m-0">Confirm removal</p>
+            <h2 class="text-[11px] font-black text-white uppercase tracking-tight m-0">Confirm Delete</h2>
+            <p class="text-[9px] font-bold text-rose-100 uppercase tracking-widest m-0">This action cannot be undone</p>
           </div>
         </div>
         <button id="transferDeleteCloseBtn" type="button" class="btn-action btn-action-inverse" title="Close">
@@ -379,13 +379,9 @@
         </button>
       </div>
 
-      <div class="px-3 py-3 text-[10px] text-slate-700 space-y-2">
-        <div class="font-black uppercase text-slate-700">Are you sure you want to delete this transfer?</div>
-        <div class="text-[9px] text-slate-500">This action cannot be undone.</div>
-        <div class="mt-2 p-2 border border-slate-200 bg-slate-50 rounded-[2px] space-y-1">
-          <div class="text-[9px] font-black uppercase text-slate-500">Selected Transfer</div>
-          <div id="deleteTransferSummary" class="text-[10px] font-black uppercase text-slate-800"></div>
-        </div>
+      <div class="px-3 py-2 text-[10px] text-slate-700 space-y-2">
+        <div class="text-[9px] font-black uppercase text-slate-500">Item To Delete</div>
+        <div id="deleteTransferSummary" class="font-black uppercase text-slate-900"></div>
       </div>
 
       <div class="flex justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
@@ -523,27 +519,32 @@
       transferViewModal.classList.remove('flex');
     }
 
-    function openTransferDeleteModal(row) {
+    function openDeleteModal(row) {
       if (!transferDeleteModal || !row) return;
       pendingDeleteRow = row;
 
       if (deleteTransferSummary) {
-        const cells = row.querySelectorAll('td');
-        const productText = cells[0] ? cells[0].innerText.trim() : 'Selected transfer';
-        const fromText = cells[1] ? cells[1].innerText.trim() : '';
-        const toText = cells[2] ? cells[2].innerText.trim() : '';
-        deleteTransferSummary.innerText = `${productText} (${fromText} → ${toText})`;
+        const productCell = row.querySelector('td');
+        deleteTransferSummary.innerText = productCell ? productCell.innerText.trim() : 'Selected transfer';
       }
 
       transferDeleteModal.classList.remove('hidden');
       transferDeleteModal.classList.add('flex');
     }
 
-    function closeTransferDeleteModal() {
+    function closeDeleteModal() {
       if (!transferDeleteModal) return;
       transferDeleteModal.classList.add('hidden');
       transferDeleteModal.classList.remove('flex');
       pendingDeleteRow = null;
+    }
+
+    function confirmDeleteRow() {
+      if (!pendingDeleteRow) return;
+      pendingDeleteRow.remove();
+      pendingDeleteRow = null;
+      closeDeleteModal();
+      applyFilters();
     }
 
     function createStatusBadge(statusText) {
@@ -712,7 +713,7 @@
         if (deleteBtn) {
           const row = deleteBtn.closest('tr');
           if (!row) return;
-          openTransferDeleteModal(row);
+          openDeleteModal(row);
         }
       });
     }
@@ -729,20 +730,13 @@
     }
 
     if (transferDeleteModal && transferDeleteCloseBtn && transferDeleteCancelBtn && transferDeleteConfirmBtn) {
-      transferDeleteCloseBtn.addEventListener('click', closeTransferDeleteModal);
-      transferDeleteCancelBtn.addEventListener('click', closeTransferDeleteModal);
-
-      transferDeleteConfirmBtn.addEventListener('click', () => {
-        if (pendingDeleteRow) {
-          pendingDeleteRow.remove();
-          applyFilters();
-        }
-        closeTransferDeleteModal();
-      });
+      transferDeleteCloseBtn.addEventListener('click', closeDeleteModal);
+      transferDeleteCancelBtn.addEventListener('click', closeDeleteModal);
+      transferDeleteConfirmBtn.addEventListener('click', confirmDeleteRow);
 
       transferDeleteModal.addEventListener('click', (event) => {
         if (event.target === transferDeleteModal) {
-          closeTransferDeleteModal();
+          closeDeleteModal();
         }
       });
     }

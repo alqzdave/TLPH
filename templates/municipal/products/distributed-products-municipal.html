@@ -286,6 +286,40 @@
     </div>
   </div>
 
+  <!-- Delete Record Modal -->
+  <div id="distDeleteModal" class="fixed inset-0 z-40 bg-slate-900/50 flex items-center justify-center px-4 hidden">
+    <div class="bg-white rounded-[2px] shadow-lg w-full max-w-sm border border-slate-300">
+      <div class="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-rose-700 text-white">
+        <div class="flex items-center gap-2">
+          <span class="material-icons-round text-[16px]">delete</span>
+          <div class="leading-tight">
+            <h2 class="text-[11px] font-black uppercase tracking-tight m-0">Delete Record</h2>
+          </div>
+        </div>
+        <button id="distDeleteCloseBtn" type="button" class="btn-action bg-rose-600 border-rose-500 text-rose-100" title="Close">
+          <span class="material-icons-round text-[16px]">close</span>
+        </button>
+      </div>
+
+      <div class="px-4 py-3 bg-slate-50 text-[10px] text-slate-700">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-[2px] bg-rose-50 border border-rose-200 flex items-center justify-center">
+            <span class="material-icons-round text-rose-700 text-[18px]">warning</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-800">Are you sure you want to delete this record?</p>
+            <p class="text-[10px] text-slate-500 mt-1" id="distDeleteName">Selected record</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2 mt-3 border-t border-slate-200 gap-2">
+          <button id="distDeleteCancelBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Cancel</button>
+          <button id="distDeleteConfirmBtn" type="button" class="gov-btn bg-rose-700 hover:bg-rose-800 text-white">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Add Distribution Modal -->
   <div id="distModal" class="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center px-4 hidden">
     <div class="bg-white rounded-[2px] shadow-lg w-full max-w-md border border-slate-300">
@@ -360,6 +394,7 @@
 
       document.getElementById('visibleCount').innerText = visible;
       document.getElementById('totalCount').innerText = total;
+      updateKpis(rows);
     }
 
     searchDist.addEventListener('input', applyFilter);
@@ -367,6 +402,49 @@
     function resetFilters() {
       searchDist.value = '';
       applyFilter();
+    }
+
+    function parseRowDate(row) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 5) return null;
+      const raw = cells[4].innerText.trim();
+      if (!raw) return null;
+      const parsed = new Date(raw);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function parseRowQuantity(row) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 3) return null;
+      const raw = cells[2].innerText.trim();
+      if (!raw) return null;
+      const normalized = raw.replace(/,/g, '');
+      const value = Number(normalized);
+      return Number.isNaN(value) ? null : value;
+    }
+
+    function updateKpis(rows) {
+      if (!kpiTotalEl || !kpiMonthEl) return;
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      let monthCount = 0;
+      let totalQuantity = 0;
+
+      rows.forEach((row) => {
+        const date = parseRowDate(row);
+        const quantity = parseRowQuantity(row);
+        if (quantity !== null) {
+          totalQuantity += quantity;
+        }
+        if (!date) return;
+        if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
+          monthCount += 1;
+        }
+      });
+
+      kpiTotalEl.innerText = totalQuantity.toLocaleString('en-PH');
+      kpiMonthEl.innerText = monthCount;
     }
 
     const addDistRecordBtn = document.getElementById('addDistRecordBtn');
@@ -378,12 +456,20 @@
     const distViewModal = document.getElementById('distViewModal');
     const distViewCloseBtn = document.getElementById('distViewCloseBtn');
     const distViewCloseBtnSecondary = document.getElementById('distViewCloseBtnSecondary');
+    const distDeleteModal = document.getElementById('distDeleteModal');
+    const distDeleteCloseBtn = document.getElementById('distDeleteCloseBtn');
+    const distDeleteCancelBtn = document.getElementById('distDeleteCancelBtn');
+    const distDeleteConfirmBtn = document.getElementById('distDeleteConfirmBtn');
+    const distDeleteName = document.getElementById('distDeleteName');
+    let pendingDeleteRow = null;
     const exportDistCsvBtn = document.getElementById('exportDistCsvBtn');
     const viewProductEl = document.getElementById('viewProduct');
     const viewRecipientEl = document.getElementById('viewRecipient');
     const viewQuantityEl = document.getElementById('viewQuantity');
     const viewMunicipalityEl = document.getElementById('viewMunicipality');
     const viewDateEl = document.getElementById('viewDate');
+    const kpiTotalEl = document.getElementById('kpiTotal');
+    const kpiMonthEl = document.getElementById('kpiMonth');
 
     function csvEscape(value) {
       const text = String(value ?? '').replace(/\r?\n|\r/g, ' ').trim();
@@ -472,6 +558,23 @@
       distViewModal.classList.remove('flex');
     }
 
+    function openDistDeleteModal(row) {
+      if (!distDeleteModal || !row) return;
+      pendingDeleteRow = row;
+      const cells = row.querySelectorAll('td');
+      const nameText = cells[0] ? cells[0].innerText.trim() : 'Selected record';
+      if (distDeleteName) distDeleteName.textContent = nameText;
+      distDeleteModal.classList.remove('hidden');
+      distDeleteModal.classList.add('flex');
+    }
+
+    function closeDistDeleteModal() {
+      if (!distDeleteModal) return;
+      distDeleteModal.classList.add('hidden');
+      distDeleteModal.classList.remove('flex');
+      pendingDeleteRow = null;
+    }
+
     function handleDistSubmit(event) {
       event.preventDefault();
 
@@ -556,8 +659,7 @@
         if (deleteBtn) {
           const row = deleteBtn.closest('tr');
           if (!row) return;
-          row.remove();
-          applyFilter();
+          openDistDeleteModal(row);
         }
       });
     }
@@ -577,6 +679,29 @@
       distViewCloseBtnSecondary.addEventListener('click', closeDistViewModal);
     }
 
+    if (distDeleteModal) {
+      distDeleteModal.addEventListener('click', (event) => {
+        if (event.target === distDeleteModal) {
+          closeDistDeleteModal();
+        }
+      });
+    }
+    if (distDeleteCloseBtn) {
+      distDeleteCloseBtn.addEventListener('click', closeDistDeleteModal);
+    }
+    if (distDeleteCancelBtn) {
+      distDeleteCancelBtn.addEventListener('click', closeDistDeleteModal);
+    }
+    if (distDeleteConfirmBtn) {
+      distDeleteConfirmBtn.addEventListener('click', () => {
+        if (pendingDeleteRow) {
+          pendingDeleteRow.remove();
+          applyFilter();
+        }
+        closeDistDeleteModal();
+      });
+    }
+
     if (exportDistCsvBtn) {
       exportDistCsvBtn.addEventListener('click', exportDistributionCsv);
     }
@@ -589,3 +714,4 @@
 
 </body>
 </html>
+

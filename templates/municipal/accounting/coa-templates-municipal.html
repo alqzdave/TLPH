@@ -21,6 +21,10 @@
     .gov-btn { padding: 0.25rem 0.75rem; border-radius: 2px; font-weight: 700; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; transition: all 0.2s; }
     .gov-input { padding: 0.25rem 0.5rem; border-radius: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; }
 
+    /* Action Buttons (match expense-category) */
+    .btn-action { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; border-radius:2px; transition:all 0.2s; border:1px solid #e2e8f0; background:#f8fafc; color:#94a3b8; cursor:pointer; }
+    .btn-delete:hover { color:#ffffff; background:#ef4444; border-color:#dc2626; }
+
     th { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.75rem; background: #f8fafc; color: #64748b; font-weight: 800; }
     td { padding: 0.35rem 0.75rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     html, body { height: 100%; }
@@ -201,7 +205,14 @@
                         </span>
                       </td>
                       <td class="text-center">
-                        <button @click="deleteAccount(account.id)" class="text-rose-600 hover:text-rose-900 transition font-bold text-[9px]">Delete</button>
+                        <div class="inline-flex items-center justify-center gap-2">
+                          <button type="button" class="btn-action" title="Edit" aria-label="Edit" @click="openEditAccountModal(account)">
+                            <span class="material-icons-round text-[16px]">edit</span>
+                          </button>
+                          <button @click="openDeleteAccountModal(account)" class="btn-action btn-delete" title="Delete" aria-label="Delete">
+                            <span class="material-icons-round text-[16px]">delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   </template>
@@ -316,6 +327,85 @@
     </div>
   </div>
 
+  <div x-show="editAccountModalOpen" x-cloak class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div @click.away="editAccountModalOpen = false" class="bg-white rounded-[2px] shadow-xl w-full max-w-md border border-slate-300">
+      <div class="bg-blue-800 px-3 py-2 border-b border-blue-900 flex justify-between items-center text-white">
+        <h3 class="text-xs font-black uppercase flex items-center gap-1">
+          <span class="material-icons-round text-sm">edit</span>
+          Edit Account
+        </h3>
+        <button @click="editAccountModalOpen = false" class="text-blue-100 hover:text-white">
+          <span class="material-icons-round text-sm">close</span>
+        </button>
+      </div>
+
+      <form class="p-4 space-y-3" @submit.prevent="updateAccount()">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-1">
+            <label class="block text-[9px] font-bold uppercase text-slate-500 mb-1">Code</label>
+            <input x-model="editAccount.code" type="text" class="gov-input w-full" placeholder="1001">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-[9px] font-bold uppercase text-slate-500 mb-1">Type</label>
+            <select x-model="editAccount.account_type" class="gov-input w-full bg-white">
+              <option value="asset">Asset</option>
+              <option value="liability">Liability</option>
+              <option value="equity">Equity</option>
+              <option value="revenue">Revenue</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[9px] font-bold uppercase text-slate-500 mb-1">Account Name</label>
+          <input x-model="editAccount.name" type="text" class="gov-input w-full" placeholder="Cash on Hand">
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input x-model="editAccount.locked" type="checkbox" class="rounded border-slate-300">
+          <label class="text-[10px] font-bold text-slate-600">Lock Account (Prevent Modification)</label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" @click="editAccountModalOpen = false" class="gov-btn border border-slate-300 text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="submit" :disabled="isUpdatingAccount" :class="isUpdatingAccount ? 'opacity-60 cursor-not-allowed' : ''" class="gov-btn bg-blue-800 text-white hover:bg-blue-900">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div x-show="deleteAccountModalOpen" x-cloak class="fixed inset-0 z-[110] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div @click.away="deleteAccountModalOpen = false" class="bg-white rounded-[2px] shadow-xl w-full max-w-sm border border-slate-300">
+      <div class="bg-rose-700 px-3 py-2 border-b border-rose-800 flex justify-between items-center text-white">
+        <h3 class="text-xs font-black uppercase flex items-center gap-1">
+          <span class="material-icons-round text-sm">delete</span>
+          Delete Account
+        </h3>
+        <button @click="deleteAccountModalOpen = false" class="text-rose-100 hover:text-white">
+          <span class="material-icons-round text-sm">close</span>
+        </button>
+      </div>
+
+      <div class="p-4">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-[2px] bg-rose-50 border border-rose-200 flex items-center justify-center">
+            <span class="material-icons-round text-rose-700 text-[18px]">warning</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-800">Are you sure you want to delete this account?</p>
+            <p class="text-[10px] text-slate-500 mt-1" x-text="deleteTarget.name || 'Selected Account'"></p>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-end gap-2">
+          <button type="button" @click="deleteAccountModalOpen = false" class="gov-btn border border-slate-300 text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="button" @click="confirmDeleteAccount()" :disabled="isDeletingAccount" :class="isDeletingAccount ? 'opacity-60 cursor-not-allowed' : ''" class="gov-btn bg-rose-700 text-white hover:bg-rose-800">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     function coaPage(){
       return {
@@ -334,8 +424,12 @@
         
         templateModalOpen: false,
         accountModalOpen: false,
+        editAccountModalOpen: false,
+        deleteAccountModalOpen: false,
         isSavingTemplate: false,
         isSavingAccount: false,
+        isUpdatingAccount: false,
+        isDeletingAccount: false,
         toastTimer: null,
         toast: {
           show: false,
@@ -345,6 +439,8 @@
         
         newTemplate: { name: '', description: '' },
         newAccount: { code: '', name: '', account_type: 'asset', locked: false },
+        editAccount: { id: null, code: '', name: '', account_type: 'asset', locked: false },
+        deleteTarget: { id: null, name: '' },
         
         stats: {
           templates: 0,
@@ -539,13 +635,79 @@
           }
         },
 
+        openEditAccountModal(account){
+          this.editAccount = {
+            id: account?.id || null,
+            code: account?.code || '',
+            name: account?.name || '',
+            account_type: (account?.account_type || 'asset'),
+            locked: !!account?.locked
+          };
+          this.editAccountModalOpen = true;
+        },
+
+        async updateAccount(){
+          if(!this.editAccount.id) {
+            this.showToast('error', 'Invalid account');
+            return;
+          }
+          if(!this.editAccount.code || !this.editAccount.name) {
+            this.showToast('error', 'Please fill in all required fields');
+            return;
+          }
+          this.isUpdatingAccount = true;
+          try {
+            const res = await fetch(`/api/municipal/coa/accounts/${this.editAccount.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                code: this.editAccount.code,
+                name: this.editAccount.name,
+                account_type: this.editAccount.account_type,
+                locked: this.editAccount.locked
+              })
+            });
+            const payload = await res.json().catch(() => ({}));
+            if(res.ok){
+              this.editAccountModalOpen = false;
+              await this.loadAccounts(this.selectedTemplateId);
+              await this.loadTemplates();
+              this.showToast('success', 'Account updated successfully');
+            } else {
+              this.showToast('error', payload?.message || 'Failed to update account');
+            }
+          } catch(e){
+            console.error('Error updating account:', e);
+            this.showToast('error', 'Error updating account');
+          } finally {
+            this.isUpdatingAccount = false;
+          }
+        },
+
+        openDeleteAccountModal(account){
+          this.deleteTarget = {
+            id: account?.id || null,
+            name: account?.name || ''
+          };
+          this.deleteAccountModalOpen = true;
+        },
+
+        async confirmDeleteAccount(){
+          if(!this.deleteTarget.id) {
+            this.deleteAccountModalOpen = false;
+            return;
+          }
+          await this.deleteAccount(this.deleteTarget.id);
+        },
+
         async deleteAccount(accountId){
-          if(!confirm('Delete this account?')) return;
+          this.isDeletingAccount = true;
           try {
             const res = await fetch(`/api/municipal/coa/accounts/${accountId}`, { method: 'DELETE' });
             if(res.ok){
               await this.loadAccounts(this.selectedTemplateId);
               await this.loadTemplates();
+              this.deleteAccountModalOpen = false;
               this.showToast('success', 'Account deleted successfully');
             } else {
               this.showToast('error', 'Failed to delete account');
@@ -553,6 +715,8 @@
           } catch(e){
             console.error('Error deleting account:', e);
             this.showToast('error', 'Error deleting account');
+          } finally {
+            this.isDeletingAccount = false;
           }
         },
 

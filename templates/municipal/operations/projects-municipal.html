@@ -351,6 +351,38 @@
     </div>
   </div>
 
+  <!-- Project Archive Modal -->
+  <div id="projectArchiveModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60">
+    <div class="bg-white rounded-[2px] border border-slate-300 shadow-xl w-full max-w-sm mx-4 flex flex-col">
+      <div class="px-3 py-2 border-b border-slate-200 flex items-center justify-between bg-amber-600 text-white">
+        <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 m-0">
+          <span class="material-icons-round text-[14px]">archive</span>
+          Archive Project
+        </h2>
+        <button id="projectArchiveCloseIcon" type="button" class="text-amber-100 hover:text-white">
+          <span class="material-icons-round text-[16px]">close</span>
+        </button>
+      </div>
+
+      <div class="p-3 text-[10px] text-slate-700">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-[2px] bg-amber-50 border border-amber-200 flex items-center justify-center">
+            <span class="material-icons-round text-amber-700 text-[18px]">archive</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-800">Archive this project?</p>
+            <p class="text-[10px] text-slate-500 mt-1" id="projectArchiveName">Selected project</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
+        <button id="projectArchiveCancelBtn" type="button" class="gov-btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">Cancel</button>
+        <button id="projectArchiveConfirmBtn" type="button" class="gov-btn bg-amber-600 hover:bg-amber-700 text-white">Archive</button>
+      </div>
+    </div>
+  </div>
+
 <script id="projectChartData" type="application/json">
 {
   "trendLabels": {{ trend_labels_json|default('[]')|safe }},
@@ -464,6 +496,12 @@
   const projectViewModal = document.getElementById('projectViewModal');
   const projectViewCloseIcon = document.getElementById('projectViewCloseIcon');
   const projectViewCloseBtn = document.getElementById('projectViewCloseBtn');
+  const projectArchiveModal = document.getElementById('projectArchiveModal');
+  const projectArchiveCloseIcon = document.getElementById('projectArchiveCloseIcon');
+  const projectArchiveCancelBtn = document.getElementById('projectArchiveCancelBtn');
+  const projectArchiveConfirmBtn = document.getElementById('projectArchiveConfirmBtn');
+  const projectArchiveName = document.getElementById('projectArchiveName');
+  let pendingArchiveRow = null;
   const exportCsvBtn = document.getElementById('exportCsvBtn');
   const viewProjectName = document.getElementById('viewProjectName');
   const viewProjectBarangay = document.getElementById('viewProjectBarangay');
@@ -580,6 +618,41 @@
     if (!projectViewModal) return;
     projectViewModal.classList.add('hidden');
     projectViewModal.classList.remove('flex');
+  }
+
+  function openProjectArchiveModal(row) {
+    if (!row || !projectArchiveModal) return;
+    pendingArchiveRow = row;
+    const projectNameCell = row.querySelector('td');
+    const projectName = projectNameCell ? projectNameCell.innerText.trim() : 'Selected project';
+    if (projectArchiveName) projectArchiveName.textContent = projectName;
+    projectArchiveModal.classList.remove('hidden');
+    projectArchiveModal.classList.add('flex');
+  }
+
+  function closeProjectArchiveModal() {
+    if (!projectArchiveModal) return;
+    projectArchiveModal.classList.add('hidden');
+    projectArchiveModal.classList.remove('flex');
+    pendingArchiveRow = null;
+  }
+
+  async function archiveProjectRow(row) {
+    if (!row) return;
+    const projectId = row.dataset.projectId;
+    if (!projectId) {
+      row.remove();
+      filterTable();
+      return;
+    }
+    const res = await fetch(`/municipal/operations/projects-municipal/api/${encodeURIComponent(projectId)}/archive`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      alert(data.error || 'Failed to archive project.');
+      return;
+    }
+    row.remove();
+    location.reload();
   }
 
   // Helper: set select value by matching either option value or label (case-insensitive).
@@ -714,27 +787,7 @@
           if (archiveBtn) {
             const row = archiveBtn.closest('tr');
             if (!row) return;
-
-            const projectNameCell = row.querySelector('td');
-            const projectName = projectNameCell ? projectNameCell.innerText.trim() : 'this project';
-
-            const confirmed = window.confirm(`Archive ${projectName}? This will remove it from the current registry view.`);
-            if (!confirmed) return;
-
-            const projectId = row.dataset.projectId;
-            if (!projectId) {
-              row.remove();
-              filterTable();
-              return;
-            }
-            const res = await fetch(`/municipal/operations/projects-municipal/api/${encodeURIComponent(projectId)}/archive`, { method: 'POST' });
-            const data = await res.json();
-            if (!res.ok || !data.success) {
-              alert(data.error || 'Failed to archive project.');
-              return;
-            }
-            row.remove();
-            location.reload();
+            openProjectArchiveModal(row);
             return;
           }
         });
@@ -747,6 +800,24 @@
         projectViewModal.addEventListener('click', (event) => {
           if (event.target === projectViewModal) {
             closeProjectViewModal();
+          }
+        });
+      }
+
+      if (projectArchiveModal && projectArchiveCloseIcon && projectArchiveCancelBtn && projectArchiveConfirmBtn) {
+        projectArchiveCloseIcon.addEventListener('click', closeProjectArchiveModal);
+        projectArchiveCancelBtn.addEventListener('click', closeProjectArchiveModal);
+        projectArchiveConfirmBtn.addEventListener('click', async () => {
+          if (pendingArchiveRow) {
+            await archiveProjectRow(pendingArchiveRow);
+            filterTable();
+          }
+          closeProjectArchiveModal();
+        });
+
+        projectArchiveModal.addEventListener('click', (event) => {
+          if (event.target === projectArchiveModal) {
+            closeProjectArchiveModal();
           }
         });
       }

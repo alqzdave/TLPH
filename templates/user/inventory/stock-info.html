@@ -269,8 +269,25 @@
             return `/${raw}`;
         }
 
+        function toProxyUrl(rawUrl) {
+            const value = String(rawUrl || '').trim();
+            if (!value) return '';
+            if (/^\/api\/files\/proxy\?/i.test(value)) return value;
+            if (/^(\/static\/|static\/)/i.test(value)) {
+                return value.startsWith('static/') ? `/${value}` : value;
+            }
+            if (/^https?:\/\//i.test(value)) {
+                return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+            }
+            if (value.startsWith('/')) {
+                return `/api/files/proxy?url=${encodeURIComponent(window.location.origin + value)}`;
+            }
+            return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+        }
+
         function showAttachmentPreview(url, label) {
             const safeUrl = normalizeFileUrl(url);
+            const previewUrl = toProxyUrl(safeUrl) || safeUrl;
             if (!safeUrl) return;
 
             const modal = document.getElementById('attachmentPreviewModal');
@@ -294,18 +311,18 @@
             frame.src = '';
             image.onerror = null;
 
-            openLink.href = safeUrl;
-            downloadLink.href = safeUrl;
+            openLink.href = previewUrl;
+            downloadLink.href = previewUrl;
 
             if (isImageFile(safeUrl)) {
-                image.src = safeUrl;
+                image.src = previewUrl;
                 image.onerror = function() {
                     image.classList.add('hidden');
                     fallback.classList.remove('hidden');
                 };
                 image.classList.remove('hidden');
             } else if (isPdfFile(safeUrl)) {
-                frame.src = safeUrl;
+                frame.src = previewUrl;
                 frame.classList.remove('hidden');
             } else {
                 fallback.classList.remove('hidden');
@@ -365,8 +382,8 @@
                 label: label || 'Attachments'
             };
 
-            openLink.href = safeUrls[0];
-            downloadLink.href = safeUrls[0];
+            openLink.href = toProxyUrl(safeUrls[0]) || safeUrls[0];
+            downloadLink.href = toProxyUrl(safeUrls[0]) || safeUrls[0];
 
             gallery.innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -374,10 +391,11 @@
                         const encodedUrl = encodeURIComponent(u);
                         const encodedItemLabel = encodeURIComponent(`${label || 'Attachment'} ${idx + 1}`);
                         if (isImageFile(u)) {
+                            const previewThumbUrl = toProxyUrl(u) || u;
                             return `
                                 <div class="bg-white border border-slate-200 rounded p-1">
                                     <button type="button" onclick="openApplicationAttachmentPreviewFromEncoded('${encodedUrl}','${encodedItemLabel}')" class="w-full p-0 border-0 bg-transparent cursor-zoom-in" title="View this photo">
-                                        <img src="${escapeAttr(u)}" alt="Attachment ${idx + 1}" class="w-full h-44 object-cover rounded"/>
+                                        <img src="${escapeAttr(previewThumbUrl)}" alt="Attachment ${idx + 1}" class="w-full h-44 object-cover rounded"/>
                                     </button>
                                     <div class="mt-1 flex justify-end">
                                         <button type="button" onclick="openApplicationAttachmentPreviewFromEncoded('${encodedUrl}','${encodedItemLabel}')" class="inline-flex items-center gap-1 text-[8px] font-black uppercase bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded">
@@ -387,7 +405,8 @@
                                 </div>
                             `;
                         }
-                        return `<div class="bg-white border border-slate-200 rounded p-2 flex items-center justify-between gap-2"><span class="text-[10px] font-semibold text-slate-700">Attachment ${idx + 1}</span><a href="${escapeAttr(u)}" target="_blank" rel="noopener noreferrer" class="text-[9px] font-black uppercase bg-emerald-600 text-white px-2 py-1 rounded no-underline">Open</a></div>`;
+                        const previewFileUrl = toProxyUrl(u) || u;
+                        return `<div class="bg-white border border-slate-200 rounded p-2 flex items-center justify-between gap-2"><span class="text-[10px] font-semibold text-slate-700">Attachment ${idx + 1}</span><a href="${escapeAttr(previewFileUrl)}" target="_blank" rel="noopener noreferrer" class="text-[9px] font-black uppercase bg-emerald-600 text-white px-2 py-1 rounded no-underline">Open</a></div>`;
                     }).join('')}
                 </div>
             `;

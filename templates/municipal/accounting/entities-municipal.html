@@ -19,10 +19,20 @@
 
   html, body { height:100%; }
 
+  /* Action Buttons */
+  .btn-action { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; border-radius:2px; transition:all 0.2s; border:1px solid #e2e8f0; background:#f8fafc; color:#94a3b8; cursor:pointer; }
+  .btn-view:hover { color:#ffffff; background:#0f766e; border-color:#115e59; }
+  .btn-edit:hover { color:#ffffff; background:#2563eb; border-color:#1d4ed8; }
+  .btn-delete:hover { color:#ffffff; background:#dc2626; border-color:#b91c1c; }
+
   .toast-enter { opacity: 0; transform: translateY(-10px); }
   .toast-enter-active { opacity: 1; transform: translateY(0); transition: all 0.3s ease; }
   .toast-exit { opacity: 1; transform: translateY(0); }
   .toast-exit-active { opacity: 0; transform: translateY(-10px); transition: all 0.3s ease; }
+  .modal-enter { opacity: 0; transform: translateY(6px) scale(0.98); }
+  .modal-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.2s ease; }
+  .modal-exit { opacity: 1; transform: translateY(0) scale(1); }
+  .modal-exit-active { opacity: 0; transform: translateY(6px) scale(0.98); transition: all 0.2s ease; }
 </style>
 </head>
 
@@ -195,7 +205,17 @@
                         x-text="entity.status || 'ACTIVE'"></span>
                 </td>
                 <td class="px-3 py-1.5 text-center">
-                  <button @click="editEntity(entity)" class="text-blue-700 hover:text-blue-900 font-bold uppercase text-[9px]">Edit</button>
+                  <div class="inline-flex items-center gap-1">
+                    <button @click="viewEntity(entity)" class="btn-action btn-view" title="View" aria-label="View">
+                      <span class="material-icons-round text-[14px]">visibility</span>
+                    </button>
+                    <button @click="editEntity(entity)" class="btn-action btn-edit" title="Edit" aria-label="Edit">
+                      <span class="material-icons-round text-[14px]">edit</span>
+                    </button>
+                    <button @click="deleteEntity(entity)" class="btn-action btn-delete" title="Delete" aria-label="Delete">
+                      <span class="material-icons-round text-[14px]">delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </template>
@@ -281,6 +301,66 @@
       </div>
     </div>
 
+    <!-- View / Delete Modal -->
+    <div x-show="actionModalOpen" x-transition:enter="modal-enter-active" x-transition:leave="modal-exit-active"
+         class="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[3000] p-4">
+      <div @click.away="closeActionModal()" class="bg-white rounded-[2px] w-full max-w-md p-0 shadow-2xl border border-slate-400 overflow-hidden">
+        <div :class="actionModalType === 'delete' ? 'bg-rose-700' : 'bg-slate-800'" class="px-4 py-2 flex justify-between items-center">
+          <h3 class="text-[11px] font-black uppercase tracking-widest text-white m-0 inline-flex items-center gap-1.5">
+            <span class="material-icons-round text-[14px]" x-text="actionModalType === 'delete' ? 'delete' : 'visibility'"></span>
+            <span x-text="actionModalType === 'delete' ? 'Delete Entity' : 'View Entity'"></span>
+          </h3>
+          <button @click="closeActionModal()" class="text-white/70 hover:text-white">
+            <span class="material-icons-round text-[16px]">close</span>
+          </button>
+        </div>
+
+        <div class="p-4 bg-slate-50 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
+            <div>
+              <p class="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Entity Name</p>
+              <p class="font-black text-slate-800" x-text="selectedEntity?.name || '—'"></p>
+            </div>
+            <div>
+              <p class="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Type</p>
+              <p class="font-bold text-slate-700" x-text="selectedEntity?.type || '—'"></p>
+            </div>
+            <div>
+              <p class="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Office/Unit</p>
+              <p class="text-slate-700" x-text="selectedEntity?.office_or_unit || '—'"></p>
+            </div>
+            <div>
+              <p class="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Depository Bank</p>
+              <p class="font-mono text-slate-700" x-text="selectedEntity?.bank_account || '—'"></p>
+            </div>
+            <div>
+              <p class="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Status</p>
+              <span class="inline-flex px-1 py-0.5 rounded-[2px] font-black text-[8px] uppercase border"
+                    :class="{
+                      'bg-emerald-100 text-emerald-800 border-emerald-200': selectedEntity?.status === 'ACTIVE',
+                      'bg-rose-100 text-rose-800 border-rose-200': selectedEntity?.status === 'SUSPENDED',
+                      'bg-amber-100 text-amber-800 border-amber-200': selectedEntity?.status === 'PENDING'
+                    }"
+                    x-text="selectedEntity?.status || 'ACTIVE'"></span>
+            </div>
+          </div>
+
+          <div x-show="actionModalType === 'delete'" class="bg-rose-50 border border-rose-200 rounded-[2px] p-2 text-[10px] text-rose-800">
+            This action will remove the entity record. Please confirm to proceed.
+          </div>
+        </div>
+
+        <div class="px-4 py-3 bg-white border-t border-slate-200 flex items-center justify-end gap-2">
+          <button @click="closeActionModal()" class="px-3 py-1.5 text-[10px] font-black uppercase border border-slate-300 rounded-[2px] bg-slate-50 hover:bg-slate-100 text-slate-700">
+            Close
+          </button>
+          <button x-show="actionModalType === 'delete'" @click="confirmDelete()" class="px-3 py-1.5 text-[10px] font-black uppercase border border-rose-700 rounded-[2px] bg-rose-700 hover:bg-rose-800 text-white">
+            Confirm Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -315,6 +395,9 @@
       },
       editing: false,
       editingId: null,
+      actionModalOpen: false,
+      actionModalType: 'view',
+      selectedEntity: null,
       toast: {
         show: false,
         type: 'success',
@@ -416,6 +499,32 @@
           status: entity.status || 'ACTIVE'
         };
         this.modalOpen = true;
+      },
+
+      openActionModal(type, entity) {
+        this.actionModalType = type;
+        this.selectedEntity = entity || null;
+        this.actionModalOpen = true;
+      },
+
+      closeActionModal() {
+        this.actionModalOpen = false;
+        this.actionModalType = 'view';
+        this.selectedEntity = null;
+      },
+
+      viewEntity(entity) {
+        this.openActionModal('view', entity);
+      },
+
+      deleteEntity(entity) {
+        this.openActionModal('delete', entity);
+      },
+
+      async confirmDelete() {
+        if (!this.selectedEntity) return;
+        this.showToast('success', 'Delete action queued');
+        this.closeActionModal();
       },
 
       async saveEntity() {

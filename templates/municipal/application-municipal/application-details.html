@@ -484,6 +484,23 @@
             }
         }
 
+        function toMunicipalProxyUrl(rawUrl) {
+            const value = String(rawUrl || '').trim();
+            if (!value) return '';
+            if (/^\/api\/files\/proxy\?/i.test(value)) return value;
+            if (/^(\/static\/|static\/)/i.test(value)) return value.startsWith('static/') ? `/${value}` : value;
+            if (/^https?:\/\//i.test(value)) return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+            if (value.startsWith('/')) return `/api/files/proxy?url=${encodeURIComponent(window.location.origin + value)}`;
+            return `/api/files/proxy?url=${encodeURIComponent(value)}`;
+        }
+
+        function detectMunicipalFileType(urlValue) {
+            const lower = String(urlValue || '').toLowerCase();
+            if (/\.(png|jpg|jpeg|gif|webp|avif|bmp)(\?|$)/i.test(lower)) return 'image';
+            if (/\.pdf(\?|$)/i.test(lower)) return 'pdf';
+            return 'file';
+        }
+
         function displayApplicationDetails() {
             console.log('Starting displayApplicationDetails');
             console.log('Application data:', applicationData);
@@ -684,10 +701,24 @@
                 if (currentRecordType === 'inventory') {
                     const inventoryDocs = [];
                     if (applicationData.imageUrl) {
-                        inventoryDocs.push({ name: 'Resource Photo', fileName: 'image', url: applicationData.imageUrl });
+                        const sourceUrl = String(applicationData.imageUrl || '').trim();
+                        inventoryDocs.push({
+                            name: 'Resource Photo',
+                            fileName: 'image',
+                            url: toMunicipalProxyUrl(sourceUrl) || sourceUrl,
+                            sourceUrl,
+                            type: detectMunicipalFileType(sourceUrl)
+                        });
                     }
                     if (applicationData.permitUrl) {
-                        inventoryDocs.push({ name: 'Permit File', fileName: 'permit', url: applicationData.permitUrl });
+                        const sourceUrl = String(applicationData.permitUrl || '').trim();
+                        inventoryDocs.push({
+                            name: 'Permit File',
+                            fileName: 'permit',
+                            url: toMunicipalProxyUrl(sourceUrl) || sourceUrl,
+                            sourceUrl,
+                            type: detectMunicipalFileType(sourceUrl)
+                        });
                     }
 
                     if (inventoryDocs.length > 0) {
@@ -756,9 +787,10 @@
                     const addGroupedDocument = (groupKey, label, url, fileName) => {
                         if (!url || typeof url !== 'string' || !url.trim()) return;
 
-                        const normalizedUrl = url.trim();
-                        if (globalSeenUrls.has(normalizedUrl)) return;
-                        globalSeenUrls.add(normalizedUrl);
+                        const sourceUrl = url.trim();
+                        const previewUrl = toMunicipalProxyUrl(sourceUrl) || sourceUrl;
+                        if (globalSeenUrls.has(sourceUrl)) return;
+                        globalSeenUrls.add(sourceUrl);
 
                         const safeGroupKey = normalizeGroupKey(groupKey, label);
                         const normalizedLabel = labelMap[safeGroupKey] || label || 'Document';
@@ -772,11 +804,13 @@
                         }
 
                         const targetGroup = groupedDocsMap.get(safeGroupKey);
-                        const alreadyExists = targetGroup.files.some((item) => item.url === url);
+                        const alreadyExists = targetGroup.files.some((item) => item.sourceUrl === sourceUrl);
                         if (alreadyExists) return;
 
                         targetGroup.files.push({
-                            url: normalizedUrl,
+                            url: previewUrl,
+                            sourceUrl,
+                            type: detectMunicipalFileType(sourceUrl),
                             fileName: fileName || (url.split('/').pop() || 'file')
                         });
                     };
@@ -925,9 +959,9 @@
             if (isSingleFile) {
                 const onlyFile = group.files[0];
                 const fileUrl = String(onlyFile.url || '');
-                const lower = fileUrl.toLowerCase();
-                const isImage = /\.(png|jpg|jpeg|gif|webp|avif|bmp)(\?|$)/i.test(lower);
-                const isPdf = /\.pdf(\?|$)/i.test(lower);
+                const detectedType = onlyFile.type || detectMunicipalFileType(onlyFile.sourceUrl || fileUrl);
+                const isImage = detectedType === 'image';
+                const isPdf = detectedType === 'pdf';
 
                 if (isImage) {
                     body.innerHTML = `
@@ -957,8 +991,8 @@
                 <div class="doc-gallery-grid" style="grid-template-columns: repeat(${colCount}, minmax(300px, 1fr));">
                     ${group.files.map((file, index) => {
                         const fileUrl = String(file.url || '');
-                        const lower = fileUrl.toLowerCase();
-                        const isImage = /\.(png|jpg|jpeg|gif|webp|avif|bmp)(\?|$)/i.test(lower);
+                        const detectedType = file.type || detectMunicipalFileType(file.sourceUrl || fileUrl);
+                        const isImage = detectedType === 'image';
 
                         return `
                             <div class="doc-gallery-item clickable" onclick="openDocumentFromGroup(${index})" title="Click to enlarge">
@@ -979,9 +1013,9 @@
             const title = document.getElementById('docPreviewTitle');
             const panel = document.querySelector('#docPreviewModal .doc-preview-panel');
             const url = String(doc.url || '');
-            const lower = url.toLowerCase();
-            const isImage = /\.(png|jpg|jpeg|gif|webp|avif|bmp)(\?|$)/i.test(lower);
-            const isPdf = /\.pdf(\?|$)/i.test(lower);
+            const detectedType = doc.type || detectMunicipalFileType(doc.sourceUrl || url);
+            const isImage = detectedType === 'image';
+            const isPdf = detectedType === 'pdf';
 
             if (panel) {
                 panel.classList.remove('gallery-mode');

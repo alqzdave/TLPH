@@ -382,7 +382,7 @@ TLPH/
 | Aerone John Grefalda | Frontend Developer | grefaldaaeronejohn01@gmail.com | [@Aerone01](https://github.com/Aerone01) |
 | John Cedric Acapulco | Frontend Developer | acapulcojohncedric66@gmail.com | [@Cheezzyy1](https://github.com/Cheezzyy1) |
 | Jhon Carlo Jimenez | Backend Developer | jimenez.jhoncarlo@minsu.edu.ph | [@kly-njz](https://github.com/kly-njz) |
-| John Mark Pagaduan | Q/A, Developer | pagaduanjohnmark29@gmail.com | [@johnmark009](https://github.com/johnmark009) |
+| John Mark Pagaduan | Frontend Developer | pagaduanjohnmark29@gmail.com | [@johnmark009](https://github.com/johnmark009) |
 | Huriecane Ivan Ganio | Q/A, Developer | hurieganio@gmail.com | [@Huriecane](https://github.com/Huriecane) |
 
 Special thanks to the **DENR TLPH Team** for their support and guidance throughout the development of this project.
