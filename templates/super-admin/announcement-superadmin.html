@@ -920,6 +920,7 @@
         // --- Inquiry Messenger: Functional API Integration ---
         let selectedConvoUserId = null;
         let conversations = [];
+        const DENR_LOGO_URL = 'https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705';
 
         function formatMessageText(text) {
             if (!text) return '';
@@ -1040,10 +1041,12 @@
                 const extraClass = m.file_url && !(m.message || '').trim() ? ' image-only' : '';
                 const time = m.timestamp ? formatDateTime(m.timestamp) : '';
                 const senderHtml = isMe ? '' : `<div class="msg-sender">${sender || 'User'}</div>`;
+                const adminAvatar = `<img src='${DENR_LOGO_URL}' class='messenger-msg-avatar' alt='DENR'>`;
 
                 return `<div class="messenger-msg-row${isMe ? ' me' : ''}">`
                     + (isMe ? '' : senderAvatar)
                     + `<div class="messenger-msg${isMe ? ' me' : ''}${extraClass}">${senderHtml}${msgContent}<span class="msg-time">${time}</span></div>`
+                    + (isMe ? adminAvatar : '')
                     + `</div>`;
             }).join('');
 
@@ -1061,7 +1064,7 @@
             formData.append('email', selectedConvoUserId);
             formData.append('user_name', 'Superadmin');
             formData.append('message', msg);
-            formData.append('user_photo', '');
+            formData.append('user_photo', DENR_LOGO_URL);
 
             const resp = await fetch('/api/inquiries/send', {
                 method: 'POST',
@@ -1086,7 +1089,7 @@
             formData.append('email', selectedConvoUserId);
             formData.append('user_name', 'Superadmin');
             formData.append('message', '');
-            formData.append('user_photo', '');
+            formData.append('user_photo', DENR_LOGO_URL);
             formData.append('file', file);
 
             const resp = await fetch('/api/inquiries/send', {
