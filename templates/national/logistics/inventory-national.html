@@ -163,6 +163,7 @@
                       data-quantity="{{ record.quantity }}"
                       data-region="{{ record.region }}"
                       data-municipality="{{ record.municipality }}"
+                      data-province="{{ record.province }}"
                       data-applicant="{{ record.applicant_name }}"
                       data-status="{{ record.status }}"
                       data-regional-status="{{ record.regionalStatus }}"
@@ -172,7 +173,20 @@
                       data-forwarded-to-level="{{ record.forwardedToLevel }}"
                       data-status-display="{{ record.status_display }}"
                       data-registration-fee="{{ record.registrationFee }}"
-                      data-unit="{{ record.unitOfMeasure }}">
+                      data-unit="{{ record.unitOfMeasure }}"
+                      data-created-at="{{ record.createdAtIso }}"
+                      data-farmer-id="{{ record.farmerIdNumber }}"
+                      data-stock-latitude="{{ record.stockLatitude }}"
+                      data-stock-longitude="{{ record.stockLongitude }}"
+                      data-stock-gps-link="{{ record.stockGpsLink }}"
+                      data-property-number="{{ record.propertyNumber }}"
+                      data-source-location="{{ record.sourceLocation }}"
+                      data-image-url="{{ record.imageUrl }}"
+                      data-permit-url="{{ record.permitUrl }}"
+                      data-visit-approval-url="{{ record.visitApprovalUrl }}"
+                      data-scientific-study-url="{{ record.scientificStudyUrl }}"
+                      data-new-stock-images='{{ (record.newStockImageUrls or [])|tojson|e }}'
+                      data-attachments='{{ (record.attachmentsJson or "{}")|e }}'>
                     <td class="font-bold text-slate-800 border-r border-slate-100 uppercase">{{ record.category }}</td>
                     <td class="text-slate-600 border-r border-slate-100">{{ record.description }}</td>
                     <td class="font-mono font-black text-slate-900 border-r border-slate-100 text-center">{{ record.quantity }}</td>
@@ -299,6 +313,13 @@
           <div><span class="font-black text-slate-500 uppercase">Registration Fee:</span> <span id="reviewFee" class="font-bold text-slate-900"></span></div>
           <div><span class="font-black text-slate-500 uppercase">Region:</span> <span id="reviewRegion" class="font-bold text-slate-900"></span></div>
           <div><span class="font-black text-slate-500 uppercase">Municipality:</span> <span id="reviewMunicipality" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Province:</span> <span id="reviewProvince" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Date Filed:</span> <span id="reviewCreatedAt" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Farmer ID:</span> <span id="reviewFarmerId" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">GPS Coordinates:</span> <span id="reviewGpsCoords" class="font-bold text-slate-900"></span></div>
+          <div class="col-span-2"><span class="font-black text-slate-500 uppercase">GPS Link:</span> <span id="reviewGpsLink" class="font-bold text-blue-800"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Property Number:</span> <span id="reviewPropertyNumber" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Source Location:</span> <span id="reviewSourceLocation" class="font-bold text-slate-900"></span></div>
           <div class="col-span-2"><span class="font-black text-slate-500 uppercase">Status:</span> <span id="reviewStatus" class="font-black text-blue-800"></span></div>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
@@ -455,6 +476,12 @@
       if (!row) return;
       activeReviewRow = row;
 
+      const createdAtRaw = String(row.dataset.createdAt || '').trim();
+      const createdAtDisplay = createdAtRaw ? new Date(createdAtRaw).toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A';
+      const lat = String(row.dataset.stockLatitude || '').trim();
+      const lng = String(row.dataset.stockLongitude || '').trim();
+      const gpsLink = String(row.dataset.stockGpsLink || '').trim();
+
       document.getElementById('reviewId').textContent = row.dataset.id || 'N/A';
       document.getElementById('reviewApplicant').textContent = row.dataset.applicant || 'N/A';
       document.getElementById('reviewCategory').textContent = row.dataset.category || 'N/A';
@@ -463,6 +490,13 @@
       document.getElementById('reviewFee').textContent = `₱ ${Number(row.dataset.registrationFee || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       document.getElementById('reviewRegion').textContent = row.dataset.region || 'N/A';
       document.getElementById('reviewMunicipality').textContent = row.dataset.municipality || 'N/A';
+      document.getElementById('reviewProvince').textContent = row.dataset.province || 'N/A';
+      document.getElementById('reviewCreatedAt').textContent = createdAtDisplay;
+      document.getElementById('reviewFarmerId').textContent = row.dataset.farmerId || 'N/A';
+      document.getElementById('reviewGpsCoords').textContent = (lat && lng) ? `${lat}, ${lng}` : 'N/A';
+      document.getElementById('reviewGpsLink').innerHTML = gpsLink ? `<a href="${gpsLink}" class="text-blue-700 underline" target="_blank" rel="noopener noreferrer">${gpsLink}</a>` : 'N/A';
+      document.getElementById('reviewPropertyNumber').textContent = row.dataset.propertyNumber || 'N/A';
+      document.getElementById('reviewSourceLocation').textContent = row.dataset.sourceLocation || 'N/A';
       document.getElementById('reviewStatus').textContent = getNationalStatusLabel(row);
 
       const isNationalFinal = ['approved', 'rejected'].includes(normalizeStatus(row.dataset.nationalStatus));
