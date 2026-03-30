@@ -89,15 +89,56 @@
         <!-- Arrow -->
         <div style="position:absolute;bottom:-12px;right:18px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid #2563eb;z-index:2;"></div>
         <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-80 max-w-[90vw] p-0 border border-blue-200 animate-fade-in overflow-hidden" style="box-shadow:0 8px 32px 0 rgba(16, 185, 129, 0.18),0 1.5px 8px 0 rgba(34,211,238,0.10);">
-            <div class="bg-blue-600 text-white px-5 py-3 flex items-center gap-2">
-                <i class="fa-solid fa-bell text-lg"></i>
-                <span class="font-bold text-base tracking-tight">Messages</span>
-                <button onclick="closeNotificationModal()" class="ml-auto text-white/80 hover:text-white text-lg font-bold focus:outline-none" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            <!-- Tabs -->
+            <div class="flex border-b border-blue-200 bg-blue-600 text-white">
+                <button id="notifTabBtn" onclick="showNotifTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn active" style="background:transparent;border:none;outline:none;cursor:pointer;">Messages</button>
+                <button id="msgTabBtn" onclick="showMsgTab()" class="flex-1 px-4 py-3 font-bold text-base tracking-tight tab-btn" style="background:transparent;border:none;outline:none;cursor:pointer;">Messaging</button>
+                <button onclick="closeNotificationModal()" class="ml-auto text-white/80 hover:text-white text-lg font-bold focus:outline-none px-3" title="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="max-h-72 overflow-y-auto py-2 bg-white/70" id="userNotificationList">
-                <div class="text-slate-400 text-xs px-4 py-2">Loading notifications...</div>
+            <!-- Tab Content -->
+            <div id="notifTabContent">
+                <div class="max-h-72 overflow-y-auto py-2 bg-white/70" id="userNotificationList">
+                    <div class="text-slate-400 text-xs px-4 py-2">Loading notifications...</div>
+                </div>
+            </div>
+            <div id="msgTabContent" style="display:none;">
+                <div class="max-h-56 overflow-y-auto py-2 bg-white/70" id="userMessageList">
+                    <div class="text-slate-400 text-xs px-4 py-2">No messages yet.</div>
+                </div>
+                <form id="userMessageForm" class="flex items-center gap-2 border-t border-blue-100 bg-white/80 px-3 py-2" onsubmit="sendUserMessage(event)">
+                    <input type="text" id="userMessageInput" class="flex-1 gov-input" placeholder="Type a message..." autocomplete="off" required />
+                    <button type="submit" class="gov-btn bg-blue-600 text-white px-3 py-1 rounded">Send</button>
+                </form>
             </div>
         <script>
+                // Tab switching logic
+                function showNotifTab() {
+                    document.getElementById('notifTabContent').style.display = '';
+                    document.getElementById('msgTabContent').style.display = 'none';
+                    document.getElementById('notifTabBtn').classList.add('active');
+                    document.getElementById('msgTabBtn').classList.remove('active');
+                }
+                function showMsgTab() {
+                    document.getElementById('notifTabContent').style.display = 'none';
+                    document.getElementById('msgTabContent').style.display = '';
+                    document.getElementById('notifTabBtn').classList.remove('active');
+                    document.getElementById('msgTabBtn').classList.add('active');
+                }
+                // Simple message sending (demo only, replace with backend integration)
+                function sendUserMessage(e) {
+                    e.preventDefault();
+                    const input = document.getElementById('userMessageInput');
+                    const list = document.getElementById('userMessageList');
+                    const msg = input.value.trim();
+                    if (!msg) return;
+                    // Append message to list (demo)
+                    const div = document.createElement('div');
+                    div.className = 'px-4 py-2 text-sm text-blue-900 bg-blue-50 rounded mb-1';
+                    div.textContent = msg;
+                    list.appendChild(div);
+                    input.value = '';
+                    list.scrollTop = list.scrollHeight;
+                }
         function timeAgoUser(dateStr) {
             const date = new Date(dateStr);
             const now = new Date();
