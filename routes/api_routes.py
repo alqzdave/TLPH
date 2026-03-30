@@ -1597,16 +1597,30 @@ def upload_inventory_image():
         if not file or file.filename == '':
             return jsonify({'success': False, 'error': 'No file selected'}), 400
 
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
+
         allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
         ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
         if ext not in allowed:
             return jsonify({'success': False, 'error': f'Invalid file type: {ext}'}), 400
 
         url = None
+        backend = 'none'
         if _cloudinary_enabled():
             url = _upload_to_cloudinary(file, f"tlph/inventory/{user_id}")
+            if url:
+                backend = 'cloudinary'
 
         if not url:
+            url = _upload_to_firebase_storage(file, f"tlph/inventory/{user_id}")
+            if url:
+                backend = 'firebase_storage'
+
+        if not url and local_fallback_enabled:
             upload_dir = os.path.join('static', 'uploads', 'inventory', user_id)
             os.makedirs(upload_dir, exist_ok=True)
 
@@ -1614,6 +1628,15 @@ def upload_inventory_image():
             file_path = os.path.join(upload_dir, filename)
             file.save(file_path)
             url = f"/static/uploads/inventory/{user_id}/{filename}"
+            backend = 'local_static'
+
+        if not url:
+            return jsonify({
+                'success': False,
+                'error': 'Upload backend unavailable. Configure Cloudinary (preferred) or Firebase Storage on hosted environment.'
+            }), 503
+
+        print(f"📦 [UPLOAD_INVENTORY] Stored via {backend}: {url}")
 
         return jsonify({'success': True, 'url': url})
 
@@ -1645,6 +1668,12 @@ def submit_application():
                 'success': False,
                 'message': 'Missing required fields'
             }), 400
+
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
         
         # Process file uploads
         file_fields = ['titleFile', 'taxFile', 'blueprintFile', 'landFile', 'cropFile', 'planFile', 'brgyFile', 'productPictureFile', 'validIdFile']
@@ -1666,17 +1695,35 @@ def submit_application():
                     unique_filename = f"{timestamp}_{field}_{idx}_{filename}"
 
                     web_path = None
-                    # Images and documents -> Cloudinary
+                    backend = 'none'
+                    # 1) Cloudinary
                     if _cloudinary_enabled():
                         web_path = _upload_to_cloudinary(file, f"tlph/applications/{user_id}")
+                        if web_path:
+                            backend = 'cloudinary'
 
+                    # 2) Firebase Storage (host-safe fallback)
                     if not web_path:
-                        # Create upload directory only for local fallback
+                        web_path = _upload_to_firebase_storage(file, f"tlph/applications/{user_id}")
+                        if web_path:
+                            backend = 'firebase_storage'
+
+                    # 3) Local static (development fallback)
+                    if not web_path and local_fallback_enabled:
                         upload_dir = os.path.join('static', 'uploads', 'applications', user_id)
                         os.makedirs(upload_dir, exist_ok=True)
                         file_path = os.path.join(upload_dir, unique_filename)
                         file.save(file_path)
                         web_path = f"/static/uploads/applications/{user_id}/{unique_filename}"
+                        backend = 'local_static'
+
+                    if not web_path:
+                        return jsonify({
+                            'success': False,
+                            'message': f'Failed to upload {field}. Configure Cloudinary/Firebase storage in hosted environment.'
+                        }), 503
+
+                    print(f"📦 [SUBMIT_APPLICATION] {field} -> {backend}: {web_path}")
 
                     saved_urls.append(web_path)
 
@@ -1716,7 +1763,14 @@ def upload_service_files():
         if not user_id:
             return jsonify({'success': False, 'message': 'Missing userId'}), 400
 
+        local_fallback_enabled = (
+            str(os.environ.get('ALLOW_LOCAL_UPLOAD_FALLBACK', '')).strip().lower() in ('1', 'true', 'yes')
+            or request.host.startswith('127.0.0.1')
+            or request.host.startswith('localhost')
+        )
+
         file_paths = {}
+        upload_backends = {}
         timestamp = int(datetime.now().timestamp())
 
         for field in request.files:
@@ -1730,16 +1784,37 @@ def upload_service_files():
                 filename = secure_filename(file.filename)
                 unique_filename = f"{timestamp}_{field}_{idx}_{filename}"
                 web_path = None
-                # Images and documents -> Cloudinary
+                backend = 'none'
+
+                # 1) Cloudinary
                 if _cloudinary_enabled():
                     web_path = _upload_to_cloudinary(file, f"tlph/service_requests/{user_id}")
+                    if web_path:
+                        backend = 'cloudinary'
 
+                # 2) Firebase Storage (host-safe fallback)
                 if not web_path:
+                    web_path = _upload_to_firebase_storage(file, f"tlph/service_requests/{user_id}")
+                    if web_path:
+                        backend = 'firebase_storage'
+
+                # 3) Local static (development fallback)
+                if not web_path and local_fallback_enabled:
                     upload_dir = os.path.join('static', 'uploads', 'service_requests', user_id)
                     os.makedirs(upload_dir, exist_ok=True)
                     file_path = os.path.join(upload_dir, unique_filename)
                     file.save(file_path)
                     web_path = f"/static/uploads/service_requests/{user_id}/{unique_filename}"
+                    backend = 'local_static'
+
+                if not web_path:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Failed to upload file for field "{field}". Configure Cloudinary/Firebase storage in hosted environment.'
+                    }), 503
+
+                upload_backends[field] = backend
+                print(f"📦 [UPLOAD_SERVICE_FILES] {field} -> {backend}: {web_path}")
 
                 saved_urls.append(web_path)
 
@@ -1749,7 +1824,8 @@ def upload_service_files():
         return jsonify({
             'success': True,
             'message': 'Service files uploaded successfully',
-            'filePaths': file_paths
+            'filePaths': file_paths,
+            'uploadBackends': upload_backends
         })
 
     except Exception as e:
