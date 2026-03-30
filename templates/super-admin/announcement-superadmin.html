@@ -520,10 +520,13 @@
                     </div>
                 <div class="messenger-chat">
                     <div class="messenger-chat-header" id="messengerChatHeader">Select a conversation</div>
+                        <a href="#" id="openCameraLink" style="display:none;font-size:1.1rem;color:#2563eb;margin-left:auto;" title="Open Camera" onclick="openCamera(event)"><i class="fa fa-camera"></i></a>
                     <div class="messenger-chat-body" id="messengerChatBody"></div>
                     <form class="messenger-chat-footer" id="messengerChatForm" onsubmit="sendMessengerMsg(event)" style="display:none;">
+                        <label class="footer-btn" for="messengerPhotoInput" title="Attach Photo"><i class="fa fa-paperclip"></i></label>
+                        <input type="file" id="messengerPhotoInput" accept="image/*" onchange="sendMessengerPhoto(event)">
                         <input type="text" id="messengerMsgInput" placeholder="Type a message..." autocomplete="off" />
-                        <button type="submit">Send</button>
+                        <button type="submit" class="footer-btn" title="Send"><i class="fa fa-paper-plane"></i></button>
                     </form>
                 </div>
             </div>
@@ -660,12 +663,21 @@
             renderMessengerConvos();
             const convo = mockConvos.find(c=>c.id===id);
             document.getElementById('messengerChatHeader').textContent = convo.name;
+            // Show camera link
+            document.getElementById('openCameraLink').style.display = '';
             document.getElementById('messengerChatBody').innerHTML = convo.messages.map(m =>
-                `<div class="messenger-msg${m.me?' me':''}">${m.text}</div>`
+                `<div class="messenger-msg${m.me?' me':''}">`
+                + (m.text ? m.text.replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>') : '')
+                + (m.img ? `<img src="${m.img}" class="msg-img" alt="photo">` : '')
+                + `<span class="msg-time">${m.time ? m.time : ''}</span>`
+                + `</div>`
             ).join('');
             document.getElementById('messengerChatForm').style.display = '';
             document.getElementById('messengerMsgInput').focus();
             convo.unread = 0;
+            setTimeout(()=>{
+                document.getElementById('messengerChatBody').scrollTop = 99999;
+            }, 50);
         }
         function sendMessengerMsg(e) {
             e.preventDefault();
@@ -673,12 +685,41 @@
             const msg = input.value.trim();
             if (!msg || !selectedConvoId) return;
             const convo = mockConvos.find(c=>c.id===selectedConvoId);
-            convo.messages.push({me:true, text:msg});
+            convo.messages.push({me:true, text:msg, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
             input.value = '';
             selectMessengerConvo(selectedConvoId);
-            setTimeout(()=>{
-                document.getElementById('messengerChatBody').scrollTop = 99999;
-            }, 50);
+        }
+        function sendMessengerPhoto(e) {
+            const file = e.target.files[0];
+            if (!file || !selectedConvoId) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const convo = mockConvos.find(c=>c.id===selectedConvoId);
+                convo.messages.push({me:true, img:ev.target.result, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+                selectMessengerConvo(selectedConvoId);
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+        function openCamera(e) {
+            e.preventDefault();
+            // Open file input with camera
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment';
+            input.onchange = function(ev) {
+                const file = ev.target.files[0];
+                if (!file || !selectedConvoId) return;
+                const reader = new FileReader();
+                reader.onload = function(ev2) {
+                    const convo = mockConvos.find(c=>c.id===selectedConvoId);
+                    convo.messages.push({me:true, img:ev2.target.result, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+                    selectMessengerConvo(selectedConvoId);
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
         }
         // Initial render
         renderMessengerConvos();
