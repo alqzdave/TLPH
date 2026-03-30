@@ -74,9 +74,6 @@ def _upload_to_cloudinary(file_obj, folder: str):
                 'timestamp': timestamp,
                 'folder': folder,
                 'signature': signature,
-                'access_type': 'anonymous',  # Make publicly accessible
-                'type': 'upload',
-                'invalidate': False  # Don't purge CDN cache
             },
             files={
                 'file': (file_obj.filename, file_obj.stream, file_obj.mimetype or 'application/octet-stream')
