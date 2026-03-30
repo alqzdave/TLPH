@@ -2,42 +2,75 @@
 
 <style>
 /* Modern Messenger Inquiry Tab Styles */
+/* Enhanced Inquiry Messenger Styles */
 .inquiry-messenger {
     display: flex;
     flex-direction: column;
-    height: 320px;
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    min-height: 220px;
+    max-height: 340px;
+    height: 32vh;
+    background: linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(16, 42, 67, 0.10), 0 1.5px 8px 0 rgba(34,211,238,0.10);
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    border: 1.5px solid #dbeafe;
+    font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+    position: relative;
+    box-sizing: border-box;
 }
 .inquiry-messenger-body {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem 0.7rem 0.5rem 0.7rem;
+    padding: 1.1rem 0.8rem 0.7rem 0.8rem;
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
-    background: #f8fafc;
+    gap: 0.8rem;
+    background: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
+}
+/* Message bubble with avatar */
+.inquiry-msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    animation: msg-pop-in 0.32s cubic-bezier(.68,-0.55,.27,1.55);
+}
+.inquiry-msg-row.me {
+    flex-direction: row-reverse;
+}
+.inquiry-msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e7ef;
+    object-fit: cover;
+    box-shadow: 0 1px 4px rgba(34,211,238,0.10);
+    border: 1.5px solid #dbeafe;
 }
 .inquiry-msg {
     max-width: 80%;
-    padding: 0.6rem 1rem;
-    border-radius: 16px;
-    font-size: 0.97rem;
+    padding: 0.62rem 1.08rem;
+    border-radius: 18px 18px 18px 6px;
+    font-size: 1.01rem;
     background: #fff;
     color: #1e293b;
     align-self: flex-start;
-    box-shadow: 0 1.5px 6px 0 rgba(16, 42, 67, 0.06);
+    box-shadow: 0 2px 8px 0 rgba(16, 42, 67, 0.08);
     position: relative;
     word-break: break-word;
     margin-bottom: 0.2rem;
+    transition: background 0.18s, color 0.18s;
 }
 .inquiry-msg.me {
     background: linear-gradient(90deg, #2563eb 80%, #60a5fa 100%);
     color: #fff;
     align-self: flex-end;
+    border-radius: 18px 18px 6px 18px;
+}
+@keyframes msg-pop-in {
+    0% { opacity: 0; transform: translateY(18px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 .inquiry-msg .msg-img {
     max-width: 140px;
@@ -58,30 +91,52 @@
 .inquiry-messenger-footer {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.6rem 0.7rem;
-    border-top: 1px solid #e2e8f0;
-    background: #fff;
+    gap: 0.45rem;
+    padding: 0.7rem 0.8rem 0.7rem 0.8rem;
+    border-top: 1.5px solid #dbeafe;
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(8px) saturate(160%);
+    box-shadow: 0 2px 12px 0 rgba(34,211,238,0.07);
+    border-radius: 0 0 18px 18px;
 }
 .inquiry-messenger-footer input[type="text"] {
     flex: 1;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1.5px solid #cbd5e1;
-    padding: 0.4rem 0.8rem;
-    font-size: 1rem;
+    padding: 0.45rem 0.9rem;
+    font-size: 1.04rem;
+    background: rgba(248,250,252,0.95);
+    box-shadow: 0 1px 4px rgba(34,211,238,0.06);
+    outline: none;
+    transition: border 0.18s;
+}
+.inquiry-messenger-footer input[type="text"]:focus {
+    border: 1.5px solid #2563eb;
 }
 .inquiry-messenger-footer .footer-btn {
-    background: #2563eb;
+    background: linear-gradient(135deg, #2563eb 70%, #60a5fa 100%);
     color: #fff;
     border: none;
-    border-radius: 8px;
-    padding: 0.4rem 0.7rem;
+    border-radius: 10px;
+    padding: 0.45rem 0.8rem;
     font-weight: 700;
-    font-size: 1.1rem;
-    transition: background 0.18s;
+    font-size: 1.13rem;
+    box-shadow: 0 2px 8px 0 rgba(34,211,238,0.13);
+    transition: background 0.18s, transform 0.13s;
     display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    outline: none;
+    border: 1.5px solid #2563eb22;
+    position: relative;
 }
-.inquiry-messenger-footer .footer-btn:hover { background: #1d4ed8; }
+.inquiry-messenger-footer .footer-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8 80%, #60a5fa 100%);
+    transform: translateY(-2px) scale(1.08);
+    box-shadow: 0 4px 16px 0 rgba(34,211,238,0.18);
+}
+.inquiry-messenger-footer .footer-btn:active {
+    transform: scale(0.96);
+}
 .inquiry-messenger-footer input[type="file"] { display: none; }
 .inquiry-link-preview {
     display: flex; flex-direction: column; width: 100%; max-width: 220px;
@@ -232,7 +287,7 @@
     <div class="relative">
         <!-- Arrow -->
         <div style="position:absolute;bottom:-12px;right:18px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid #2563eb;z-index:2;"></div>
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-80 max-w-[90vw] p-0 border border-blue-200 animate-fade-in overflow-hidden" style="box-shadow:0 8px 32px 0 rgba(16, 185, 129, 0.18),0 1.5px 8px 0 rgba(34,211,238,0.10);">
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-80 max-w-[90vw] p-0 border border-blue-200 animate-fade-in overflow-hidden" style="box-shadow:0 8px 32px 0 rgba(16, 185, 129, 0.18),0 1.5px 8px 0 rgba(34,211,238,0.10); box-sizing: border-box; min-height: 420px; max-height: 90vh; display: flex; flex-direction: column;">
             <!-- Tabs -->
             <div class="notif-modal-tabs">
                 <button id="notifTabBtn" onclick="showNotifTab()" class="notif-modal-tab-btn active">
@@ -301,7 +356,11 @@
                         if (m.file_url) msgContent += `<img src="${m.file_url}" class="msg-img" alt="photo" onclick="openInquiryLightbox('${m.file_url}')">`;
                         let extraClass = m.file_url && !(m.message||'').trim() ? ' image-only' : '';
                         let time = m.timestamp ? new Date(m.timestamp.seconds ? m.timestamp.seconds*1000 : m.timestamp).toLocaleString() : '';
-                        return `<div class="inquiry-msg${isMe?' me':''}${extraClass}">${msgContent}<span class="msg-time">${time}</span></div>`;
+                        let avatar = m.user_photo ? `<img src="${m.user_photo}" class="inquiry-msg-avatar" alt="avatar">` : `<div class="inquiry-msg-avatar"></div>`;
+                        return `<div class="inquiry-msg-row${isMe?' me':''}">`
+                            + avatar +
+                            `<div class="inquiry-msg${isMe?' me':''}${extraClass}">${msgContent}<span class="msg-time">${time}</span></div>` +
+                        `</div>`;
                     }).join('');
                     setTimeout(()=>{ list.scrollTop = list.scrollHeight; }, 50);
                 }
