@@ -57,7 +57,12 @@ def _upload_to_cloudinary(file_obj, folder: str):
     }
     signature = _cloudinary_signature(params_to_sign, api_secret)
 
-    endpoint = f"https://api.cloudinary.com/v1_1/{cloud_name}/auto/upload"
+    filename_lower = (getattr(file_obj, 'filename', '') or '').lower()
+    mimetype_lower = (getattr(file_obj, 'mimetype', '') or '').lower()
+    is_image_like = mimetype_lower.startswith('image/') or filename_lower.endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.avif'))
+    resource_type = 'image' if is_image_like else 'raw'
+
+    endpoint = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/upload"
     print(f"🔵 [CLOUDINARY] Endpoint: {endpoint}")
     
     try:
@@ -74,9 +79,6 @@ def _upload_to_cloudinary(file_obj, folder: str):
                 'timestamp': timestamp,
                 'folder': folder,
                 'signature': signature,
-                'access_type': 'anonymous',  # Make publicly accessible
-                'type': 'upload',
-                'invalidate': False  # Don't purge CDN cache
             },
             files={
                 'file': (file_obj.filename, file_obj.stream, file_obj.mimetype or 'application/octet-stream')
@@ -90,7 +92,7 @@ def _upload_to_cloudinary(file_obj, folder: str):
 
         payload = resp.json() or {}
         url = payload.get('secure_url') or payload.get('url')
-        print(f"✅ [CLOUDINARY] Upload successful: {url}")
+        print(f"✅ [CLOUDINARY] Upload successful ({resource_type}): {url}")
         return url
 
     except requests.RequestException as e:
@@ -356,6 +358,24 @@ def proxy_file():
                     response = retry_resp
                 if response.status_code == 200:
                     print(f"✅ [FILE_PROXY] Success without auth!")
+
+            # Attempt 1.5 (Cloudinary fallback): if PDF/doc URL is on image/upload, retry with raw/upload path
+            if response.status_code in (401, 404) and 'cloudinary.com' in file_url:
+                lower_url = file_url.lower()
+                if '/image/upload/' in lower_url and any(lower_url.endswith(ext) or f"{ext}?" in lower_url for ext in ('.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt', '.zip')):
+                    alt_raw_url = file_url.replace('/image/upload/', '/raw/upload/')
+                    print(f"⚠️  [FILE_PROXY] Trying raw/upload retry for document URL...")
+                    alt_resp = _safe_get(
+                        alt_raw_url,
+                        timeout=30,
+                        stream=False,
+                        headers=headers,
+                        auth=auth,
+                        allow_redirects=True
+                    )
+                    if alt_resp is not None and alt_resp.status_code == 200:
+                        print("✅ [FILE_PROXY] Success via raw/upload URL")
+                        response = alt_resp
 
             # Attempt 2 (Cloudinary fallback): signed private download API
             if response.status_code == 401 and 'cloudinary.com' in file_url:
