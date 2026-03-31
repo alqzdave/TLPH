@@ -307,7 +307,7 @@
             const category = document.getElementById('catFilter').value;
             const region = document.getElementById('regFilter').value;
             
-            const filtered = DATA.filter(item => {
+            const filtered = DATA.map((item, dataIndex) => ({ ...item, _dataIndex: dataIndex })).filter(item => {
                 const matchSearch = Object.values(item).join(" ").toLowerCase().includes(search);
                 const matchCat = category === 'all' || item.cat === category;
                 const matchReg = region === 'all' || item.reg === region;
@@ -322,7 +322,7 @@
                 return;
             }
 
-            filtered.forEach((row, index) => {
+            filtered.forEach((row) => {
                 let badgeStyle = "bg-slate-50 text-slate-700 border-slate-200";
                 if(row.cat === "CHEMICAL RESOURCES") badgeStyle = "bg-orange-50 text-orange-700 border-orange-200";
                 if(row.cat === "NATURAL ASSETS") badgeStyle = "bg-emerald-50 text-emerald-800 border-emerald-200";
@@ -344,8 +344,8 @@
                     <td class="border-r border-slate-100"><span class="status-badge ${statusClass}">${row.statusLabel || 'Pending Review'}</span></td>
                     <td class="text-center no-print">
                         <div class="inline-flex items-center gap-2">
-                            <button onclick="openDetailModal(${index})" class="text-[9px] font-bold uppercase text-emerald-700 hover:underline bg-transparent border-none cursor-pointer">View</button>
-                            <button onclick="openLogModal(${index})" class="text-[9px] font-bold uppercase text-gov-blue hover:underline bg-transparent border-none cursor-pointer">Log</button>
+                            <button onclick="openDetailModal(${row._dataIndex})" class="text-[9px] font-bold uppercase text-emerald-700 hover:underline bg-transparent border-none cursor-pointer">View</button>
+                            <button onclick="openLogModal(${row._dataIndex})" class="text-[9px] font-bold uppercase text-gov-blue hover:underline bg-transparent border-none cursor-pointer">Log</button>
                         </div>
                     </td>
                 `;
