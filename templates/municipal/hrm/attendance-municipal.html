@@ -220,8 +220,10 @@
     const closeM = () => $('mb').classList.remove('flex');
 
     const openV = (id) => { 
+      console.log('openV called with id:', id, 'logs:', logs);
       const x = logs.find(z => z.id === id); 
-      if (!x) return; 
+      console.log('Found record:', x);
+      if (!x) { console.log('No record found'); return; } 
       $('vdate').textContent = x.date || '-';
       $('vno').textContent = x.no || '-';
       $('vnm').textContent = x.name || '-';
@@ -232,7 +234,9 @@
       $('vto').textContent = x.out || '-';
       $('vtype').innerHTML = chipType(x.type);
       $('vnts').textContent = x.notes || '-';
+      console.log('Adding flex class to mv');
       $('mv').classList.add('flex');
+      console.log('mv element:', $('mv'), 'classes:', $('mv').className);
     };
     const closeV = () => $('mv').classList.remove('flex');
 
@@ -267,6 +271,8 @@
       $('btnOpenCreate').onclick = () => openM('create');
       $('mx').onclick = $('mc').onclick = closeM;
       $('mb').addEventListener('click', e => { if (e.target === $('mb')) closeM(); });
+      $('mvx').onclick = $('mvc').onclick = closeV;
+      $('mv').addEventListener('click', e => { if (e.target === $('mv')) closeV(); });
       $('dx').onclick = $('dc').onclick = closeD;
       $('md').addEventListener('click', e => { if (e.target === $('md')) closeD(); });
 
@@ -284,14 +290,11 @@
       };
 
       document.addEventListener('click', e => {
+        const vw = e.target.closest('.vw');
         const ed = e.target.closest('.ed');
-        const rm = e.target.closest('.rm');
-        if (ed) openM('edit', ed.dataset.id);
-        if (rm) {
-          const id = rm.dataset.id;
-          const x = logs.find(z => z.id === id); if (!x) return;
-          openD([id], `Clear attendance for ${x.name} on ${x.date}?`);
-        }
+        console.log('Document click detected, vw:', vw, 'ed:', ed);
+        if (vw) { console.log('View button clicked'); openV(vw.dataset.id); }
+        if (ed) { console.log('Edit button clicked'); openM('edit', ed.dataset.id); }
       });
 
       $('dd').onclick = async () => {
