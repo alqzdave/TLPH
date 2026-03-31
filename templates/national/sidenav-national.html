@@ -55,6 +55,49 @@
 
     #national-sidenav .nsn-scroll::-webkit-scrollbar { width: 4px; }
     #national-sidenav .nsn-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+    /* Sign out modal */
+    .nsn-logout-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+    }
+    .nsn-logout-modal.is-open { display: flex; }
+    .nsn-logout-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(2px);
+    }
+    .nsn-logout-panel {
+        position: relative;
+        z-index: 1;
+        width: min(560px, 92vw);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.14);
+        font-family: 'Verdana', 'Arial', sans-serif;
+        transform: translateY(8px) scale(0.98);
+        opacity: 0;
+    }
+    .nsn-logout-modal.is-open .nsn-logout-panel {
+        animation: nsn-logout-in 180ms ease-out forwards;
+    }
+    @keyframes nsn-logout-in {
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .nsn-logout-btn {
+        border-radius: 4px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
 </style>
 
 <aside id="national-sidenav" class="w-[260px] shrink-0 h-screen bg-white border-r border-gray-200 flex flex-col sticky top-0">
@@ -284,7 +327,7 @@
             <span>My Profile</span>
         </a>
 
-        <a href="#" onclick="handleLogout(); return false;" class="nsn-logout nav-item">
+        <a href="#" onclick="openLogoutModal(); return false;" class="nsn-logout nav-item">
             <span class="material-icons-round text-[18px]">logout</span>
             <span>Sign Out</span>
         </a>
@@ -295,12 +338,55 @@
     </div>
 </aside>
 
+<div id="national-logout-modal" class="nsn-logout-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="nsn-logout-backdrop" onclick="closeLogoutModal()"></div>
+    <div class="nsn-logout-panel" role="document" aria-labelledby="national-logout-title">
+        <div class="flex items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-200">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-slate-50">
+                <span class="material-icons-round text-[20px] text-rose-600">logout</span>
+            </span>
+            <h2 id="national-logout-title" class="text-[14px] font-black uppercase tracking-wide text-slate-800 m-0">Confirm Sign Out</h2>
+            <button class="ml-auto text-slate-400 hover:text-slate-600" onclick="closeLogoutModal()" aria-label="Close">
+                <span class="material-icons-round text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="px-4 py-3">
+            <p class="text-[13px] text-slate-600 m-0">
+                Your session will end and you will be returned to the login page.
+            </p>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3 bg-white">
+            <button class="nsn-logout-btn border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                    onclick="closeLogoutModal()">
+                Stay Logged In
+            </button>
+            <button class="nsn-logout-btn border border-rose-600 bg-rose-600 text-white hover:bg-rose-700"
+                    onclick="handleLogout()">
+                Sign Out
+            </button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { auth } from '/static/js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    window.openLogoutModal = function() {
+        const modal = document.getElementById('national-logout-modal');
+        if (!modal) return;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+    };
+
+    window.closeLogoutModal = function() {
+        const modal = document.getElementById('national-logout-modal');
+        if (!modal) return;
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+    };
+
     window.handleLogout = async function() {
-        if(!confirm("Are you sure you want to sign out?")) return;
         try {
             await fetch('/api/logout', { method: 'POST' });
             await signOut(auth);
@@ -309,6 +395,12 @@
             console.error('Logout error:', error);
         }
     };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLogoutModal();
+        }
+    });
 
     (function () {
         const currentPath = window.location.pathname;
