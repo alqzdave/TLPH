@@ -8,6 +8,7 @@ import coa_storage
 from firebase_admin import firestore
 import hashlib
 import os
+import re
 import requests
 import time
 
@@ -236,10 +237,63 @@ def inventory_view():
                 return raw
             return None
 
+        def effective_status_payload(data):
+            normalize = lambda v: str(v or '').strip().lower().replace('_', '-').replace(' ', '-')
+            status = normalize(data.get('status'))
+            regional_status = normalize(data.get('regionalStatus'))
+            national_status = normalize(data.get('nationalStatus'))
+            approved_by_level = normalize(data.get('approvedByLevel'))
+            rejected_by_level = normalize(data.get('rejectedByLevel'))
+
+            if national_status == 'approved':
+                return {'key': 'approved-national', 'label': 'Approved by National'}
+            if national_status == 'rejected':
+                return {'key': 'rejected-national', 'label': 'Rejected by National'}
+
+            if status in {'forwarded-to-national', 'forwarded-national'}:
+                return {'key': 'forwarded-national', 'label': 'Forwarded to National'}
+
+            if status in {'to-review', 'to-review-regional', 'to_review'} or 'forward' in status:
+                return {'key': 'forwarded-regional', 'label': 'Forwarded to Regional'}
+
+            if status == 'approved':
+                if 'regional' in approved_by_level:
+                    return {'key': 'approved-regional', 'label': 'Approved by Regional'}
+                if 'national' in approved_by_level:
+                    return {'key': 'approved-national', 'label': 'Approved by National'}
+                return {'key': 'approved-municipal', 'label': 'Approved by Municipal'}
+
+            if status == 'rejected':
+                if 'regional' in rejected_by_level:
+                    return {'key': 'rejected-regional', 'label': 'Rejected by Regional'}
+                if 'national' in rejected_by_level:
+                    return {'key': 'rejected-national', 'label': 'Rejected by National'}
+                return {'key': 'rejected-municipal', 'label': 'Rejected by Municipal'}
+
+            if regional_status == 'approved':
+                return {'key': 'approved-regional', 'label': 'Approved by Regional'}
+            if regional_status == 'rejected':
+                return {'key': 'rejected-regional', 'label': 'Rejected by Regional'}
+
+            return {'key': 'pending', 'label': 'Pending Review'}
+
         for doc in docs:
             data = doc.to_dict() or {}
             form_data = data.get('formData') or {}
             user_data = users_map.get(data.get('userId', ''), {})
+
+            full_name = (
+                data.get('userName')
+                or data.get('ownerName')
+                or data.get('applicantName')
+                or f"{str(user_data.get('firstName') or '').strip()} {str(user_data.get('lastName') or '').strip()}".strip()
+                or user_data.get('displayName')
+                or user_data.get('userName')
+                or data.get('userEmail')
+                or user_data.get('email')
+                or data.get('email')
+                or 'Unknown User'
+            )
 
             quantity = to_number(
                 data.get('stockAvailable')
@@ -297,6 +351,38 @@ def inventory_view():
                 or 'N/A'
             )
 
+            farmer_id_number = (
+                data.get('farmerIdNumber')
+                or form_data.get('farmerIdNumber')
+                or ''
+            )
+
+            stock_latitude = (
+                data.get('stockLatitude')
+                or form_data.get('stockLatitude')
+                or ''
+            )
+            stock_longitude = (
+                data.get('stockLongitude')
+                or form_data.get('stockLongitude')
+                or ''
+            )
+            stock_gps_link = (
+                data.get('stockGpsLink')
+                or form_data.get('stockGpsLink')
+                or ''
+            )
+
+            property_number = data.get('propertyNumber') or form_data.get('propertyNumber') or ''
+            source_location = data.get('sourceLocation') or form_data.get('sourceLocation') or ''
+
+            image_url = data.get('imageUrl') or data.get('image') or data.get('photoUrl') or data.get('photo') or ''
+            permit_url = data.get('permitUrl') or data.get('permit') or data.get('permitFile') or data.get('permitFileUrl') or ''
+            visit_approval_url = data.get('visitApprovalUrl') or (data.get('files') or {}).get('visitApproval') or ''
+            scientific_study_url = data.get('scientificStudyUrl') or (data.get('files') or {}).get('scientificStudies') or ''
+            new_stock_image_urls = data.get('newStockImageUrls') or (data.get('files') or {}).get('newStockImages') or []
+            attachments = data.get('attachments') or data.get('documents') or data.get('files') or data.get('filePaths') or data.get('uploadedFiles') or {}
+
             normalized_category = (
                 normalize_category(raw_category)
                 or category_from_sector(data.get('sector'))
@@ -316,9 +402,29 @@ def inventory_view():
                 'quantity': quantity,
                 'region': str(region).strip(),
                 'municipality': str(municipality).strip(),
+                'province': str(province or '').strip() or 'N/A',
+                'applicant_name': full_name,
                 'created_at': created_at,
-                'status': (data.get('status') or '').strip()
+                'status': (data.get('status') or '').strip(),
+                'unit': data.get('unitOfMeasure') or form_data.get('unitOfMeasure') or 'pcs',
+                'registration_fee': to_number(data.get('registrationFee') or form_data.get('registrationFee') or 0),
+                'farmer_id_number': str(farmer_id_number or '').strip(),
+                'stock_latitude': str(stock_latitude or '').strip(),
+                'stock_longitude': str(stock_longitude or '').strip(),
+                'stock_gps_link': str(stock_gps_link or '').strip(),
+                'property_number': str(property_number or '').strip(),
+                'source_location': str(source_location or '').strip(),
+                'image_url': str(image_url or '').strip(),
+                'permit_url': str(permit_url or '').strip(),
+                'visit_approval_url': str(visit_approval_url or '').strip(),
+                'scientific_study_url': str(scientific_study_url or '').strip(),
+                'new_stock_image_urls': new_stock_image_urls if isinstance(new_stock_image_urls, list) else [],
+                'attachments': attachments
             })
+
+            status_payload = effective_status_payload(data)
+            inventory_records[-1]['status_key'] = status_payload['key']
+            inventory_records[-1]['status_label'] = status_payload['label']
 
             summary['total_assets'] += quantity
             if normalized_category == 'CHEMICAL RESOURCES':
@@ -354,7 +460,28 @@ def inventory_view():
                 'desc': rec.get('description', 'N/A'),
                 'qty': qty,
                 'reg': rec.get('region', 'N/A'),
-                'mun': rec.get('municipality', 'N/A')
+                'mun': rec.get('municipality', 'N/A'),
+                'id': rec.get('id'),
+                'applicant': rec.get('applicant_name', 'N/A'),
+                'province': rec.get('province', 'N/A'),
+                'status': rec.get('status', 'pending'),
+                'statusKey': rec.get('status_key', 'pending'),
+                'statusLabel': rec.get('status_label', 'Pending Review'),
+                'createdAt': rec.get('created_at').isoformat() if rec.get('created_at') else '',
+                'unit': rec.get('unit', 'pcs'),
+                'registrationFee': rec.get('registration_fee', 0),
+                'farmerIdNumber': rec.get('farmer_id_number', ''),
+                'stockLatitude': rec.get('stock_latitude', ''),
+                'stockLongitude': rec.get('stock_longitude', ''),
+                'stockGpsLink': rec.get('stock_gps_link', ''),
+                'propertyNumber': rec.get('property_number', ''),
+                'sourceLocation': rec.get('source_location', ''),
+                'imageUrl': rec.get('image_url', ''),
+                'permitUrl': rec.get('permit_url', ''),
+                'visitApprovalUrl': rec.get('visit_approval_url', ''),
+                'scientificStudyUrl': rec.get('scientific_study_url', ''),
+                'newStockImageUrls': rec.get('new_stock_image_urls', []),
+                'attachments': rec.get('attachments', {})
             })
 
         now = datetime.now()
@@ -803,6 +930,179 @@ def _is_accepted_status(raw_status):
     return _normalize_superadmin_applicant_status(raw_status) == 'accepted'
 
 
+def _split_full_name(full_name):
+    name = str(full_name or '').strip()
+    if not name:
+        return '', ''
+    parts = [p for p in name.split() if p]
+    if len(parts) == 1:
+        return parts[0], parts[0]
+    return parts[0], ' '.join(parts[1:])
+
+
+def _safe_float(value, default=0.0):
+    try:
+        if isinstance(value, (int, float)):
+            return float(value)
+        raw = str(value or '').strip()
+        if not raw or raw.upper() in {'N/A', 'NONE', 'NULL'}:
+            return float(default)
+        cleaned = re.sub(r'[^0-9.\-]', '', raw.replace(',', ''))
+        if cleaned in {'', '-', '.', '-.'}:
+            return float(default)
+        return float(cleaned)
+    except Exception:
+        return float(default)
+
+
+def _derive_applicant_salary(db, applicant_data):
+    salary_candidates = [
+        applicant_data.get('starting_salary'),
+        applicant_data.get('salary'),
+        applicant_data.get('basic_pay'),
+        applicant_data.get('net_pay'),
+        applicant_data.get('expected_salary'),
+    ]
+    for candidate in salary_candidates:
+        amount = _safe_float(candidate, 0)
+        if amount > 0:
+            return amount
+
+    source_collection = str(applicant_data.get('source_collection') or '').strip().lower()
+    source_id = str(applicant_data.get('source_id') or '').strip()
+    if source_collection == 'hiring_positions' and source_id:
+        try:
+            source_doc = db.collection('hiring_positions').document(source_id).get()
+            if source_doc.exists:
+                source_data = source_doc.to_dict() or {}
+                amount = _safe_float(source_data.get('starting_salary'), 0)
+                if amount > 0:
+                    return amount
+        except Exception:
+            pass
+
+    return 0.0
+
+
+def _build_default_payroll_fields(base_salary):
+    base = max(_safe_float(base_salary, 0), 0)
+    allowances = 0.0
+    deductions = 0.0
+    gross = base + allowances
+    net = gross - deductions
+    return {
+        'starting_salary': base,
+        'basic_pay': base,
+        'allowances': allowances,
+        'gross_pay': gross,
+        'deductions': deductions,
+        'net_pay': net,
+        'period': 'MONTHLY',
+        'status': 'DRAFT',
+    }
+
+
+def _ensure_employee_from_applicant(db, applicant_id, applicant_data, actor):
+    """Create an employee document from accepted applicant if not already created."""
+    try:
+        payroll_defaults = _build_default_payroll_fields(_derive_applicant_salary(db, applicant_data))
+
+        existing = db.collection('employees').where(
+            filter=firestore.FieldFilter('source_applicant_id', '==', applicant_id)
+        ).limit(1).stream()
+        for doc in existing:
+            existing_data = doc.to_dict() or {}
+            updates = {}
+            if payroll_defaults['starting_salary'] > 0:
+                if _safe_float(existing_data.get('starting_salary'), 0) <= 0:
+                    updates['starting_salary'] = payroll_defaults['starting_salary']
+                if _safe_float(existing_data.get('basic_pay'), 0) <= 0:
+                    updates['basic_pay'] = payroll_defaults['basic_pay']
+                if _safe_float(existing_data.get('gross_pay'), 0) <= 0:
+                    updates['gross_pay'] = payroll_defaults['gross_pay']
+                if _safe_float(existing_data.get('net_pay'), 0) <= 0:
+                    updates['net_pay'] = payroll_defaults['net_pay']
+
+            if existing_data.get('allowances') is None:
+                updates['allowances'] = payroll_defaults['allowances']
+            if existing_data.get('deductions') is None:
+                updates['deductions'] = payroll_defaults['deductions']
+            if not existing_data.get('period'):
+                updates['period'] = payroll_defaults['period']
+            if not existing_data.get('status'):
+                updates['status'] = payroll_defaults['status']
+
+            if updates:
+                updates['updated_by'] = actor
+                updates['updated_at'] = firestore.SERVER_TIMESTAMP
+                doc.reference.set(updates, merge=True)
+            return doc.id
+
+        first_name, last_name = _split_full_name(
+            applicant_data.get('full_name')
+            or applicant_data.get('applicant_name')
+            or applicant_data.get('fullName')
+            or applicant_data.get('name')
+        )
+
+        reference_id = str(applicant_data.get('reference_id') or '').strip().upper().replace(' ', '-')
+        employee_id = f"EMP-{reference_id}" if reference_id else f"EMP-APP-{applicant_id[:8].upper()}"
+
+        scope_type = str(applicant_data.get('scope_type') or '').strip().lower()
+        municipality = ''
+        if scope_type == 'municipality':
+            municipality = str(
+                applicant_data.get('municipality')
+                or applicant_data.get('scope')
+                or ''
+            ).strip()
+
+        candidate_type = str(
+            applicant_data.get('candidate_type')
+            or applicant_data.get('category')
+            or 'Applicant Hire'
+        ).strip()
+
+        employee_payload = {
+            'employee_id': employee_id,
+            'first_name': first_name,
+            'middle_name': '',
+            'last_name': last_name,
+            'email': str(applicant_data.get('email') or '').strip().lower(),
+            'contact_Number': str(applicant_data.get('phone') or applicant_data.get('mobile') or '').strip(),
+            'designation': str(applicant_data.get('position') or candidate_type or 'Applicant Hire').strip(),
+            'department_name': str(applicant_data.get('department_name') or 'Human Resource').strip(),
+            'division': str(applicant_data.get('division') or '').strip(),
+            'municipality': municipality,
+            'province': str(applicant_data.get('province') or '').strip(),
+            'region': str(applicant_data.get('region_office') or applicant_data.get('region') or '').strip(),
+            'status': 'Active',
+            'role': 'municipal' if scope_type == 'municipality' else 'regional',
+            'remarks': 'Auto-created from approved applicant',
+            'starting_salary': payroll_defaults['starting_salary'],
+            'basic_pay': payroll_defaults['basic_pay'],
+            'allowances': payroll_defaults['allowances'],
+            'gross_pay': payroll_defaults['gross_pay'],
+            'deductions': payroll_defaults['deductions'],
+            'net_pay': payroll_defaults['net_pay'],
+            'period': payroll_defaults['period'],
+            'status': payroll_defaults['status'],
+            'source_applicant_id': applicant_id,
+            'source_reference_id': reference_id,
+            'created_by': actor,
+            'updated_by': actor,
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        ref = db.collection('employees').document()
+        ref.set(employee_payload)
+        return ref.id
+    except Exception as create_err:
+        print(f'[ERROR] _ensure_employee_from_applicant: {create_err}')
+        return None
+
+
 def _format_firestore_timestamp(value):
     if not value:
         return 'N/A'
@@ -856,6 +1156,7 @@ def superadmin_applicants_data():
     try:
         db = get_firestore_db()
         docs = db.collection('municipal_denr_applicant_jobs').stream()
+        actor = session.get('user_email') or 'superadmin'
 
         applicants = []
         hiring_description_cache = {}
@@ -908,6 +1209,18 @@ def superadmin_applicants_data():
             status = _normalize_superadmin_applicant_status(
                 data.get('status') or data.get('employeeStatus') or data.get('application_status')
             )
+
+            # Backfill: ensure already-approved applicants are in employees and have payroll fields
+            if status == 'accepted':
+                employee_doc_id = _ensure_employee_from_applicant(db, doc.id, data, actor)
+                if employee_doc_id and not data.get('employee_doc_id'):
+                    doc.reference.set({
+                        'employee_doc_id': employee_doc_id,
+                        'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                        'updated_at': firestore.SERVER_TIMESTAMP,
+                        'updated_by': actor,
+                    }, merge=True)
+                    data['employee_doc_id'] = employee_doc_id
 
             applicants.append({
                 'id': doc.id,
@@ -988,6 +1301,15 @@ def superadmin_create_applicant():
             })
 
         doc_ref.set(data)
+
+        if status == 'accepted':
+            employee_doc_id = _ensure_employee_from_applicant(db, doc_ref.id, data, actor)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+
         return jsonify({'success': True, 'id': doc_ref.id})
     except Exception as e:
         print(f'[ERROR] superadmin_create_applicant: {e}')
@@ -1044,6 +1366,18 @@ def superadmin_update_applicant(applicant_id):
             return jsonify({'success': False, 'error': 'No valid updates provided'}), 400
 
         doc_ref.update(updates)
+
+        normalized_after = updates.get('status') or current_status
+        if normalized_after == 'accepted':
+            merged_data = dict(current)
+            merged_data.update(updates)
+            employee_doc_id = _ensure_employee_from_applicant(db, applicant_id, merged_data, actor)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+
         return jsonify({'success': True})
     except Exception as e:
         print(f'[ERROR] superadmin_update_applicant: {e}')
@@ -1083,6 +1417,17 @@ def superadmin_update_applicant_status(applicant_id):
             'accepted_by': actor if next_status == 'accepted' else 'N/A',
         }
         doc_ref.update(updates)
+
+        if next_status == 'accepted':
+            merged_data = dict(current)
+            merged_data.update(updates)
+            employee_doc_id = _ensure_employee_from_applicant(db, applicant_id, merged_data, actor)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+
         return jsonify({'success': True})
     except Exception as e:
         print(f'[ERROR] superadmin_update_applicant_status: {e}')
@@ -1542,6 +1887,7 @@ def api_get_superadmin_payroll():
         for doc in docs:
             data = doc.to_dict() or {}
             data['id'] = doc.id
+            fallback_salary = _safe_float(data.get('starting_salary'), 0)
             # Compose full name if missing
             if not data.get('name'):
                 fn = data.get('first_name', '')
@@ -1552,7 +1898,10 @@ def api_get_superadmin_payroll():
             for field in required_fields:
                 if field not in data or data[field] is None:
                     if field in ['basic_pay', 'allowances', 'gross_pay', 'deductions', 'net_pay']:
-                        data[field] = 0
+                        if field in ['basic_pay', 'gross_pay', 'net_pay'] and fallback_salary > 0:
+                            data[field] = fallback_salary
+                        else:
+                            data[field] = 0
                     elif field == 'status':
                         data[field] = 'DRAFT'
                     elif field == 'period':
@@ -1599,6 +1948,430 @@ def api_create_employee():
     except Exception as e:
         print(f'[ERROR] Failed to create employee: {e}')
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def _normalize_emp_status(value):
+    raw = str(value or '').strip().lower()
+    if raw in {'active', 'on duty', 'present'}:
+        return 'ACTIVE'
+    if raw in {'on_leave', 'on leave', 'leave'}:
+        return 'ON_LEAVE'
+    if raw in {'inactive', 'separated'}:
+        return 'INACTIVE'
+    return 'ACTIVE'
+
+
+def _status_to_firestore(value):
+    return {
+        'ACTIVE': 'Active',
+        'ON_LEAVE': 'On Leave',
+        'INACTIVE': 'Inactive'
+    }.get(value, 'Active')
+
+
+def _normalize_category(value):
+    raw = str(value or '').strip().upper()
+    if raw in {'MUNICIPAL', 'MUNICIPALITY', 'MUNICIPAL_ADMIN'}:
+        return 'MUNICIPALITY'
+    return 'REGIONAL'
+
+
+def _employee_doc_to_ui(doc_id, data):
+    data = data or {}
+    first = (data.get('first_name') or data.get('firstName') or '').strip()
+    last = (data.get('last_name') or data.get('lastName') or '').strip()
+    emp_no = (data.get('employee_id') or data.get('empNo') or '').strip()
+    role_value = str(data.get('role') or '').strip()
+    category = _normalize_category(data.get('scope') or role_value)
+    municipality = (data.get('municipality') or '').strip()
+
+    return {
+        'id': doc_id,
+        'empNo': emp_no,
+        'first': first,
+        'last': last,
+        'email': (data.get('email') or '').strip(),
+        'mobile': (data.get('contact_Number') or data.get('mobile') or '').strip(),
+        'category': category,
+        'region': (data.get('region') or data.get('region_name') or data.get('regionName') or '').strip(),
+        'municipality': municipality,
+        'office': (data.get('department_name') or data.get('office') or '').strip(),
+        'position': (data.get('designation') or data.get('position') or '').strip(),
+        'role': role_value or 'Employee',
+        'shiftId': (data.get('shift_id') or data.get('shiftId') or '').strip(),
+        'empStatus': _normalize_emp_status(data.get('status')),
+        'remarks': (data.get('remarks') or '').strip()
+    }
+
+
+def _normalize_shift_category(value):
+    raw = str(value or '').strip().upper()
+    if raw in {'MUNICIPAL', 'MUNICIPALITY'}:
+        return 'MUNICIPALITY'
+    return 'REGIONAL'
+
+
+def _normalize_shift_status(value):
+    raw = str(value or '').strip().lower()
+    if raw in {'inactive', 'disabled', 'archived'}:
+        return 'INACTIVE'
+    return 'ACTIVE'
+
+
+def _generate_shift_code(db, category):
+    category = _normalize_shift_category(category)
+    prefix = 'M-SFT-' if category == 'MUNICIPALITY' else 'R-SFT-'
+    max_num = 0
+    try:
+        for doc in db.collection('office_shifts').stream():
+            data = doc.to_dict() or {}
+            code = str(data.get('shift_code') or '').strip().upper()
+            if not code.startswith(prefix):
+                continue
+            suffix = code.replace(prefix, '')
+            if suffix.isdigit():
+                max_num = max(max_num, int(suffix))
+    except Exception:
+        pass
+    return f"{prefix}{max_num + 1:03d}"
+
+
+def _office_shift_to_superadmin_ui(doc_id, data):
+    data = data or {}
+    scope = str(data.get('scope') or '').strip().upper()
+    category = 'MUNICIPALITY' if scope == 'MUNICIPAL' else 'REGIONAL'
+    status = _normalize_shift_status(data.get('status'))
+
+    start = str(data.get('time_in') or data.get('start') or '').strip()
+    end = str(data.get('time_out') or data.get('end') or '').strip()
+    break_start = str(data.get('break_start') or data.get('breakStart') or '').strip()
+    break_end = str(data.get('break_end') or data.get('breakEnd') or '').strip()
+
+    days = data.get('days')
+    if not isinstance(days, list):
+        days = []
+
+    return {
+        'id': doc_id,
+        'name': str(data.get('shift_name') or data.get('name') or '').strip(),
+        'category': category,
+        'region': str(data.get('region') or '').strip(),
+        'municipality': str(data.get('municipality') or '').strip(),
+        'office': str(data.get('office') or data.get('office_unit') or '').strip(),
+        'start': start,
+        'end': end,
+        'breakStart': break_start,
+        'breakEnd': break_end,
+        'days': days,
+        'status': status,
+        'notes': str(data.get('notes') or '').strip(),
+        'shift_code': str(data.get('shift_code') or '').strip(),
+    }
+
+
+def _superadmin_ui_to_office_shift_payload(db, payload):
+    category = _normalize_shift_category(payload.get('category'))
+    scope = 'MUNICIPAL' if category == 'MUNICIPALITY' else 'REGIONAL'
+    status = 'Active' if _normalize_shift_status(payload.get('status')) == 'ACTIVE' else 'Inactive'
+
+    shift_name = str(payload.get('name') or '').strip()
+    shift_code = str(payload.get('shift_code') or '').strip().upper()
+    if not shift_code:
+        shift_code = _generate_shift_code(db, category)
+
+    return {
+        'shift_code': shift_code,
+        'shift_name': shift_name,
+        'scope': scope,
+        'shift_type': 'Fixed',
+        'time_in': str(payload.get('start') or '').strip(),
+        'time_out': str(payload.get('end') or '').strip(),
+        'time_in_early': '',
+        'time_in_late': '',
+        'time_out_early': '',
+        'time_out_late': '',
+        'grace_minutes': 15,
+        'break_policy': '1 HOUR',
+        'region': str(payload.get('region') or '').strip(),
+        'municipality': str(payload.get('municipality') or '').strip(),
+        'office': str(payload.get('office') or '').strip(),
+        'break_start': str(payload.get('breakStart') or '').strip(),
+        'break_end': str(payload.get('breakEnd') or '').strip(),
+        'days': payload.get('days') if isinstance(payload.get('days'), list) else [],
+        'notes': str(payload.get('notes') or '').strip(),
+        'status': status,
+        'updated_at': firestore.SERVER_TIMESTAMP,
+    }
+
+
+@bp.route('/api/hrm/office-shifts', methods=['GET'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_list():
+    try:
+        db = get_firestore_db()
+        rows = []
+        for doc in db.collection('office_shifts').stream():
+            rows.append(_office_shift_to_superadmin_ui(doc.id, doc.to_dict() or {}))
+        rows.sort(key=lambda item: (item.get('name') or '').lower())
+        return jsonify({'success': True, 'shifts': rows, 'count': len(rows)})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_list: {e}')
+        return jsonify({'success': False, 'error': 'Failed to load office shifts'}), 500
+
+
+@bp.route('/api/hrm/office-shifts', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_create():
+    try:
+        payload = request.get_json(silent=True) or {}
+        name = str(payload.get('name') or '').strip()
+        start = str(payload.get('start') or '').strip()
+        end = str(payload.get('end') or '').strip()
+        if not name or not start or not end:
+            return jsonify({'success': False, 'error': 'Name, start and end are required'}), 400
+
+        db = get_firestore_db()
+        data = _superadmin_ui_to_office_shift_payload(db, payload)
+        data['created_at'] = firestore.SERVER_TIMESTAMP
+        ref = db.collection('office_shifts').document()
+        ref.set(data)
+        return jsonify({'success': True, 'id': ref.id})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_create: {e}')
+        return jsonify({'success': False, 'error': 'Failed to create office shift'}), 500
+
+
+@bp.route('/api/hrm/office-shifts/<shift_id>', methods=['PUT'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_update(shift_id):
+    try:
+        payload = request.get_json(silent=True) or {}
+        name = str(payload.get('name') or '').strip()
+        start = str(payload.get('start') or '').strip()
+        end = str(payload.get('end') or '').strip()
+        if not name or not start or not end:
+            return jsonify({'success': False, 'error': 'Name, start and end are required'}), 400
+
+        db = get_firestore_db()
+        ref = db.collection('office_shifts').document(shift_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Shift not found'}), 404
+
+        data = _superadmin_ui_to_office_shift_payload(db, payload)
+        ref.set(data, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_update: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update office shift'}), 500
+
+
+@bp.route('/api/hrm/office-shifts/<shift_id>', methods=['DELETE'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_delete(shift_id):
+    try:
+        db = get_firestore_db()
+        ref = db.collection('office_shifts').document(shift_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Shift not found'}), 404
+        ref.delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_delete: {e}')
+        return jsonify({'success': False, 'error': 'Failed to delete office shift'}), 500
+
+
+@bp.route('/api/hrm/office-shifts/bulk-status', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_bulk_status():
+    try:
+        payload = request.get_json(silent=True) or {}
+        ids = payload.get('ids') or []
+        status_ui = _normalize_shift_status(payload.get('status'))
+        status_db = 'Active' if status_ui == 'ACTIVE' else 'Inactive'
+
+        if not isinstance(ids, list) or not ids:
+            return jsonify({'success': False, 'error': 'No shifts selected'}), 400
+
+        db = get_firestore_db()
+        updated = 0
+        for shift_id in ids:
+            ref = db.collection('office_shifts').document(str(shift_id))
+            snap = ref.get()
+            if not snap.exists:
+                continue
+            ref.set({'status': status_db, 'updated_at': firestore.SERVER_TIMESTAMP}, merge=True)
+            updated += 1
+
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_bulk_status: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update shift status'}), 500
+
+
+@bp.route('/api/hrm/employees', methods=['GET'])
+@role_required('super-admin', 'superadmin')
+def api_get_superadmin_employees():
+    try:
+        db = get_firestore_db()
+        rows = []
+        for doc in db.collection('employees').stream():
+            rows.append(_employee_doc_to_ui(doc.id, doc.to_dict() or {}))
+
+        rows.sort(key=lambda item: (item.get('last') or '', item.get('first') or ''))
+        return jsonify({'success': True, 'employees': rows, 'count': len(rows)})
+    except Exception as e:
+        print(f'[ERROR] api_get_superadmin_employees: {e}')
+        return jsonify({'success': False, 'error': 'Failed to load employees'}), 500
+
+
+@bp.route('/api/hrm/employees', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_create_superadmin_employee_v2():
+    try:
+        payload = request.get_json(silent=True) or {}
+        emp_no = str(payload.get('empNo') or '').strip().upper()
+        first = str(payload.get('first') or '').strip()
+        last = str(payload.get('last') or '').strip()
+
+        if not emp_no or not first or not last:
+            return jsonify({'success': False, 'error': 'Employee No., First Name, and Last Name are required'}), 400
+
+        db = get_firestore_db()
+
+        for doc in db.collection('employees').stream():
+            existing = doc.to_dict() or {}
+            if str(existing.get('employee_id') or '').strip().upper() == emp_no:
+                return jsonify({'success': False, 'error': 'Employee No. already exists'}), 409
+
+        category = _normalize_category(payload.get('category'))
+        firestore_status = _status_to_firestore(_normalize_emp_status(payload.get('empStatus')))
+
+        record = {
+            'employee_id': emp_no,
+            'first_name': first,
+            'last_name': last,
+            'middle_name': '',
+            'email': str(payload.get('email') or '').strip().lower(),
+            'contact_Number': str(payload.get('mobile') or '').strip(),
+            'scope': category,
+            'region': str(payload.get('region') or '').strip(),
+            'municipality': str(payload.get('municipality') or '').strip(),
+            'department_name': str(payload.get('office') or '').strip(),
+            'designation': str(payload.get('position') or '').strip(),
+            'role': str(payload.get('role') or 'Employee').strip(),
+            'shift_id': str(payload.get('shiftId') or '').strip(),
+            'status': firestore_status,
+            'remarks': str(payload.get('remarks') or '').strip(),
+            'updated_at': firestore.SERVER_TIMESTAMP,
+            'created_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        doc_ref = db.collection('employees').document()
+        doc_ref.set(record)
+        return jsonify({'success': True, 'id': doc_ref.id})
+    except Exception as e:
+        print(f'[ERROR] api_create_superadmin_employee_v2: {e}')
+        return jsonify({'success': False, 'error': 'Failed to create employee'}), 500
+
+
+@bp.route('/api/hrm/employees/<employee_doc_id>', methods=['PUT'])
+@role_required('super-admin', 'superadmin')
+def api_update_superadmin_employee(employee_doc_id):
+    try:
+        payload = request.get_json(silent=True) or {}
+        emp_no = str(payload.get('empNo') or '').strip().upper()
+        first = str(payload.get('first') or '').strip()
+        last = str(payload.get('last') or '').strip()
+
+        if not emp_no or not first or not last:
+            return jsonify({'success': False, 'error': 'Employee No., First Name, and Last Name are required'}), 400
+
+        db = get_firestore_db()
+        ref = db.collection('employees').document(employee_doc_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        for doc in db.collection('employees').stream():
+            if doc.id == employee_doc_id:
+                continue
+            existing = doc.to_dict() or {}
+            if str(existing.get('employee_id') or '').strip().upper() == emp_no:
+                return jsonify({'success': False, 'error': 'Employee No. already exists'}), 409
+
+        category = _normalize_category(payload.get('category'))
+        firestore_status = _status_to_firestore(_normalize_emp_status(payload.get('empStatus')))
+
+        updates = {
+            'employee_id': emp_no,
+            'first_name': first,
+            'last_name': last,
+            'email': str(payload.get('email') or '').strip().lower(),
+            'contact_Number': str(payload.get('mobile') or '').strip(),
+            'scope': category,
+            'region': str(payload.get('region') or '').strip(),
+            'municipality': str(payload.get('municipality') or '').strip(),
+            'department_name': str(payload.get('office') or '').strip(),
+            'designation': str(payload.get('position') or '').strip(),
+            'role': str(payload.get('role') or 'Employee').strip(),
+            'shift_id': str(payload.get('shiftId') or '').strip(),
+            'status': firestore_status,
+            'remarks': str(payload.get('remarks') or '').strip(),
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        ref.set(updates, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_update_superadmin_employee: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update employee'}), 500
+
+
+@bp.route('/api/hrm/employees/<employee_doc_id>', methods=['DELETE'])
+@role_required('super-admin', 'superadmin')
+def api_delete_superadmin_employee(employee_doc_id):
+    try:
+        db = get_firestore_db()
+        ref = db.collection('employees').document(employee_doc_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        ref.delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_delete_superadmin_employee: {e}')
+        return jsonify({'success': False, 'error': 'Failed to delete employee'}), 500
+
+
+@bp.route('/api/hrm/employees/bulk-status', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_bulk_status_superadmin_employee():
+    try:
+        payload = request.get_json(silent=True) or {}
+        ids = payload.get('ids') or []
+        status = _normalize_emp_status(payload.get('status'))
+
+        if not isinstance(ids, list) or not ids:
+            return jsonify({'success': False, 'error': 'No employees selected'}), 400
+
+        firestore_status = _status_to_firestore(status)
+        db = get_firestore_db()
+        updated = 0
+        for employee_doc_id in ids:
+            ref = db.collection('employees').document(str(employee_doc_id))
+            snap = ref.get()
+            if not snap.exists:
+                continue
+            ref.set({'status': firestore_status, 'updated_at': firestore.SERVER_TIMESTAMP}, merge=True)
+            updated += 1
+
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        print(f'[ERROR] api_bulk_status_superadmin_employee: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update employee status'}), 500
 
 
 # --- HRM SUPERADMIN PAGES ---

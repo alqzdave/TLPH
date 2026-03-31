@@ -347,6 +347,7 @@
     const tbody = el("empTbody");
     let apiMuniCache = {};
     let pendingDeleteId = null;
+    const EMPLOYEE_API_BASE = '/superadmin/api/hrm/employees';
 
     async function initLocationAPI() {
         try {
@@ -373,6 +374,20 @@
             console.error("Failed to load regions from PSGC API", err);
             el("filterRegion").innerHTML = '<option value="ALL">Failed to load API</option>';
         }
+    }
+
+    function ensureRegionOption(selectId, regionValue) {
+      const region = String(regionValue || '').trim();
+      if (!region) return;
+      const sel = el(selectId);
+      if (!sel) return;
+      const exists = Array.from(sel.options).some(o => (o.value || '').trim() === region);
+      if (exists) return;
+      const opt = document.createElement('option');
+      opt.value = region;
+      opt.textContent = region;
+      opt.dataset.code = '';
+      sel.appendChild(opt);
     }
 
     async function loadMunicipalities(regionCode, selectElementId, defaultText, isFilter = false) {
@@ -425,10 +440,34 @@
       { id: "S3", name: "Night Duty (16:00–00:00)" }
     ];
 
-    let employees = [
-      { id: crypto.randomUUID(), empNo: "DENR-2026-0007", last: "Dela Cruz", first: "Juan", email: "juan.delacruz@denr.gov.ph", mobile: "09171234567", category: "REGIONAL", region: "National Capital Region", municipality: "", office: "Regional Office", position: "Administrative Aide VI", role: "Employee", empStatus: "ACTIVE", shiftId: "S1", remarks: "Permanent" },
-      { id: crypto.randomUUID(), empNo: "DENR-2026-0011", last: "Santos", first: "Maria", email: "maria.santos@denr.gov.ph", mobile: "", category: "MUNICIPALITY", region: "CALABARZON", municipality: "City of San Pedro", office: "CENRO", position: "Environmental Management Specialist", role: "Supervisor", empStatus: "ON_LEAVE", shiftId: "S2", remarks: "COS" }
-    ];
+    let employees = [];
+
+    async function loadEmployees() {
+      try {
+        const response = await fetch(EMPLOYEE_API_BASE, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to load employees');
+        }
+        employees = Array.isArray(data.employees) ? data.employees : [];
+
+        const uniqueRegions = [...new Set(employees.map(e => (e.region || '').trim()).filter(Boolean))];
+        uniqueRegions.forEach(region => {
+          ensureRegionOption('filterRegion', region);
+          ensureRegionOption('fRegion', region);
+        });
+
+        render();
+      } catch (err) {
+        console.error('Error loading employees:', err);
+        showToast('Load Failed', err.message || 'Could not load employees.');
+        employees = [];
+        render();
+      }
+    }
 
     function escapeHtml(str){ return String(str ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 
@@ -550,11 +589,22 @@
         el("fOffice").value = e.office; el("fPosition").value = e.position; el("fRemarks").value = e.remarks || "";
 
         const fReg = el("fRegion");
+        ensureRegionOption('fRegion', e.region || '');
         fReg.value = e.region || "";
         const selectedOption = Array.from(fReg.options).find(opt => opt.value === e.region);
         if (selectedOption && selectedOption.dataset.code) {
            await loadMunicipalities(selectedOption.dataset.code, 'fMunicipality', 'Select Municipality / City', false);
            el("fMunicipality").value = e.municipality || "";
+        } else {
+           el("fMunicipality").innerHTML = '<option value="">Select Region First</option>';
+           if (e.municipality) {
+             const opt = document.createElement('option');
+             opt.value = e.municipality;
+             opt.textContent = e.municipality;
+             el("fMunicipality").appendChild(opt);
+             el("fMunicipality").value = e.municipality;
+             el("fMunicipality").disabled = false;
+           }
         }
       }
     }
@@ -576,11 +626,25 @@
 
     function getSelectedIds(){ return Array.from(document.querySelectorAll(".rowChk:checked")).map(x => x.getAttribute("data-id")); }
 
-    function setStatusForSelected(newStatus){
+    async function setStatusForSelected(newStatus){
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("No selection", "Select at least one employee."); return; }
-      employees = employees.map(e => ids.includes(e.id) ? { ...e, empStatus: newStatus } : e);
-      render(); showToast("Updated", `${ids.length} employee(s) set to ${newStatus.replaceAll("_"," ").toLowerCase()}.`);
+      try {
+        const response = await fetch(`${EMPLOYEE_API_BASE}/bulk-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids, status: newStatus })
+        });
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Bulk update failed');
+        }
+        await loadEmployees();
+        showToast("Updated", `${data.updated || ids.length} employee(s) updated.`);
+      } catch (err) {
+        console.error('Bulk update error:', err);
+        showToast('Update Failed', err.message || 'Could not update selected employees.');
+      }
     }
 
     function exportCSV(){
@@ -600,7 +664,7 @@
       el("btnOpenCreate").addEventListener("click", () => openModal("create"));
       el("btnCloseModal").addEventListener("click", closeModal); el("btnCancel").addEventListener("click", closeModal);
 
-      el("empForm").addEventListener("submit", (ev) => {
+      el("empForm").addEventListener("submit", async (ev) => {
         ev.preventDefault();
         const id = el("editId").value.trim();
         const payload = {
@@ -615,12 +679,25 @@
         const collision = employees.some(e => e.empNo.toLowerCase() === payload.empNo.toLowerCase() && e.id !== id);
         if(collision){ showToast("Duplicate", "Employee No. must be unique."); return; }
 
-        if(!id){
-          employees.unshift({ id: crypto.randomUUID(), ...payload });
-          closeModal(); render(); showToast("Saved", "New employee created.");
-        }else{
-          employees = employees.map(e => e.id === id ? { ...e, ...payload } : e);
-          closeModal(); render(); showToast("Saved", "Employee updated.");
+        try {
+          const url = id ? `${EMPLOYEE_API_BASE}/${encodeURIComponent(id)}` : EMPLOYEE_API_BASE;
+          const method = id ? 'PUT' : 'POST';
+          const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+          if (!data.success) {
+            throw new Error(data.error || 'Save failed');
+          }
+
+          closeModal();
+          await loadEmployees();
+          showToast("Saved", id ? "Employee updated." : "New employee created.");
+        } catch (err) {
+          console.error('Save employee error:', err);
+          showToast('Save Failed', err.message || 'Unable to save employee.');
         }
       });
 
@@ -662,14 +739,29 @@
       el("btnCloseDelete").addEventListener("click", closeDeleteModal);
       el("btnCancelDelete").addEventListener("click", closeDeleteModal);
       el("deleteBackdrop").addEventListener("click", closeDeleteModal);
-      el("btnConfirmDelete").addEventListener("click", () => {
+      el("btnConfirmDelete").addEventListener("click", async () => {
         if(!pendingDeleteId) { closeDeleteModal(); return; }
-        employees = employees.filter(x => x.id !== pendingDeleteId);
-        render(); showToast("Removed", "Employee deleted.");
-        closeDeleteModal();
+
+        try {
+          const response = await fetch(`${EMPLOYEE_API_BASE}/${encodeURIComponent(pendingDeleteId)}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const data = await response.json();
+          if (!data.success) {
+            throw new Error(data.error || 'Delete failed');
+          }
+
+          closeDeleteModal();
+          await loadEmployees();
+          showToast("Removed", "Employee deleted.");
+        } catch (err) {
+          console.error('Delete employee error:', err);
+          showToast('Delete Failed', err.message || 'Unable to delete employee.');
+        }
       });
 
-      render();
+      await loadEmployees();
     });
   </script>
 </body>

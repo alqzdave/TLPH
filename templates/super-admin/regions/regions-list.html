@@ -51,6 +51,7 @@
         /* Modal Transitions */
         .gov-modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 2050; backdrop-filter: blur(2px); padding: 16px; }
         .gov-modal.flex { display: flex !important; animation: fadeIn 0.15s ease-out; }
+        .gov-modal.right-align { justify-content: flex-end !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         @media print {
@@ -239,16 +240,6 @@
                     <input type="text" id="regionName" placeholder="e.g., National Capital Region" class="gov-input w-full h-8" required>
                 </div>
 
-                <div>
-                    <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Island Group <span class="text-red-600">*</span></label>
-                    <select id="islandGroup" class="gov-input w-full h-8 cursor-pointer" required>
-                        <option value="" disabled selected>Select categorization...</option>
-                        <option value="Luzon">Luzon</option>
-                        <option value="Visayas">Visayas</option>
-                        <option value="Mindanao">Mindanao</option>
-                    </select>
-                </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Municipalities <span class="text-red-600">*</span></label>
@@ -341,16 +332,34 @@
     </div>
 
     <script>
-        // ----------------------------------------------------
-        // DATA & FILTERING LOGIC
-        // ----------------------------------------------------
-        let regions = [
-            {code:'IV-B', name:'MIMAROPA', island:'Luzon', munic:5, staff:12, status:'active', link:'/superadmin/regions/iv-b'},
-            {code:'VII', name:'Central Visayas', island:'Visayas', munic:8, staff:18, status:'active', link:'/superadmin/regions/vii'},
-            {code:'III', name:'Central Luzon', island:'Luzon', munic:6, staff:15, status:'active', link:'/superadmin/regions/iii'},
-            {code:'VIII', name:'Eastern Visayas', island:'Visayas', munic:4, staff:9, status:'inactive', link:'/superadmin/regions/viii'},
-            {code:'XI', name:'Davao Region', island:'Mindanao', munic:11, staff:25, status:'active', link:'/superadmin/regions/xi'}
-        ];
+        // Global regions data loaded from API
+        let regions = [];
+
+        // Load regions from API
+        async function loadRegions() {
+            try {
+                const response = await fetch('/api/superadmin/regions', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Failed to load regions:', data.message);
+                    regions = [];
+                } else {
+                    regions = data.regions || [];
+                }
+                
+                // Apply initial filters and render
+                filterRegions();
+            } catch (err) {
+                console.error('Error loading regions:', err);
+                regions = [];
+            }
+        }
+
+        // --- DATA & FILTERING LOGIC ---
 
         function renderStatusBadge(status) {
             if(status === 'active') return '<span class="status-badge bg-emerald-50 text-emerald-800 border-emerald-200">Active</span>';
@@ -375,15 +384,20 @@
             document.getElementById('regionTable').innerHTML = filtered.length ? filtered.map(r => `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="font-mono font-black text-slate-700 border-r border-slate-100 uppercase tracking-tighter">${r.code}</td>
-                    <td class="font-black text-slate-900 border-r border-slate-100 uppercase tracking-tight">${r.name}</td>
-                    <td class="text-center text-slate-700 uppercase tracking-widest font-bold border-r border-slate-100">${r.island}</td>
-                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.munic}</td>
-                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.staff}</td>
+                    <td class="font-black text-slate-900 border-r border-slate-100 uppercase tracking-tight">${r.name || '<span class="text-amber-600">—</span>'}</td>
+                    <td class="text-center text-slate-700 uppercase tracking-widest font-bold border-r border-slate-100">${r.island || '<span class="text-amber-600">—</span>'}</td>
+                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.munic || '0'}</td>
+                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.staff || '0'}</td>
                     <td class="text-center border-r border-slate-100">${renderStatusBadge(r.status)}</td>
                     <td class="text-center no-print">
-                        <button type="button" data-action="review" data-code="${r.code}" class="text-[9px] font-bold uppercase text-gov-blue hover:underline tracking-widest cursor-pointer bg-transparent border-none">
-                            Review
-                        </button>
+                        <div class="flex gap-1 justify-center items-center">
+                            <button type="button" data-action="review" data-code="${r.code}" class="text-[9px] font-bold uppercase text-gov-blue hover:underline tracking-widest cursor-pointer bg-transparent border-none">
+                                Review
+                            </button>
+                            ${(!r.name || !r.island) ? `<button type="button" onclick="openFillMissingModal('${r.code}')" title="Fill missing data" class="text-[9px] font-bold uppercase text-amber-600 hover:text-amber-700 tracking-widest cursor-pointer bg-transparent border-none hover:underline">
+                                Fill
+                            </button>` : ''}
+                        </div>
                     </td>
                 </tr>`).join('') : '<tr><td colspan="7" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No registry records found.</td></tr>';
             
@@ -415,7 +429,8 @@
             document.getElementById(id).addEventListener('change', filterRegions);
         });
 
-        filterRegions();
+        // Load regions from API on page initialization
+        loadRegions();
 
         // ----------------------------------------------------
         // DRAWER LOGIC & FORM SUBMISSION
@@ -442,22 +457,52 @@
             }, 120);
         }
 
-        document.getElementById('regionForm').addEventListener('submit', function(e) {
+        document.getElementById('regionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const code = document.getElementById('regionCode').value.trim();
             const name = document.getElementById('regionName').value.trim();
-            const island = document.getElementById('islandGroup').value;
             const munic = document.getElementById('regionMunic').value;
             const staff = document.getElementById('regionStaff').value;
             const status = document.getElementById('regionFormStatus').value;
 
-            const newRegion = {
-                code: code, name: name, island: island, munic: munic, staff: staff, status: status, link: '#'
-            };
-            
-            regions.unshift(newRegion);
-            filterRegions();
-            closeRegisterDrawer();
+            try {
+                const response = await fetch('/api/superadmin/regions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: code,
+                        name: name,
+                        munic: parseInt(munic),
+                        staff: parseInt(staff),
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    alert('Error: ' + data.message);
+                    return;
+                }
+
+                alert('Region registered successfully!');
+                
+                // Add to local array and re-render
+                const newRegion = {
+                    code: code,
+                    name: name,
+                    munic: parseInt(munic),
+                    staff: parseInt(staff),
+                    status: status,
+                    link: `/superadmin/regions/${code.toLowerCase()}`
+                };
+                
+                regions.unshift(newRegion);
+                filterRegions();
+                closeRegisterDrawer();
+            } catch (err) {
+                console.error('Error submitting region:', err);
+                alert('Error: ' + err.message);
+            }
         });
 
         // ----------------------------------------------------
@@ -539,9 +584,7 @@
             setTimeout(() => { modalWrapper.classList.add('hidden'); if (modalChartInstance) { modalChartInstance.destroy(); modalChartInstance = null; } }, 300);
         }
 
-        // ----------------------------------------------------
-        // REVIEW MODAL LOGIC
-        // ----------------------------------------------------
+        // --- REVIEW MODAL LOGIC ---
         const reviewWrapper = document.getElementById('reviewModalWrapper');
         const reviewBody = document.getElementById('reviewModalBody');
 
@@ -579,6 +622,74 @@
             const code = btn.dataset.code;
             const region = regions.find(r => r.code === code);
             if (region) openReviewModal(region);
+        });
+
+        // --- Fill Missing Modal Logic ---
+        const fillMissingModal = document.getElementById('fillMissingModal');
+        const fillMissingBody = document.getElementById('fillMissingBody');
+        let currentRegionForFill = null;
+
+        function openFillMissingModal(regionCode) {
+            currentRegionForFill = regionCode;
+            document.getElementById('fillCode').value = regionCode;
+            document.getElementById('fillName').value = '';
+            document.getElementById('fillMunic').value = '';
+            document.getElementById('fillStaff').value = '';
+            document.getElementById('fillStatus').value = 'active';
+            
+            fillMissingModal.classList.remove('hidden');
+            setTimeout(() => { fillMissingModal.classList.add('flex'); fillMissingBody.classList.replace('scale-95', 'scale-100'); }, 10);
+        }
+
+        function closeFillMissingModal() {
+            fillMissingModal.classList.remove('flex');
+            fillMissingBody.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => fillMissingModal.classList.add('hidden'), 150);
+        }
+
+        document.getElementById('fillMissingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const payload = {
+                code: currentRegionForFill,
+                name: document.getElementById('fillName').value.trim(),
+                munic: parseInt(document.getElementById('fillMunic').value) || 0,
+                staff: parseInt(document.getElementById('fillStaff').value) || 0,
+                status: document.getElementById('fillStatus').value
+            };
+            
+            try {
+                const response = await fetch('/api/superadmin/regions/fill-missing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    alert('Error: ' + data.message);
+                    return;
+                }
+                
+                alert('Region information completed successfully!');
+                
+                // Update local region data
+                const regionIdx = regions.findIndex(r => r.code === currentRegionForFill);
+                if (regionIdx >= 0) {
+                    regions[regionIdx] = {
+                        ...regions[regionIdx],
+                        ...payload
+                    };
+                } else {
+                    regions.push(payload);
+                }
+                
+                filterRegions();
+                closeFillMissingModal();
+            } catch (err) {
+                console.error('Error filling missing data:', err);
+                alert('Error: ' + err.message);
+            }
         });
     </script>
 </body>

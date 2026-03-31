@@ -11,7 +11,7 @@ import hashlib
 import uuid
 import requests
 from urllib.request import urlopen
-from urllib.parse import quote_plus, quote
+from urllib.parse import quote_plus, quote, urlparse, unquote
 from firebase_admin import firestore
 from firebase_auth_middleware import firebase_auth_required
 import system_logs_storage
@@ -107,6 +107,104 @@ def _upload_to_cloudinary(file_obj, folder: str):
             file_obj.stream.seek(0)
         except Exception:
             pass
+
+
+def _cloudinary_public_id_candidates_from_url(file_url: str):
+    """Extract likely public_id candidates and resource type from a Cloudinary delivery URL."""
+    try:
+        parsed = urlparse(str(file_url or '').strip())
+        if not parsed.netloc or 'res.cloudinary.com' not in parsed.netloc:
+            return [], ''
+
+        parts = [p for p in parsed.path.split('/') if p]
+        # Expected path format: /<cloud_name>/<resource_type>/upload[/v123]/<public_id...>
+        if len(parts) < 5:
+            return [], ''
+
+        resource_type = parts[1]
+        action = parts[2]
+        if action not in {'upload', 'private', 'authenticated'}:
+            return [], resource_type
+
+        public_parts = parts[3:]
+        if public_parts and public_parts[0].startswith('v') and public_parts[0][1:].isdigit():
+            public_parts = public_parts[1:]
+        if not public_parts:
+            return [], resource_type
+
+        public_id = unquote('/'.join(public_parts))
+        # For raw/image delivery, extension behavior varies across uploads, try both forms.
+        without_ext = public_id.rsplit('.', 1)[0] if '.' in public_id else public_id
+
+        candidates = []
+        for value in (public_id, without_ext):
+            value = str(value or '').strip()
+            if value and value not in candidates:
+                candidates.append(value)
+        return candidates, resource_type
+    except Exception:
+        return [], ''
+
+
+def _cloudinary_destroy_public_id(public_id: str, resource_type: str) -> bool:
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
+    api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+    if not cloud_name or not api_key or not api_secret:
+        return False
+
+    public_id = str(public_id or '').strip()
+    resource_type = str(resource_type or '').strip() or 'image'
+    if not public_id:
+        return False
+
+    timestamp = int(time.time())
+    params_to_sign = {
+        'public_id': public_id,
+        'timestamp': timestamp,
+        'invalidate': 'true',
+    }
+    signature = _cloudinary_signature(params_to_sign, api_secret)
+    endpoint = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/destroy"
+
+    try:
+        resp = requests.post(
+            endpoint,
+            data={
+                'api_key': api_key,
+                'timestamp': timestamp,
+                'public_id': public_id,
+                'invalidate': 'true',
+                'signature': signature,
+            },
+            timeout=20,
+        )
+        if not resp.ok:
+            return False
+        payload = resp.json() or {}
+        # Cloudinary returns 'ok' or 'not found'. Either means remote URL is no longer valid for our cleanup goal.
+        result = str(payload.get('result') or '').strip().lower()
+        return result in {'ok', 'not found'}
+    except Exception:
+        return False
+
+
+def _delete_cloudinary_asset_by_url(file_url: str) -> bool:
+    candidates, detected_type = _cloudinary_public_id_candidates_from_url(file_url)
+    if not candidates:
+        return False
+
+    resource_types = []
+    for rt in (detected_type, 'image', 'raw'):
+        rt = str(rt or '').strip()
+        if rt and rt not in resource_types:
+            resource_types.append(rt)
+
+    for public_id in candidates:
+        for resource_type in resource_types:
+            if _cloudinary_destroy_public_id(public_id, resource_type):
+                return True
+    return False
 
 
 def _is_image_file(file_obj) -> bool:
@@ -1581,12 +1679,708 @@ def check_session():
                 device_type=detect_device_from_request(),
                 user_agent=request.headers.get('User-Agent', '')
             )
+
+        profile_name = ''
+        try:
+            profile = _resolve_user_profile(user_id or '', user_email)
+            profile_name = str(profile.get('name') or '').strip()
+        except Exception:
+            profile_name = ''
+
         return jsonify({
             'authenticated': True,
             'role': role,
-            'email': user_email
+            'email': user_email,
+            'user_id': user_id,
+            'name': profile_name,
         })
     return jsonify({'authenticated': False}), 401
+
+
+@bp.route('/superadmin/profile', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_profile():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        user_id = str(session.get('user_id') or '').strip()
+        user_email = str(session.get('user_email') or '').strip().lower()
+
+        user_doc = None
+        user_data = {}
+
+        if user_id:
+            try:
+                doc = db.collection('users').document(user_id).get()
+                if doc.exists:
+                    user_doc = doc
+                    user_data = doc.to_dict() or {}
+            except Exception:
+                user_doc = None
+
+        if user_doc is None and user_email:
+            try:
+                docs = db.collection('users').where(filter=FieldFilter('email', '==', user_email)).limit(1).stream()
+                for d in docs:
+                    user_doc = d
+                    user_data = d.to_dict() or {}
+                    break
+            except Exception:
+                try:
+                    docs = db.collection('users').where('email', '==', user_email).limit(1).stream()
+                    for d in docs:
+                        user_doc = d
+                        user_data = d.to_dict() or {}
+                        break
+                except Exception:
+                    user_doc = None
+
+        first_name = str(user_data.get('firstName') or user_data.get('first_name') or '').strip()
+        last_name = str(user_data.get('lastName') or user_data.get('last_name') or '').strip()
+        full_name = f"{first_name} {last_name}".strip() or str(user_data.get('name') or '').strip() or 'Super Admin'
+
+        denr_logo = 'https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705'
+        profile = {
+            'full_name': full_name,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': user_email or str(user_data.get('email') or '').strip().lower(),
+            'employee_id': user_id or (user_doc.id if user_doc else ''),
+            'office_location': str(user_data.get('office_location') or user_data.get('officeLocation') or 'central').strip().lower(),
+            'two_fa_enabled': bool(user_data.get('2fa_enabled', user_data.get('two_fa_enabled', True))),
+            'breach_alerts': bool(user_data.get('breach_alerts', True)),
+            'weekly_reports': bool(user_data.get('weekly_reports', False)),
+            'photo_url': denr_logo,
+            'role_label': 'System Director',
+        }
+
+        return jsonify({'success': True, 'profile': profile})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/profile', methods=['POST'])
+@firebase_auth_required
+def api_update_superadmin_profile():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        payload = request.get_json() or {}
+        full_name = str(payload.get('full_name') or '').strip()
+        office_location = str(payload.get('office_location') or '').strip().lower()
+        two_fa_enabled = bool(payload.get('two_fa_enabled', True))
+        breach_alerts = bool(payload.get('breach_alerts', True))
+        weekly_reports = bool(payload.get('weekly_reports', False))
+        new_password = str(payload.get('new_password') or '').strip()
+
+        if not full_name:
+            return jsonify({'success': False, 'message': 'Full name is required'}), 400
+
+        allowed_locations = {'central', 'ncr', 'r4a'}
+        if office_location not in allowed_locations:
+            office_location = 'central'
+
+        parts = [p for p in full_name.split(' ') if p]
+        first_name = parts[0] if parts else ''
+        last_name = ' '.join(parts[1:]).strip() if len(parts) > 1 else ''
+
+        db = firestore.client()
+        user_id = str(session.get('user_id') or '').strip()
+        user_email = str(session.get('user_email') or '').strip().lower()
+
+        user_ref = None
+        if user_id:
+            user_ref = db.collection('users').document(user_id)
+        elif user_email:
+            try:
+                docs = db.collection('users').where(filter=FieldFilter('email', '==', user_email)).limit(1).stream()
+                for d in docs:
+                    user_ref = d.reference
+                    break
+            except Exception:
+                try:
+                    docs = db.collection('users').where('email', '==', user_email).limit(1).stream()
+                    for d in docs:
+                        user_ref = d.reference
+                        break
+                except Exception:
+                    user_ref = None
+
+        if user_ref is None:
+            if not user_id:
+                return jsonify({'success': False, 'message': 'Cannot resolve user document'}), 400
+            user_ref = db.collection('users').document(user_id)
+
+        update_fields = {
+            'name': full_name,
+            'firstName': first_name,
+            'lastName': last_name,
+            'office_location': office_location,
+            '2fa_enabled': two_fa_enabled,
+            'breach_alerts': breach_alerts,
+            'weekly_reports': weekly_reports,
+            'updated_at': datetime.utcnow(),
+        }
+
+        user_ref.set(update_fields, merge=True)
+
+        message = 'Profile updated successfully.'
+        if new_password:
+            message += ' Password update is not available from this page yet.'
+
+        return jsonify({'success': True, 'message': message})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/account-permissions', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_account_permissions():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        users = []
+        for doc in db.collection('users').stream():
+            data = doc.to_dict() or {}
+            if not isinstance(data, dict):
+                continue
+
+            user_role = str(data.get('role') or '').strip().lower()
+            if user_role in {'superadmin', 'super-admin'}:
+                continue
+
+            email = str(data.get('email') or '').strip().lower()
+            if not email:
+                continue
+
+            first_name = str(data.get('firstName') or data.get('first_name') or '').strip()
+            last_name = str(data.get('lastName') or data.get('last_name') or '').strip()
+            full_name = f"{first_name} {last_name}".strip() or str(data.get('name') or data.get('username') or '').strip()
+            if not full_name and '@' in email:
+                full_name = email.split('@', 1)[0]
+
+            department = (
+                str(data.get('department') or '').strip()
+                or str(data.get('office_location') or data.get('officeLocation') or '').strip()
+                or str(data.get('municipality') or '').strip()
+                or str(data.get('region') or '').strip()
+                or 'General'
+            )
+
+            permissions_matrix = data.get('permissions_matrix')
+            if not isinstance(permissions_matrix, dict):
+                permissions_matrix = {}
+
+            users.append({
+                'id': doc.id,
+                'name': full_name,
+                'email': email,
+                'department': department,
+                'role': user_role,
+                'permissions': permissions_matrix,
+            })
+
+        users.sort(key=lambda u: (str(u.get('name') or '').lower(), str(u.get('email') or '').lower()))
+        return jsonify({'success': True, 'users': users})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/account-permissions', methods=['POST'])
+@firebase_auth_required
+def api_save_superadmin_account_permissions():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        payload = request.get_json() or {}
+        users_payload = payload.get('users') or []
+        if not isinstance(users_payload, list):
+            return jsonify({'success': False, 'message': 'Invalid payload'}), 400
+
+        db = firestore.client()
+        batch = db.batch()
+        updated = 0
+
+        for row in users_payload:
+            if not isinstance(row, dict):
+                continue
+            user_id = str(row.get('user_id') or '').strip()
+            perms = row.get('permissions')
+            if not user_id or not isinstance(perms, dict):
+                continue
+
+            doc_ref = db.collection('users').document(user_id)
+            batch.set(doc_ref, {
+                'permissions_matrix': perms,
+                'permissions_matrix_updated_at': datetime.utcnow(),
+            }, merge=True)
+            updated += 1
+
+        if updated:
+            batch.commit()
+
+        return jsonify({'success': True, 'updated_count': updated})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+def _is_superadmin_session() -> bool:
+    role = str(session.get('user_role') or '').strip().lower()
+    return role in {'superadmin', 'super-admin'}
+
+
+def _compute_group_member_counts(db, groups):
+    counts_by_id = {}
+    counts_by_name = {}
+
+    for g in groups:
+        gid = str(g.get('id') or '').strip()
+        gname = str(g.get('name') or '').strip().lower()
+        if gid:
+            counts_by_id.setdefault(gid, 0)
+        if gname:
+            counts_by_name.setdefault(gname, 0)
+
+    for doc in db.collection('users').stream():
+        data = doc.to_dict() or {}
+        if not isinstance(data, dict):
+            continue
+
+        role = str(data.get('role') or '').strip().lower()
+        if role in {'superadmin', 'super-admin'}:
+            continue
+
+        group_id_candidates = [
+            str(data.get('user_group_id') or '').strip(),
+            str(data.get('group_id') or '').strip(),
+            str(data.get('userGroupId') or '').strip(),
+            str(data.get('groupId') or '').strip(),
+        ]
+        group_name_candidates = [
+            str(data.get('user_group') or '').strip().lower(),
+            str(data.get('group') or '').strip().lower(),
+            str(data.get('userGroup') or '').strip().lower(),
+            str(data.get('groupName') or '').strip().lower(),
+        ]
+
+        matched = False
+        for gid in group_id_candidates:
+            if gid and gid in counts_by_id:
+                counts_by_id[gid] += 1
+                matched = True
+                break
+
+        if matched:
+            continue
+
+        for gname in group_name_candidates:
+            if gname and gname in counts_by_name:
+                counts_by_name[gname] += 1
+                break
+
+    return counts_by_id, counts_by_name
+
+
+def _clearance_for_role(role_value: str) -> str:
+    role = str(role_value or '').strip().lower()
+    if role in {'superadmin', 'super-admin'}:
+        return 'Level 5'
+    if role in {'national', 'national_admin'}:
+        return 'Level 4'
+    if role in {'regional', 'regional_admin'}:
+        return 'Level 3'
+    if role in {'municipal', 'municipal_admin'}:
+        return 'Level 2'
+    return 'Level 1'
+
+
+def _role_display_name(role_value: str) -> str:
+    role = str(role_value or '').strip().lower().replace('-', '_')
+    if not role:
+        return 'GENERAL USERS'
+    return role.replace('_', ' ').upper()
+
+
+def _derive_groups_from_user_roles(db):
+    role_counts = {}
+    active_users = 0
+    inactive_users = 0
+
+    for doc in db.collection('users').stream():
+        data = doc.to_dict() or {}
+        if not isinstance(data, dict):
+            continue
+
+        role = str(data.get('role') or '').strip().lower()
+        if role in {'superadmin', 'super-admin'}:
+            continue
+
+        role_key = role or 'user'
+        role_counts[role_key] = role_counts.get(role_key, 0) + 1
+
+        status_text = str(
+            data.get('status')
+            or data.get('accountStatus')
+            or data.get('account_status')
+            or 'active'
+        ).strip().lower()
+        if status_text in {'inactive', 'suspended', 'disabled', 'blocked'}:
+            inactive_users += 1
+        else:
+            active_users += 1
+
+    groups = []
+    for role_key, count in sorted(role_counts.items(), key=lambda item: item[0]):
+        groups.append({
+            'id': f'role::{role_key}',
+            'name': _role_display_name(role_key),
+            'desc': f'Auto-grouped from users role: {role_key}',
+            'clearance': _clearance_for_role(role_key),
+            'status': 'active',
+            'members': int(count),
+            'is_derived': True,
+        })
+
+    stats = {
+        'total_groups': len(groups),
+        'total_members': sum(int(g.get('members') or 0) for g in groups),
+        'active_users': int(active_users),
+        'inactive_users': int(inactive_users),
+    }
+    return groups, stats
+
+
+@bp.route('/superadmin/user-groups', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_user_groups():
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        rows = []
+        for doc in db.collection('superadmin_user_groups').stream():
+            data = doc.to_dict() or {}
+            if not isinstance(data, dict):
+                continue
+            rows.append({
+                'id': doc.id,
+                'name': str(data.get('name') or '').strip(),
+                'desc': str(data.get('desc') or '').strip(),
+                'clearance': str(data.get('clearance') or 'Level 1').strip(),
+                'status': str(data.get('status') or 'active').strip().lower(),
+                'members_stored': int(data.get('members') or 0),
+            })
+
+        derived_groups, derived_stats = _derive_groups_from_user_roles(db)
+        counts_by_id, counts_by_name = _compute_group_member_counts(db, rows)
+
+        groups = []
+        for row in rows:
+            gid = str(row.get('id') or '').strip()
+            gname = str(row.get('name') or '').strip().lower()
+            inferred = counts_by_id.get(gid, 0) if gid else 0
+            if not inferred and gname:
+                inferred = counts_by_name.get(gname, 0)
+            members = inferred if inferred > 0 else int(row.get('members_stored') or 0)
+
+            groups.append({
+                'id': gid,
+                'name': row.get('name') or 'UNNAMED GROUP',
+                'desc': row.get('desc') or '',
+                'clearance': row.get('clearance') or 'Level 1',
+                'status': row.get('status') or 'active',
+                'members': max(0, int(members or 0)),
+                'is_derived': False,
+            })
+
+        # Ensure role-based groups from users collection are visible even if no custom groups exist.
+        existing_names = {str(g.get('name') or '').strip().lower() for g in groups}
+        for dg in derived_groups:
+            dname = str(dg.get('name') or '').strip().lower()
+            if dname and dname not in existing_names:
+                groups.append(dg)
+                existing_names.add(dname)
+
+        # If custom groups are empty, show fully derived groups directly.
+        if not rows:
+            groups = derived_groups
+
+        groups.sort(key=lambda g: str(g.get('name') or '').lower())
+        active_members = int(derived_stats.get('active_users') or 0)
+        inactive_members = int(derived_stats.get('inactive_users') or 0)
+
+        stats = {
+            'total_groups': len(groups),
+            'total_members': sum(int(g.get('members') or 0) for g in groups),
+            'active_users': active_members,
+            'inactive_users': inactive_members,
+        }
+
+        return jsonify({'success': True, 'groups': groups, 'stats': stats})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/user-groups', methods=['POST'])
+@firebase_auth_required
+def api_create_superadmin_user_group():
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        data = request.get_json() or {}
+        name = str(data.get('name') or '').strip().upper()
+        desc = str(data.get('desc') or '').strip()
+        clearance = str(data.get('clearance') or '').strip()
+        status = str(data.get('status') or 'active').strip().lower()
+        members = max(0, int(data.get('members') or 0))
+
+        if not name:
+            return jsonify({'success': False, 'message': 'Group name is required'}), 400
+        if not clearance:
+            return jsonify({'success': False, 'message': 'Clearance level is required'}), 400
+        if status not in {'active', 'inactive'}:
+            status = 'active'
+
+        doc = {
+            'name': name,
+            'desc': desc,
+            'clearance': clearance,
+            'status': status,
+            'members': members,
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow(),
+            'created_by': str(session.get('user_email') or '').strip().lower(),
+        }
+
+        ref = firestore.client().collection('superadmin_user_groups').document()
+        ref.set(doc)
+        return jsonify({'success': True, 'group': {'id': ref.id, **doc}}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/user-groups/<group_id>', methods=['PUT'])
+@firebase_auth_required
+def api_update_superadmin_user_group(group_id):
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        gid = str(group_id or '').strip()
+        if not gid:
+            return jsonify({'success': False, 'message': 'Invalid group id'}), 400
+
+        data = request.get_json() or {}
+        update_fields = {
+            'updated_at': datetime.utcnow(),
+        }
+
+        if 'name' in data:
+            update_fields['name'] = str(data.get('name') or '').strip().upper()
+        if 'desc' in data:
+            update_fields['desc'] = str(data.get('desc') or '').strip()
+        if 'clearance' in data:
+            update_fields['clearance'] = str(data.get('clearance') or '').strip()
+        if 'status' in data:
+            status = str(data.get('status') or '').strip().lower()
+            update_fields['status'] = status if status in {'active', 'inactive'} else 'active'
+        if 'members' in data:
+            update_fields['members'] = max(0, int(data.get('members') or 0))
+
+        if not str(update_fields.get('name', '')).strip() and 'name' in update_fields:
+            return jsonify({'success': False, 'message': 'Group name cannot be empty'}), 400
+
+        firestore.client().collection('superadmin_user_groups').document(gid).set(update_fields, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/user-groups/<group_id>', methods=['DELETE'])
+@firebase_auth_required
+def api_delete_superadmin_user_group(group_id):
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        gid = str(group_id or '').strip()
+        if not gid:
+            return jsonify({'success': False, 'message': 'Invalid group id'}), 400
+
+        firestore.client().collection('superadmin_user_groups').document(gid).delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/accounting-permissions', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_accounting_permissions():
+    """Get accounting users with their permission and scope assignments"""
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        users = []
+        
+        # Fetch all non-superadmin users
+        for doc in db.collection('users').stream():
+            data = doc.to_dict() or {}
+            if not isinstance(data, dict):
+                continue
+
+            user_role = str(data.get('role') or '').strip().lower()
+            if user_role in {'superadmin', 'super-admin'}:
+                continue
+
+            email = str(data.get('email') or '').strip().lower()
+            if not email:
+                continue
+
+            first_name = str(data.get('firstName') or data.get('first_name') or '').strip()
+            last_name = str(data.get('lastName') or data.get('last_name') or '').strip()
+            full_name = f"{first_name} {last_name}".strip() or str(data.get('name') or data.get('username') or '').strip()
+            if not full_name and '@' in email:
+                full_name = email.split('@', 1)[0]
+
+            # Get department/municipality/region info
+            department = (
+                str(data.get('department') or '').strip()
+                or str(data.get('office_location') or data.get('officeLocation') or '').strip()
+                or str(data.get('municipality') or '').strip()
+                or str(data.get('region') or data.get('regionName') or '').strip()
+                or 'N/A'
+            )
+
+            # Get accounting permissions - stored in a dedicated field
+            acct_perms = data.get('accounting_permissions') or {}
+            if not isinstance(acct_perms, dict):
+                acct_perms = {}
+
+            # Default permission structure if not present
+            if not acct_perms:
+                acct_perms = {
+                    'view': True,
+                    'create': True,
+                    'edit': False,
+                    'submit': False,
+                    'approve': False,
+                    'export': True,
+                }
+
+            # Get scope assignments - list of office/jurisdiction names they can access
+            scopes = data.get('accounting_scopes') or []
+            if not isinstance(scopes, list):
+                scopes = []
+
+            # Get the user's level/hierarchy for scope restrictions
+            user_level = user_role
+            if user_role in {'municipal', 'municipal_admin'}:
+                user_level = 'municipal'
+            elif user_role in {'regional', 'regional_admin'}:
+                user_level = 'regional'
+            elif user_role in {'national', 'national_admin'}:
+                user_level = 'national'
+
+            # Get the user's municipality/region code for parent hierarchy
+            parent_code = ''
+            parent_name = ''
+            if user_role in {'municipal', 'municipal_admin'}:
+                # For municipal users, parent is their municipality
+                municipality = data.get('municipality') or data.get('municipality_name') or ''
+                parent_code = municipality  # In real implementation, fetch PSGC code
+                parent_name = municipality
+            elif user_role in {'regional', 'regional_admin'}:
+                # For regional users, parent is their region
+                region = data.get('region') or data.get('regionName') or data.get('region_name') or ''
+                parent_code = region
+                parent_name = region
+
+            users.append({
+                'id': doc.id,
+                'name': full_name,
+                'email': email,
+                'department': department,
+                'role': user_role,
+                'level': user_level,
+                'parent_code': parent_code,
+                'parent_name': parent_name,
+                'permissions': acct_perms,
+                'scopes': scopes,
+            })
+
+        users.sort(key=lambda u: (str(u.get('name') or '').lower(), str(u.get('email') or '').lower()))
+        return jsonify({'success': True, 'users': users})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/accounting-permissions', methods=['POST'])
+@firebase_auth_required
+def api_save_superadmin_accounting_permissions():
+    """Save accounting permissions and scope assignments for users"""
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        payload = request.get_json() or {}
+        users_payload = payload.get('users') or []
+        if not isinstance(users_payload, list):
+            return jsonify({'success': False, 'message': 'Invalid payload'}), 400
+
+        db = firestore.client()
+        batch = db.batch()
+        updated = 0
+
+        for row in users_payload:
+            if not isinstance(row, dict):
+                continue
+            
+            user_id = str(row.get('user_id') or '').strip()
+            acct_perms = row.get('permissions')
+            scopes = row.get('scopes')
+            
+            if not user_id or not isinstance(acct_perms, dict):
+                continue
+
+            # Validate scopes if provided
+            if scopes is not None and not isinstance(scopes, list):
+                scopes = []
+
+            update_data = {
+                'accounting_permissions': acct_perms,
+                'accounting_permissions_updated_at': datetime.utcnow(),
+            }
+
+            if scopes is not None:
+                update_data['accounting_scopes'] = scopes
+
+            doc_ref = db.collection('users').document(user_id)
+            batch.set(doc_ref, update_data, merge=True)
+            updated += 1
+
+        if updated:
+            batch.commit()
+
+        return jsonify({'success': True, 'updated_count': updated})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 @bp.route('/upload-profile-photo', methods=['POST'])
 @firebase_auth_required
@@ -1635,15 +2429,22 @@ def upload_profile_photo():
 
 @bp.route('/upload-inventory-image', methods=['POST'])
 def upload_inventory_image():
-    """Upload inventory image/permit to server filesystem (no Firebase Storage CORS issues)"""
+    """Upload inventory attachments and return the stored file URL."""
     try:
         from werkzeug.utils import secure_filename
 
         user_id = request.form.get('userId', 'unknown')
-        file_type = request.form.get('fileType', 'image')  # 'image' or 'permit'
+        file_type = request.form.get('fileType', 'image').strip()  # e.g. image/permit/visitApprovalFile/etc
 
-        file_key = 'image' if file_type == 'image' else 'permit'
-        if file_key not in request.files:
+        # Backward-compatible: fallback to legacy keys when caller sends a generic fileType.
+        candidate_keys = [file_type]
+        if file_type == 'image':
+            candidate_keys.extend(['image'])
+        elif file_type == 'permit':
+            candidate_keys.extend(['permit'])
+
+        file_key = next((k for k in candidate_keys if k in request.files), None)
+        if not file_key:
             return jsonify({'success': False, 'error': 'No file provided'}), 400
 
         file = request.files[file_key]
@@ -1656,7 +2457,7 @@ def upload_inventory_image():
             or request.host.startswith('localhost')
         )
 
-        allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
+        allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'doc', 'docx'}
         ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
         if ext not in allowed:
             return jsonify({'success': False, 'error': f'Invalid file type: {ext}'}), 400
@@ -3500,7 +4301,7 @@ def api_update_notification(notification_id):
     
 
 
-from inquiries_storage import get_conversations, get_messages, add_message
+from inquiries_storage import get_conversations, get_messages, add_message, delete_conversation
 
 
 def _extract_user_photo(user_data):
@@ -3532,6 +4333,26 @@ def _extract_user_name(user_data):
         return combined
 
     return str(user_data.get('username') or user_data.get('displayName') or '').strip()
+
+
+def _looks_like_email(value):
+    text = str(value or '').strip()
+    return '@' in text and '.' in text
+
+
+def _is_placeholder_name(name_value, email_value=''):
+    name_text = str(name_value or '').strip()
+    if not name_text:
+        return True
+    if _looks_like_email(name_text):
+        return True
+
+    email_text = str(email_value or '').strip().lower()
+    if email_text and '@' in email_text:
+        local_part = email_text.split('@', 1)[0].strip().lower()
+        if local_part and name_text.lower() == local_part:
+            return True
+    return False
 
 
 def _resolve_user_profile(identity_key='', email_hint=''):
@@ -3585,12 +4406,16 @@ def _resolve_user_profile(identity_key='', email_hint=''):
             try:
                 for doc in db.collection('users').stream():
                     data = doc.to_dict() or {}
-                    doc_email = str(data.get('email') or '').strip().lower()
-                    if doc_email and doc_email == email:
+                    candidate_emails = [
+                        str(data.get('email') or '').strip().lower(),
+                        str(data.get('user_email') or '').strip().lower(),
+                        str(data.get('userEmail') or '').strip().lower(),
+                    ]
+                    if email in [e for e in candidate_emails if e]:
                         return {
                             'name': _extract_user_name(data),
                             'photo': _extract_user_photo(data),
-                            'email': doc_email,
+                            'email': email,
                         }
             except Exception:
                 pass
@@ -3610,15 +4435,20 @@ def api_get_inquiry_conversations():
             try:
                 convo_key = str(convo.get('user_id') or convo.get('email') or convo.get('user_email') or '').strip()
                 convo_email = str(convo.get('email') or convo.get('user_email') or '').strip().lower()
-                if convo.get('user_photo') and convo.get('user_name'):
+                convo_name = str(convo.get('user_name') or '').strip()
+                needs_name = _is_placeholder_name(convo_name, convo_email)
+                needs_photo = not convo.get('user_photo')
+                needs_email = not convo.get('email')
+
+                if not needs_name and not needs_photo and not needs_email:
                     continue
 
                 profile = _resolve_user_profile(convo_key, convo_email)
-                if not convo.get('user_photo') and profile.get('photo'):
+                if needs_photo and profile.get('photo'):
                     convo['user_photo'] = profile.get('photo')
-                if not convo.get('user_name') and profile.get('name'):
+                if needs_name and profile.get('name'):
                     convo['user_name'] = profile.get('name')
-                if not convo.get('email') and profile.get('email'):
+                if needs_email and profile.get('email'):
                     convo['email'] = profile.get('email')
             except Exception:
                 # Never fail the entire list due to one malformed user profile.
@@ -3677,7 +4507,9 @@ def api_get_inquiry_messages(user_id):
 
             if not msg.get('user_photo') and profile.get('photo'):
                 msg['user_photo'] = profile.get('photo')
-            if not msg.get('user_name') and profile.get('name'):
+            current_name = str(msg.get('user_name') or '').strip()
+            msg_email = str(msg.get('email') or msg.get('user_email') or convo_key or '').strip().lower()
+            if _is_placeholder_name(current_name, msg_email) and profile.get('name'):
                 msg['user_name'] = profile.get('name')
 
         safe_msgs = _json_safe(msgs)
@@ -3731,6 +4563,9 @@ def api_send_inquiry_message():
         if not user_name:
             user_name = (session.get('user_name') or user_email or 'User').strip()
 
+        session_user_id = str(session.get('user_id') or '').strip()
+        session_user_email = str(session.get('user_email') or '').strip().lower()
+
         sender_email = (session.get('user_email') or '').strip().lower() or user_email
         sender_role = (session.get('user_role') or '').strip().lower()
         is_admin_sender = sender_role in {'superadmin', 'super-admin', 'municipal', 'municipal_admin', 'regional', 'regional_admin', 'national', 'national_admin'}
@@ -3738,12 +4573,24 @@ def api_send_inquiry_message():
         message = request.form.get('message', '')
         user_photo = request.form.get('user_photo', '')
 
-        # Backfill sender profile for user-side messages when frontend has no photo yet.
-        if not user_photo:
-            resolved = _resolve_user_profile(user_id, user_email)
-            if resolved.get('photo'):
+        # Backfill sender profile when photo/name is missing or name is placeholder-like.
+        needs_name = _is_placeholder_name(user_name, user_email or session_user_email)
+        if not user_photo or needs_name:
+            resolved = {'name': '', 'photo': '', 'email': user_email}
+            identity_candidates = [session_user_id, user_id]
+            email_candidates = [user_email, session_user_email, sender_email]
+
+            for identity in identity_candidates:
+                for email_candidate in email_candidates:
+                    resolved = _resolve_user_profile(identity, email_candidate)
+                    if resolved.get('name') or resolved.get('photo'):
+                        break
+                if resolved.get('name') or resolved.get('photo'):
+                    break
+
+            if not user_photo and resolved.get('photo'):
                 user_photo = resolved.get('photo')
-            if not user_name and resolved.get('name'):
+            if needs_name and resolved.get('name'):
                 user_name = resolved.get('name')
 
         file_url = ''
@@ -3769,4 +4616,346 @@ def api_send_inquiry_message():
         )
         return jsonify({'success': True, 'message': doc})
     except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/inquiries/conversation/<conversation_key>', methods=['DELETE'])
+@firebase_auth_required
+def api_delete_inquiry_conversation(conversation_key):
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        allowed_roles = {
+            'superadmin',
+            'super-admin',
+            'municipal',
+            'municipal_admin',
+            'regional',
+            'regional_admin',
+            'national',
+            'national_admin',
+        }
+        if role not in allowed_roles:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        key = str(conversation_key or '').strip()
+        if not key:
+            return jsonify({'success': False, 'message': 'Conversation key is required'}), 400
+
+        file_urls = []
+        try:
+            msgs = get_messages(key)
+            for msg in (msgs or []):
+                if not isinstance(msg, dict):
+                    continue
+                url = str(msg.get('file_url') or '').strip()
+                if url and url not in file_urls:
+                    file_urls.append(url)
+        except Exception:
+            file_urls = []
+
+        cloudinary_deleted = 0
+        cloudinary_attempted = 0
+        if _cloudinary_enabled():
+            for url in file_urls:
+                if 'res.cloudinary.com' not in url:
+                    continue
+                cloudinary_attempted += 1
+                if _delete_cloudinary_asset_by_url(url):
+                    cloudinary_deleted += 1
+
+        deleted_count = delete_conversation(key)
+        return jsonify({
+            'success': True,
+            'deleted_count': deleted_count,
+            'cloudinary_attempted': cloudinary_attempted,
+            'cloudinary_deleted': cloudinary_deleted,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/system-logs', methods=['GET'])
+@firebase_auth_required
+def get_system_logs():
+    """Get system logs for national admin view"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        
+        # Only superadmin/national admin can view system logs
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized access to system logs'}), 403
+        
+        # Get logs from system_logs_storage
+        logs = system_logs_storage.list_system_logs(limit=500)
+        
+        # Transform logs to frontend format
+        formatted_logs = []
+        for log in logs:
+            # Determine severity based on outcome and message
+            severity = 'Info'
+            if log.get('outcome', '').upper() == 'FAILURE':
+                severity = 'Critical'
+            elif 'failed' in log.get('message', '').lower() or 'error' in log.get('message', '').lower():
+                severity = 'Critical'
+            elif log.get('action', '').upper() in ['PRIVILEGE_DELEGATION', 'DELETION', 'UNAUTHORIZED_ATTEMPT']:
+                severity = 'Warning'
+            
+            # Format timestamp
+            timestamp = log.get('timestamp', '')
+            if timestamp and 'T' in timestamp:
+                # Convert ISO format to readable format
+                try:
+                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                    formatted_time = dt.strftime('%Y-%m-%d %H:%M:%S')
+                except:
+                    formatted_time = timestamp[:19]
+            else:
+                formatted_time = timestamp
+            
+            formatted_log = {
+                'time': formatted_time,
+                'admin': log.get('user', 'System'),
+                'action': log.get('action', 'Unknown'),
+                'mod': log.get('module', 'SYSTEM'),
+                'ip': log.get('ip', log.get('ipAddress', '127.0.0.1')),
+                'sev': severity,
+                'msg': log.get('message', '')
+            }
+            formatted_logs.append(formatted_log)
+        
+        # Sort by timestamp descending
+        formatted_logs.sort(key=lambda x: x['time'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'logs': formatted_logs,
+            'total_count': len(formatted_logs)
+        })
+        
+    except Exception as e:
+        print(f'[SYSTEM_LOGS_ERROR] get_system_logs failed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/regions', methods=['GET'])
+@firebase_auth_required
+def get_regions():
+    """Get all regions from combined users + regions collection with municipality scopes"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        
+        # Only superadmin/national admin can view regions
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized access to regions'}), 403
+        
+        db = firestore.client()
+        
+        # Region to Island Group mapping (Philippines DENR regions)
+        region_island_map = {
+            'NCR': 'Luzon',
+            'CAR': 'Luzon',
+            'I': 'Luzon',
+            'II': 'Luzon',
+            'III': 'Luzon',
+            'IV-A': 'Luzon',
+            'IV-B': 'MIMAROPA',
+            'V': 'Bicol',
+            'VI': 'Visayas',
+            'VII': 'Visayas',
+            'VIII': 'Visayas',
+            'IX': 'Mindanao',
+            'X': 'Mindanao',
+            'XI': 'Mindanao',
+            'XII': 'Mindanao',
+            'XIII': 'Caraga',
+            'ARMM': 'Mindanao',
+            'BARMM': 'Mindanao'
+        }
+        
+        # First, try to get regions from the dedicated regions collection
+        regions_ref = db.collection('regions')
+        regions_docs = regions_ref.order_by('code').stream()
+        
+        regions = []
+        for doc in regions_docs:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            regions.append(data)
+        
+        # If regions collection is empty, extract from users collection with municipalities
+        if not regions:
+            users_ref = db.collection('users')
+            users_docs = users_ref.stream()
+            
+            region_map = {}
+            municipalities_map = {}  # Track unique municipalities per region
+            
+            for doc in users_docs:
+                user_data = doc.to_dict()
+                region_field = user_data.get('region', '').strip()
+                
+                # Extract region code from format like "REGION-IV-B" or "REGION IV-B"
+                if region_field:
+                    # Remove "REGION-" or "REGION " prefix
+                    region_code = region_field.replace('REGION-', '').replace('REGION ', '').strip()
+                    
+                    # Count staff per region
+                    if region_code and region_code not in region_map:
+                        region_map[region_code] = {
+                            'code': region_code,
+                            'name': user_data.get('region_name', region_code),
+                            'island': region_island_map.get(region_code, 'Unknown'),
+                            'staff': 1,
+                            'status': 'active',
+                            'link': f"/superadmin/regions/{region_code.lower()}"
+                        }
+                        municipalities_map[region_code] = set()
+                    elif region_code:
+                        region_map[region_code]['staff'] = region_map[region_code].get('staff', 1) + 1
+                    
+                    # Collect municipalities ONLY from users who have municipality-level access
+                    # (i.e., users with municipalities field indicating they're municipal-level admins)
+                    if region_code:
+                        user_municipalities = user_data.get('municipalities', [])
+                        # If user has municipalities array, they are a municipal-level account
+                        # and belong to this region - add their municipalities
+                        if user_municipalities and isinstance(user_municipalities, list):
+                            for munic in user_municipalities:
+                                if isinstance(munic, str) and munic.strip():
+                                    municipalities_map[region_code].add(munic.strip())
+            
+            # Build final regions list with municipality count
+            regions = []
+            for region_code, data in region_map.items():
+                munic_count = len(municipalities_map.get(region_code, set()))
+                data['munic'] = munic_count if munic_count > 0 else 0
+                regions.append(data)
+        
+        return jsonify({
+            'success': True,
+            'regions': regions,
+            'total_count': len(regions)
+        })
+        
+    except Exception as e:
+        print(f'[REGIONS_ERROR] get_regions failed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/regions', methods=['POST'])
+@firebase_auth_required
+def create_region():
+    """Create/update region in dedicated regions collection"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        user_email = session.get('user_email', '')
+        
+        # Only superadmin/national admin can create regions
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized to create regions'}), 403
+        
+        data = request.get_json() or {}
+        
+        # Validate required fields
+        required_fields = ['code', 'name', 'island', 'munic', 'staff', 'status']
+        for field in required_fields:
+            if field not in data or not str(data.get(field, '')).strip():
+                return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+        
+        # Prepare region document
+        region_data = {
+            'code': str(data.get('code', '')).strip().upper(),
+            'name': str(data.get('name', '')).strip(),
+            'island': str(data.get('island', '')).strip(),
+            'munic': int(data.get('munic', 0)),
+            'staff': int(data.get('staff', 0)),
+            'status': str(data.get('status', 'active')).strip().lower(),
+            'link': f"/superadmin/regions/{str(data.get('code', '')).strip().lower()}",
+            'created_by': user_email,
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'updated_at': firestore.SERVER_TIMESTAMP
+        }
+        
+        # Save to dedicated regions collection
+        db = firestore.client()
+        doc_ref = db.collection('regions').document(region_data['code'])
+        doc_ref.set(region_data)
+        
+        # Log the action
+        system_logs_storage.add_system_log(
+            municipality='National',
+            user=user_email,
+            action='REGION_CREATED',
+            target='Regions',
+            target_id=region_data['code'],
+            module='ADMINISTRATION',
+            outcome='SUCCESS',
+            message=f"Region {region_data['code']} created: {region_data['name']}",
+            device_type=detect_device_from_request(),
+            user_agent=request.headers.get('User-Agent', '')
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': f"Region {region_data['code']} registered successfully",
+            'region': region_data
+        })
+        
+    except Exception as e:
+        print(f'[REGIONS_ERROR] create_region failed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/regions/fill-missing', methods=['POST'])
+@firebase_auth_required
+def fill_missing_region_data():
+    """Fill in missing region data from form submission"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        user_email = session.get('user_email', '')
+        
+        # Only superadmin/national admin can fill region data
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        
+        data = request.get_json() or {}
+        
+        # Get region code and other fields
+        region_code = str(data.get('code', '')).strip().upper()
+        if not region_code:
+            return jsonify({'success': False, 'message': 'Region code required'}), 400
+        
+        # Update region with complete information
+        region_data = {
+            'code': region_code,
+            'name': str(data.get('name', '')).strip(),
+            'island': str(data.get('island', '')).strip(),
+            'munic': int(data.get('munic', 0)),
+            'staff': int(data.get('staff', 0)),
+            'status': str(data.get('status', 'active')).strip().lower(),
+            'link': f"/superadmin/regions/{region_code.lower()}",
+            'updated_by': user_email,
+            'updated_at': firestore.SERVER_TIMESTAMP
+        }
+        
+        # Save/update in regions collection
+        db = firestore.client()
+        db.collection('regions').document(region_code).update(region_data)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Region {region_code} data completed',
+            'region': region_data
+        })
+        
+    except Exception as e:
+        print(f'[REGIONS_ERROR] fill_missing_region_data failed: {e}')
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500

@@ -10,8 +10,177 @@ import json
 from datetime import datetime
 from collections import Counter
 from urllib.parse import quote, urlparse
+import re
+from firebase_admin import firestore
 
 bp = Blueprint('municipal', __name__, url_prefix='/municipal')
+
+
+def _split_full_name(full_name):
+    name = str(full_name or '').strip()
+    if not name:
+        return '', ''
+    parts = [p for p in name.split() if p]
+    if len(parts) == 1:
+        return parts[0], parts[0]
+    return parts[0], ' '.join(parts[1:])
+
+
+def _safe_float(value, default=0.0):
+    try:
+        if isinstance(value, (int, float)):
+            return float(value)
+        raw = str(value or '').strip()
+        if not raw or raw.upper() in {'N/A', 'NONE', 'NULL'}:
+            return float(default)
+        cleaned = re.sub(r'[^0-9.\-]', '', raw.replace(',', ''))
+        if cleaned in {'', '-', '.', '-.'}:
+            return float(default)
+        return float(cleaned)
+    except Exception:
+        return float(default)
+
+
+def _derive_applicant_salary(db, applicant_data):
+    salary_candidates = [
+        applicant_data.get('starting_salary'),
+        applicant_data.get('salary'),
+        applicant_data.get('basic_pay'),
+        applicant_data.get('net_pay'),
+        applicant_data.get('expected_salary'),
+    ]
+    for candidate in salary_candidates:
+        amount = _safe_float(candidate, 0)
+        if amount > 0:
+            return amount
+
+    source_collection = str(applicant_data.get('source_collection') or '').strip().lower()
+    source_id = str(applicant_data.get('source_id') or '').strip()
+    if source_collection == 'hiring_positions' and source_id:
+        try:
+            source_doc = db.collection('hiring_positions').document(source_id).get()
+            if source_doc.exists:
+                source_data = source_doc.to_dict() or {}
+                amount = _safe_float(source_data.get('starting_salary'), 0)
+                if amount > 0:
+                    return amount
+        except Exception:
+            pass
+
+    return 0.0
+
+
+def _build_default_payroll_fields(base_salary):
+    base = max(_safe_float(base_salary, 0), 0)
+    allowances = 0.0
+    deductions = 0.0
+    gross = base + allowances
+    net = gross - deductions
+    return {
+        'starting_salary': base,
+        'basic_pay': base,
+        'allowances': allowances,
+        'gross_pay': gross,
+        'deductions': deductions,
+        'net_pay': net,
+        'period': 'MONTHLY',
+        'status': 'DRAFT',
+    }
+
+
+def _ensure_employee_from_applicant(db, applicant_id, applicant_data, actor):
+    try:
+        payroll_defaults = _build_default_payroll_fields(_derive_applicant_salary(db, applicant_data))
+
+        existing = db.collection('employees').where(
+            filter=firestore.FieldFilter('source_applicant_id', '==', applicant_id)
+        ).limit(1).stream()
+        for doc in existing:
+            existing_data = doc.to_dict() or {}
+            updates = {}
+            if payroll_defaults['starting_salary'] > 0:
+                if _safe_float(existing_data.get('starting_salary'), 0) <= 0:
+                    updates['starting_salary'] = payroll_defaults['starting_salary']
+                if _safe_float(existing_data.get('basic_pay'), 0) <= 0:
+                    updates['basic_pay'] = payroll_defaults['basic_pay']
+                if _safe_float(existing_data.get('gross_pay'), 0) <= 0:
+                    updates['gross_pay'] = payroll_defaults['gross_pay']
+                if _safe_float(existing_data.get('net_pay'), 0) <= 0:
+                    updates['net_pay'] = payroll_defaults['net_pay']
+            if existing_data.get('allowances') is None:
+                updates['allowances'] = payroll_defaults['allowances']
+            if existing_data.get('deductions') is None:
+                updates['deductions'] = payroll_defaults['deductions']
+            if not existing_data.get('period'):
+                updates['period'] = payroll_defaults['period']
+            if not existing_data.get('status'):
+                updates['status'] = payroll_defaults['status']
+
+            if updates:
+                updates['updated_by'] = actor
+                updates['updated_at'] = firestore.SERVER_TIMESTAMP
+                doc.reference.set(updates, merge=True)
+            return doc.id
+
+        first_name, last_name = _split_full_name(
+            applicant_data.get('full_name')
+            or applicant_data.get('applicant_name')
+            or applicant_data.get('fullName')
+            or applicant_data.get('name')
+        )
+
+        reference_id = str(applicant_data.get('reference_id') or '').strip().upper().replace(' ', '-')
+        employee_id = f"EMP-{reference_id}" if reference_id else f"EMP-APP-{applicant_id[:8].upper()}"
+
+        municipality = str(
+            applicant_data.get('municipality')
+            or applicant_data.get('scope')
+            or ''
+        ).strip()
+
+        candidate_type = str(
+            applicant_data.get('candidate_type')
+            or applicant_data.get('category')
+            or 'Applicant Hire'
+        ).strip()
+
+        employee_payload = {
+            'employee_id': employee_id,
+            'first_name': first_name,
+            'middle_name': '',
+            'last_name': last_name,
+            'email': str(applicant_data.get('email') or '').strip().lower(),
+            'contact_Number': str(applicant_data.get('phone') or applicant_data.get('mobile') or '').strip(),
+            'designation': str(applicant_data.get('position') or candidate_type or 'Applicant Hire').strip(),
+            'department_name': str(applicant_data.get('department_name') or 'Human Resource').strip(),
+            'division': str(applicant_data.get('division') or '').strip(),
+            'municipality': municipality,
+            'province': str(applicant_data.get('province') or '').strip(),
+            'region': str(applicant_data.get('region_office') or applicant_data.get('region') or '').strip(),
+            'status': 'Active',
+            'role': 'municipal',
+            'remarks': 'Auto-created from approved applicant',
+            'starting_salary': payroll_defaults['starting_salary'],
+            'basic_pay': payroll_defaults['basic_pay'],
+            'allowances': payroll_defaults['allowances'],
+            'gross_pay': payroll_defaults['gross_pay'],
+            'deductions': payroll_defaults['deductions'],
+            'net_pay': payroll_defaults['net_pay'],
+            'period': payroll_defaults['period'],
+            'source_applicant_id': applicant_id,
+            'source_reference_id': reference_id,
+            'created_by': actor,
+            'updated_by': actor,
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        ref = db.collection('employees').document()
+        ref.set(employee_payload)
+        return ref.id
+    except Exception as create_err:
+        print(f'[ERROR] _ensure_employee_from_applicant (municipal): {create_err}')
+        return None
 
 @bp.route('/dashboard')
 @role_required('municipal','municipal_admin')
@@ -1486,11 +1655,10 @@ def tasks_municipal_delete(task_id):
 @bp.route('/operations/applicants-municipal')
 @role_required('municipal','municipal_admin')
 def applicants_municipal():
-    from firebase_admin import firestore
-
     db = get_firestore_db()
     user_municipality = (_resolve_municipality_from_user_context() or '').strip()
     user_region = (_resolve_region_from_user_context() or '').strip()
+    actor_email = session.get('user_email', 'municipal_admin')
 
     def normalize_scope(value):
         return ' '.join(str(value or '').strip().upper().split())
@@ -1721,6 +1889,17 @@ def applicants_municipal():
             item['status'] = str(item.get('status') or 'PENDING').upper()
             if item['status'] not in {'APPROVED', 'REJECTED', 'PENDING'}:
                 item['status'] = 'PENDING'
+
+            if item['status'] == 'APPROVED':
+                employee_doc_id = _ensure_employee_from_applicant(db, doc.id, item, actor_email)
+                if employee_doc_id and not item.get('employee_doc_id'):
+                    doc.reference.set({
+                        'employee_doc_id': employee_doc_id,
+                        'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                        'updated_at': firestore.SERVER_TIMESTAMP,
+                        'updated_by': actor_email,
+                    }, merge=True)
+
             applications.append(item)
     except Exception as e:
         print(f"[WARN] Scoped query failed, fallback filtering in-memory: {e}")
@@ -1756,6 +1935,17 @@ def applicants_municipal():
                 item['status'] = str(item.get('status') or 'PENDING').upper()
                 if item['status'] not in {'APPROVED', 'REJECTED', 'PENDING'}:
                     item['status'] = 'PENDING'
+
+                if item['status'] == 'APPROVED':
+                    employee_doc_id = _ensure_employee_from_applicant(db, doc.id, item, actor_email)
+                    if employee_doc_id and not item.get('employee_doc_id'):
+                        doc.reference.set({
+                            'employee_doc_id': employee_doc_id,
+                            'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                            'updated_at': firestore.SERVER_TIMESTAMP,
+                            'updated_by': actor_email,
+                        }, merge=True)
+
                 applications.append(item)
         except Exception as fallback_error:
             print(f"[ERROR] Fallback query failed for municipal_denr_applicant_jobs: {fallback_error}")
@@ -2062,8 +2252,6 @@ def applicants_municipal_view(job_id):
 @bp.route('/operations/applicants-municipal/job/<job_id>/status', methods=['POST'])
 @role_required('municipal','municipal_admin')
 def applicants_municipal_job_update_status(job_id):
-    from firebase_admin import firestore
-
     db = get_firestore_db()
     user_municipality = (_resolve_municipality_from_user_context() or '').strip()
     user_region = (_resolve_region_from_user_context() or '').strip()
@@ -2116,6 +2304,16 @@ def applicants_municipal_job_update_status(job_id):
             })
 
         doc_ref.set(update_payload, merge=True)
+
+        if new_status == 'APPROVED':
+            merged_data = dict(existing)
+            merged_data.update(update_payload)
+            employee_doc_id = _ensure_employee_from_applicant(db, job_id, merged_data, actor_email)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
 
         return jsonify({'success': True, 'status': new_status})
     except Exception as e:

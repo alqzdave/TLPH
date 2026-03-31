@@ -387,7 +387,7 @@
                     userEmail = '';
                 }
             }
-            let userId = userEmail || window.currentUserId || (window.user && window.user.id) || '';
+            let userId = window.currentUserId || (window.user && window.user.id) || userEmail || '';
             let userName = window.currentUserName || (window.user && window.user.name) || '';
             let userPhoto = window.currentUserPhoto
                 || (window.user && (window.user.photoURL || window.user.photoUrl || window.user.profilePhoto || window.user.profile_photo || window.user.photo))
@@ -398,6 +398,23 @@
                 } catch (e) {
                     userPhoto = '';
                 }
+            }
+
+            function isPlaceholderName(name, email) {
+                const nm = String(name || '').trim();
+                if (!nm) return true;
+                if (/@/.test(nm) && /\./.test(nm)) return true;
+
+                const em = String(email || '').trim().toLowerCase();
+                if (em.includes('@')) {
+                    const local = em.split('@')[0] || '';
+                    if (local && nm.toLowerCase() === local.toLowerCase()) return true;
+                }
+                return false;
+            }
+
+            function outboundInquiryName() {
+                return isPlaceholderName(userName, userEmail) ? '' : String(userName || '').trim();
             }
 
             async function ensureInquiryIdentity() {
@@ -414,7 +431,7 @@
                     if (!data || !data.authenticated || !data.email) return false;
 
                     userEmail = String(data.email).trim().toLowerCase();
-                    userId = userEmail;
+                    userId = String(data.user_id || userId || userEmail).trim();
 
                     try {
                         localStorage.setItem('denr_user_email', userEmail);
@@ -422,8 +439,8 @@
                         // Ignore storage errors (private mode, quota, etc.)
                     }
 
-                    if (!userName) {
-                        userName = userEmail.split('@')[0] || 'User';
+                    if (!userName && data.name) {
+                        userName = String(data.name).trim();
                     }
 
                     if (!userPhoto) {
@@ -524,8 +541,8 @@
                 if (!msg) return;
                 const formData = new FormData();
                 formData.append('user_id', userId);
-                formData.append('email', userId);
-                formData.append('user_name', userName);
+                formData.append('email', userEmail || userId);
+                formData.append('user_name', outboundInquiryName());
                 formData.append('user_photo', userPhoto);
                 formData.append('message', msg);
                 fetch('/api/inquiries/send', {
@@ -552,8 +569,8 @@
                 if (!file) return;
                 const formData = new FormData();
                 formData.append('user_id', userId);
-                formData.append('email', userId);
-                formData.append('user_name', userName);
+                formData.append('email', userEmail || userId);
+                formData.append('user_name', outboundInquiryName());
                 formData.append('user_photo', userPhoto);
                 formData.append('message', '');
                 formData.append('file', file);
@@ -579,8 +596,8 @@
                 if (!file) return;
                 const formData = new FormData();
                 formData.append('user_id', userId);
-                formData.append('email', userId);
-                formData.append('user_name', userName);
+                formData.append('email', userEmail || userId);
+                formData.append('user_name', outboundInquiryName());
                 formData.append('user_photo', userPhoto);
                 formData.append('message', '');
                 formData.append('file', file);

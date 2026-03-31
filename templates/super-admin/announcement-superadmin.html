@@ -292,6 +292,24 @@
         .messenger-convo-info { flex: 1; min-width: 0; }
         .messenger-convo-name { font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 0.1rem; }
         .messenger-convo-last { font-size: 0.8rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .messenger-convo-actions { display: flex; align-items: center; }
+        .messenger-convo-delete {
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .messenger-convo-delete:hover {
+            color: #dc2626;
+            background: #fee2e2;
+        }
         .messenger-convo-unread { 
             background: #ef4444; color: #fff; font-size: 0.7rem; 
             border-radius: 999px; padding: 2px 7px; margin-left: 6px; 
@@ -481,7 +499,7 @@
 
         /* Link Preview Card Styling */
         .chat-link-preview {
-            display: flex; width: 100%; max-width: 320px;
+            display: flex; flex-direction: column; width: 100%; max-width: 320px;
             margin-top: 8px; border-radius: 12px; overflow: hidden;
             background: #f8fafc; border: 1px solid #cbd5e1; text-decoration: none; 
             color: inherit; transition: all 0.2s;
@@ -490,10 +508,10 @@
         .messenger-msg.me .chat-link-preview { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #fff; }
         .messenger-msg.me .chat-link-preview:hover { background: rgba(255,255,255,0.15); color: #fff; }
         
-        .chat-link-preview img { width: 36px; height: 36px; object-fit: cover; border-radius: 8px; margin: 10px 0 10px 10px; border: none; flex-shrink: 0; }
-        .chat-link-preview-content { padding: 10px 12px; min-width: 0; }
+        .chat-link-preview img { width: 100%; height: 140px; object-fit: cover; border-radius: 0; margin: 0; border: none; }
+        .chat-link-preview-content { padding: 12px; }
         .chat-link-preview-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-        .chat-link-preview-desc { font-size: 0.78rem; opacity: 0.8; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3;}
+        .chat-link-preview-desc { font-size: 0.8rem; opacity: 0.8; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3;}
         .chat-link-preview-domain { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; opacity: 0.6; letter-spacing: 0.5px; }
 
         /* Chat Footer (Inputs) */
@@ -924,56 +942,29 @@
 
         function formatMessageText(text) {
             if (!text) return '';
-            function esc(v) {
-                return String(v || '')
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-            }
-            const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|(?:^|\s)([a-zA-Z0-9][-a-zA-Z0-9]*\.)+[a-zA-Z]{2,}[^\s]*)/g;
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
             let previewHtml = '';
 
             const match = text.match(urlRegex);
             if (match && match.length > 0) {
-                let url = match[0].trim();
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
-                }
-                let domain = 'website.com';
-                let pathText = url;
-                let favicon = '';
-                try {
-                    const parsed = new URL(url);
-                    domain = (parsed.hostname || 'website.com').replace(/^www\./i, '');
-                    pathText = (parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '') + (parsed.search || '');
-                    if (!pathText) pathText = parsed.origin;
-                    favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
-                } catch (e) {
-                    favicon = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                }
+                const url = match[0];
+                let domain = '';
+                try { domain = new URL(url).hostname; } catch (e) { domain = 'website.com'; }
 
                 previewHtml = `
-                    <a href="${esc(url)}" target="_blank" rel="noopener" class="chat-link-preview">
-                        <img src="${favicon}" alt="icon">
+                    <a href="${url}" target="_blank" class="chat-link-preview">
+                        <img src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=400&h=200" alt="Preview">
                         <div class="chat-link-preview-content">
-                            <div class="chat-link-preview-title">${esc(domain)}</div>
-                            <div class="chat-link-preview-desc">${esc(pathText)}</div>
-                            <div class="chat-link-preview-domain">Open Link</div>
+                            <div class="chat-link-preview-title">${domain} Page Info</div>
+                            <div class="chat-link-preview-desc">Click here to view the contents of the shared webpage. This is a secure external link.</div>
+                            <div class="chat-link-preview-domain">${domain}</div>
                         </div>
                     </a>
                 `;
             }
 
             const formattedText = text.replace(urlRegex, function(url) {
-                const trimmedUrl = url.trim();
-                let finalUrl = trimmedUrl;
-                if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
-                    finalUrl = 'https://' + trimmedUrl;
-                }
-                const safe = esc(trimmedUrl);
-                return `<a href="${esc(finalUrl)}" target="_blank" rel="noopener" class="chat-link">${safe}</a>`;
+                return `<a href="${url}" target="_blank" class="chat-link">${url}</a>`;
             });
 
             return formattedText + previewHtml;
@@ -1013,8 +1004,47 @@
                     : `<div class="messenger-convo-avatar">${(c.user_name || '?')[0]}</div>`;
                 const active = convoKey === selectedConvoUserId ? 'active' : '';
                 const lastTime = c.last_time ? formatDateTime(c.last_time) : '';
-                return `<div class="messenger-convo-item ${active}" onclick="selectMessengerConvo('${convoKey}')">${avatar}<div class="messenger-convo-info"><div class="messenger-convo-name">${c.user_name || c.email || 'Unknown'}</div><div class="messenger-convo-last">${c.last_message || ''} <span style='color:#64748b;font-size:0.75em;'>${lastTime}</span></div></div></div>`;
+                const encodedKey = encodeURIComponent(convoKey);
+                return `<div class="messenger-convo-item ${active}" onclick="selectMessengerConvo('${convoKey}')">${avatar}<div class="messenger-convo-info"><div class="messenger-convo-name">${c.user_name || c.email || 'Unknown'}</div><div class="messenger-convo-last">${c.last_message || ''} <span style='color:#64748b;font-size:0.75em;'>${lastTime}</span></div></div><div class="messenger-convo-actions"><button class="messenger-convo-delete" title="Delete conversation" onclick="deleteMessengerConvo(event, '${encodedKey}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
             }).join('');
+        }
+
+        async function deleteMessengerConvo(event, encodedConvoKey) {
+            event.stopPropagation();
+
+            const convoKey = decodeURIComponent(encodedConvoKey || '');
+            if (!convoKey) return;
+
+            const convo = conversations.find(c => (c.user_id || c.email || c.user_email || '') === convoKey);
+            const displayName = (convo && (convo.user_name || convo.email)) || 'this user';
+            const confirmed = window.confirm(`Delete conversation with ${displayName}? This cannot be undone.`);
+            if (!confirmed) return;
+
+            try {
+                const resp = await fetch(`/api/inquiries/conversation/${encodeURIComponent(convoKey)}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+                const res = await resp.json();
+                if (!res.success) {
+                    alert(res.message || 'Failed to delete conversation.');
+                    return;
+                }
+
+                conversations = conversations.filter(c => (c.user_id || c.email || c.user_email || '') !== convoKey);
+
+                if (selectedConvoUserId === convoKey) {
+                    selectedConvoUserId = null;
+                    document.getElementById('messengerChatHeader').style.display = 'none';
+                    document.getElementById('messengerChatForm').style.display = 'none';
+                    document.getElementById('chatHeaderName').textContent = 'Select a conversation';
+                    document.getElementById('messengerChatBody').innerHTML = `<div style="margin:auto; color:#94a3b8; font-size:1rem; text-align:center;"><i class="fa-regular fa-comments" style="font-size:3rem; margin-bottom:10px; color:#cbd5e1;"></i><br>Select a conversation to start chatting</div>`;
+                }
+
+                renderMessengerConvos();
+            } catch (e) {
+                alert('Failed to delete conversation.');
+            }
         }
 
         async function selectMessengerConvo(userId) {
@@ -1039,18 +1069,8 @@
 
         function renderMessengerMessages(messages) {
             const body = document.getElementById('messengerChatBody');
-            
-            const defaultMessage = `<div class="messenger-msg-row">
-                <span class="messenger-msg-avatar" style="background: linear-gradient(135deg, #10b981, #059669); display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-headset" style="font-size:0.9rem;"></i></span>
-                <div class="messenger-msg" style="background: #f0fdf4; border-left: 3px solid #10b981; margin-left:8px;">
-                    <div class="msg-sender" style="color:#10b981; font-weight:700;">Support Team</div>
-                    <div style="margin-top:6px; font-size:0.9rem; color:#374151;">Hello! 👋 Welcome to our support chat. How can we help you today? We're here to answer any questions about your application or services.</div>
-                    <span class="msg-time">${new Date().toLocaleString()}</span>
-                </div>
-            </div>`;
-
             if (!messages || messages.length === 0) {
-                body.innerHTML = defaultMessage;
+                body.innerHTML = `<div style='margin:auto; color:#94a3b8; font-size:1rem; text-align:center;'><i class='fa-regular fa-comments' style='font-size:3rem; margin-bottom:10px; color:#cbd5e1;'></i><br>No messages yet</div>`;
                 return;
             }
 
@@ -1071,7 +1091,7 @@
                 }
             }
 
-            const messagesHtml = messages.map(m => {
+            body.innerHTML = messages.map(m => {
                 const sender = m.user_name || '';
                 const senderAvatar = m.user_photo
                     ? `<img src='${m.user_photo}' class='messenger-msg-avatar' alt='avatar'>`
@@ -1115,7 +1135,6 @@
                     + `</div>`;
             }).join('');
 
-            body.innerHTML = defaultMessage + messagesHtml;
             setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
         }
 

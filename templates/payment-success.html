@@ -26,19 +26,18 @@
         const transactionType = params.get('transaction_type') || sessionStorage.getItem('transaction_type') || '';
         const inventoryId = sessionStorage.getItem('pending_inventory_id');
 
-        async function approveInventoryRegistration() {
+        async function updateInventoryPaymentStatus() {
             if ((transactionType === 'inventory-registration' || inventoryId) && inventoryId) {
                 try {
                     const inventoryRef = doc(db, 'inventory_registrations', inventoryId);
                     await updateDoc(inventoryRef, {
-                        status: 'approved',
-                        approvedAt: serverTimestamp(),
+                        status: 'pending',
                         paymentStatus: 'paid',
                         updatedAt: serverTimestamp()
                     });
-                    console.log('Inventory registration approved:', inventoryId);
+                    console.log('Inventory registration payment confirmed, pending review:', inventoryId);
                 } catch (err) {
-                    console.error('Failed to update inventory status:', err);
+                    console.error('Failed to update inventory payment status:', err);
                 }
             }
 
@@ -60,7 +59,7 @@
             }
         }
 
-        approveInventoryRegistration();
+        updateInventoryPaymentStatus();
     </script>
 </head>
 <body class="bg-gradient-to-br from-emerald-50 to-blue-50">

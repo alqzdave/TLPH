@@ -163,6 +163,7 @@
                       data-quantity="{{ record.quantity }}"
                       data-region="{{ record.region }}"
                       data-municipality="{{ record.municipality }}"
+                      data-province="{{ record.province }}"
                       data-applicant="{{ record.applicant_name }}"
                       data-status="{{ record.status }}"
                       data-regional-status="{{ record.regionalStatus }}"
@@ -172,7 +173,20 @@
                       data-forwarded-to-level="{{ record.forwardedToLevel }}"
                       data-status-display="{{ record.status_display }}"
                       data-registration-fee="{{ record.registrationFee }}"
-                      data-unit="{{ record.unitOfMeasure }}">
+                      data-unit="{{ record.unitOfMeasure }}"
+                      data-created-at="{{ record.createdAtIso }}"
+                      data-farmer-id="{{ record.farmerIdNumber }}"
+                      data-stock-latitude="{{ record.stockLatitude }}"
+                      data-stock-longitude="{{ record.stockLongitude }}"
+                      data-stock-gps-link="{{ record.stockGpsLink }}"
+                      data-property-number="{{ record.propertyNumber }}"
+                      data-source-location="{{ record.sourceLocation }}"
+                      data-image-url="{{ record.imageUrl }}"
+                      data-permit-url="{{ record.permitUrl }}"
+                      data-visit-approval-url="{{ record.visitApprovalUrl }}"
+                      data-scientific-study-url="{{ record.scientificStudyUrl }}"
+                      data-new-stock-images='{{ (record.newStockImageUrls or [])|tojson|e }}'
+                      data-attachments='{{ (record.attachmentsJson or "{}")|e }}'>
                     <td class="font-bold text-slate-800 border-r border-slate-100 uppercase">{{ record.category }}</td>
                     <td class="text-slate-600 border-r border-slate-100">{{ record.description }}</td>
                     <td class="font-mono font-black text-slate-900 border-r border-slate-100 text-center">{{ record.quantity }}</td>
@@ -299,12 +313,36 @@
           <div><span class="font-black text-slate-500 uppercase">Registration Fee:</span> <span id="reviewFee" class="font-bold text-slate-900"></span></div>
           <div><span class="font-black text-slate-500 uppercase">Region:</span> <span id="reviewRegion" class="font-bold text-slate-900"></span></div>
           <div><span class="font-black text-slate-500 uppercase">Municipality:</span> <span id="reviewMunicipality" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Province:</span> <span id="reviewProvince" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Date Filed:</span> <span id="reviewCreatedAt" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Farmer ID:</span> <span id="reviewFarmerId" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">GPS Coordinates:</span> <span id="reviewGpsCoords" class="font-bold text-slate-900"></span></div>
+          <div class="col-span-2"><span class="font-black text-slate-500 uppercase">GPS Link:</span> <span id="reviewGpsLink" class="font-bold text-blue-800"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Property Number:</span> <span id="reviewPropertyNumber" class="font-bold text-slate-900"></span></div>
+          <div><span class="font-black text-slate-500 uppercase">Source Location:</span> <span id="reviewSourceLocation" class="font-bold text-slate-900"></span></div>
           <div class="col-span-2"><span class="font-black text-slate-500 uppercase">Status:</span> <span id="reviewStatus" class="font-black text-blue-800"></span></div>
+        </div>
+        <div class="pt-3 border-t border-slate-200">
+          <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Attachments</div>
+          <div id="reviewAttachments" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]"></div>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
           <button id="btnNationalReject" onclick="submitNationalAction('rejected')" class="gov-btn bg-rose-700 text-white hover:bg-rose-800">Reject</button>
           <button id="btnNationalApprove" onclick="submitNationalAction('approved')" class="gov-btn bg-emerald-700 text-white hover:bg-emerald-800">Approve</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="attachmentPreviewModal" class="fixed inset-0 hidden items-center justify-center bg-slate-900/70 backdrop-blur-sm z-[3100] p-4">
+    <div class="bg-white rounded-[2px] w-full max-w-5xl shadow-2xl border border-slate-400 overflow-hidden">
+      <div class="bg-slate-800 px-4 py-2 flex justify-between items-center text-white">
+        <h3 id="attachmentPreviewTitle" class="text-[11px] font-black uppercase tracking-widest m-0">Attachment Preview</h3>
+        <button type="button" onclick="closeAttachmentPreview()" class="text-slate-400 hover:text-white"><span class="material-icons-round text-[18px]">close</span></button>
+      </div>
+      <div class="p-3 bg-slate-100 max-h-[78vh] overflow-auto flex items-center justify-center">
+        <img id="attachmentPreviewImage" src="" alt="Attachment Preview" class="hidden max-w-full max-h-[70vh] object-contain rounded" />
+        <iframe id="attachmentPreviewFrame" src="" class="hidden w-full h-[70vh] bg-white rounded border border-slate-200"></iframe>
       </div>
     </div>
   </div>
@@ -359,10 +397,26 @@
       applyLiveFilter();
     }
 
+    function sortInventoryRowsByDateDesc() {
+      const tbody = document.getElementById('inventoryBody');
+      const rows = Array.from(tbody.querySelectorAll('tr.data-row'));
+      rows.sort((a, b) => {
+        const aDate = String(a.dataset.createdAt || '').trim();
+        const bDate = String(b.dataset.createdAt || '').trim();
+        const aTs = aDate ? new Date(aDate).getTime() : 0;
+        const bTs = bDate ? new Date(bDate).getTime() : 0;
+        return (Number.isNaN(bTs) ? 0 : bTs) - (Number.isNaN(aTs) ? 0 : aTs);
+      });
+      const emptyRow = document.getElementById('emptyStateRow');
+      rows.forEach(row => tbody.insertBefore(row, emptyRow));
+    }
+
 
     // --- MODAL & ROW LOGIC ---
     let editingRow = null;
     let activeReviewRow = null;
+    let attachmentPreviewLastUrl = '';
+    let attachmentPreviewLastLabel = '';
     const inventoryBody = document.getElementById('inventoryBody');
     const inventoryForm = document.getElementById('inventoryForm');
     
@@ -455,6 +509,12 @@
       if (!row) return;
       activeReviewRow = row;
 
+      const createdAtRaw = String(row.dataset.createdAt || '').trim();
+      const createdAtDisplay = createdAtRaw ? new Date(createdAtRaw).toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A';
+      const lat = String(row.dataset.stockLatitude || '').trim();
+      const lng = String(row.dataset.stockLongitude || '').trim();
+      const gpsLink = String(row.dataset.stockGpsLink || '').trim();
+
       document.getElementById('reviewId').textContent = row.dataset.id || 'N/A';
       document.getElementById('reviewApplicant').textContent = row.dataset.applicant || 'N/A';
       document.getElementById('reviewCategory').textContent = row.dataset.category || 'N/A';
@@ -463,7 +523,16 @@
       document.getElementById('reviewFee').textContent = `₱ ${Number(row.dataset.registrationFee || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       document.getElementById('reviewRegion').textContent = row.dataset.region || 'N/A';
       document.getElementById('reviewMunicipality').textContent = row.dataset.municipality || 'N/A';
+      document.getElementById('reviewProvince').textContent = row.dataset.province || 'N/A';
+      document.getElementById('reviewCreatedAt').textContent = createdAtDisplay;
+      document.getElementById('reviewFarmerId').textContent = row.dataset.farmerId || 'N/A';
+      document.getElementById('reviewGpsCoords').textContent = (lat && lng) ? `${lat}, ${lng}` : 'N/A';
+      document.getElementById('reviewGpsLink').textContent = gpsLink || 'N/A';
+      document.getElementById('reviewPropertyNumber').textContent = row.dataset.propertyNumber || 'N/A';
+      document.getElementById('reviewSourceLocation').textContent = row.dataset.sourceLocation || 'N/A';
       document.getElementById('reviewStatus').textContent = getNationalStatusLabel(row);
+
+      renderReviewAttachments(row);
 
       const isNationalFinal = ['approved', 'rejected'].includes(normalizeStatus(row.dataset.nationalStatus));
       const disabledByLowerAction = hasLowerDivisionAction(row);
@@ -472,6 +541,136 @@
       const modal = document.getElementById('inventoryReviewModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+    }
+
+    function toProxyUrl(rawUrl) {
+      if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+      const trimmed = rawUrl.trim();
+      if (!trimmed) return '';
+      if (/^\/api\/files\/proxy\?/i.test(trimmed)) return trimmed;
+      if (!trimmed.startsWith('http')) return trimmed;
+      return `/api/files/proxy?url=${encodeURIComponent(trimmed)}`;
+    }
+
+    function isImageFile(url) {
+      return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url || '');
+    }
+
+    function showAttachmentPreview(url, label) {
+      const previewUrl = toProxyUrl(url) || url;
+      if (!previewUrl) return;
+
+      attachmentPreviewLastUrl = previewUrl;
+      attachmentPreviewLastLabel = label || 'Attachment Preview';
+
+      const modal = document.getElementById('attachmentPreviewModal');
+      const title = document.getElementById('attachmentPreviewTitle');
+      const img = document.getElementById('attachmentPreviewImage');
+      const frame = document.getElementById('attachmentPreviewFrame');
+
+      title.textContent = attachmentPreviewLastLabel;
+      img.classList.add('hidden');
+      frame.classList.add('hidden');
+      img.src = '';
+      frame.src = '';
+
+      if (isImageFile(url)) {
+        img.src = previewUrl;
+        img.classList.remove('hidden');
+      } else {
+        frame.src = previewUrl;
+        frame.classList.remove('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAttachmentPreview() {
+      const modal = document.getElementById('attachmentPreviewModal');
+      const img = document.getElementById('attachmentPreviewImage');
+      const frame = document.getElementById('attachmentPreviewFrame');
+      img.src = '';
+      frame.src = '';
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    window.openAttachmentPreviewFromEncoded = function(encodedUrl, encodedLabel = '') {
+      try {
+        const url = decodeURIComponent(encodedUrl || '');
+        const label = decodeURIComponent(encodedLabel || 'Attachment Preview');
+        showAttachmentPreview(url, label);
+      } catch (err) {
+        console.error('Attachment preview decode failed:', err);
+      }
+    };
+
+    function normalizeAttachmentEntries(raw, fallbackLabelPrefix = 'Attachment') {
+      const out = [];
+      const values = Array.isArray(raw) ? raw : [raw];
+      values.forEach((entry, idx) => {
+        if (typeof entry === 'string') {
+          const url = entry.trim();
+          if (url) out.push({ label: `${fallbackLabelPrefix} ${idx + 1}`, url });
+        } else if (entry && typeof entry === 'object') {
+          const url = String(entry.url || entry.path || entry.downloadURL || entry.downloadUrl || '').trim();
+          if (url) out.push({ label: String(entry.name || entry.label || `${fallbackLabelPrefix} ${idx + 1}`), url });
+        }
+      });
+      return out;
+    }
+
+    function renderReviewAttachments(row) {
+      const container = document.getElementById('reviewAttachments');
+      const docs = [];
+      const seen = new Set();
+
+      function pushDoc(label, url) {
+        const u = String(url || '').trim();
+        if (!u || seen.has(u)) return;
+        if (!(u.startsWith('http') || u.startsWith('/'))) return;
+        seen.add(u);
+        docs.push({ label, url: u });
+      }
+
+      pushDoc('Resource Photo', row.dataset.imageUrl);
+      pushDoc('Visit Approval Document', row.dataset.visitApprovalUrl);
+      pushDoc('Scientific Studies of Origin', row.dataset.scientificStudyUrl);
+      pushDoc('Permit File', row.dataset.permitUrl);
+
+      try {
+        const list = JSON.parse(row.dataset.newStockImages || '[]');
+        normalizeAttachmentEntries(list, 'New Stock Image').forEach(d => pushDoc(d.label, d.url));
+      } catch (_) {}
+
+      try {
+        const raw = JSON.parse(row.dataset.attachments || '{}');
+        if (Array.isArray(raw)) {
+          normalizeAttachmentEntries(raw, 'Attachment').forEach(d => pushDoc(d.label, d.url));
+        } else if (raw && typeof raw === 'object') {
+          Object.entries(raw).forEach(([key, value]) => {
+            normalizeAttachmentEntries(value, key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ').trim() || 'Attachment')
+              .forEach(d => pushDoc(d.label, d.url));
+          });
+        }
+      } catch (_) {}
+
+      if (!docs.length) {
+        container.innerHTML = '<p class="text-slate-500 italic col-span-2">No attachments uploaded.</p>';
+        return;
+      }
+
+      container.innerHTML = docs.map((d) => {
+        const encodedUrl = encodeURIComponent(d.url || '');
+        const encodedLabel = encodeURIComponent(d.label || 'Attachment');
+        return `
+          <div class="rounded border border-slate-200 bg-white p-2 flex items-center justify-between gap-2">
+            <span class="font-bold text-slate-700 uppercase text-[8px]">${d.label}</span>
+            <button type="button" onclick="openAttachmentPreviewFromEncoded('${encodedUrl}','${encodedLabel}')" class="gov-btn border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-[8px]">View</button>
+          </div>
+        `;
+      }).join('');
     }
 
     function closeReviewModal() {
@@ -630,7 +829,21 @@
         });
 
         // Initialize counters on load
+        sortInventoryRowsByDateDesc();
         applyLiveFilter();
+    });
+
+    document.getElementById('attachmentPreviewModal').addEventListener('click', function(e) {
+      if (e.target === this) closeAttachmentPreview();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const attachmentModal = document.getElementById('attachmentPreviewModal');
+        if (attachmentModal && !attachmentModal.classList.contains('hidden')) {
+          closeAttachmentPreview();
+        }
+      }
     });
   </script>
 </body>
