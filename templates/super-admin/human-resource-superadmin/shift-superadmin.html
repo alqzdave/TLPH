@@ -355,6 +355,7 @@
     const tbody = el("shiftTbody");
     let apiMuniCache = {};
     let pendingDeleteId = null;
+        const SHIFT_API_BASE = '/superadmin/api/hrm/office-shifts';
 
     async function initLocationAPI() {
         try {
@@ -382,6 +383,20 @@
             el("filterRegion").innerHTML = '<option value="ALL">Failed to load API</option>';
         }
     }
+
+        function ensureRegionOption(selectId, regionValue) {
+            const region = String(regionValue || '').trim();
+            if (!region) return;
+            const sel = el(selectId);
+            if (!sel) return;
+            const exists = Array.from(sel.options).some(o => (o.value || '').trim() === region);
+            if (exists) return;
+            const opt = document.createElement('option');
+            opt.value = region;
+            opt.textContent = region;
+            opt.dataset.code = '';
+            sel.appendChild(opt);
+        }
 
     async function loadMunicipalities(regionCode, selectElementId, defaultText, isFilter = false) {
         const selectEl = el(selectElementId);
@@ -427,11 +442,33 @@
         loadMunicipalities(code, 'fMunicipality', 'Select Municipality / City', false);
     });
 
-    let shifts = [
-      { id: crypto.randomUUID(), name: "Regular Office Hours", category: "REGIONAL", region: "National Capital Region", municipality: "", office: "Regional Office", start: "08:00", end: "17:00", breakStart: "12:00", breakEnd: "13:00", days: ["Mon","Tue","Wed","Thu","Fri"], status: "ACTIVE", notes: "Standard work hours." },
-      { id: crypto.randomUUID(), name: "Frontline Window", category: "MUNICIPALITY", region: "CALABARZON", municipality: "City of San Pedro", office: "CENRO", start: "07:30", end: "16:30", breakStart: "12:00", breakEnd: "12:45", days: ["Mon","Tue","Wed","Thu","Fri"], status: "ACTIVE", notes: "Adjusted for walk-in services." },
-      { id: crypto.randomUUID(), name: "Compressed Schedule", category: "REGIONAL", region: "Central Visayas", municipality: "", office: "PENRO", start: "07:00", end: "16:00", breakStart: "11:30", breakEnd: "12:30", days: ["Mon","Tue","Wed","Thu"], status: "INACTIVE", notes: "Pilot schedule (archived)." }
-    ];
+        let shifts = [];
+
+        async function loadShifts() {
+            try {
+                const response = await fetch(SHIFT_API_BASE, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load shifts');
+                }
+
+                shifts = Array.isArray(data.shifts) ? data.shifts : [];
+                const uniqueRegions = [...new Set(shifts.map(s => (s.region || '').trim()).filter(Boolean))];
+                uniqueRegions.forEach(region => {
+                    ensureRegionOption('filterRegion', region);
+                    ensureRegionOption('fRegion', region);
+                });
+                render();
+            } catch (err) {
+                console.error('Error loading shifts:', err);
+                showToast('Load Failed', err.message || 'Could not load shifts.');
+                shifts = [];
+                render();
+            }
+        }
 
     function fmtTimeWindow(s){ return `${s.start}–${s.end}`; }
     function fmtBreak(s){ return (!s.breakStart || !s.breakEnd) ? "—" : `${s.breakStart}–${s.breakEnd}`; }
@@ -542,11 +579,22 @@
         document.querySelectorAll(".dayChk").forEach(c => c.checked = (s.days || []).includes(c.value));
 
         const fReg = el("fRegion");
+                ensureRegionOption('fRegion', s.region || '');
         fReg.value = s.region || "";
         const selectedOption = Array.from(fReg.options).find(opt => opt.value === s.region);
         if (selectedOption && selectedOption.dataset.code) {
            await loadMunicipalities(selectedOption.dataset.code, 'fMunicipality', 'Select Municipality / City', false);
            el("fMunicipality").value = s.municipality || "";
+                } else {
+                     el("fMunicipality").innerHTML = '<option value="">Select Region First</option>';
+                     if (s.municipality) {
+                         const opt = document.createElement('option');
+                         opt.value = s.municipality;
+                         opt.textContent = s.municipality;
+                         el("fMunicipality").appendChild(opt);
+                         el("fMunicipality").value = s.municipality;
+                         el("fMunicipality").disabled = false;
+                     }
         }
       }
     }
@@ -567,11 +615,25 @@
 
     function getSelectedIds(){ return Array.from(document.querySelectorAll(".rowChk:checked")).map(x => x.getAttribute("data-id")); }
 
-    function setStatusForSelected(newStatus){
+        async function setStatusForSelected(newStatus){
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("No selection", "Select at least one shift."); return; }
-      shifts = shifts.map(s => ids.includes(s.id) ? { ...s, status: newStatus } : s);
-      render(); showToast("Updated", `${ids.length} shift(s) set to ${newStatus.toLowerCase()}.`);
+            try {
+                const response = await fetch(`${SHIFT_API_BASE}/bulk-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids, status: newStatus })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Bulk update failed');
+                }
+                await loadShifts();
+                showToast("Updated", `${data.updated || ids.length} shift(s) updated.`);
+            } catch (err) {
+                console.error('Bulk status error:', err);
+                showToast('Update Failed', err.message || 'Could not update selected shifts.');
+            }
     }
 
     function exportCSV(){
@@ -596,7 +658,7 @@
         document.querySelectorAll(".dayChk").forEach(c => c.checked = map.includes(c.value));
         });
 
-        el("shiftForm").addEventListener("submit", (e) => {
+        el("shiftForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const id = el("editId").value.trim();
         const payload = {
@@ -612,13 +674,26 @@
         if(payload.breakStart && payload.breakEnd && payload.breakEnd <= payload.breakStart){ showToast("Invalid break", "Break end must be after break start."); return; }
         if(payload.days.length === 0){ showToast("Missing days", "Select at least one day."); return; }
 
-        if(!id){
-            shifts.unshift({ id: crypto.randomUUID(), ...payload });
-            closeModal(); render(); showToast("Saved", "New shift created.");
-        } else {
-            shifts = shifts.map(s => s.id === id ? { ...s, ...payload } : s);
-            closeModal(); render(); showToast("Saved", "Shift updated.");
-        }
+                try {
+                    const url = id ? `${SHIFT_API_BASE}/${encodeURIComponent(id)}` : SHIFT_API_BASE;
+                    const method = id ? 'PUT' : 'POST';
+                    const response = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error(data.error || 'Save failed');
+                    }
+
+                    closeModal();
+                    await loadShifts();
+                    showToast("Saved", id ? "Shift updated." : "New shift created.");
+                } catch (err) {
+                    console.error('Save shift error:', err);
+                    showToast('Save Failed', err.message || 'Could not save shift.');
+                }
         });
 
         document.addEventListener("click", (e) => {
@@ -648,16 +723,28 @@
         el("btnCloseDeleteModal").addEventListener("click", closeDeleteModal);
         el("btnCancelDelete").addEventListener("click", closeDeleteModal);
         el("deleteModalBackdrop").addEventListener("click", closeDeleteModal);
-        el("btnConfirmDelete").addEventListener("click", () => {
+                el("btnConfirmDelete").addEventListener("click", async () => {
           if(!pendingDeleteId) return;
-          const s = shifts.find(x => x.id === pendingDeleteId);
-          shifts = shifts.filter(x => x.id !== pendingDeleteId);
-          closeDeleteModal();
-          render();
-          showToast("Removed", s ? `Shift "${s.name}" deleted.` : "Shift deleted.");
+                    const s = shifts.find(x => x.id === pendingDeleteId);
+                    try {
+                        const response = await fetch(`${SHIFT_API_BASE}/${encodeURIComponent(pendingDeleteId)}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (!data.success) {
+                            throw new Error(data.error || 'Delete failed');
+                        }
+                        closeDeleteModal();
+                        await loadShifts();
+                        showToast("Removed", s ? `Shift "${s.name}" deleted.` : "Shift deleted.");
+                    } catch (err) {
+                        console.error('Delete shift error:', err);
+                        showToast('Delete Failed', err.message || 'Could not delete shift.');
+                    }
         });
 
-        render();
+                await loadShifts();
     });
   </script>
 </body>

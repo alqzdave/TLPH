@@ -1902,6 +1902,212 @@ def _employee_doc_to_ui(doc_id, data):
     }
 
 
+def _normalize_shift_category(value):
+    raw = str(value or '').strip().upper()
+    if raw in {'MUNICIPAL', 'MUNICIPALITY'}:
+        return 'MUNICIPALITY'
+    return 'REGIONAL'
+
+
+def _normalize_shift_status(value):
+    raw = str(value or '').strip().lower()
+    if raw in {'inactive', 'disabled', 'archived'}:
+        return 'INACTIVE'
+    return 'ACTIVE'
+
+
+def _generate_shift_code(db, category):
+    category = _normalize_shift_category(category)
+    prefix = 'M-SFT-' if category == 'MUNICIPALITY' else 'R-SFT-'
+    max_num = 0
+    try:
+        for doc in db.collection('office_shifts').stream():
+            data = doc.to_dict() or {}
+            code = str(data.get('shift_code') or '').strip().upper()
+            if not code.startswith(prefix):
+                continue
+            suffix = code.replace(prefix, '')
+            if suffix.isdigit():
+                max_num = max(max_num, int(suffix))
+    except Exception:
+        pass
+    return f"{prefix}{max_num + 1:03d}"
+
+
+def _office_shift_to_superadmin_ui(doc_id, data):
+    data = data or {}
+    scope = str(data.get('scope') or '').strip().upper()
+    category = 'MUNICIPALITY' if scope == 'MUNICIPAL' else 'REGIONAL'
+    status = _normalize_shift_status(data.get('status'))
+
+    start = str(data.get('time_in') or data.get('start') or '').strip()
+    end = str(data.get('time_out') or data.get('end') or '').strip()
+    break_start = str(data.get('break_start') or data.get('breakStart') or '').strip()
+    break_end = str(data.get('break_end') or data.get('breakEnd') or '').strip()
+
+    days = data.get('days')
+    if not isinstance(days, list):
+        days = []
+
+    return {
+        'id': doc_id,
+        'name': str(data.get('shift_name') or data.get('name') or '').strip(),
+        'category': category,
+        'region': str(data.get('region') or '').strip(),
+        'municipality': str(data.get('municipality') or '').strip(),
+        'office': str(data.get('office') or data.get('office_unit') or '').strip(),
+        'start': start,
+        'end': end,
+        'breakStart': break_start,
+        'breakEnd': break_end,
+        'days': days,
+        'status': status,
+        'notes': str(data.get('notes') or '').strip(),
+        'shift_code': str(data.get('shift_code') or '').strip(),
+    }
+
+
+def _superadmin_ui_to_office_shift_payload(db, payload):
+    category = _normalize_shift_category(payload.get('category'))
+    scope = 'MUNICIPAL' if category == 'MUNICIPALITY' else 'REGIONAL'
+    status = 'Active' if _normalize_shift_status(payload.get('status')) == 'ACTIVE' else 'Inactive'
+
+    shift_name = str(payload.get('name') or '').strip()
+    shift_code = str(payload.get('shift_code') or '').strip().upper()
+    if not shift_code:
+        shift_code = _generate_shift_code(db, category)
+
+    return {
+        'shift_code': shift_code,
+        'shift_name': shift_name,
+        'scope': scope,
+        'shift_type': 'Fixed',
+        'time_in': str(payload.get('start') or '').strip(),
+        'time_out': str(payload.get('end') or '').strip(),
+        'time_in_early': '',
+        'time_in_late': '',
+        'time_out_early': '',
+        'time_out_late': '',
+        'grace_minutes': 15,
+        'break_policy': '1 HOUR',
+        'region': str(payload.get('region') or '').strip(),
+        'municipality': str(payload.get('municipality') or '').strip(),
+        'office': str(payload.get('office') or '').strip(),
+        'break_start': str(payload.get('breakStart') or '').strip(),
+        'break_end': str(payload.get('breakEnd') or '').strip(),
+        'days': payload.get('days') if isinstance(payload.get('days'), list) else [],
+        'notes': str(payload.get('notes') or '').strip(),
+        'status': status,
+        'updated_at': firestore.SERVER_TIMESTAMP,
+    }
+
+
+@bp.route('/api/hrm/office-shifts', methods=['GET'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_list():
+    try:
+        db = get_firestore_db()
+        rows = []
+        for doc in db.collection('office_shifts').stream():
+            rows.append(_office_shift_to_superadmin_ui(doc.id, doc.to_dict() or {}))
+        rows.sort(key=lambda item: (item.get('name') or '').lower())
+        return jsonify({'success': True, 'shifts': rows, 'count': len(rows)})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_list: {e}')
+        return jsonify({'success': False, 'error': 'Failed to load office shifts'}), 500
+
+
+@bp.route('/api/hrm/office-shifts', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_create():
+    try:
+        payload = request.get_json(silent=True) or {}
+        name = str(payload.get('name') or '').strip()
+        start = str(payload.get('start') or '').strip()
+        end = str(payload.get('end') or '').strip()
+        if not name or not start or not end:
+            return jsonify({'success': False, 'error': 'Name, start and end are required'}), 400
+
+        db = get_firestore_db()
+        data = _superadmin_ui_to_office_shift_payload(db, payload)
+        data['created_at'] = firestore.SERVER_TIMESTAMP
+        ref = db.collection('office_shifts').document()
+        ref.set(data)
+        return jsonify({'success': True, 'id': ref.id})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_create: {e}')
+        return jsonify({'success': False, 'error': 'Failed to create office shift'}), 500
+
+
+@bp.route('/api/hrm/office-shifts/<shift_id>', methods=['PUT'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_update(shift_id):
+    try:
+        payload = request.get_json(silent=True) or {}
+        name = str(payload.get('name') or '').strip()
+        start = str(payload.get('start') or '').strip()
+        end = str(payload.get('end') or '').strip()
+        if not name or not start or not end:
+            return jsonify({'success': False, 'error': 'Name, start and end are required'}), 400
+
+        db = get_firestore_db()
+        ref = db.collection('office_shifts').document(shift_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Shift not found'}), 404
+
+        data = _superadmin_ui_to_office_shift_payload(db, payload)
+        ref.set(data, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_update: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update office shift'}), 500
+
+
+@bp.route('/api/hrm/office-shifts/<shift_id>', methods=['DELETE'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_delete(shift_id):
+    try:
+        db = get_firestore_db()
+        ref = db.collection('office_shifts').document(shift_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Shift not found'}), 404
+        ref.delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_delete: {e}')
+        return jsonify({'success': False, 'error': 'Failed to delete office shift'}), 500
+
+
+@bp.route('/api/hrm/office-shifts/bulk-status', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_superadmin_office_shifts_bulk_status():
+    try:
+        payload = request.get_json(silent=True) or {}
+        ids = payload.get('ids') or []
+        status_ui = _normalize_shift_status(payload.get('status'))
+        status_db = 'Active' if status_ui == 'ACTIVE' else 'Inactive'
+
+        if not isinstance(ids, list) or not ids:
+            return jsonify({'success': False, 'error': 'No shifts selected'}), 400
+
+        db = get_firestore_db()
+        updated = 0
+        for shift_id in ids:
+            ref = db.collection('office_shifts').document(str(shift_id))
+            snap = ref.get()
+            if not snap.exists:
+                continue
+            ref.set({'status': status_db, 'updated_at': firestore.SERVER_TIMESTAMP}, merge=True)
+            updated += 1
+
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        print(f'[ERROR] api_superadmin_office_shifts_bulk_status: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update shift status'}), 500
+
+
 @bp.route('/api/hrm/employees', methods=['GET'])
 @role_required('super-admin', 'superadmin')
 def api_get_superadmin_employees():
