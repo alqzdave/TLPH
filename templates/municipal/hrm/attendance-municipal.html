@@ -307,16 +307,13 @@
     </main>
   </div>
 
-  <!-- Server-side data injection (must be before module script) -->
+  <!-- Server-side data injection (must be before attendance script) -->
   <script>
     window.serverEmployees = {{ employees_data|default([], true)|tojson|safe }};
   </script>
 
-  <script type="module">
-    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
-    // Access serverEmployees declared in global scope below
+  <script>
+    // Access serverEmployees declared in global scope above
 
     const firebaseConfig = {
       apiKey: "AIzaSyBpdvsvmF5JI7B50L8P_f9Q_OULRSCm9w4",
@@ -328,20 +325,37 @@
       measurementId: "G-TXKQ1Z0J1X"
     };
 
-    // Check if any Firebase app already exists
-    let db;
-    try {
-      const existingApps = getApps();
-      if (existingApps.length > 0) {
-        db = window.db || getFirestore(existingApps[0]);
-      } else {
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-      }
-      window.db = db;
-    } catch (error) {
-      console.error('Firebase initialization error:', error);
-      db = window.db;
+    let db = window.db || null;
+    let firebaseReadyPromise = null;
+
+    async function ensureFirebaseReady() {
+      if (firebaseReadyPromise) return firebaseReadyPromise;
+
+      firebaseReadyPromise = (async () => {
+        const appMod = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
+        const fsMod = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+
+        const { initializeApp, getApps } = appMod;
+        const { getFirestore, collection, getDocs, query, orderBy } = fsMod;
+
+        try {
+          const existingApps = getApps();
+          if (existingApps.length > 0) {
+            db = window.db || getFirestore(existingApps[0]);
+          } else {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+          }
+          window.db = db;
+        } catch (error) {
+          console.error('Firebase initialization error:', error);
+          db = window.db;
+        }
+
+        return { db, collection, getDocs, query, orderBy };
+      })();
+
+      return firebaseReadyPromise;
     }
 
     // Notification component for header
@@ -416,8 +430,13 @@
 
         async loadData() {
           try {
+            const { db: activeDb, collection, getDocs, query, orderBy } = await ensureFirebaseReady();
+            if (!activeDb) {
+              throw new Error('Firestore is not available');
+            }
+
             if (!this.employees || this.employees.length === 0) {
-              const employeesRef = collection(db, 'employees');
+              const employeesRef = collection(activeDb, 'employees');
               let snapshot;
               try {
                 const q = query(employeesRef, orderBy('first_name'));
@@ -430,7 +449,7 @@
             }
 
             if (!this.officeShifts || this.officeShifts.length === 0) {
-              const shiftsRef = collection(db, 'office_shifts');
+              const shiftsRef = collection(activeDb, 'office_shifts');
               const shiftSnapshot = await getDocs(shiftsRef);
               this.officeShifts = shiftSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             }
