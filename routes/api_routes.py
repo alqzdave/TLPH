@@ -1991,6 +1991,75 @@ def _compute_group_member_counts(db, groups):
     return counts_by_id, counts_by_name
 
 
+def _clearance_for_role(role_value: str) -> str:
+    role = str(role_value or '').strip().lower()
+    if role in {'superadmin', 'super-admin'}:
+        return 'Level 5'
+    if role in {'national', 'national_admin'}:
+        return 'Level 4'
+    if role in {'regional', 'regional_admin'}:
+        return 'Level 3'
+    if role in {'municipal', 'municipal_admin'}:
+        return 'Level 2'
+    return 'Level 1'
+
+
+def _role_display_name(role_value: str) -> str:
+    role = str(role_value or '').strip().lower().replace('-', '_')
+    if not role:
+        return 'GENERAL USERS'
+    return role.replace('_', ' ').upper()
+
+
+def _derive_groups_from_user_roles(db):
+    role_counts = {}
+    active_users = 0
+    inactive_users = 0
+
+    for doc in db.collection('users').stream():
+        data = doc.to_dict() or {}
+        if not isinstance(data, dict):
+            continue
+
+        role = str(data.get('role') or '').strip().lower()
+        if role in {'superadmin', 'super-admin'}:
+            continue
+
+        role_key = role or 'user'
+        role_counts[role_key] = role_counts.get(role_key, 0) + 1
+
+        status_text = str(
+            data.get('status')
+            or data.get('accountStatus')
+            or data.get('account_status')
+            or 'active'
+        ).strip().lower()
+        if status_text in {'inactive', 'suspended', 'disabled', 'blocked'}:
+            inactive_users += 1
+        else:
+            active_users += 1
+
+    groups = []
+    for role_key, count in sorted(role_counts.items(), key=lambda item: item[0]):
+        groups.append({
+            'id': f'role::{role_key}',
+            'name': _role_display_name(role_key),
+            'desc': f'Auto-grouped from users role: {role_key}',
+            'clearance': _clearance_for_role(role_key),
+            'status': 'active',
+            'members': int(count),
+            'is_derived': True,
+        })
+
+    stats = {
+        'total_groups': len(groups),
+        'total_members': sum(int(g.get('members') or 0) for g in groups),
+        'active_users': int(active_users),
+        'inactive_users': int(inactive_users),
+    }
+    return groups, stats
+
+
 @bp.route('/superadmin/user-groups', methods=['GET'])
 @firebase_auth_required
 def api_get_superadmin_user_groups():
@@ -2013,6 +2082,7 @@ def api_get_superadmin_user_groups():
                 'members_stored': int(data.get('members') or 0),
             })
 
+        derived_groups, derived_stats = _derive_groups_from_user_roles(db)
         counts_by_id, counts_by_name = _compute_group_member_counts(db, rows)
 
         groups = []
@@ -2031,11 +2101,24 @@ def api_get_superadmin_user_groups():
                 'clearance': row.get('clearance') or 'Level 1',
                 'status': row.get('status') or 'active',
                 'members': max(0, int(members or 0)),
+                'is_derived': False,
             })
 
+        # Ensure role-based groups from users collection are visible even if no custom groups exist.
+        existing_names = {str(g.get('name') or '').strip().lower() for g in groups}
+        for dg in derived_groups:
+            dname = str(dg.get('name') or '').strip().lower()
+            if dname and dname not in existing_names:
+                groups.append(dg)
+                existing_names.add(dname)
+
+        # If custom groups are empty, show fully derived groups directly.
+        if not rows:
+            groups = derived_groups
+
         groups.sort(key=lambda g: str(g.get('name') or '').lower())
-        active_members = sum(int(g.get('members') or 0) for g in groups if str(g.get('status') or '').lower() == 'active')
-        inactive_members = sum(int(g.get('members') or 0) for g in groups if str(g.get('status') or '').lower() != 'active')
+        active_members = int(derived_stats.get('active_users') or 0)
+        inactive_members = int(derived_stats.get('inactive_users') or 0)
 
         stats = {
             'total_groups': len(groups),
