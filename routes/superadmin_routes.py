@@ -1727,6 +1727,224 @@ def api_create_employee():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+def _normalize_emp_status(value):
+    raw = str(value or '').strip().lower()
+    if raw in {'active', 'on duty', 'present'}:
+        return 'ACTIVE'
+    if raw in {'on_leave', 'on leave', 'leave'}:
+        return 'ON_LEAVE'
+    if raw in {'inactive', 'separated'}:
+        return 'INACTIVE'
+    return 'ACTIVE'
+
+
+def _status_to_firestore(value):
+    return {
+        'ACTIVE': 'Active',
+        'ON_LEAVE': 'On Leave',
+        'INACTIVE': 'Inactive'
+    }.get(value, 'Active')
+
+
+def _normalize_category(value):
+    raw = str(value or '').strip().upper()
+    if raw in {'MUNICIPAL', 'MUNICIPALITY', 'MUNICIPAL_ADMIN'}:
+        return 'MUNICIPALITY'
+    return 'REGIONAL'
+
+
+def _employee_doc_to_ui(doc_id, data):
+    data = data or {}
+    first = (data.get('first_name') or data.get('firstName') or '').strip()
+    last = (data.get('last_name') or data.get('lastName') or '').strip()
+    emp_no = (data.get('employee_id') or data.get('empNo') or '').strip()
+    role_value = str(data.get('role') or '').strip()
+    category = _normalize_category(data.get('scope') or role_value)
+    municipality = (data.get('municipality') or '').strip()
+
+    return {
+        'id': doc_id,
+        'empNo': emp_no,
+        'first': first,
+        'last': last,
+        'email': (data.get('email') or '').strip(),
+        'mobile': (data.get('contact_Number') or data.get('mobile') or '').strip(),
+        'category': category,
+        'region': (data.get('region') or data.get('region_name') or data.get('regionName') or '').strip(),
+        'municipality': municipality,
+        'office': (data.get('department_name') or data.get('office') or '').strip(),
+        'position': (data.get('designation') or data.get('position') or '').strip(),
+        'role': role_value or 'Employee',
+        'shiftId': (data.get('shift_id') or data.get('shiftId') or '').strip(),
+        'empStatus': _normalize_emp_status(data.get('status')),
+        'remarks': (data.get('remarks') or '').strip()
+    }
+
+
+@bp.route('/api/hrm/employees', methods=['GET'])
+@role_required('super-admin', 'superadmin')
+def api_get_superadmin_employees():
+    try:
+        db = get_firestore_db()
+        rows = []
+        for doc in db.collection('employees').stream():
+            rows.append(_employee_doc_to_ui(doc.id, doc.to_dict() or {}))
+
+        rows.sort(key=lambda item: (item.get('last') or '', item.get('first') or ''))
+        return jsonify({'success': True, 'employees': rows, 'count': len(rows)})
+    except Exception as e:
+        print(f'[ERROR] api_get_superadmin_employees: {e}')
+        return jsonify({'success': False, 'error': 'Failed to load employees'}), 500
+
+
+@bp.route('/api/hrm/employees', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_create_superadmin_employee_v2():
+    try:
+        payload = request.get_json(silent=True) or {}
+        emp_no = str(payload.get('empNo') or '').strip().upper()
+        first = str(payload.get('first') or '').strip()
+        last = str(payload.get('last') or '').strip()
+
+        if not emp_no or not first or not last:
+            return jsonify({'success': False, 'error': 'Employee No., First Name, and Last Name are required'}), 400
+
+        db = get_firestore_db()
+
+        for doc in db.collection('employees').stream():
+            existing = doc.to_dict() or {}
+            if str(existing.get('employee_id') or '').strip().upper() == emp_no:
+                return jsonify({'success': False, 'error': 'Employee No. already exists'}), 409
+
+        category = _normalize_category(payload.get('category'))
+        firestore_status = _status_to_firestore(_normalize_emp_status(payload.get('empStatus')))
+
+        record = {
+            'employee_id': emp_no,
+            'first_name': first,
+            'last_name': last,
+            'middle_name': '',
+            'email': str(payload.get('email') or '').strip().lower(),
+            'contact_Number': str(payload.get('mobile') or '').strip(),
+            'scope': category,
+            'region': str(payload.get('region') or '').strip(),
+            'municipality': str(payload.get('municipality') or '').strip(),
+            'department_name': str(payload.get('office') or '').strip(),
+            'designation': str(payload.get('position') or '').strip(),
+            'role': str(payload.get('role') or 'Employee').strip(),
+            'shift_id': str(payload.get('shiftId') or '').strip(),
+            'status': firestore_status,
+            'remarks': str(payload.get('remarks') or '').strip(),
+            'updated_at': firestore.SERVER_TIMESTAMP,
+            'created_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        doc_ref = db.collection('employees').document()
+        doc_ref.set(record)
+        return jsonify({'success': True, 'id': doc_ref.id})
+    except Exception as e:
+        print(f'[ERROR] api_create_superadmin_employee_v2: {e}')
+        return jsonify({'success': False, 'error': 'Failed to create employee'}), 500
+
+
+@bp.route('/api/hrm/employees/<employee_doc_id>', methods=['PUT'])
+@role_required('super-admin', 'superadmin')
+def api_update_superadmin_employee(employee_doc_id):
+    try:
+        payload = request.get_json(silent=True) or {}
+        emp_no = str(payload.get('empNo') or '').strip().upper()
+        first = str(payload.get('first') or '').strip()
+        last = str(payload.get('last') or '').strip()
+
+        if not emp_no or not first or not last:
+            return jsonify({'success': False, 'error': 'Employee No., First Name, and Last Name are required'}), 400
+
+        db = get_firestore_db()
+        ref = db.collection('employees').document(employee_doc_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        for doc in db.collection('employees').stream():
+            if doc.id == employee_doc_id:
+                continue
+            existing = doc.to_dict() or {}
+            if str(existing.get('employee_id') or '').strip().upper() == emp_no:
+                return jsonify({'success': False, 'error': 'Employee No. already exists'}), 409
+
+        category = _normalize_category(payload.get('category'))
+        firestore_status = _status_to_firestore(_normalize_emp_status(payload.get('empStatus')))
+
+        updates = {
+            'employee_id': emp_no,
+            'first_name': first,
+            'last_name': last,
+            'email': str(payload.get('email') or '').strip().lower(),
+            'contact_Number': str(payload.get('mobile') or '').strip(),
+            'scope': category,
+            'region': str(payload.get('region') or '').strip(),
+            'municipality': str(payload.get('municipality') or '').strip(),
+            'department_name': str(payload.get('office') or '').strip(),
+            'designation': str(payload.get('position') or '').strip(),
+            'role': str(payload.get('role') or 'Employee').strip(),
+            'shift_id': str(payload.get('shiftId') or '').strip(),
+            'status': firestore_status,
+            'remarks': str(payload.get('remarks') or '').strip(),
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        ref.set(updates, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_update_superadmin_employee: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update employee'}), 500
+
+
+@bp.route('/api/hrm/employees/<employee_doc_id>', methods=['DELETE'])
+@role_required('super-admin', 'superadmin')
+def api_delete_superadmin_employee(employee_doc_id):
+    try:
+        db = get_firestore_db()
+        ref = db.collection('employees').document(employee_doc_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        ref.delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_delete_superadmin_employee: {e}')
+        return jsonify({'success': False, 'error': 'Failed to delete employee'}), 500
+
+
+@bp.route('/api/hrm/employees/bulk-status', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_bulk_status_superadmin_employee():
+    try:
+        payload = request.get_json(silent=True) or {}
+        ids = payload.get('ids') or []
+        status = _normalize_emp_status(payload.get('status'))
+
+        if not isinstance(ids, list) or not ids:
+            return jsonify({'success': False, 'error': 'No employees selected'}), 400
+
+        firestore_status = _status_to_firestore(status)
+        db = get_firestore_db()
+        updated = 0
+        for employee_doc_id in ids:
+            ref = db.collection('employees').document(str(employee_doc_id))
+            snap = ref.get()
+            if not snap.exists:
+                continue
+            ref.set({'status': firestore_status, 'updated_at': firestore.SERVER_TIMESTAMP}, merge=True)
+            updated += 1
+
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        print(f'[ERROR] api_bulk_status_superadmin_employee: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update employee status'}), 500
+
+
 # --- HRM SUPERADMIN PAGES ---
 from flask import abort
 
