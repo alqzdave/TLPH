@@ -163,6 +163,7 @@
                                 <th class="border-r border-slate-200">Resource Description</th>
                                 <th class="border-r border-slate-200" style="width: 100px;">Qty</th>
                                 <th class="border-r border-slate-200">Administrative Scope</th>
+                                <th class="border-r border-slate-200" style="width: 170px;">Status</th>
                                 <th class="text-center no-print" style="width: 140px;">Action</th>
                             </tr>
                         </thead>
@@ -317,7 +318,7 @@
             document.getElementById('resCount').textContent = filtered.length;
 
             if (filtered.length === 0) {
-                body.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No records found.</td></tr>';
+                body.innerHTML = '<tr><td colspan="6" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No records found.</td></tr>';
                 return;
             }
 
@@ -327,6 +328,12 @@
                 if(row.cat === "NATURAL ASSETS") badgeStyle = "bg-emerald-50 text-emerald-800 border-emerald-200";
                 if(row.cat === "PROTECTED AREAS") badgeStyle = "bg-indigo-50 text-indigo-800 border-indigo-200";
 
+                const statusKey = String(row.statusKey || '').toLowerCase();
+                let statusClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                if (statusKey.includes('approved')) statusClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                if (statusKey.includes('rejected')) statusClass = 'bg-rose-50 text-rose-700 border-rose-200';
+                if (statusKey.includes('forwarded')) statusClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-50 transition-colors data-row";
                 tr.innerHTML = `
@@ -334,6 +341,7 @@
                     <td class="font-black uppercase tracking-tight text-slate-900 border-r border-slate-100">${row.desc}</td>
                     <td class="font-mono font-black text-slate-800 border-r border-slate-100">${row.qty.toLocaleString()}</td>
                     <td class="font-bold text-slate-600 border-r border-slate-100 uppercase text-[9px]">Region ${row.reg} | ${row.mun}</td>
+                    <td class="border-r border-slate-100"><span class="status-badge ${statusClass}">${row.statusLabel || 'Pending Review'}</span></td>
                     <td class="text-center no-print">
                         <div class="inline-flex items-center gap-2">
                             <button onclick="openDetailModal(${index})" class="text-[9px] font-bold uppercase text-emerald-700 hover:underline bg-transparent border-none cursor-pointer">View</button>
