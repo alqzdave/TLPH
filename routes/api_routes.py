@@ -4242,6 +4242,12 @@ def api_list_notifications():
             notifications = get_active_notifications()
         return jsonify({'success': True, 'notifications': notifications})
     except Exception as e:
+        if 'quota exceeded' in str(e).strip().lower():
+            return jsonify({
+                'success': True,
+                'notifications': [],
+                'warning': 'Firestore quota exceeded. Notifications are temporarily unavailable.'
+            })
         return jsonify({'success': False, 'message': str(e)}), 500
     
 

@@ -548,6 +548,295 @@ def hrm_attendance():
         employees_data=employees
     )
 
+
+def _attendance_type_from_status(raw_status):
+    value = str(raw_status or '').strip().lower()
+    if value in {'late'}:
+        return 'LATE'
+    if value in {'undertime'}:
+        return 'UNDERTIME'
+    if value in {'absent'}:
+        return 'ABSENT'
+    if value in {'on leave', 'on_leave', 'leave'}:
+        return 'ON_LEAVE'
+    return 'PRESENT'
+
+
+def _attendance_status_from_type(attendance_type):
+    key = str(attendance_type or '').strip().upper()
+    if key == 'LATE':
+        return 'Late'
+    if key == 'UNDERTIME':
+        return 'Undertime'
+    if key == 'ABSENT':
+        return 'Absent'
+    if key == 'ON_LEAVE':
+        return 'On Leave'
+    return 'Present'
+
+
+def _format_attendance_time(raw_value):
+    if not raw_value:
+        return ''
+    try:
+        if isinstance(raw_value, str):
+            value = raw_value.strip()
+            if len(value) >= 5 and value[2] == ':':
+                return value[:5]
+            parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            return parsed.strftime('%H:%M')
+        if hasattr(raw_value, 'to_datetime'):
+            raw_value = raw_value.to_datetime()
+        if hasattr(raw_value, 'strftime'):
+            return raw_value.strftime('%H:%M')
+    except Exception:
+        return ''
+    return ''
+
+
+def _get_employee_shift_times(db, employee_data, shift_cache):
+    shift_id = str(employee_data.get('shift_id') or employee_data.get('shiftId') or '').strip()
+    if not shift_id:
+        return '', ''
+
+    if shift_id in shift_cache:
+        return shift_cache[shift_id]
+
+    start = ''
+    end = ''
+    try:
+        shift_doc = db.collection('office_shifts').document(shift_id).get()
+        if shift_doc.exists:
+            shift_data = shift_doc.to_dict() or {}
+            start = _format_attendance_time(shift_data.get('time_in') or shift_data.get('start'))
+            end = _format_attendance_time(shift_data.get('time_out') or shift_data.get('end'))
+        else:
+            found = db.collection('office_shifts').where(
+                filter=firestore.FieldFilter('shift_code', '==', shift_id)
+            ).limit(1).stream()
+            for doc in found:
+                shift_data = doc.to_dict() or {}
+                start = _format_attendance_time(shift_data.get('time_in') or shift_data.get('start'))
+                end = _format_attendance_time(shift_data.get('time_out') or shift_data.get('end'))
+                break
+    except Exception:
+        start = ''
+        end = ''
+
+    shift_cache[shift_id] = (start, end)
+    return shift_cache[shift_id]
+
+
+@bp.route('/api/hrm/attendance', methods=['GET'])
+@role_required('municipal', 'municipal_admin')
+def api_get_municipal_attendance():
+    try:
+        db = get_firestore_db()
+        rows = []
+        today_str = datetime.utcnow().date().isoformat()
+        shift_cache = {}
+
+        user_municipality = (_resolve_municipality_from_user_context() or '').strip().lower()
+        docs = []
+        if user_municipality:
+            try:
+                docs = db.collection('employees').where(
+                    filter=firestore.FieldFilter('municipality', '==', user_municipality)
+                ).stream()
+            except Exception:
+                # Fallback for mixed data casing or SDK where() compatibility issues.
+                docs = [
+                    doc for doc in db.collection('employees').stream()
+                    if str((doc.to_dict() or {}).get('municipality') or '').strip().lower() == user_municipality
+                ]
+        else:
+            docs = db.collection('employees').stream()
+
+        for employee_doc in docs:
+            emp = employee_doc.to_dict() or {}
+
+            defaults = {}
+            if 'attendance_date' not in emp:
+                defaults['attendance_date'] = today_str
+            if 'attendance_status' not in emp:
+                defaults['attendance_status'] = 'Present'
+            if 'attendance_remarks' not in emp:
+                defaults['attendance_remarks'] = ''
+            if 'time_in' not in emp:
+                defaults['time_in'] = ''
+            if 'time_out' not in emp:
+                defaults['time_out'] = ''
+            if 'working_hours' not in emp:
+                defaults['working_hours'] = 0
+            if defaults:
+                emp.update(defaults)
+
+            role = str(emp.get('role') or '').strip().lower()
+            category = 'MUNICIPALITY' if 'municipal' in role else 'REGIONAL'
+
+            first_name = str(emp.get('first_name') or '').strip()
+            middle_name = str(emp.get('middle_name') or '').strip()
+            last_name = str(emp.get('last_name') or '').strip()
+            full_name = str(emp.get('name') or '').strip()
+            if not full_name:
+                full_name = f"{last_name}, {first_name} {middle_name}".strip().strip(',')
+
+            attendance_status = str(emp.get('attendance_status') or '').strip().lower()
+            time_in = _format_attendance_time(emp.get('time_in'))
+            time_out = _format_attendance_time(emp.get('time_out'))
+
+            if (not time_in or not time_out) and attendance_status not in {'absent', 'on leave', 'leave'}:
+                shift_in, shift_out = _get_employee_shift_times(db, emp, shift_cache)
+                time_in = time_in or shift_in
+                time_out = time_out or shift_out
+
+            rows.append({
+                'id': employee_doc.id,
+                'date': str(emp.get('attendance_date') or today_str),
+                'no': str(emp.get('employee_id') or '').strip(),
+                'name': full_name or 'N/A',
+                'cat': category,
+                'reg': str(emp.get('region') or '').strip(),
+                'mun': str(emp.get('municipality') or '').strip(),
+                'in': time_in,
+                'out': time_out,
+                'type': _attendance_type_from_status(emp.get('attendance_status')),
+                'notes': str(emp.get('attendance_remarks') or '').strip(),
+            })
+
+        rows.sort(key=lambda item: (item.get('no') or '', item.get('name') or ''))
+        return jsonify({'success': True, 'records': rows, 'count': len(rows)})
+    except Exception as e:
+        print(f'[ERROR] api_get_municipal_attendance: {e}')
+        if 'quota exceeded' in str(e).strip().lower():
+            return jsonify({
+                'success': True,
+                'records': [],
+                'count': 0,
+                'warning': 'Firestore quota exceeded. Attendance data is temporarily unavailable.'
+            })
+        return jsonify({'success': False, 'error': 'Failed to load attendance records'}), 500
+
+
+@bp.route('/api/hrm/attendance/adjust', methods=['PUT'])
+@role_required('municipal', 'municipal_admin')
+def api_adjust_municipal_attendance():
+    try:
+        payload = request.get_json(silent=True) or {}
+        employee_doc_id = str(payload.get('employee_doc_id') or '').strip()
+        if not employee_doc_id:
+            return jsonify({'success': False, 'error': 'Employee is required'}), 400
+
+        attendance_date = str(payload.get('attendance_date') or '').strip() or datetime.utcnow().date().isoformat()
+        category = str(payload.get('category') or '').strip().upper()
+        time_in = str(payload.get('time_in') or '').strip()
+        time_out = str(payload.get('time_out') or '').strip()
+        attendance_type = str(payload.get('type') or '').strip().upper()
+        notes = str(payload.get('notes') or payload.get('reason') or '').strip()
+
+        db = get_firestore_db()
+        ref = db.collection('employees').document(employee_doc_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        employee_data = snap.to_dict() or {}
+        shift_in, shift_out = _get_employee_shift_times(db, employee_data, {})
+        time_in = time_in or shift_in
+        time_out = time_out or shift_out
+
+        if not attendance_type:
+            attendance_type = 'ABSENT' if not time_in and not time_out else 'PRESENT'
+
+        working_hours = 0
+        if time_in and time_out:
+            try:
+                in_dt = datetime.strptime(time_in, '%H:%M')
+                out_dt = datetime.strptime(time_out, '%H:%M')
+                diff = (out_dt - in_dt).total_seconds() / 3600.0
+                working_hours = round(max(diff, 0), 2)
+            except Exception:
+                working_hours = 0
+
+        updates = {
+            'attendance_date': attendance_date,
+            'time_in': time_in,
+            'time_out': time_out,
+            'working_hours': working_hours,
+            'attendance_status': _attendance_status_from_type(attendance_type),
+            'attendance_remarks': notes,
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        if category in {'REGIONAL', 'MUNICIPALITY'}:
+            updates['role'] = 'municipal' if category == 'MUNICIPALITY' else 'regional'
+        if payload.get('region') is not None:
+            updates['region'] = str(payload.get('region') or '').strip()
+        if payload.get('municipality') is not None:
+            updates['municipality'] = str(payload.get('municipality') or '').strip()
+
+        ref.set(updates, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_adjust_municipal_attendance: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update attendance record'}), 500
+
+
+@bp.route('/api/hrm/attendance/<employee_doc_id>', methods=['DELETE'])
+@role_required('municipal', 'municipal_admin')
+def api_clear_municipal_attendance(employee_doc_id):
+    try:
+        db = get_firestore_db()
+        ref = db.collection('employees').document(str(employee_doc_id))
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        ref.set({
+            'time_in': '',
+            'time_out': '',
+            'working_hours': 0,
+            'attendance_status': 'Absent',
+            'attendance_remarks': '',
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_clear_municipal_attendance: {e}')
+        return jsonify({'success': False, 'error': 'Failed to clear attendance record'}), 500
+
+
+@bp.route('/api/hrm/attendance/bulk-clear', methods=['POST'])
+@role_required('municipal', 'municipal_admin')
+def api_bulk_clear_municipal_attendance():
+    try:
+        payload = request.get_json(silent=True) or {}
+        ids = payload.get('ids') or []
+        if not isinstance(ids, list) or not ids:
+            return jsonify({'success': False, 'error': 'No attendance records selected'}), 400
+
+        db = get_firestore_db()
+        updated = 0
+        for employee_doc_id in ids:
+            ref = db.collection('employees').document(str(employee_doc_id))
+            snap = ref.get()
+            if not snap.exists:
+                continue
+            ref.set({
+                'time_in': '',
+                'time_out': '',
+                'working_hours': 0,
+                'attendance_status': 'Absent',
+                'attendance_remarks': '',
+                'updated_at': firestore.SERVER_TIMESTAMP,
+            }, merge=True)
+            updated += 1
+
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        print(f'[ERROR] api_bulk_clear_municipal_attendance: {e}')
+        return jsonify({'success': False, 'error': 'Failed to clear selected attendance records'}), 500
+
 @bp.route('/holiday')
 @role_required('municipal','municipal_admin')
 def hrm_holiday():

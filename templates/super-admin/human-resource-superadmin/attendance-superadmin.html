@@ -410,11 +410,7 @@
             loadMunicipalities(code, 'm', 'Select Municipality / City', false);
         });
 
-        let logs=[
-          {id:crypto.randomUUID(),date:"2026-02-18",no:"DENR-2026-0007",name:"Dela Cruz, Juan",cat:"REGIONAL",reg:"National Capital Region",mun:"",in:"08:02",out:"17:03",type:"LATE",notes:"Traffic"},
-          {id:crypto.randomUUID(),date:"2026-02-18",no:"DENR-2026-0011",name:"Santos, Maria",cat:"MUNICIPALITY",reg:"CALABARZON",mun:"City of San Pedro",in:"",out:"",type:"ON_LEAVE",notes:"Sick leave"},
-          {id:crypto.randomUUID(),date:"2026-02-17",no:"DENR-2026-0007",name:"Dela Cruz, Juan",cat:"REGIONAL",reg:"National Capital Region",mun:"",in:"08:00",out:"17:00",type:"PRESENT",notes:""}
-        ];
+                let logs=[];
 
         const tb=$("tb"), cnt=$("cnt");
         const toastEl=$("toast"), tt=$("tt"), tm=$("tm");
@@ -521,12 +517,36 @@
           pendingDelete = { mode: null, ids: [] };
         };
 
-        const upsert=(payload,id)=>{
-          if(!id) logs.unshift({id:crypto.randomUUID(),...payload});
-          else logs=logs.map(x=>x.id===id?{...x,...payload}:x);
-        };
-        const del=(id)=>logs=logs.filter(x=>x.id!==id);
         const selected=()=>Array.from(document.querySelectorAll(".rc:checked")).map(x=>x.dataset.id);
+
+                const requestJson = async (url, options = {}) => {
+                    const res = await fetch(url, {
+                        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+                        ...options
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok || data.success === false) {
+                        throw new Error(data.error || `Request failed (${res.status})`);
+                    }
+                    return data;
+                };
+
+                const loadLogs = async () => {
+                    const data = await requestJson('/superadmin/api/hrm/attendance');
+                    logs = (data.records || []).map(r => ({
+                        id: r.id,
+                        date: r.date || '',
+                        no: (r.no || '').toUpperCase(),
+                        name: r.name || 'N/A',
+                        cat: r.cat === 'MUNICIPALITY' ? 'MUNICIPALITY' : 'REGIONAL',
+                        reg: r.reg || '',
+                        mun: r.mun || '',
+                        in: r.in || '',
+                        out: r.out || '',
+                        type: r.type || 'PRESENT',
+                        notes: r.notes || ''
+                    }));
+                };
 
         const exportCSV=()=>{
           const rows=filt(logs);
@@ -576,15 +596,30 @@
           });
 
           delBtn.onclick=()=>{
-            const ids = pendingDelete.ids || [];
-            if(!ids.length) return closeD();
-            ids.forEach(del);
-            closeD();
-            render();
-            toast("Removed", ids.length > 1 ? "Selected logs deleted." : "Log deleted.");
+                    const ids = pendingDelete.ids || [];
+                    if(!ids.length) return closeD();
+                    (async () => {
+                        try {
+                            if (ids.length === 1) {
+                                await requestJson(`/superadmin/api/hrm/attendance/${encodeURIComponent(ids[0])}`, { method: 'DELETE' });
+                            } else {
+                                await requestJson('/superadmin/api/hrm/attendance/bulk-clear', {
+                                    method: 'POST',
+                                    body: JSON.stringify({ ids })
+                                });
+                            }
+                            await loadLogs();
+                            render();
+                            toast("Updated", ids.length > 1 ? "Selected logs cleared." : "Attendance cleared.");
+                        } catch (err) {
+                            toast("Error", err.message || "Failed to clear attendance.");
+                        } finally {
+                            closeD();
+                        }
+                    })();
           };
 
-          $("f").onsubmit=(e)=>{
+                    $("f").onsubmit=async (e)=>{
             e.preventDefault();
             const payload={
               date:$("d").value, no:$("no").value.trim().toUpperCase(), name:$("nm").value.trim(),
@@ -593,11 +628,52 @@
             };
             if(payload.cat==="MUNICIPALITY" && !payload.mun) return toast("Missing field","Municipality is required.");
             if(payload.in && payload.out && payload.out<=payload.in) return toast("Invalid time","Time out must be after time in.");
-            upsert(payload, $("eid").value.trim()||null);
-            closeM(); render(); toast("Saved","Attendance log saved.");
+
+                        const editingId = $("eid").value.trim();
+                        let targetId = editingId;
+
+                        if (!targetId) {
+                            const byNo = logs.find(x => (x.no || '').toUpperCase() === payload.no);
+                            const byName = logs.find(x => (x.name || '').trim().toLowerCase() === payload.name.toLowerCase());
+                            targetId = (byNo || byName || {}).id || '';
+                        }
+
+                        if (!targetId) {
+                            return toast("Employee not found", "Use an existing employee number/name from current records.");
+                        }
+
+                        try {
+                            await requestJson('/superadmin/api/hrm/attendance/adjust', {
+                                method: 'PUT',
+                                body: JSON.stringify({
+                                    employee_doc_id: targetId,
+                                    attendance_date: payload.date,
+                                    category: payload.cat,
+                                    region: payload.reg,
+                                    municipality: payload.mun,
+                                    time_in: payload.in,
+                                    time_out: payload.out,
+                                    type: payload.type,
+                                    notes: payload.notes
+                                })
+                            });
+                            await loadLogs();
+                            closeM();
+                            render();
+                            toast("Saved","Attendance log saved.");
+                        } catch (err) {
+                            toast("Error", err.message || "Failed to save attendance.");
+                        }
           };
 
-          render();
+                    try {
+                        await loadLogs();
+                        render();
+                    } catch (err) {
+                        console.error(err);
+                        toast("Error", err.message || "Failed to load attendance records.");
+                        render();
+                    }
         });
     </script>
 </body>

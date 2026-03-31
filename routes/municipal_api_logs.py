@@ -70,6 +70,13 @@ def _resolve_municipality_from_user_context():
     print(f"[DEBUG] Session user_id: {session.get('user_id')}")
     print(f"[DEBUG] Session user_email: {session.get('user_email')}")
 
+    # Fast path: use previously resolved scope from session to avoid repeated Firestore reads.
+    cached_municipality = session.get('municipality') or session.get('user_municipality')
+    if cached_municipality:
+        municipality = str(cached_municipality).strip()
+        print(f"[DEBUG] ✓ RESOLVED municipality from session cache: '{municipality}'")
+        return municipality
+
     try:
         db = get_firestore_db()
         user_id = session.get('user_id')
@@ -87,6 +94,8 @@ def _resolve_municipality_from_user_context():
                     municipality = user_data.get('municipality') or user_data.get('municipality_name')
                     if municipality:
                         municipality = str(municipality).strip()
+                        session['municipality'] = municipality
+                        session['user_municipality'] = municipality
                         print(f"[DEBUG] ✓ RESOLVED municipality from user_id: '{municipality}'")
                         return municipality
                     else:
@@ -110,6 +119,8 @@ def _resolve_municipality_from_user_context():
                     municipality = user_data.get('municipality') or user_data.get('municipality_name')
                     if municipality:
                         municipality = str(municipality).strip()
+                        session['municipality'] = municipality
+                        session['user_municipality'] = municipality
                         print(f"[DEBUG] ✓ RESOLVED municipality from user_email: '{municipality}'")
                         return municipality
                     else:

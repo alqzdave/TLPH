@@ -1,4 +1,32 @@
 <script>
+    // Provide stable Alpine globals before header markup is evaluated.
+    if (typeof window.notificationData !== 'function') {
+        window.notificationData = function() {
+            return {
+                count: 0,
+                async loadNotifications() {
+                    this.count = 0;
+                },
+                init() {
+                    this.loadNotifications();
+                }
+            };
+        };
+    }
+
+    function ensureMunicipalToastStore() {
+        if (!window.Alpine || typeof window.Alpine.store !== 'function') return;
+        if (window.Alpine.store('globalToast')) return;
+        window.Alpine.store('globalToast', {
+            show: false,
+            type: 'success',
+            message: '',
+            timeout: null,
+        });
+    }
+
+    document.addEventListener('alpine:init', ensureMunicipalToastStore);
+
     // Ensure Alpine is loaded on every municipal page that includes this header.
     if (!window.Alpine && !document.querySelector('script[data-alpine-global="1"]')) {
         const alpineScript = document.createElement('script');
@@ -6,6 +34,8 @@
         alpineScript.defer = true;
         alpineScript.setAttribute('data-alpine-global', '1');
         document.head.appendChild(alpineScript);
+    } else {
+        ensureMunicipalToastStore();
     }
 </script>
 
@@ -131,39 +161,6 @@
 </style>
 
 <script>
-    // Fallback Alpine data provider used by notification badge in the header.
-    // Some pages do not define notificationData(), which causes runtime errors.
-    if (typeof window.notificationData !== 'function') {
-        window.notificationData = function() {
-            return {
-                count: 0,
-                async loadNotifications() {
-                    try {
-                        const res = await fetch('/api/notifications/list');
-                        const data = await res.json();
-                        if (!data.success) throw new Error(data.message || 'Failed to fetch notifications');
-                        const notifs = (data.notifications || []).filter(n => {
-                            if (n.status !== 'posted') return false;
-                            if (!(n.scope === 'all' || n.scope === 'municipal')) return false;
-                            if (!n.post_date) return false;
-                            const postDate = new Date(n.post_date);
-                            const now = new Date();
-                            const diffHrs = (now - postDate) / (1000 * 60 * 60);
-                            return diffHrs <= 5;
-                        });
-                        this.count = notifs.length;
-                    } catch (e) {
-                        this.count = 0;
-                    }
-                },
-                init() {
-                    this.loadNotifications();
-                    setInterval(() => this.loadNotifications(), 2 * 60 * 1000);
-                }
-            };
-        };
-    }
-
     // Shared municipal toast notifier.
     if (typeof window.municipalNotify !== 'function') {
         window.municipalNotify = function(message, type) {

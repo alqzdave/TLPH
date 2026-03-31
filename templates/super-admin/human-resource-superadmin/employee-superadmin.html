@@ -348,6 +348,7 @@
     let apiMuniCache = {};
     let pendingDeleteId = null;
     const EMPLOYEE_API_BASE = '/superadmin/api/hrm/employees';
+    const OFFICE_SHIFT_API_BASE = '/superadmin/api/hrm/office-shifts';
 
     async function initLocationAPI() {
         try {
@@ -434,13 +435,58 @@
         loadMunicipalities(code, 'fMunicipality', 'Select Municipality / City', false);
     });
 
-    const shifts = [
-      { id: "S1", name: "Regular Office Hours (08:00–17:00)" },
-      { id: "S2", name: "Frontline Window (07:30–16:30)" },
-      { id: "S3", name: "Night Duty (16:00–00:00)" }
-    ];
+    let shifts = [];
 
     let employees = [];
+
+    function renderShiftOptions(selectedShiftId = "") {
+      const shiftSel = el("fShift");
+      if (!shiftSel) return;
+
+      const options = shifts.map(s => {
+        const label = s.shift_code ? `${s.name} (${s.shift_code})` : s.name;
+        return `<option value="${escapeHtml(s.id)}">${escapeHtml(label)}</option>`;
+      }).join("");
+
+      const basePlaceholder = '<option value="" disabled>Select Shift...</option>';
+      shiftSel.innerHTML = basePlaceholder + options;
+
+      if (selectedShiftId) {
+        const hasSelected = shifts.some(s => s.id === selectedShiftId);
+        if (!hasSelected) {
+          shiftSel.innerHTML += `<option value="${escapeHtml(selectedShiftId)}">${escapeHtml(`Unlinked Shift (${selectedShiftId})`)}</option>`;
+        }
+        shiftSel.value = selectedShiftId;
+      } else {
+        shiftSel.value = "";
+      }
+    }
+
+    async function loadShifts() {
+      try {
+        const response = await fetch(OFFICE_SHIFT_API_BASE, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to load shifts');
+        }
+
+        const rows = Array.isArray(data.shifts) ? data.shifts : [];
+        shifts = rows.map(s => ({
+          id: String(s.id || '').trim(),
+          name: String(s.name || '').trim() || 'Unnamed Shift',
+          shift_code: String(s.shift_code || '').trim()
+        })).filter(s => s.id);
+      } catch (err) {
+        console.error('Error loading shifts:', err);
+        shifts = [];
+        showToast('Shift Load Failed', err.message || 'Could not load office shifts.');
+      }
+
+      renderShiftOptions();
+    }
 
     async function loadEmployees() {
       try {
@@ -494,7 +540,13 @@
       return `<span class="status-badge ${m.cls}">${m.label}</span>`;
     }
 
-    function shiftName(shiftId){ const s = shifts.find(x => x.id === shiftId); return s ? s.name : "—"; }
+    function shiftName(shiftId){
+      const key = String(shiftId || '').trim();
+      if (!key) return "—";
+      const s = shifts.find(x => x.id === key);
+      if (s) return s.shift_code ? `${s.name} (${s.shift_code})` : s.name;
+      return `Unlinked (${key})`;
+    }
 
     function getFilters(){
       return {
@@ -520,11 +572,6 @@
     }
 
     function render(){
-      const shiftSel = el("fShift");
-      if(shiftSel && shiftSel.options.length === 0){
-        shiftSel.innerHTML = `<option value="" disabled selected>Select Shift...</option>` + shifts.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("");
-      }
-
       const filtered = applyFilters(employees);
 
       el("statTotal").textContent = String(filtered.length);
@@ -575,7 +622,8 @@
 
       if(mode === "create"){
         el("modalTitle").innerHTML = '<i class="fa-solid fa-user-plus text-gov-blue"></i> New Employee';
-        el("editId").value = ""; el("empForm").reset(); el("fShift").value = "";
+        el("editId").value = ""; el("empForm").reset();
+        renderShiftOptions();
         el("btnSaveRecord").textContent = "Save Record";
         el("empStatusField").classList.add("hidden");
       } else {
@@ -585,7 +633,8 @@
         const e = employees.find(x => x.id === id); if(!e) return;
         el("editId").value = e.id; el("fEmpNo").value = e.empNo; el("fLast").value = e.last; el("fFirst").value = e.first;
         el("fEmail").value = e.email || ""; el("fMobile").value = e.mobile || ""; el("fCategory").value = e.category;
-        el("fEmpStatus").value = e.empStatus; el("fRole").value = e.role; el("fShift").value = e.shiftId || "";
+        el("fEmpStatus").value = e.empStatus; el("fRole").value = e.role;
+        renderShiftOptions(e.shiftId || "");
         el("fOffice").value = e.office; el("fPosition").value = e.position; el("fRemarks").value = e.remarks || "";
 
         const fReg = el("fRegion");
@@ -660,6 +709,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       await initLocationAPI();
+      await loadShifts();
 
       el("btnOpenCreate").addEventListener("click", () => openModal("create"));
       el("btnCloseModal").addEventListener("click", closeModal); el("btnCancel").addEventListener("click", closeModal);

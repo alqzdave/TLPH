@@ -3,511 +3,320 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DENR | Attendance & DTR Ledger</title>
+  <title>Municipal Attendance Registry</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            gov: ['Verdana', 'Arial', 'Tahoma', 'sans-serif'],
-          },
-          colors: {
-            gov: {
-              text: '#111827',
-              muted: '#4b5563',
-              border: '#d1d5db',
-              bg: '#f3f4f6',
-              panel: '#ffffff',
-              primary: '#0f172a',
-              rose: '#9f1239', // Rose accent for attendance alerts/late
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    *:not(.material-icons-round):not(i) { font-family: 'Verdana', sans-serif !important; }
-    .custom-scroll::-webkit-scrollbar { width: 4px; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    
-    body::before {
-      content: ""; position: fixed; inset: 0;
-      background-image: url('/static/images/denr.jpg');
-      background-repeat: no-repeat; background-position: center 30%; background-size: 520px;
-      opacity: 0.025; pointer-events: none; z-index: -1;
-    }
+    body { font-family: Verdana, Arial, sans-serif; }
+    .gov-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .gov-input { padding: 4px 8px; font-size: 10px; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 2px; background: #fff; outline: none; }
+    .gov-btn { padding: 4px 10px; border-radius: 2px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+    .status-badge { padding: 2px 6px; font-size: 8px; font-weight: 900; text-transform: uppercase; border: 1px solid transparent; border-radius: 1px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 2px; }
+    .gov-modal { position: fixed; inset: 0; background: rgba(15, 23, 42, .6); display: none; align-items: center; justify-content: center; z-index: 2050; padding: 16px; }
+    .gov-modal.flex { display: flex !important; }
+    .btn-action { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; border: 1px solid #cbd5e1; }
   </style>
 </head>
-
-<body class="h-screen w-full bg-gov-bg text-gov-text text-[13px] flex flex-col overflow-hidden" x-data="attendancePage()" x-init="loadData()" x-cloak>
-
-  <div class="shrink-0">
-    {% include 'municipal/header.html' %}
-  </div>
-
+<body class="h-screen w-screen overflow-hidden bg-slate-100 flex flex-col">
+  <div class="shrink-0">{% include 'municipal/header.html' %}</div>
   <div class="flex flex-1 overflow-hidden">
     {% include 'municipal/sidenav.html' %}
 
-    <main class="flex-1 flex flex-col p-4 gap-4 overflow-y-auto custom-scroll">
-      
-      <div class="shrink-0 flex items-center justify-between border-b-2 border-slate-900 pb-2">
-        <div>
-          <h1 class="text-base font-bold uppercase tracking-tight text-gov-primary">Attendance & DTR Ledger</h1>
-          <p class="text-[10px] font-bold text-gov-muted uppercase tracking-widest">Official Daily Time Records • Personnel Verification</p>
+    <main class="flex-1 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-2">
+      <header class="gov-card p-2 flex items-center justify-between border-b-4 border-b-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-slate-800 text-white flex items-center justify-center rounded-[2px]"><span class="material-icons-round text-[18px]">how_to_reg</span></div>
+          <div>
+            <h1 class="text-[12px] font-black uppercase tracking-tight">Municipal Attendance Registry</h1>
+            <p class="text-[9px] font-bold uppercase tracking-widest text-slate-500">Daily Time Logs and Shift Defaults</p>
+          </div>
         </div>
-        <div class="flex gap-2">
-          <button @click="exportDTR()" class="bg-white border border-gov-border text-gov-primary px-3 py-1.5 rounded-[2px] text-[10px] font-bold uppercase hover:bg-slate-50 transition-all flex items-center gap-2">
-            <span class="material-icons-round text-sm">file_download</span> Export DTR
-          </button>
-          <button @click="openLogs()" class="bg-gov-primary text-white px-3 py-1.5 rounded-[2px] text-[10px] font-bold uppercase hover:bg-slate-800 transition-all flex items-center gap-2">
-            <span class="material-icons-round text-sm">history</span> Attendance Logs
-          </button>
+        <div class="flex items-center gap-2">
+          <button id="btnExport" class="gov-btn border border-slate-300 bg-white">Export CSV</button>
+          <button id="btnOpenCreate" class="gov-btn bg-slate-800 text-white">New Log</button>
         </div>
-      </div>
+      </header>
 
-      <section class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        
-        <div class="lg:col-span-3 bg-white border border-gov-border rounded-[3px] shadow-sm p-3 flex flex-wrap items-center justify-around gap-4 text-center">
-            <div>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Present Today</p>
-              <p class="text-xl font-black text-emerald-700" x-text="presentCount"></p>
-            </div>
-            <div class="w-px h-8 bg-slate-200 hidden md:block"></div>
-            <div>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Late Arrivals</p>
-              <p class="text-xl font-black text-rose-700" x-text="lateCount"></p>
-            </div>
-            <div class="w-px h-8 bg-slate-200 hidden md:block"></div>
-            <div>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">On Official Business</p>
-              <p class="text-xl font-black text-blue-700" x-text="officialBusinessCount"></p>
-            </div>
-            <div class="w-px h-8 bg-slate-200 hidden md:block"></div>
-            <div class="flex-1 min-w-[200px]">
-                <div class="relative">
-                    <input x-model="searchQuery" type="text" placeholder="Search employee or ID..." class="w-full pl-8 pr-3 py-1.5 border border-gov-border rounded-[2px] focus:outline-none focus:border-slate-600 bg-slate-50 text-[11px]">
-                    <span class="material-icons-round absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gov-primary text-white border border-gov-border rounded-[3px] px-4 py-2 shadow-sm flex items-center gap-3">
-            <span class="material-icons-round text-3xl opacity-50">calendar_today</span>
-            <div>
-              <span class="text-[10px] font-bold uppercase opacity-70 block leading-none">Reference Date</span>
-              <span class="text-sm font-black tracking-tight" x-text="currentDate"></span>
-            </div>
-        </div>
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        <div class="gov-card p-2 text-center"><p class="text-[8px] font-black uppercase text-slate-500">Total Logs</p><h3 id="stAll" class="text-[16px] font-black">0</h3></div>
+        <div class="gov-card p-2 text-center"><p class="text-[8px] font-black uppercase text-emerald-700">Present</p><h3 id="stPresent" class="text-[16px] font-black text-emerald-700">0</h3></div>
+        <div class="gov-card p-2 text-center"><p class="text-[8px] font-black uppercase text-amber-700">Late / Undertime</p><h3 id="stLate" class="text-[16px] font-black text-amber-700">0</h3></div>
+        <div class="gov-card p-2 text-center"><p class="text-[8px] font-black uppercase text-rose-700">Absent</p><h3 id="stAbsent" class="text-[16px] font-black text-rose-700">0</h3></div>
       </section>
 
-      <section class="bg-white border border-gov-border rounded-[3px] shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div class="bg-slate-50 px-3 py-2 border-b border-gov-border flex items-center justify-between shrink-0">
+      <section class="gov-card flex-1 min-h-[320px] flex flex-col overflow-hidden">
+        <div class="bg-slate-50 border-b border-slate-200 p-2 flex flex-wrap gap-2 items-center justify-between">
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="fs" type="text" class="gov-input" placeholder="Search name, ID, notes..." />
+            <input id="fd" type="date" class="gov-input" />
+            <select id="fc" class="gov-input"><option value="ALL">All Categories</option><option value="REGIONAL">Regional</option><option value="MUNICIPALITY">Municipality</option></select>
+            <select id="ft" class="gov-input"><option value="ALL">All Types</option><option value="PRESENT">Present</option><option value="LATE">Late</option><option value="UNDERTIME">Undertime</option><option value="ABSENT">Absent</option><option value="ON_LEAVE">On Leave</option></select>
+          </div>
           <div class="flex items-center gap-2">
-            <span class="material-icons-round text-slate-600 text-sm">schedule</span>
-            <span class="font-bold uppercase text-[11px] text-slate-700">Real-time Daily Logs</span>
-          </div>
-          <div class="flex items-center gap-1">
-             <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-             <span class="text-[9px] font-black text-slate-500 uppercase">Live Sync Active</span>
+            <button id="btnClear" class="gov-btn border border-slate-300 bg-white">Clear</button>
+            <button id="btnBulkDelete" class="gov-btn bg-rose-700 text-white">Clear Selected</button>
           </div>
         </div>
-        
-        <div class="flex-1 overflow-auto custom-scroll">
-            <table class="w-full text-left border-collapse">
-              <thead class="sticky top-0 z-10 bg-slate-100 text-slate-500 border-b border-gov-border text-[9px] font-black uppercase tracking-widest">
-                <tr>
-                  <th class="p-2">Personnel / ID</th>
-                  <th class="p-2">Time-In</th>
-                  <th class="p-2">Time-Out</th>
-                  <th class="p-2">Duration</th>
-                  <th class="p-2 text-center">Status</th>
-                  <th class="p-2 text-right">Verification</th>
-                </tr>
-              </thead>
-              <tbody id="attendance-tbody" class="divide-y divide-slate-100 text-[12px]">
-                <template x-if="filteredAttendance.length === 0">
-                  <tr>
-                    <td colspan="6" class="p-8 text-center text-slate-400">
-                      <span class="material-icons-round text-4xl">inbox</span>
-                      <p class="mt-2">No attendance records found</p>
-                    </td>
-                  </tr>
-                </template>
-                <template x-for="record in filteredAttendance" :key="record.id">
-                  <tr>
-                    <td class="p-2">
-                      <p class="font-bold text-gov-primary" x-text="record.employee_name || 'N/A'"></p>
-                      <p class="text-[10px] text-slate-400 font-mono" x-text="record.employee_id || 'N/A'"></p>
-                    </td>
-                    <td class="p-2" x-text="record.time_in || '--:--'"></td>
-                    <td class="p-2" x-text="record.time_out || '--:--'"></td>
-                    <td class="p-2" x-text="record.duration || '0h 0m'"></td>
-                    <td class="p-2 text-center">
-                      <span :class="{
-                        'bg-emerald-100 text-emerald-800': record.status === 'Present',
-                        'bg-rose-100 text-rose-800': record.status === 'Late',
-                        'bg-blue-100 text-blue-800': record.status === 'Official Business',
-                        'bg-slate-100 text-slate-600': record.status === 'Absent'
-                      }" class="px-2 py-0.5 rounded-[2px] font-bold text-[9px] uppercase border" x-text="record.status || 'N/A'"></span>
-                    </td>
-                    <td class="p-2 text-right">
-                      <button @click="openEdit(record)" class="text-sky-700 hover:text-sky-900 font-black uppercase text-[10px] tracking-tighter">Edit</button>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
+
+        <div class="flex-1 overflow-auto custom-scrollbar bg-white">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-100 sticky top-0 z-10">
+              <tr>
+                <th class="text-center w-8 border-r border-slate-200"><input id="sa" type="checkbox" /></th>
+                <th class="border-r border-slate-200 text-center text-[9px] uppercase">Date</th>
+                <th class="border-r border-slate-200 text-[9px] uppercase">Employee</th>
+                <th class="border-r border-slate-200 text-[9px] uppercase">Category and Location</th>
+                <th class="border-r border-slate-200 text-center text-[9px] uppercase">Time In</th>
+                <th class="border-r border-slate-200 text-center text-[9px] uppercase">Time Out</th>
+                <th class="border-r border-slate-200 text-center text-[9px] uppercase">Type</th>
+                <th class="text-center text-[9px] uppercase">Action</th>
+              </tr>
+            </thead>
+            <tbody id="tb" class="text-[10px] divide-y divide-slate-100"></tbody>
+          </table>
         </div>
+
+        <div class="bg-slate-800 p-2 text-[9px] text-amber-300 font-bold uppercase tracking-widest" id="cnt">Showing 0 logs</div>
       </section>
-
-      <!-- Edit Attendance Modal -->
-      <div
-        x-show="showEditModal"
-        x-transition.opacity
-        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-        style="display: none;"
-      >
-        <div
-          class="bg-white rounded-[3px] shadow-xl border border-gov-border w-full max-w-md flex flex-col overflow-hidden"
-          @click.outside="closeEdit()"
-        >
-          <div class="px-4 py-2 bg-slate-900 text-white flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="material-icons-round text-sm">edit_calendar</span>
-              <div class="leading-tight">
-                <p class="text-[11px] font-black uppercase tracking-tight m-0">Edit Attendance Record</p>
-                <p class="text-[9px] font-bold uppercase tracking-widest text-slate-300 m-0" x-text="editForm.employee_name"></p>
-              </div>
-            </div>
-            <button @click="closeEdit()" class="text-slate-300 hover:text-white transition-colors">
-              <span class="material-icons-round text-sm">close</span>
-            </button>
-          </div>
-
-          <div class="p-4 flex flex-col gap-3">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Time In</label>
-                <input x-model="editForm.time_in" type="text" placeholder="08:00 AM"
-                  class="w-full px-2 py-1.5 border border-gov-border rounded-[2px] focus:outline-none focus:border-slate-600 bg-slate-50 text-[11px] font-mono">
-              </div>
-              <div>
-                <label class="block text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Time Out</label>
-                <input x-model="editForm.time_out" type="text" placeholder="05:00 PM"
-                  class="w-full px-2 py-1.5 border border-gov-border rounded-[2px] focus:outline-none focus:border-slate-600 bg-slate-50 text-[11px] font-mono">
-              </div>
-            </div>
-            <div>
-              <label class="block text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Status</label>
-              <select x-model="editForm.status"
-                class="w-full px-2 py-1.5 border border-gov-border rounded-[2px] focus:outline-none focus:border-slate-600 bg-slate-50 text-[11px] font-bold uppercase">
-                <option value="Present">Present</option>
-                <option value="Late">Late</option>
-                <option value="Official Business">Official Business</option>
-                <option value="Absent">Absent</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="px-4 py-2 bg-slate-100 border-t border-gov-border flex items-center justify-end gap-2">
-            <button @click="closeEdit()" class="bg-white border border-gov-border text-gov-primary px-3 py-1.5 rounded-[2px] text-[10px] font-bold uppercase hover:bg-slate-50 transition-all">Cancel</button>
-            <button @click="saveEdit()" class="bg-slate-900 text-white px-3 py-1.5 rounded-[2px] text-[10px] font-bold uppercase hover:bg-slate-700 transition-all flex items-center gap-1">
-              <span class="material-icons-round text-sm">save</span> Save Changes
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Attendance Logs Overlay -->
-      <div
-        x-show="showLogsOverlay"
-        x-transition.opacity
-        class="fixed inset-0 bg-black/40 flex items-center justify-center z-40"
-        style="display: none;"
-      >
-        <div
-          class="bg-white rounded-[3px] shadow-xl border border-gov-border w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden"
-          @click.outside="closeLogs()"
-        >
-          <div class="px-4 py-2 bg-slate-900 text-white flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="material-icons-round text-sm">history</span>
-              <div class="leading-tight">
-                <p class="text-[11px] font-black uppercase tracking-tight m-0">Attendance Logs</p>
-                <p class="text-[9px] font-bold uppercase tracking-widest text-slate-300 m-0">Current day records • Municipal scope</p>
-              </div>
-            </div>
-            <button @click="closeLogs()" class="text-slate-300 hover:text-white transition-colors">
-              <span class="material-icons-round text-sm">close</span>
-            </button>
-          </div>
-
-          <div class="flex-1 overflow-auto custom-scroll bg-slate-50">
-            <table class="w-full text-left border-collapse">
-              <thead class="bg-slate-100 text-slate-500 border-b border-gov-border text-[9px] font-black uppercase tracking-widest">
-                <tr>
-                  <th class="p-2">Personnel / ID</th>
-                  <th class="p-2">Time-In</th>
-                  <th class="p-2">Time-Out</th>
-                  <th class="p-2">Duration</th>
-                  <th class="p-2 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 text-[12px]">
-                <template x-if="filteredAttendance.length === 0">
-                  <tr>
-                    <td colspan="5" class="p-8 text-center text-slate-400">
-                      <span class="material-icons-round text-4xl">inbox</span>
-                      <p class="mt-2 text-[11px] font-bold uppercase tracking-widest">No attendance logs available</p>
-                    </td>
-                  </tr>
-                </template>
-                <template x-for="record in filteredAttendance" :key="record.id">
-                  <tr>
-                    <td class="p-2">
-                      <p class="font-bold text-gov-primary" x-text="record.employee_name || 'N/A'"></p>
-                      <p class="text-[10px] text-slate-400 font-mono" x-text="record.employee_id || 'N/A'"></p>
-                    </td>
-                    <td class="p-2" x-text="record.time_in || '--:--'"></td>
-                    <td class="p-2" x-text="record.time_out || '--:--'"></td>
-                    <td class="p-2" x-text="record.duration || '0h 0m'"></td>
-                    <td class="p-2 text-center">
-                      <span :class="{
-                        'bg-emerald-100 text-emerald-800': record.status === 'Present',
-                        'bg-rose-100 text-rose-800': record.status === 'Late',
-                        'bg-blue-100 text-blue-800': record.status === 'Official Business',
-                        'bg-slate-100 text-slate-600': record.status === 'Absent'
-                      }" class="px-2 py-0.5 rounded-[2px] font-bold text-[9px] uppercase border" x-text="record.status || 'N/A'"></span>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="px-4 py-2 bg-slate-100 border-t border-gov-border flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-slate-600">
-            <span x-text="`Total logs: ${filteredAttendance.length}`"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="shrink-0 border-t border-slate-200 pt-3 flex justify-between items-center opacity-60">
-        <div class="flex items-center gap-4 text-[9px] font-bold text-slate-500 uppercase">
-            <span>Terminal: MUN-SANJUAN-01</span>
-            <span>Auth Method: Multi-Factor</span>
-        </div>
-        <div class="text-[9px] font-black text-slate-800">THIS LOG IS AN OFFICIAL DOCUMENT • ALTERATION IS FRAUDULENT</div>
-      </div>
-
     </main>
   </div>
 
-  <!-- Server-side data injection (must be before module script) -->
+  <div id="mb" class="gov-modal">
+    <div class="w-full max-w-xl bg-white border border-slate-400 rounded-[2px] overflow-hidden" onclick="event.stopPropagation()">
+      <div class="bg-slate-900 text-white p-3 flex justify-between items-center"><h3 id="mt" class="text-[11px] font-black uppercase">New Attendance Log</h3><button id="mx"><span class="material-icons-round">close</span></button></div>
+      <form id="f" class="p-4 bg-slate-50 grid grid-cols-12 gap-3">
+        <input type="hidden" id="eid" />
+        <div class="col-span-6"><label class="text-[8px] font-black uppercase">Date</label><input id="d" type="date" required class="gov-input w-full" /></div>
+        <div class="col-span-6"><label class="text-[8px] font-black uppercase">Employee No.</label><input id="no" required class="gov-input w-full" /></div>
+        <div class="col-span-12"><label class="text-[8px] font-black uppercase">Employee Name</label><input id="nm" required class="gov-input w-full" /></div>
+        <div class="col-span-4"><label class="text-[8px] font-black uppercase">Category</label><select id="c" class="gov-input w-full"><option value="REGIONAL">Regional</option><option value="MUNICIPALITY">Municipality</option></select></div>
+        <div class="col-span-4"><label class="text-[8px] font-black uppercase">Region</label><input id="r" class="gov-input w-full" /></div>
+        <div class="col-span-4"><label class="text-[8px] font-black uppercase">Municipality</label><input id="m" class="gov-input w-full" /></div>
+        <div class="col-span-4"><label class="text-[8px] font-black uppercase">Time In</label><input id="ti" type="time" class="gov-input w-full" /></div>
+        <div class="col-span-4"><label class="text-[8px] font-black uppercase">Time Out</label><input id="to" type="time" class="gov-input w-full" /></div>
+        <div class="col-span-4"><label class="text-[8px] font-black uppercase">Type</label><select id="t" class="gov-input w-full"><option value="PRESENT">Present</option><option value="LATE">Late</option><option value="UNDERTIME">Undertime</option><option value="ABSENT">Absent</option><option value="ON_LEAVE">On Leave</option></select></div>
+        <div class="col-span-12"><label class="text-[8px] font-black uppercase">Notes</label><input id="nt" class="gov-input w-full" /></div>
+        <div class="col-span-12 flex gap-2"><button id="sb" type="submit" class="gov-btn bg-slate-800 text-white flex-1">Save</button><button type="button" id="mc" class="gov-btn border border-slate-300 bg-white flex-1">Cancel</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="md" class="gov-modal">
+    <div class="w-full max-w-md bg-white border border-slate-400 rounded-[2px] overflow-hidden" onclick="event.stopPropagation()">
+      <div class="bg-slate-900 text-white p-3 flex justify-between items-center"><h3 class="text-[11px] font-black uppercase">Confirm</h3><button id="dx"><span class="material-icons-round">close</span></button></div>
+      <div class="p-4 bg-slate-50"><p id="dm" class="text-[10px] font-bold"></p><div class="pt-4 mt-3 border-t border-slate-200 flex gap-2"><button id="dd" class="gov-btn bg-rose-700 text-white flex-1">Yes</button><button id="dc" class="gov-btn border border-slate-300 bg-white flex-1">No</button></div></div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-4 right-4 hidden z-[4000]"><div class="bg-emerald-50 border border-emerald-300 px-3 py-2 rounded-[2px] shadow"><div id="tt" class="text-[10px] font-black uppercase">Saved</div><div id="tm" class="text-[9px] text-slate-600">Done</div></div></div>
+
   <script>
-    window.serverEmployees = {{ employees_data|default([], true)|tojson|safe }};
-  </script>
+    const API_BASE = '/municipal/api/hrm/attendance';
+    const $ = id => document.getElementById(id);
+    const q = s => document.querySelectorAll(s);
+    const esc = s => String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    const toastEl = $('toast'); const tt = $('tt'); const tm = $('tm');
+    const toast = (a,b) => { tt.textContent = a; tm.textContent = b; toastEl.classList.remove('hidden'); clearTimeout(window.__t); window.__t = setTimeout(() => toastEl.classList.add('hidden'), 2200); };
 
-  <script type="module">
-    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    let logs = [];
+    let pendingDelete = { ids: [] };
 
-    // Access serverEmployees declared in global scope below
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBpdvsvmF5JI7B50L8P_f9Q_OULRSCm9w4",
-      authDomain: "tlph-denr-system.firebaseapp.com",
-      projectId: "tlph-denr-system",
-      storageBucket: "tlph-denr-system.appspot.com",
-      messagingSenderId: "999028568640",
-      appId: "1:999028568640:web:2b488c8ea8e24ba39f19eb",
-      measurementId: "G-TXKQ1Z0J1X"
+    const requestJson = async (url, options = {}) => {
+      const res = await fetch(url, { headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) throw new Error(data.error || `Request failed (${res.status})`);
+      return data;
     };
 
-    // Check if any Firebase app already exists
-    let db;
-    try {
-      const existingApps = getApps();
-      if (existingApps.length > 0) {
-        db = window.db || getFirestore(existingApps[0]);
-      } else {
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-      }
-      window.db = db;
-    } catch (error) {
-      console.error('Firebase initialization error:', error);
-      db = window.db;
-    }
+    const chipCat = c => c === 'REGIONAL' ? '<span class="status-badge bg-blue-50 text-blue-800 border-blue-200">Regional</span>' : '<span class="status-badge bg-indigo-50 text-indigo-800 border-indigo-200">Municipality</span>';
+    const chipType = t => {
+      const m = {
+        PRESENT: ['Present','border-emerald-200 bg-emerald-50 text-emerald-700'],
+        LATE: ['Late','border-amber-200 bg-amber-50 text-amber-700'],
+        UNDERTIME: ['Undertime','border-orange-200 bg-orange-50 text-orange-700'],
+        ABSENT: ['Absent','border-rose-200 bg-rose-50 text-rose-700'],
+        ON_LEAVE: ['On Leave','border-sky-200 bg-sky-50 text-sky-700']
+      }[t] || ['-','border-slate-200 bg-slate-50 text-slate-700'];
+      return `<span class="status-badge ${m[1]}">${m[0]}</span>`;
+    };
 
-    // Notification component for header
-    window.notificationData = function() {
-      return {
-        count: 0,
-        
-        async loadNotifications() {
-          try {
-            this.count = 0; // Default to 0 for now
-          } catch (error) {
-            console.error('Error loading notifications:', error);
-            this.count = 0;
-          }
+    const getF = () => ({ c: $('fc').value, d: $('fd').value, s: $('fs').value.trim().toLowerCase(), t: $('ft').value });
+    const filt = arr => {
+      const f = getF();
+      return arr.filter(x => {
+        const hay = [x.date,x.no,x.name,x.cat,x.reg,x.mun,x.in,x.out,x.type,x.notes].join(' ').toLowerCase();
+        return (f.c === 'ALL' || x.cat === f.c) && (!f.d || x.date === f.d) && (f.t === 'ALL' || x.type === f.t) && (!f.s || hay.includes(f.s));
+      });
+    };
+
+    const render = () => {
+      const rows = filt(logs);
+      $('stAll').textContent = rows.length;
+      $('stPresent').textContent = rows.filter(x => x.type === 'PRESENT').length;
+      $('stLate').textContent = rows.filter(x => x.type === 'LATE' || x.type === 'UNDERTIME').length;
+      $('stAbsent').textContent = rows.filter(x => x.type === 'ABSENT').length;
+      $('cnt').textContent = `Showing ${rows.length} logs`;
+      $('sa').checked = false;
+
+      $('tb').innerHTML = rows.length ? rows.map(x => `
+        <tr class="hover:bg-slate-50">
+          <td class="px-2 py-1 border-r border-slate-100 text-center"><input class="rc" type="checkbox" data-id="${x.id}" /></td>
+          <td class="px-2 py-1 border-r border-slate-100 text-center font-mono font-bold">${esc(x.date)}</td>
+          <td class="px-2 py-1 border-r border-slate-100"><div class="font-black uppercase">${esc(x.name)}</div><div class="text-[9px] text-slate-500 font-mono">${esc(x.no)}</div></td>
+          <td class="px-2 py-1 border-r border-slate-100">${chipCat(x.cat)}<div class="text-[9px] font-bold mt-1 uppercase">${esc(x.reg || '-')}</div>${x.mun ? `<div class="text-[8px] uppercase text-slate-500">${esc(x.mun)}</div>` : ''}</td>
+          <td class="px-2 py-1 border-r border-slate-100 text-center font-mono font-black">${esc(x.in || '-')}</td>
+          <td class="px-2 py-1 border-r border-slate-100 text-center font-mono font-black">${esc(x.out || '-')}</td>
+          <td class="px-2 py-1 border-r border-slate-100 text-center">${chipType(x.type)}${x.notes ? `<div class="text-[8px] mt-1 uppercase text-slate-500">${esc(x.notes)}</div>` : ''}</td>
+          <td class="px-2 py-1 text-center">
+            <div class="flex justify-center gap-1">
+              <button class="ed btn-action" data-id="${x.id}"><span class="material-icons-round text-[12px]">edit</span></button>
+              <button class="rm btn-action" data-id="${x.id}"><span class="material-icons-round text-[12px]">delete</span></button>
+            </div>
+          </td>
+        </tr>
+      `).join('') : '<tr><td colspan="8" class="py-8 text-center text-slate-400 font-bold uppercase text-[9px]">No attendance logs found.</td></tr>';
+    };
+
+    const openM = (mode, id) => {
+      $('mb').classList.add('flex');
+      $('f').reset();
+      $('eid').value = '';
+      $('mt').textContent = mode === 'edit' ? 'Edit Attendance Log' : 'New Attendance Log';
+      $('sb').textContent = mode === 'edit' ? 'Update' : 'Save';
+      if (mode === 'edit') {
+        const x = logs.find(z => z.id === id); if (!x) return;
+        $('eid').value = x.id; $('d').value = x.date; $('no').value = x.no; $('nm').value = x.name; $('c').value = x.cat; $('r').value = x.reg || ''; $('m').value = x.mun || ''; $('ti').value = x.in || ''; $('to').value = x.out || ''; $('t').value = x.type; $('nt').value = x.notes || '';
+      }
+    };
+    const closeM = () => $('mb').classList.remove('flex');
+
+    const openD = (ids, label) => { pendingDelete = { ids }; $('dm').textContent = label; $('md').classList.add('flex'); };
+    const closeD = () => { $('md').classList.remove('flex'); pendingDelete = { ids: [] }; };
+
+    const loadLogs = async () => {
+      const data = await requestJson(API_BASE);
+      logs = (data.records || []).map(r => ({
+        id: r.id, date: r.date || '', no: (r.no || '').toUpperCase(), name: r.name || 'N/A', cat: r.cat || 'REGIONAL', reg: r.reg || '', mun: r.mun || '', in: r.in || '', out: r.out || '', type: r.type || 'PRESENT', notes: r.notes || ''
+      }));
+    };
+
+    const exportCSV = () => {
+      const rows = filt(logs);
+      const headers = ['Date','Employee No','Employee Name','Category','Region','Municipality','Time In','Time Out','Type','Notes'];
+      const body = rows.map(x => [x.date,x.no,x.name,x.cat,x.reg || '',x.mun || '',x.in || '',x.out || '',x.type,x.notes || '']);
+      const csv = [headers, ...body].map(r => r.map(v => `"${String(v ?? '').replaceAll('"','""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob); const a = document.createElement('a');
+      a.href = url; a.download = 'municipal_attendance_registry.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      toast('Exported','CSV file downloaded.');
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      $('btnOpenCreate').onclick = () => openM('create');
+      $('mx').onclick = $('mc').onclick = closeM;
+      $('mb').addEventListener('click', e => { if (e.target === $('mb')) closeM(); });
+      $('dx').onclick = $('dc').onclick = closeD;
+      $('md').addEventListener('click', e => { if (e.target === $('md')) closeD(); });
+
+      ['fc','ft','fd'].forEach(id => $(id).addEventListener('change', render));
+      $('fs').addEventListener('input', render);
+
+      $('btnClear').onclick = () => { $('fc').value = 'ALL'; $('ft').value = 'ALL'; $('fd').value = ''; $('fs').value = ''; render(); toast('Cleared','Filters reset.'); };
+      $('btnExport').onclick = exportCSV;
+      $('sa').onchange = e => q('.rc').forEach(x => x.checked = e.target.checked);
+
+      $('btnBulkDelete').onclick = () => {
+        const ids = Array.from(document.querySelectorAll('.rc:checked')).map(x => x.dataset.id);
+        if (!ids.length) return toast('No selection','Select at least one log.');
+        openD(ids, `Clear ${ids.length} selected attendance log(s)?`);
+      };
+
+      document.addEventListener('click', e => {
+        const ed = e.target.closest('.ed');
+        const rm = e.target.closest('.rm');
+        if (ed) openM('edit', ed.dataset.id);
+        if (rm) {
+          const id = rm.dataset.id;
+          const x = logs.find(z => z.id === id); if (!x) return;
+          openD([id], `Clear attendance for ${x.name} on ${x.date}?`);
         }
-      }
-    }
+      });
 
-    window.attendancePage = function() {
-      return {
-        employees: serverEmployees,
-        attendanceRecords: [],
-        searchQuery: '',
-        showLogsOverlay: false,
-        showEditModal: false,
-        editForm: { id: null, employee_name: '', time_in: '', time_out: '', status: '' },
-        presentCount: 0,
-        lateCount: 0,
-        officialBusinessCount: 0,
-        currentDate: '',
+      $('dd').onclick = async () => {
+        const ids = pendingDelete.ids || [];
+        if (!ids.length) return closeD();
+        try {
+          if (ids.length === 1) {
+            await requestJson(`${API_BASE}/${encodeURIComponent(ids[0])}`, { method: 'DELETE' });
+          } else {
+            await requestJson(`${API_BASE}/bulk-clear`, { method: 'POST', body: JSON.stringify({ ids }) });
+          }
+          await loadLogs(); render(); toast('Updated', ids.length > 1 ? 'Selected logs cleared.' : 'Attendance cleared.');
+        } catch (err) {
+          toast('Error', err.message || 'Failed to clear attendance.');
+        } finally {
+          closeD();
+        }
+      };
 
-        get filteredAttendance() {
-          return this.attendanceRecords.filter(record => {
-            const query = this.searchQuery.toLowerCase();
-            return !query || 
-                   (record.employee_name && record.employee_name.toLowerCase().includes(query)) ||
-                   (record.employee_id && record.employee_id.includes(query));
+      $('f').onsubmit = async e => {
+        e.preventDefault();
+        const payload = {
+          date: $('d').value,
+          no: $('no').value.trim().toUpperCase(),
+          name: $('nm').value.trim(),
+          cat: $('c').value,
+          reg: $('r').value.trim(),
+          mun: $('m').value.trim(),
+          type: $('t').value,
+          in: $('ti').value,
+          out: $('to').value,
+          notes: $('nt').value.trim()
+        };
+
+        if (payload.in && payload.out && payload.out <= payload.in) return toast('Invalid time','Time out must be after time in.');
+
+        const editId = $('eid').value.trim();
+        let employeeDocId = editId;
+        if (!employeeDocId) {
+          const byNo = logs.find(x => (x.no || '').toUpperCase() === payload.no);
+          const byName = logs.find(x => (x.name || '').trim().toLowerCase() === payload.name.toLowerCase());
+          employeeDocId = (byNo || byName || {}).id || '';
+        }
+        if (!employeeDocId) return toast('Employee not found','Use an existing employee no. or name.');
+
+        try {
+          await requestJson(`${API_BASE}/adjust`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              employee_doc_id: employeeDocId,
+              attendance_date: payload.date,
+              category: payload.cat,
+              region: payload.reg,
+              municipality: payload.mun,
+              time_in: payload.in,
+              time_out: payload.out,
+              type: payload.type,
+              notes: payload.notes
+            })
           });
-        },
-
-        openLogs() {
-          this.showLogsOverlay = true;
-        },
-
-        closeLogs() {
-          this.showLogsOverlay = false;
-        },
-
-        openEdit(record) {
-          this.editForm = { id: record.id, employee_name: record.employee_name, time_in: record.time_in, time_out: record.time_out, status: record.status };
-          this.showEditModal = true;
-        },
-
-        closeEdit() {
-          this.showEditModal = false;
-        },
-
-        saveEdit() {
-          const idx = this.attendanceRecords.findIndex(r => r.id === this.editForm.id);
-          if (idx !== -1) {
-            this.attendanceRecords[idx].time_in = this.editForm.time_in;
-            this.attendanceRecords[idx].time_out = this.editForm.time_out;
-            this.attendanceRecords[idx].status = this.editForm.status;
-            // Recalculate stats
-            this.presentCount = this.attendanceRecords.filter(r => r.status === 'Present').length;
-            this.lateCount = this.attendanceRecords.filter(r => r.status === 'Late').length;
-            this.officialBusinessCount = this.attendanceRecords.filter(r => r.status === 'Official Business').length;
-          }
-          this.closeEdit();
-        },
-
-        async loadData() {
-          try {
-            if (!this.employees || this.employees.length === 0) {
-              const employeesRef = collection(db, 'employees');
-              let snapshot;
-              try {
-                const q = query(employeesRef, orderBy('first_name'));
-                snapshot = await getDocs(q);
-              } catch (queryError) {
-                console.warn('Ordered attendance query failed, using fallback query:', queryError);
-                snapshot = await getDocs(employeesRef);
-              }
-              this.employees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }
-            
-            this.attendanceRecords = this.employees.map((emp, idx) => ({
-              id: emp.id,
-              employee_id: emp.employee_id || emp.emp_id || 'N/A',
-              employee_name: [emp.first_name, emp.last_name].filter(Boolean).join(' ') || emp.full_name || 'N/A',
-              time_in: '08:00 AM',
-              time_out: '05:00 PM',
-              duration: '9h 0m',
-              status: idx % 3 === 0 ? 'Late' : idx % 5 === 0 ? 'Official Business' : 'Present'
-            }));
-            
-            // Calculate statistics
-            this.presentCount = this.attendanceRecords.filter(r => r.status === 'Present').length;
-            this.lateCount = this.attendanceRecords.filter(r => r.status === 'Late').length;
-            this.officialBusinessCount = this.attendanceRecords.filter(r => r.status === 'Official Business').length;
-            
-            // Set current date
-            const now = new Date();
-            const options = { month: 'short', day: '2-digit', year: 'numeric' };
-            this.currentDate = now.toLocaleDateString('en-US', options).toUpperCase();
-          } catch (error) {
-            console.error('Error loading data:', error);
-          }
-        },
-
-        exportDTR() {
-          try {
-            const records = this.filteredAttendance.length ? this.filteredAttendance : this.attendanceRecords;
-
-            if (!records || records.length === 0) {
-              alert('No DTR records available to export.');
-              return;
-            }
-
-            const headers = [
-              'Employee ID',
-              'Employee Name',
-              'Time In',
-              'Time Out',
-              'Duration',
-              'Status',
-              'Reference Date'
-            ];
-
-            const rows = records.map(record => [
-              record.employee_id || '',
-              record.employee_name || '',
-              record.time_in || '',
-              record.time_out || '',
-              record.duration || '',
-              record.status || '',
-              this.currentDate || ''
-            ]);
-
-            const csvContent = [headers, ...rows]
-              .map(row => row
-                .map(value => '"' + String(value).replace(/"/g, '""') + '"')
-                .join(','))
-              .join('\r\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-
-            const today = new Date();
-            const dateStr = today.toISOString().slice(0, 10);
-            link.href = url;
-            link.download = `municipal_dtr_${dateStr}.csv`;
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-          } catch (error) {
-            console.error('Error exporting DTR:', error);
-            alert('An error occurred while exporting the DTR. Please try again.');
-          }
+          await loadLogs(); closeM(); render(); toast('Saved','Attendance log saved.');
+        } catch (err) {
+          toast('Error', err.message || 'Failed to save attendance.');
         }
+      };
+
+      try {
+        await loadLogs();
+        render();
+      } catch (err) {
+        console.error(err);
+        toast('Error', err.message || 'Failed to load attendance records.');
       }
-    }
+    });
   </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

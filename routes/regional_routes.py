@@ -2760,9 +2760,59 @@ def attendance_view():
 def get_regional_attendance():
     from datetime import date
 
+    def _fmt_time(raw_value):
+        if not raw_value:
+            return ''
+        try:
+            if isinstance(raw_value, str):
+                value = raw_value.strip()
+                if len(value) >= 5 and value[2] == ':':
+                    return value[:5]
+                parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+                return parsed.strftime('%H:%M')
+            if hasattr(raw_value, 'to_datetime'):
+                raw_value = raw_value.to_datetime()
+            if hasattr(raw_value, 'strftime'):
+                return raw_value.strftime('%H:%M')
+        except Exception:
+            return ''
+        return ''
+
+    def _get_shift_times(db, employee_data, shift_cache):
+        shift_id = str(employee_data.get('shift_id') or employee_data.get('shiftId') or '').strip()
+        if not shift_id:
+            return '', ''
+        if shift_id in shift_cache:
+            return shift_cache[shift_id]
+
+        start = ''
+        end = ''
+        try:
+            shift_doc = db.collection('office_shifts').document(shift_id).get()
+            if shift_doc.exists:
+                shift_data = shift_doc.to_dict() or {}
+                start = _fmt_time(shift_data.get('time_in') or shift_data.get('start'))
+                end = _fmt_time(shift_data.get('time_out') or shift_data.get('end'))
+            else:
+                found = db.collection('office_shifts').where(
+                    filter=firestore.FieldFilter('shift_code', '==', shift_id)
+                ).limit(1).stream()
+                for doc in found:
+                    shift_data = doc.to_dict() or {}
+                    start = _fmt_time(shift_data.get('time_in') or shift_data.get('start'))
+                    end = _fmt_time(shift_data.get('time_out') or shift_data.get('end'))
+                    break
+        except Exception:
+            start = ''
+            end = ''
+
+        shift_cache[shift_id] = (start, end)
+        return shift_cache[shift_id]
+
     db = get_firestore_db()
     records = []
     today_str = date.today().isoformat()
+    shift_cache = {}
 
     employee_docs = db.collection('employees').stream()
     for employee_doc in employee_docs:
@@ -2804,6 +2854,13 @@ def get_regional_attendance():
         }
         status = status_map.get(status_raw, status_raw or 'Present')
 
+        time_in = _fmt_time(emp.get('time_in'))
+        time_out = _fmt_time(emp.get('time_out'))
+        if (not time_in or not time_out) and str(status).lower() not in {'absent', 'leave', 'on leave'}:
+            shift_in, shift_out = _get_shift_times(db, emp, shift_cache)
+            time_in = time_in or shift_in
+            time_out = time_out or shift_out
+
         records.append({
             'id': employee_doc.id,
             'employee_id': emp.get('employee_id', ''),
@@ -2812,8 +2869,8 @@ def get_regional_attendance():
             'sub_assignment': f"{scope.title()} Office",
             'scope': scope,
             'date': emp.get('attendance_date') or today_str,
-            'time_in': emp.get('time_in') or '',
-            'time_out': emp.get('time_out') or '',
+            'time_in': time_in,
+            'time_out': time_out,
             'hours': emp.get('working_hours') or 0,
             'status': status,
             'remarks': emp.get('attendance_remarks') or 'Regular'
@@ -2837,7 +2894,49 @@ def adjust_regional_attendance():
     if not employee_doc_id:
         return jsonify({'success': False, 'error': 'Employee is required'}), 400
 
-    # Compute working hours when time_in and time_out are both present
+    db = get_firestore_db()
+
+    def _fmt_time(raw_value):
+        if not raw_value:
+            return ''
+        try:
+            value = str(raw_value).strip()
+            if len(value) >= 5 and value[2] == ':':
+                return value[:5]
+            parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            return parsed.strftime('%H:%M')
+        except Exception:
+            return ''
+
+    def _get_shift_times(employee_data):
+        shift_id = str(employee_data.get('shift_id') or employee_data.get('shiftId') or '').strip()
+        if not shift_id:
+            return '', ''
+        try:
+            shift_doc = db.collection('office_shifts').document(shift_id).get()
+            if shift_doc.exists:
+                shift_data = shift_doc.to_dict() or {}
+                return _fmt_time(shift_data.get('time_in') or shift_data.get('start')), _fmt_time(shift_data.get('time_out') or shift_data.get('end'))
+            found = db.collection('office_shifts').where(
+                filter=firestore.FieldFilter('shift_code', '==', shift_id)
+            ).limit(1).stream()
+            for doc in found:
+                shift_data = doc.to_dict() or {}
+                return _fmt_time(shift_data.get('time_in') or shift_data.get('start')), _fmt_time(shift_data.get('time_out') or shift_data.get('end'))
+        except Exception:
+            return '', ''
+        return '', ''
+
+    employee_ref = db.collection('employees').document(employee_doc_id)
+    employee_snap = employee_ref.get()
+    if employee_snap.exists:
+        employee_data = employee_snap.to_dict() or {}
+        if not time_in or not time_out:
+            shift_in, shift_out = _get_shift_times(employee_data)
+            time_in = time_in or shift_in
+            time_out = time_out or shift_out
+
+    # Recompute working hours after shift defaults are applied
     working_hours = 0
     try:
         if time_in and time_out:
@@ -2853,7 +2952,6 @@ def adjust_regional_attendance():
     if not time_in and not time_out:
         status = 'Absent'
 
-    db = get_firestore_db()
     payload = {
         'attendance_date': attendance_date,
         'scope': scope,
@@ -2864,7 +2962,7 @@ def adjust_regional_attendance():
         'attendance_remarks': notes or reason or 'Adjusted',
     }
 
-    db.collection('employees').document(employee_doc_id).set(payload, merge=True)
+    employee_ref.set(payload, merge=True)
     return jsonify({'success': True})
 
 @bp.route('/hrm/holidays')
