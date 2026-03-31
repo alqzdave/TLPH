@@ -363,6 +363,7 @@
     window.attendancePage = function() {
       return {
         employees: serverEmployees,
+        officeShifts: [],
         attendanceRecords: [],
         searchQuery: '',
         showLogsOverlay: false,
@@ -427,16 +428,108 @@
               }
               this.employees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             }
+
+            if (!this.officeShifts || this.officeShifts.length === 0) {
+              const shiftsRef = collection(db, 'office_shifts');
+              const shiftSnapshot = await getDocs(shiftsRef);
+              this.officeShifts = shiftSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+
+            const normalizeHHMM = (raw) => {
+              if (!raw) return '';
+              try {
+                if (typeof raw === 'string') {
+                  const value = raw.trim();
+                  if (value.length >= 5 && value[2] === ':') return value.slice(0, 5);
+                  const dt = new Date(value);
+                  if (!isNaN(dt.getTime())) {
+                    const hh = String(dt.getHours()).padStart(2, '0');
+                    const mm = String(dt.getMinutes()).padStart(2, '0');
+                    return `${hh}:${mm}`;
+                  }
+                  return '';
+                }
+                if (raw && typeof raw.toDate === 'function') {
+                  const dt = raw.toDate();
+                  const hh = String(dt.getHours()).padStart(2, '0');
+                  const mm = String(dt.getMinutes()).padStart(2, '0');
+                  return `${hh}:${mm}`;
+                }
+              } catch (_) {
+                return '';
+              }
+              return '';
+            };
+
+            const to12h = (hhmm) => {
+              const value = String(hhmm || '').trim();
+              if (!value || value.length < 4) return '--:--';
+              const [h, m] = value.split(':').map(Number);
+              if (Number.isNaN(h) || Number.isNaN(m)) return '--:--';
+              const period = h >= 12 ? 'PM' : 'AM';
+              const hour12 = ((h + 11) % 12) + 1;
+              return `${String(hour12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+            };
+
+            const calcDuration = (inHHMM, outHHMM) => {
+              if (!inHHMM || !outHHMM) return '0h 0m';
+              const [ih, im] = inHHMM.split(':').map(Number);
+              const [oh, om] = outHHMM.split(':').map(Number);
+              if ([ih, im, oh, om].some(Number.isNaN)) return '0h 0m';
+              const inMins = ih * 60 + im;
+              const outMins = oh * 60 + om;
+              const diff = Math.max(0, outMins - inMins);
+              const hours = Math.floor(diff / 60);
+              const mins = diff % 60;
+              return `${hours}h ${mins}m`;
+            };
+
+            const shiftMap = new Map();
+            this.officeShifts.forEach(shift => {
+              const key = String(shift.id || '').trim();
+              if (!key) return;
+              shiftMap.set(key, {
+                time_in: normalizeHHMM(shift.time_in || shift.start),
+                time_out: normalizeHHMM(shift.time_out || shift.end)
+              });
+
+              const shiftCode = String(shift.shift_code || '').trim();
+              if (shiftCode) {
+                shiftMap.set(shiftCode, {
+                  time_in: normalizeHHMM(shift.time_in || shift.start),
+                  time_out: normalizeHHMM(shift.time_out || shift.end)
+                });
+              }
+            });
             
-            this.attendanceRecords = this.employees.map((emp, idx) => ({
-              id: emp.id,
-              employee_id: emp.employee_id || emp.emp_id || 'N/A',
-              employee_name: [emp.first_name, emp.last_name].filter(Boolean).join(' ') || emp.full_name || 'N/A',
-              time_in: '08:00 AM',
-              time_out: '05:00 PM',
-              duration: '9h 0m',
-              status: idx % 3 === 0 ? 'Late' : idx % 5 === 0 ? 'Official Business' : 'Present'
-            }));
+            this.attendanceRecords = this.employees.map((emp) => {
+              const shiftId = String(emp.shift_id || emp.shiftId || '').trim();
+              const shiftDefaults = shiftMap.get(shiftId) || { time_in: '', time_out: '' };
+
+              let inHHMM = normalizeHHMM(emp.time_in);
+              let outHHMM = normalizeHHMM(emp.time_out);
+              const statusRaw = String(emp.attendance_status || '').trim().toLowerCase();
+
+              if ((!inHHMM || !outHHMM) && !['absent', 'on leave', 'leave'].includes(statusRaw)) {
+                inHHMM = inHHMM || shiftDefaults.time_in;
+                outHHMM = outHHMM || shiftDefaults.time_out;
+              }
+
+              let status = 'Present';
+              if (statusRaw.includes('late')) status = 'Late';
+              else if (statusRaw.includes('official business') || statusRaw.includes('field')) status = 'Official Business';
+              else if (statusRaw.includes('absent') || statusRaw.includes('leave')) status = 'Absent';
+
+              return {
+                id: emp.id,
+                employee_id: emp.employee_id || emp.emp_id || 'N/A',
+                employee_name: [emp.first_name, emp.last_name].filter(Boolean).join(' ') || emp.full_name || 'N/A',
+                time_in: to12h(inHHMM),
+                time_out: to12h(outHHMM),
+                duration: calcDuration(inHHMM, outHHMM),
+                status
+              };
+            });
             
             // Calculate statistics
             this.presentCount = this.attendanceRecords.filter(r => r.status === 'Present').length;
