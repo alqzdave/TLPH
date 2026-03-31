@@ -2374,6 +2374,225 @@ def api_bulk_status_superadmin_employee():
         return jsonify({'success': False, 'error': 'Failed to update employee status'}), 500
 
 
+def _attendance_type_from_status(raw_status):
+    value = str(raw_status or '').strip().lower()
+    if value in {'late'}:
+        return 'LATE'
+    if value in {'undertime'}:
+        return 'UNDERTIME'
+    if value in {'absent'}:
+        return 'ABSENT'
+    if value in {'on leave', 'on_leave', 'leave'}:
+        return 'ON_LEAVE'
+    return 'PRESENT'
+
+
+def _attendance_status_from_type(attendance_type):
+    key = str(attendance_type or '').strip().upper()
+    if key == 'LATE':
+        return 'Late'
+    if key == 'UNDERTIME':
+        return 'Undertime'
+    if key == 'ABSENT':
+        return 'Absent'
+    if key == 'ON_LEAVE':
+        return 'On Leave'
+    return 'Present'
+
+
+def _format_attendance_time(raw_value):
+    if not raw_value:
+        return ''
+    try:
+        if isinstance(raw_value, str):
+            value = raw_value.strip()
+            if len(value) >= 5 and value[2] == ':':
+                return value[:5]
+            parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            return parsed.strftime('%H:%M')
+        if hasattr(raw_value, 'to_datetime'):
+            raw_value = raw_value.to_datetime()
+        if hasattr(raw_value, 'strftime'):
+            return raw_value.strftime('%H:%M')
+    except Exception:
+        return ''
+    return ''
+
+
+@bp.route('/api/hrm/attendance', methods=['GET'])
+@role_required('super-admin', 'superadmin')
+def api_get_superadmin_attendance():
+    try:
+        db = get_firestore_db()
+        rows = []
+        today_str = datetime.utcnow().date().isoformat()
+
+        for employee_doc in db.collection('employees').stream():
+            emp = employee_doc.to_dict() or {}
+
+            defaults = {}
+            if 'attendance_date' not in emp:
+                defaults['attendance_date'] = today_str
+            if 'attendance_status' not in emp:
+                defaults['attendance_status'] = 'Present'
+            if 'attendance_remarks' not in emp:
+                defaults['attendance_remarks'] = ''
+            if 'time_in' not in emp:
+                defaults['time_in'] = ''
+            if 'time_out' not in emp:
+                defaults['time_out'] = ''
+            if 'working_hours' not in emp:
+                defaults['working_hours'] = 0
+            if defaults:
+                employee_doc.reference.set(defaults, merge=True)
+                emp.update(defaults)
+
+            role = str(emp.get('role') or '').strip().lower()
+            category = 'MUNICIPALITY' if 'municipal' in role else 'REGIONAL'
+
+            first_name = str(emp.get('first_name') or '').strip()
+            middle_name = str(emp.get('middle_name') or '').strip()
+            last_name = str(emp.get('last_name') or '').strip()
+            full_name = str(emp.get('name') or '').strip()
+            if not full_name:
+                full_name = f"{last_name}, {first_name} {middle_name}".strip().strip(',')
+
+            rows.append({
+                'id': employee_doc.id,
+                'date': str(emp.get('attendance_date') or today_str),
+                'no': str(emp.get('employee_id') or '').strip(),
+                'name': full_name or 'N/A',
+                'cat': category,
+                'reg': str(emp.get('region') or '').strip(),
+                'mun': str(emp.get('municipality') or '').strip(),
+                'in': _format_attendance_time(emp.get('time_in')),
+                'out': _format_attendance_time(emp.get('time_out')),
+                'type': _attendance_type_from_status(emp.get('attendance_status')),
+                'notes': str(emp.get('attendance_remarks') or '').strip(),
+            })
+
+        rows.sort(key=lambda item: (item.get('no') or '', item.get('name') or ''))
+        return jsonify({'success': True, 'records': rows, 'count': len(rows)})
+    except Exception as e:
+        print(f'[ERROR] api_get_superadmin_attendance: {e}')
+        return jsonify({'success': False, 'error': 'Failed to load attendance records'}), 500
+
+
+@bp.route('/api/hrm/attendance/adjust', methods=['PUT'])
+@role_required('super-admin', 'superadmin')
+def api_adjust_superadmin_attendance():
+    try:
+        payload = request.get_json(silent=True) or {}
+        employee_doc_id = str(payload.get('employee_doc_id') or '').strip()
+        if not employee_doc_id:
+            return jsonify({'success': False, 'error': 'Employee is required'}), 400
+
+        attendance_date = str(payload.get('attendance_date') or '').strip() or datetime.utcnow().date().isoformat()
+        category = str(payload.get('category') or '').strip().upper()
+        time_in = str(payload.get('time_in') or '').strip()
+        time_out = str(payload.get('time_out') or '').strip()
+        attendance_type = str(payload.get('type') or '').strip().upper()
+        notes = str(payload.get('notes') or payload.get('reason') or '').strip()
+
+        working_hours = 0
+        if time_in and time_out:
+            try:
+                in_dt = datetime.strptime(time_in, '%H:%M')
+                out_dt = datetime.strptime(time_out, '%H:%M')
+                diff = (out_dt - in_dt).total_seconds() / 3600.0
+                working_hours = round(max(diff, 0), 2)
+            except Exception:
+                working_hours = 0
+
+        if not attendance_type:
+            attendance_type = 'ABSENT' if not time_in and not time_out else 'PRESENT'
+
+        db = get_firestore_db()
+        ref = db.collection('employees').document(employee_doc_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        updates = {
+            'attendance_date': attendance_date,
+            'time_in': time_in,
+            'time_out': time_out,
+            'working_hours': working_hours,
+            'attendance_status': _attendance_status_from_type(attendance_type),
+            'attendance_remarks': notes,
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        if category in {'REGIONAL', 'MUNICIPALITY'}:
+            updates['role'] = 'municipal' if category == 'MUNICIPALITY' else 'regional'
+        if payload.get('region') is not None:
+            updates['region'] = str(payload.get('region') or '').strip()
+        if payload.get('municipality') is not None:
+            updates['municipality'] = str(payload.get('municipality') or '').strip()
+
+        ref.set(updates, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_adjust_superadmin_attendance: {e}')
+        return jsonify({'success': False, 'error': 'Failed to update attendance record'}), 500
+
+
+@bp.route('/api/hrm/attendance/<employee_doc_id>', methods=['DELETE'])
+@role_required('super-admin', 'superadmin')
+def api_clear_superadmin_attendance(employee_doc_id):
+    try:
+        db = get_firestore_db()
+        ref = db.collection('employees').document(str(employee_doc_id))
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        ref.set({
+            'time_in': '',
+            'time_out': '',
+            'working_hours': 0,
+            'attendance_status': 'Absent',
+            'attendance_remarks': '',
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f'[ERROR] api_clear_superadmin_attendance: {e}')
+        return jsonify({'success': False, 'error': 'Failed to clear attendance record'}), 500
+
+
+@bp.route('/api/hrm/attendance/bulk-clear', methods=['POST'])
+@role_required('super-admin', 'superadmin')
+def api_bulk_clear_superadmin_attendance():
+    try:
+        payload = request.get_json(silent=True) or {}
+        ids = payload.get('ids') or []
+        if not isinstance(ids, list) or not ids:
+            return jsonify({'success': False, 'error': 'No attendance records selected'}), 400
+
+        db = get_firestore_db()
+        updated = 0
+        for employee_doc_id in ids:
+            ref = db.collection('employees').document(str(employee_doc_id))
+            snap = ref.get()
+            if not snap.exists:
+                continue
+            ref.set({
+                'time_in': '',
+                'time_out': '',
+                'working_hours': 0,
+                'attendance_status': 'Absent',
+                'attendance_remarks': '',
+                'updated_at': firestore.SERVER_TIMESTAMP,
+            }, merge=True)
+            updated += 1
+
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        print(f'[ERROR] api_bulk_clear_superadmin_attendance: {e}')
+        return jsonify({'success': False, 'error': 'Failed to clear selected attendance records'}), 500
+
+
 # --- HRM SUPERADMIN PAGES ---
 from flask import abort
 
