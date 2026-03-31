@@ -266,7 +266,7 @@
                     <div><span class="font-black text-slate-500 uppercase">Date Filed:</span> <span id="detailCreatedAt" class="font-bold text-slate-900"></span></div>
                     <div><span class="font-black text-slate-500 uppercase">Farmer ID:</span> <span id="detailFarmerId" class="font-bold text-slate-900"></span></div>
                     <div><span class="font-black text-slate-500 uppercase">GPS Coordinates:</span> <span id="detailGpsCoords" class="font-bold text-slate-900"></span></div>
-                    <div class="md:col-span-2"><span class="font-black text-slate-500 uppercase">GPS Link:</span> <span id="detailGpsLink" class="font-bold text-slate-900"></span></div>
+                    <div class="md:col-span-2"><span class="font-black text-slate-500 uppercase">GPS Link:</span> <a id="detailGpsLink" href="#" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 hover:underline">N/A</a></div>
                     <div><span class="font-black text-slate-500 uppercase">Property Number:</span> <span id="detailPropertyNumber" class="font-bold text-slate-900"></span></div>
                     <div><span class="font-black text-slate-500 uppercase">Source Location:</span> <span id="detailSourceLocation" class="font-bold text-slate-900"></span></div>
                 </div>
@@ -510,7 +510,20 @@
             document.getElementById('detailCreatedAt').textContent = createdAtDisplay;
             document.getElementById('detailFarmerId').textContent = item.farmerIdNumber || 'N/A';
             document.getElementById('detailGpsCoords').textContent = (lat && lng) ? `${lat}, ${lng}` : 'N/A';
-            document.getElementById('detailGpsLink').textContent = item.stockGpsLink || 'N/A';
+            const gpsLinkEl = document.getElementById('detailGpsLink');
+            const derivedGpsLink = (lat && lng) ? `https://maps.google.com/?q=${encodeURIComponent(`${lat},${lng}`)}` : '';
+            const gpsLink = String(item.stockGpsLink || derivedGpsLink || '').trim();
+            if (gpsLink) {
+                gpsLinkEl.href = gpsLink;
+                gpsLinkEl.textContent = 'Open Google Map';
+                gpsLinkEl.classList.remove('pointer-events-none', 'text-slate-900');
+                gpsLinkEl.classList.add('text-blue-700');
+            } else {
+                gpsLinkEl.href = '#';
+                gpsLinkEl.textContent = 'N/A';
+                gpsLinkEl.classList.add('pointer-events-none', 'text-slate-900');
+                gpsLinkEl.classList.remove('text-blue-700');
+            }
             document.getElementById('detailPropertyNumber').textContent = item.propertyNumber || 'N/A';
             document.getElementById('detailSourceLocation').textContent = item.sourceLocation || 'N/A';
 
