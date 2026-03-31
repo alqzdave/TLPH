@@ -95,19 +95,19 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 shrink-0">
                 <div class="gov-card border-t-2 border-t-slate-800 p-2 transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Total Returns</p>
-                    <h3 id="statTotal" class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">42</h3>
+                    <h3 id="statTotal" class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-gov-red p-2 transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-gov-red uppercase tracking-widest m-0 leading-none">Refunded Amount</p>
-                    <h3 id="statRefund" class="text-[14px] font-black text-gov-red m-0 mt-1 leading-none">₱210K</h3>
+                    <h3 id="statRefund" class="text-[14px] font-black text-gov-red m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-amber-500 p-2 transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Pending Review</p>
-                    <h3 id="statPending" class="text-[14px] font-black text-amber-600 m-0 mt-1 leading-none">8</h3>
+                    <h3 id="statPending" class="text-[14px] font-black text-amber-600 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-gov-blue p-2 transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Average Return Rate</p>
-                    <h3 id="statRate" class="text-[14px] font-black text-gov-blue m-0 mt-1 leading-none">8.3%</h3>
+                    <h3 id="statRate" class="text-[14px] font-black text-gov-blue m-0 mt-1 leading-none">0%</h3>
                 </div>
             </div>
           
@@ -286,15 +286,105 @@
             {id:'RET-26-003', sale:'SAL-26-105', product:'Soil Analysis Kits', qty:10, reason:'wrong_item', date:'2026-02-10'}
         ];
 
+        const PENDING_STATUSES = new Set(['pending', 'review', 'for_review', 'inspection']);
+        const REFUNDED_STATUSES = new Set(['refunded', 'completed', 'resolved']);
+
+        function safeNumber(value) {
+            const num = Number(String(value).replace(/[^0-9.\-]/g, ''));
+            return Number.isFinite(num) ? num : 0;
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US').format(value);
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(value);
+        }
+
+        function formatMonthLabel(dateStr) {
+            if (!dateStr) return 'Unknown';
+            const d = new Date(dateStr);
+            if (Number.isNaN(d.getTime())) return 'Unknown';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            return `${year}-${month}`;
+        }
+
+        function updateSummaryCards(data) {
+            const total = data.length;
+            const pending = data.filter(r => PENDING_STATUSES.has(String(r.status || '').toLowerCase())).length;
+            const rateValues = data
+                .map(r => r.rate ?? r.return_rate ?? r.returnRate)
+                .map(safeNumber)
+                .filter(v => v > 0);
+            const avgRate = rateValues.length ? (rateValues.reduce((a, b) => a + b, 0) / rateValues.length) : 0;
+
+            const hasRefundField = data.some(r => r.refund != null || r.amount != null || r.total != null || r.refund_amount != null);
+            let refundTotal = 0;
+            data.forEach(r => {
+                const status = String(r.status || '').toLowerCase();
+                const isRefunded = REFUNDED_STATUSES.has(status) || !status;
+                if (!hasRefundField) return;
+                if (!isRefunded && status) return;
+                const value = r.refund ?? r.refund_amount ?? r.amount ?? r.total;
+                refundTotal += safeNumber(value);
+            });
+
+            document.getElementById('statTotal').textContent = formatNumber(total);
+            document.getElementById('statRefund').textContent = hasRefundField ? formatCurrency(refundTotal) : formatCurrency(0);
+            document.getElementById('statPending').textContent = formatNumber(pending);
+            document.getElementById('statRate').textContent = `${avgRate.toFixed(1)}%`;
+        }
+
+        function buildReasonData(data) {
+            const counts = {};
+            data.forEach(r => {
+                const key = r.reason || 'unknown';
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            const labels = Object.keys(counts).map(k => k.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()));
+            const values = Object.keys(counts).map(k => counts[k]);
+            return { labels, values };
+        }
+
+        function buildTrendData(data) {
+            const buckets = {};
+            data.forEach(r => {
+                const label = formatMonthLabel(r.date);
+                buckets[label] = (buckets[label] || 0) + 1;
+            });
+            let labels = Object.keys(buckets).filter(l => l !== 'Unknown');
+            labels.sort((a, b) => new Date(`${a}-01`) - new Date(`${b}-01`));
+            if (labels.length === 0) return { labels: ['Current'], values: [0] };
+            const values = labels.map(label => buckets[label]);
+            return { labels, values };
+        }
+
+        function refreshCharts(data) {
+            if (!reasonChart || !trendChart) return;
+            const reason = buildReasonData(data);
+            reasonChart.data.labels = reason.labels;
+            reasonChart.data.datasets[0].data = reason.values;
+            reasonChart.update();
+
+            const trend = buildTrendData(data);
+            trendChart.data.labels = trend.labels;
+            trendChart.data.datasets[0].data = trend.values;
+            trendChart.update();
+        }
+
         // 2. LIVE SEARCH & FILTERING
         function filterReturns() {
             const query = document.getElementById('retSearch').value.toLowerCase();
             const reason = document.getElementById('reasonFilter').value;
+            const date = document.getElementById('dateFilter').value;
 
             const filtered = returnData.filter(r => {
                 const matchSearch = r.id.toLowerCase().includes(query) || r.sale.toLowerCase().includes(query) || r.product.toLowerCase().includes(query);
                 const matchReason = !reason || r.reason === reason;
-                return matchSearch && matchReason;
+                const matchDate = !date || r.date === date;
+                return matchSearch && matchReason && matchDate;
             });
 
             renderTable(filtered);
@@ -319,6 +409,9 @@
                     </td>
                 </tr>
             `).join('') : '<tr><td colspan="7" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No return records found.</td></tr>';
+
+            updateSummaryCards(data);
+            refreshCharts(data);
         }
 
         function getReasonColor(r) {
@@ -330,6 +423,7 @@
         // 3. UI CONTROLS
         document.getElementById('retSearch').addEventListener('input', filterReturns);
         document.getElementById('reasonFilter').addEventListener('change', filterReturns);
+        document.getElementById('dateFilter').addEventListener('change', filterReturns);
 
         function openReturnDrawer() {
             document.getElementById('drawerOverlay').classList.remove('hidden');
@@ -379,15 +473,26 @@
 
         // 4. CHARTS
         let modalChart;
-        const reasonData = { labels:['Damaged','Defective','Wrong'], datasets:[{data:[25, 12, 5], backgroundColor:['#b91c1c','#ea580c','#f59e0b'], borderWidth: 0}]};
-        const trendData = { labels:['Jan','Feb','Mar','Apr'], datasets:[{label:'Returns', data:[5, 12, 8, 15], borderColor:'#be123c', fill:false, tension:0.4, borderWidth: 2}]};
+        let reasonChart;
+        let trendChart;
 
         window.onload = () => {
             filterReturns();
             const chartFont = { size: 9, weight: 'bold' };
 
-            new Chart(document.getElementById('reasonChart').getContext('2d'), { type:'doughnut', data:reasonData, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{boxWidth:10, font:chartFont}}}, cutout:'70%'} });
-            new Chart(document.getElementById('trendChart').getContext('2d'), { type:'line', data:trendData, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{display:false}, x:{grid:{display:false}, ticks:{font:chartFont}}}} });
+            const reason = buildReasonData(returnData);
+            reasonChart = new Chart(document.getElementById('reasonChart').getContext('2d'), { 
+                type:'doughnut', 
+                data:{ labels: reason.labels, datasets:[{data: reason.values, backgroundColor:['#b91c1c','#ea580c','#f59e0b','#0ea5e9','#7c3aed'], borderWidth: 0}]}, 
+                options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{boxWidth:10, font:chartFont}}}, cutout:'70%'} 
+            });
+
+            const trend = buildTrendData(returnData);
+            trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), { 
+                type:'line', 
+                data:{ labels: trend.labels, datasets:[{label:'Returns', data: trend.values, borderColor:'#be123c', fill:false, tension:0.4, borderWidth: 2}]}, 
+                options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{display:false}, x:{grid:{display:false}, ticks:{font:chartFont}}}} 
+            });
         };
 
         function openChartModal(type) {
@@ -402,10 +507,10 @@
 
             if(type === 'reason') {
                 document.getElementById('modalTitle').innerText = 'Returns by Reason Analysis';
-                modalChart = new Chart(ctx, { type:'doughnut', data:reasonData, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:chartFont}}}}});
+                modalChart = new Chart(ctx, { type:'doughnut', data:reasonChart.data, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:chartFont}}}}});
             } else {
                 document.getElementById('modalTitle').innerText = 'Volume Trend Analysis';
-                modalChart = new Chart(ctx, { type:'line', data:trendData, options:{responsive:true, maintainAspectRatio:false, scales:{x:{ticks:{font:chartFont}}, y:{ticks:{font:chartFont}}}}});
+                modalChart = new Chart(ctx, { type:'line', data:trendChart.data, options:{responsive:true, maintainAspectRatio:false, scales:{x:{ticks:{font:chartFont}}, y:{ticks:{font:chartFont}}}}});
             }
         }
 
