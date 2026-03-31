@@ -845,14 +845,27 @@
     let chTrend, chTotals, chStatus, chRegion, modalChartInstance = null;
 
     const countBy = (arr, fn) => { const m = new Map(); arr.forEach(r => { const k=fn(r); m.set(k,(m.get(k)||0)+1); }); return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]); };
-    const sumBy = (arr, fnKey, fnVal) => { const m = new Map(); arr.forEach(r => { const k=fnKey(r); m.set(k,(m.get(k)||0)+fnVal(r)); }); return Array.from(m.entries()).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))); };
+    const sumBy = (arr, fnKey, fnVal) => { const m = new Map(); arr.forEach(r => { const k=fnKey(r); if(!k) return; m.set(k,(m.get(k)||0)+fnVal(r)); }); return Array.from(m.entries()).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))); };
+    const sortMonthLabels = (entries) => {
+      return entries.sort((a, b) => {
+        const ax = String(a[0] || "");
+        const bx = String(b[0] || "");
+        const aDate = /^\d{4}-\d{2}$/.test(ax) ? new Date(`${ax}-01`) : null;
+        const bDate = /^\d{4}-\d{2}$/.test(bx) ? new Date(`${bx}-01`) : null;
+        if (aDate && bDate) return aDate - bDate;
+        if (aDate) return -1;
+        if (bDate) return 1;
+        return ax.localeCompare(bx);
+      });
+    };
 
     const renderCharts = () => {
       const view = filt(rows).map(x=>({ ...x, ...calc(x) }));
-      const byMonth = sumBy(view, x=>x.month||"—", x=>num(x.net));
+      const byMonthRaw = sumBy(view, x=>normalizeMonth(x.month), x=>num(x.net));
+      const byMonth = sortMonthLabels(byMonthRaw);
       const totalGross = view.reduce((a,x)=>a+num(x.gross),0);
       const totalDed = view.reduce((a,x)=>a+num(x.ded),0);
-      const byStatus = countBy(view, x=>x.status||"—");
+      const byStatus = countBy(view, x=>normalizeStatus(x.status)||"DRAFT");
       const byReg = countBy(view.filter(x=>x.reg), x=>x.reg||"—").slice(0,10);
 
       [chTrend,chTotals,chStatus,chRegion].forEach(c=>{ if(c) c.destroy(); });
