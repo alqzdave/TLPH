@@ -708,6 +708,13 @@ def api_get_municipal_attendance():
         return jsonify({'success': True, 'records': rows, 'count': len(rows)})
     except Exception as e:
         print(f'[ERROR] api_get_municipal_attendance: {e}')
+        if 'quota exceeded' in str(e).strip().lower():
+            return jsonify({
+                'success': True,
+                'records': [],
+                'count': 0,
+                'warning': 'Firestore quota exceeded. Attendance data is temporarily unavailable.'
+            })
         return jsonify({'success': False, 'error': 'Failed to load attendance records'}), 500
 
 
