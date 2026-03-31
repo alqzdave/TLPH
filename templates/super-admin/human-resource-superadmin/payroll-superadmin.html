@@ -614,7 +614,7 @@
                 rows = data.payrolls.map(x => ({
                     id: x.id,
                     payNo: safeText(x.payNo || x.pay_no || x.payroll_no),
-                    month: normalizeMonth(x.month || x.payroll_month || x.date),
+                    month: normalizeMonth(x.month || x.payroll_month || x.date || x.pay_date || x.created_at || x.createdAt || x.created_on),
                     period: x.period || '',
                     no: safeText(x.no || x.employee_no || x.employee_id),
                     name: buildName(x) || '',
@@ -861,7 +861,7 @@
 
     const renderCharts = () => {
       const view = filt(rows).map(x=>({ ...x, ...calc(x) }));
-      const byMonthRaw = sumBy(view, x=>normalizeMonth(x.month), x=>num(x.net));
+      const byMonthRaw = sumBy(view, x=>normalizeMonth(x.month) || "Unknown", x=>num(x.net));
       const byMonth = sortMonthLabels(byMonthRaw);
       const totalGross = view.reduce((a,x)=>a+num(x.gross),0);
       const totalDed = view.reduce((a,x)=>a+num(x.ded),0);
