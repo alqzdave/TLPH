@@ -1837,6 +1837,102 @@ def api_update_superadmin_profile():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+@bp.route('/superadmin/account-permissions', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_account_permissions():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        users = []
+        for doc in db.collection('users').stream():
+            data = doc.to_dict() or {}
+            if not isinstance(data, dict):
+                continue
+
+            user_role = str(data.get('role') or '').strip().lower()
+            if user_role in {'superadmin', 'super-admin'}:
+                continue
+
+            email = str(data.get('email') or '').strip().lower()
+            if not email:
+                continue
+
+            first_name = str(data.get('firstName') or data.get('first_name') or '').strip()
+            last_name = str(data.get('lastName') or data.get('last_name') or '').strip()
+            full_name = f"{first_name} {last_name}".strip() or str(data.get('name') or data.get('username') or '').strip()
+            if not full_name and '@' in email:
+                full_name = email.split('@', 1)[0]
+
+            department = (
+                str(data.get('department') or '').strip()
+                or str(data.get('office_location') or data.get('officeLocation') or '').strip()
+                or str(data.get('municipality') or '').strip()
+                or str(data.get('region') or '').strip()
+                or 'General'
+            )
+
+            permissions_matrix = data.get('permissions_matrix')
+            if not isinstance(permissions_matrix, dict):
+                permissions_matrix = {}
+
+            users.append({
+                'id': doc.id,
+                'name': full_name,
+                'email': email,
+                'department': department,
+                'role': user_role,
+                'permissions': permissions_matrix,
+            })
+
+        users.sort(key=lambda u: (str(u.get('name') or '').lower(), str(u.get('email') or '').lower()))
+        return jsonify({'success': True, 'users': users})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/account-permissions', methods=['POST'])
+@firebase_auth_required
+def api_save_superadmin_account_permissions():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        payload = request.get_json() or {}
+        users_payload = payload.get('users') or []
+        if not isinstance(users_payload, list):
+            return jsonify({'success': False, 'message': 'Invalid payload'}), 400
+
+        db = firestore.client()
+        batch = db.batch()
+        updated = 0
+
+        for row in users_payload:
+            if not isinstance(row, dict):
+                continue
+            user_id = str(row.get('user_id') or '').strip()
+            perms = row.get('permissions')
+            if not user_id or not isinstance(perms, dict):
+                continue
+
+            doc_ref = db.collection('users').document(user_id)
+            batch.set(doc_ref, {
+                'permissions_matrix': perms,
+                'permissions_matrix_updated_at': datetime.utcnow(),
+            }, merge=True)
+            updated += 1
+
+        if updated:
+            batch.commit()
+
+        return jsonify({'success': True, 'updated_count': updated})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @bp.route('/upload-profile-photo', methods=['POST'])
 @firebase_auth_required
 def upload_profile_photo():
