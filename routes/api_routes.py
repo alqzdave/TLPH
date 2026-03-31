@@ -4665,3 +4665,68 @@ def api_delete_inquiry_conversation(conversation_key):
         })
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/system-logs', methods=['GET'])
+@firebase_auth_required
+def get_system_logs():
+    """Get system logs for national admin view"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        
+        # Only superadmin/national admin can view system logs
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized access to system logs'}), 403
+        
+        # Get logs from system_logs_storage
+        logs = system_logs_storage.list_system_logs(limit=500)
+        
+        # Transform logs to frontend format
+        formatted_logs = []
+        for log in logs:
+            # Determine severity based on outcome and message
+            severity = 'Info'
+            if log.get('outcome', '').upper() == 'FAILURE':
+                severity = 'Critical'
+            elif 'failed' in log.get('message', '').lower() or 'error' in log.get('message', '').lower():
+                severity = 'Critical'
+            elif log.get('action', '').upper() in ['PRIVILEGE_DELEGATION', 'DELETION', 'UNAUTHORIZED_ATTEMPT']:
+                severity = 'Warning'
+            
+            # Format timestamp
+            timestamp = log.get('timestamp', '')
+            if timestamp and 'T' in timestamp:
+                # Convert ISO format to readable format
+                try:
+                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                    formatted_time = dt.strftime('%Y-%m-%d %H:%M:%S')
+                except:
+                    formatted_time = timestamp[:19]
+            else:
+                formatted_time = timestamp
+            
+            formatted_log = {
+                'time': formatted_time,
+                'admin': log.get('user', 'System'),
+                'action': log.get('action', 'Unknown'),
+                'mod': log.get('module', 'SYSTEM'),
+                'ip': log.get('ip', log.get('ipAddress', '127.0.0.1')),
+                'sev': severity,
+                'msg': log.get('message', '')
+            }
+            formatted_logs.append(formatted_log)
+        
+        # Sort by timestamp descending
+        formatted_logs.sort(key=lambda x: x['time'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'logs': formatted_logs,
+            'total_count': len(formatted_logs)
+        })
+        
+    except Exception as e:
+        print(f'[SYSTEM_LOGS_ERROR] get_system_logs failed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
