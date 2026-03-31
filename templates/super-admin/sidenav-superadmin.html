@@ -20,7 +20,7 @@
         <p id="saIdentityRole" class="text-[8px] text-slate-500 font-bold uppercase m-0 truncate">Root Access</p>
       </div>
     </div>
-    <button onclick="handleLogout()" class="text-rose-600 hover:text-rose-800 transition-colors bg-transparent border-none p-1 cursor-pointer" title="Sign Out">
+    <button onclick="openLogoutModal()" class="text-rose-600 hover:text-rose-800 transition-colors bg-transparent border-none p-1 cursor-pointer" title="Sign Out">
       <span class="material-icons-round text-[14px]">logout</span>
     </button>
   </div>
@@ -211,6 +211,36 @@
 
 
   </nav>
+
+  <div id="sa-logout-modal" class="sa-logout-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="sa-logout-backdrop" onclick="closeLogoutModal()"></div>
+    <div class="sa-logout-panel" role="document" aria-labelledby="sa-logout-title">
+      <div class="flex items-center gap-2 px-4 py-2 bg-slate-100 border-b border-slate-300">
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-slate-100">
+          <span class="material-icons-round text-[16px] text-rose-600">logout</span>
+        </span>
+        <h2 id="sa-logout-title" class="text-[11px] font-black uppercase tracking-wide text-slate-800 m-0">Confirm Sign Out</h2>
+        <button class="ml-auto text-slate-400 hover:text-slate-700" onclick="closeLogoutModal()" aria-label="Close">
+          <span class="material-icons-round text-[16px]">close</span>
+        </button>
+      </div>
+      <div class="px-4 pb-3">
+        <p class="text-[11px] text-slate-600 m-0 tracking-tight">
+          Your session will end and you will be returned to the login page.
+        </p>
+      </div>
+      <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-2 bg-white">
+        <button class="sa-logout-btn border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                onclick="closeLogoutModal()">
+          Stay Logged In
+        </button>
+        <button class="sa-logout-btn border border-red-600 bg-red-600 text-white hover:bg-red-700"
+                onclick="handleLogout()">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
 </aside>
 
 <style>
@@ -228,6 +258,56 @@
   }
   .nav-link.active .material-icons-round {
     color: #1d4ed8 !important; /* blue-700 */
+  }
+
+  .sa-logout-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+  }
+
+  .sa-logout-modal.is-open {
+    display: flex;
+  }
+
+  .sa-logout-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+  }
+
+  .sa-logout-panel {
+    position: relative;
+    z-index: 1;
+    width: min(448px, 92vw);
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    box-shadow: 0 25px 50px rgba(15, 23, 42, 0.18);
+    font-family: 'Verdana', 'Arial', sans-serif;
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+
+  .sa-logout-modal.is-open .sa-logout-panel {
+    animation: sa-logout-in 180ms ease-out forwards;
+  }
+
+  @keyframes sa-logout-in {
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .sa-logout-btn {
+    border-radius: 2px;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
   }
 </style>
 
@@ -293,6 +373,26 @@
 
     loadSidebarIdentity();
   });
+
+  window.openLogoutModal = function() {
+    const modal = document.getElementById('sa-logout-modal');
+    if (!modal) return;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+  };
+
+  window.closeLogoutModal = function() {
+    const modal = document.getElementById('sa-logout-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeLogoutModal();
+    }
+  });
 </script>
 
 <script type="module">
@@ -301,16 +401,14 @@
   import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   window.handleLogout = async function() {
-    if(confirm('Are you sure you want to log out?')) {
-      try {
-        console.log('Logging out...');
-        await signOut(auth);
-        console.log('Successfully logged out');
-        window.location.href = '/login';
-      } catch (error) {
-        console.error('Logout error:', error);
-        alert('Logout failed: ' + error.message);
-      }
+    try {
+      console.log('Logging out...');
+      await signOut(auth);
+      console.log('Successfully logged out');
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Logout failed: ' + error.message);
     }
   };
 </script>
