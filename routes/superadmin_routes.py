@@ -1058,6 +1058,7 @@ def superadmin_applicants_data():
     try:
         db = get_firestore_db()
         docs = db.collection('municipal_denr_applicant_jobs').stream()
+        actor = session.get('user_email') or 'superadmin'
 
         applicants = []
         hiring_description_cache = {}
@@ -1110,6 +1111,18 @@ def superadmin_applicants_data():
             status = _normalize_superadmin_applicant_status(
                 data.get('status') or data.get('employeeStatus') or data.get('application_status')
             )
+
+            # Backfill: ensure already-approved applicants are also in employees collection
+            if status == 'accepted' and not data.get('employee_doc_id'):
+                employee_doc_id = _ensure_employee_from_applicant(db, doc.id, data, actor)
+                if employee_doc_id:
+                    doc.reference.set({
+                        'employee_doc_id': employee_doc_id,
+                        'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                        'updated_at': firestore.SERVER_TIMESTAMP,
+                        'updated_by': actor,
+                    }, merge=True)
+                    data['employee_doc_id'] = employee_doc_id
 
             applicants.append({
                 'id': doc.id,
