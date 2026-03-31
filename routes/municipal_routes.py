@@ -637,10 +637,18 @@ def api_get_municipal_attendance():
         shift_cache = {}
 
         user_municipality = (_resolve_municipality_from_user_context() or '').strip().lower()
-
         docs = []
         if user_municipality:
-            docs = db.collection('employees').where('municipality', '==', user_municipality).stream()
+            try:
+                docs = db.collection('employees').where(
+                    filter=firestore.FieldFilter('municipality', '==', user_municipality)
+                ).stream()
+            except Exception:
+                # Fallback for mixed data casing or SDK where() compatibility issues.
+                docs = [
+                    doc for doc in db.collection('employees').stream()
+                    if str((doc.to_dict() or {}).get('municipality') or '').strip().lower() == user_municipality
+                ]
         else:
             docs = db.collection('employees').stream()
 
