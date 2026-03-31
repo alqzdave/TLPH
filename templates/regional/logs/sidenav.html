@@ -183,19 +183,29 @@
     <div id="logout-modal" class="logout-modal" aria-hidden="true" role="dialog" aria-modal="true">
         <div class="logout-modal__backdrop" onclick="closeLogoutModal()"></div>
         <div class="logout-modal__panel" role="document" aria-labelledby="logout-modal-title">
-            <div class="logout-modal__header">
-                <div class="logout-modal__badge">
-                    <span class="material-icons-round">logout</span>
-                </div>
-                <h3 id="logout-modal-title" class="logout-modal__title">Confirm Logout</h3>
-                <button class="logout-modal__close" aria-label="Close" onclick="closeLogoutModal()">
-                    <span class="material-icons-round">close</span>
+            <div class="flex items-center gap-2 px-4 py-2 bg-slate-100 border-b border-slate-300">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-700">
+                    <span class="material-icons-round text-[16px] text-[#1e3a8a]">logout</span>
+                </span>
+                <h2 id="logout-modal-title" class="text-[11px] font-black uppercase tracking-wide text-slate-800 m-0">Confirm Logout</h2>
+                <button class="ml-auto text-slate-400 hover:text-slate-700" onclick="closeLogoutModal()" aria-label="Close">
+                    <span class="material-icons-round text-[16px]">close</span>
                 </button>
             </div>
-            <p class="logout-modal__desc">Your session will end and you will be returned to the login page.</p>
-            <div class="logout-modal__actions">
-                <button class="logout-modal__btn ghost" onclick="closeLogoutModal()">Stay Logged In</button>
-                <button class="logout-modal__btn danger" onclick="handleLogout()">Logout Now</button>
+            <div class="px-4 pb-3">
+                <p class="text-[11px] text-slate-600 m-0 tracking-tight">
+                    Your session will end and you will be returned to the login page.
+                </p>
+            </div>
+            <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-2">
+                <button class="rounded-sm border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase text-emerald-800 hover:bg-emerald-100"
+                        onclick="closeLogoutModal()">
+                    Stay Logged In
+                </button>
+                <button class="rounded-sm border border-red-600 bg-red-600 px-3 py-1 text-[10px] font-bold uppercase text-white hover:bg-red-700"
+                        onclick="handleLogout()">
+                    Logout Now
+                </button>
             </div>
         </div>
     </div>
@@ -302,12 +312,12 @@
     .logout-modal__panel {
         position: relative;
         z-index: 1;
-        width: min(420px, 92vw);
+        width: min(448px, 92vw);
         background: #ffffff;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 24px 50px rgba(15, 23, 42, 0.22);
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 25px 50px rgba(15, 23, 42, 0.18);
         border-radius: 10px;
-        padding: 14px 16px 16px;
+        padding: 0;
         font-family: 'Verdana', 'Arial', sans-serif;
         text-align: left;
         transform: translateY(8px) scale(0.98);
