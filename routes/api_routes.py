@@ -1696,6 +1696,147 @@ def check_session():
         })
     return jsonify({'authenticated': False}), 401
 
+
+@bp.route('/superadmin/profile', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_profile():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        user_id = str(session.get('user_id') or '').strip()
+        user_email = str(session.get('user_email') or '').strip().lower()
+
+        user_doc = None
+        user_data = {}
+
+        if user_id:
+            try:
+                doc = db.collection('users').document(user_id).get()
+                if doc.exists:
+                    user_doc = doc
+                    user_data = doc.to_dict() or {}
+            except Exception:
+                user_doc = None
+
+        if user_doc is None and user_email:
+            try:
+                docs = db.collection('users').where(filter=FieldFilter('email', '==', user_email)).limit(1).stream()
+                for d in docs:
+                    user_doc = d
+                    user_data = d.to_dict() or {}
+                    break
+            except Exception:
+                try:
+                    docs = db.collection('users').where('email', '==', user_email).limit(1).stream()
+                    for d in docs:
+                        user_doc = d
+                        user_data = d.to_dict() or {}
+                        break
+                except Exception:
+                    user_doc = None
+
+        first_name = str(user_data.get('firstName') or user_data.get('first_name') or '').strip()
+        last_name = str(user_data.get('lastName') or user_data.get('last_name') or '').strip()
+        full_name = f"{first_name} {last_name}".strip() or str(user_data.get('name') or '').strip() or 'Super Admin'
+
+        denr_logo = 'https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705'
+        profile = {
+            'full_name': full_name,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': user_email or str(user_data.get('email') or '').strip().lower(),
+            'employee_id': user_id or (user_doc.id if user_doc else ''),
+            'office_location': str(user_data.get('office_location') or user_data.get('officeLocation') or 'central').strip().lower(),
+            'two_fa_enabled': bool(user_data.get('2fa_enabled', user_data.get('two_fa_enabled', True))),
+            'breach_alerts': bool(user_data.get('breach_alerts', True)),
+            'weekly_reports': bool(user_data.get('weekly_reports', False)),
+            'photo_url': denr_logo,
+            'role_label': 'System Director',
+        }
+
+        return jsonify({'success': True, 'profile': profile})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/profile', methods=['POST'])
+@firebase_auth_required
+def api_update_superadmin_profile():
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        payload = request.get_json() or {}
+        full_name = str(payload.get('full_name') or '').strip()
+        office_location = str(payload.get('office_location') or '').strip().lower()
+        two_fa_enabled = bool(payload.get('two_fa_enabled', True))
+        breach_alerts = bool(payload.get('breach_alerts', True))
+        weekly_reports = bool(payload.get('weekly_reports', False))
+        new_password = str(payload.get('new_password') or '').strip()
+
+        if not full_name:
+            return jsonify({'success': False, 'message': 'Full name is required'}), 400
+
+        allowed_locations = {'central', 'ncr', 'r4a'}
+        if office_location not in allowed_locations:
+            office_location = 'central'
+
+        parts = [p for p in full_name.split(' ') if p]
+        first_name = parts[0] if parts else ''
+        last_name = ' '.join(parts[1:]).strip() if len(parts) > 1 else ''
+
+        db = firestore.client()
+        user_id = str(session.get('user_id') or '').strip()
+        user_email = str(session.get('user_email') or '').strip().lower()
+
+        user_ref = None
+        if user_id:
+            user_ref = db.collection('users').document(user_id)
+        elif user_email:
+            try:
+                docs = db.collection('users').where(filter=FieldFilter('email', '==', user_email)).limit(1).stream()
+                for d in docs:
+                    user_ref = d.reference
+                    break
+            except Exception:
+                try:
+                    docs = db.collection('users').where('email', '==', user_email).limit(1).stream()
+                    for d in docs:
+                        user_ref = d.reference
+                        break
+                except Exception:
+                    user_ref = None
+
+        if user_ref is None:
+            if not user_id:
+                return jsonify({'success': False, 'message': 'Cannot resolve user document'}), 400
+            user_ref = db.collection('users').document(user_id)
+
+        update_fields = {
+            'name': full_name,
+            'firstName': first_name,
+            'lastName': last_name,
+            'office_location': office_location,
+            '2fa_enabled': two_fa_enabled,
+            'breach_alerts': breach_alerts,
+            'weekly_reports': weekly_reports,
+            'updated_at': datetime.utcnow(),
+        }
+
+        user_ref.set(update_fields, merge=True)
+
+        message = 'Profile updated successfully.'
+        if new_password:
+            message += ' Password update is not available from this page yet.'
+
+        return jsonify({'success': True, 'message': message})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @bp.route('/upload-profile-photo', methods=['POST'])
 @firebase_auth_required
 def upload_profile_photo():

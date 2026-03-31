@@ -59,7 +59,7 @@
 
     <main class="absolute top-[53px] right-0 bottom-0 left-0 lg:left-[260px] p-3 gap-2 overflow-y-auto custom-scrollbar flex flex-col z-10">
         
-        <form action="/update-profile" method="POST" class="max-w-[1200px] w-full mx-auto flex flex-col gap-3">
+        <form id="superadminProfileForm" class="max-w-[1200px] w-full mx-auto flex flex-col gap-3">
             
             <header class="gov-card p-2 flex flex-col sm:flex-row sm:items-center justify-between shrink-0 border-b-4 border-b-gov-blue no-print">
                 <div class="flex items-center gap-3">
@@ -72,14 +72,16 @@
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-1.5 mt-2 sm:mt-0">
-                    <button type="reset" class="gov-btn border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 shadow-sm">
+                    <button type="button" id="discardBtn" class="gov-btn border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 shadow-sm">
                         Discard
                     </button>
-                    <button type="submit" class="gov-btn bg-denr-green text-white hover:bg-green-800 shadow-sm">
+                    <button type="submit" id="saveProfileBtn" class="gov-btn bg-denr-green text-white hover:bg-green-800 shadow-sm">
                         <i class="fa-solid fa-save"></i> Save Changes
                     </button>
                 </div>
             </header>
+
+            <div id="profileStatus" class="hidden px-3 py-2 text-[10px] font-bold rounded-[2px] border"></div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
                 
@@ -88,16 +90,12 @@
                         <div class="h-16 admin-gradient"></div>
                         <div class="px-4 pb-6 -mt-8 text-center">
                             <div class="relative inline-block group">
-                                <img src="https://ui-avatars.com/api/?name=Super+Admin&background=1e3a8a&color=fff&size=128" 
-                                     class="h-20 w-20 rounded-[1px] border-2 border-white shadow-md object-cover bg-white">
-                                <label for="avatar-upload" class="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-[1px] shadow-md border border-slate-200 text-gov-blue cursor-pointer hover:scale-110 transition-transform">
-                                    <span class="material-icons-round text-[14px]">photo_camera</span>
-                                    <input type="file" id="avatar-upload" name="profile_picture" class="hidden">
-                                </label>
+                                <img id="profileAvatar" src="https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705" 
+                                     class="h-20 w-20 rounded-[1px] border-2 border-white shadow-md object-cover bg-white" alt="DENR Logo">
                             </div>
-                            <h3 class="mt-3 text-[14px] font-black text-slate-900 uppercase tracking-tight">Juan Dela Cruz</h3>
+                            <h3 id="profileDisplayName" class="mt-3 text-[14px] font-black text-slate-900 uppercase tracking-tight">Super Admin</h3>
                             <div class="mt-2">
-                                <span class="status-badge bg-blue-50 text-gov-blue border-blue-200 px-3 py-1">System Director</span>
+                                <span id="profileRoleBadge" class="status-badge bg-blue-50 text-gov-blue border-blue-200 px-3 py-1">System Director</span>
                             </div>
                         </div>
                     </div>
@@ -134,19 +132,19 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-0.5">Full Identity Name</label>
-                                    <input type="text" name="full_name" value="Juan Dela Cruz" class="gov-input h-8">
+                                    <input type="text" id="fullNameInput" name="full_name" value="" class="gov-input h-8">
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-0.5">Government Email</label>
-                                    <input type="email" name="email" value="admin.central@denr.gov.ph" class="gov-input h-8">
+                                    <input type="email" id="emailInput" name="email" value="" class="gov-input h-8" readonly>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-0.5">Employee ID (System Fixed)</label>
-                                    <input type="text" value="DENR-ROOT-2024-001" disabled class="gov-input h-8 font-mono">
+                                    <input type="text" id="employeeIdInput" value="" disabled class="gov-input h-8 font-mono">
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-0.5">Assigned Station</label>
-                                    <select name="office_location" class="gov-input h-8 cursor-pointer uppercase">
+                                    <select id="officeLocationInput" name="office_location" class="gov-input h-8 cursor-pointer uppercase">
                                         <option value="central">Central Office - Quezon City</option>
                                         <option value="ncr">Regional Office - NCR</option>
                                         <option value="r4a">Regional Office - CALABARZON</option>
@@ -167,11 +165,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="flex flex-col gap-1">
                                         <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-0.5">New Secure Password</label>
-                                        <input type="password" name="new_password" placeholder="••••••••" class="gov-input h-8">
+                                        <input type="password" id="newPasswordInput" name="new_password" placeholder="••••••••" class="gov-input h-8">
                                     </div>
                                     <div class="flex flex-col gap-1">
                                         <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-0.5">Confirm Security Key</label>
-                                        <input type="password" name="confirm_password" placeholder="••••••••" class="gov-input h-8">
+                                        <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="••••••••" class="gov-input h-8">
                                     </div>
                                 </div>
                                 
@@ -186,7 +184,7 @@
                                         </div>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" name="2fa_enabled" class="sr-only peer" checked>
+                                        <input type="checkbox" id="twoFaInput" name="2fa_enabled" class="sr-only peer" checked>
                                         <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-denr-green"></div>
                                     </label>
                                 </div>
@@ -203,14 +201,14 @@
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <label class="flex items-start gap-3 p-2 rounded-[1px] border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-all cursor-pointer group">
-                                    <input type="checkbox" name="breach_alerts" checked class="mt-0.5 w-4 h-4 rounded-[1px] border-slate-300 text-denr-green focus:ring-0 cursor-pointer">
+                                    <input type="checkbox" id="breachAlertsInput" name="breach_alerts" checked class="mt-0.5 w-4 h-4 rounded-[1px] border-slate-300 text-denr-green focus:ring-0 cursor-pointer">
                                     <div class="flex flex-col">
                                         <span class="text-[9px] font-black text-slate-700 uppercase tracking-tight">Critical Security Alerts</span>
                                         <span class="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Instant SMS/Email on root attempts.</span>
                                     </div>
                                 </label>
                                 <label class="flex items-start gap-3 p-2 rounded-[1px] border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-all cursor-pointer group">
-                                    <input type="checkbox" name="weekly_reports" class="mt-0.5 w-4 h-4 rounded-[1px] border-slate-300 text-denr-green focus:ring-0 cursor-pointer">
+                                    <input type="checkbox" id="weeklyReportsInput" name="weekly_reports" class="mt-0.5 w-4 h-4 rounded-[1px] border-slate-300 text-denr-green focus:ring-0 cursor-pointer">
                                     <div class="flex flex-col">
                                         <span class="text-[9px] font-black text-slate-700 uppercase tracking-tight">Activity Journals</span>
                                         <span class="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Periodic logs of regional actions.</span>
@@ -224,5 +222,122 @@
             </div>
         </form>
     </main>
+
+    <script>
+        const DENR_LOGO_URL = 'https://res.cloudinary.com/dnfkplb3i/image/upload/v1774838705/tlph/branding/denr-favicon-image.ico?v=1774838705';
+        let originalProfile = null;
+
+        function showProfileStatus(message, ok) {
+            const box = document.getElementById('profileStatus');
+            if (!box) return;
+            box.textContent = message;
+            box.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'bg-rose-50', 'text-rose-700', 'border-rose-200');
+            if (ok) {
+                box.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+            } else {
+                box.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-200');
+            }
+        }
+
+        function fillProfileForm(profile) {
+            originalProfile = { ...profile };
+            document.getElementById('profileAvatar').src = DENR_LOGO_URL;
+            document.getElementById('profileDisplayName').textContent = String(profile.full_name || 'Super Admin').toUpperCase();
+            document.getElementById('profileRoleBadge').textContent = profile.role_label || 'System Director';
+
+            document.getElementById('fullNameInput').value = profile.full_name || '';
+            document.getElementById('emailInput').value = profile.email || '';
+            document.getElementById('employeeIdInput').value = profile.employee_id || '';
+            document.getElementById('officeLocationInput').value = profile.office_location || 'central';
+            document.getElementById('twoFaInput').checked = !!profile.two_fa_enabled;
+            document.getElementById('breachAlertsInput').checked = !!profile.breach_alerts;
+            document.getElementById('weeklyReportsInput').checked = !!profile.weekly_reports;
+
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
+        }
+
+        async function loadSuperadminProfile() {
+            try {
+                const resp = await fetch('/api/superadmin/profile', { credentials: 'same-origin' });
+                const res = await resp.json();
+                if (!resp.ok || !res.success) {
+                    throw new Error(res.message || 'Failed to load profile');
+                }
+                fillProfileForm(res.profile || {});
+            } catch (err) {
+                showProfileStatus(err.message || 'Failed to load profile.', false);
+            }
+        }
+
+        async function saveSuperadminProfile(event) {
+            event.preventDefault();
+            const saveBtn = document.getElementById('saveProfileBtn');
+
+            const fullName = document.getElementById('fullNameInput').value.trim();
+            const officeLocation = document.getElementById('officeLocationInput').value;
+            const twoFaEnabled = document.getElementById('twoFaInput').checked;
+            const breachAlerts = document.getElementById('breachAlertsInput').checked;
+            const weeklyReports = document.getElementById('weeklyReportsInput').checked;
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+            if (!fullName) {
+                showProfileStatus('Full identity name is required.', false);
+                return;
+            }
+
+            if (newPassword || confirmPassword) {
+                if (newPassword.length < 8) {
+                    showProfileStatus('New password must be at least 8 characters.', false);
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    showProfileStatus('Password confirmation does not match.', false);
+                    return;
+                }
+            }
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const resp = await fetch('/api/superadmin/profile', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        full_name: fullName,
+                        office_location: officeLocation,
+                        two_fa_enabled: twoFaEnabled,
+                        breach_alerts: breachAlerts,
+                        weekly_reports: weeklyReports,
+                        new_password: newPassword,
+                    })
+                });
+
+                const res = await resp.json();
+                if (!resp.ok || !res.success) {
+                    throw new Error(res.message || 'Failed to save profile');
+                }
+
+                showProfileStatus(res.message || 'Profile updated successfully.', true);
+                await loadSuperadminProfile();
+            } catch (err) {
+                showProfileStatus(err.message || 'Failed to save profile.', false);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fa-solid fa-save"></i> Save Changes';
+            }
+        }
+
+        document.getElementById('superadminProfileForm').addEventListener('submit', saveSuperadminProfile);
+        document.getElementById('discardBtn').addEventListener('click', function() {
+            if (originalProfile) fillProfileForm(originalProfile);
+            showProfileStatus('Changes discarded.', true);
+        });
+
+        loadSuperadminProfile();
+    </script>
 </body>
 </html>
