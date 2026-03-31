@@ -2252,8 +2252,6 @@ def applicants_municipal_view(job_id):
 @bp.route('/operations/applicants-municipal/job/<job_id>/status', methods=['POST'])
 @role_required('municipal','municipal_admin')
 def applicants_municipal_job_update_status(job_id):
-    from firebase_admin import firestore
-
     db = get_firestore_db()
     user_municipality = (_resolve_municipality_from_user_context() or '').strip()
     user_region = (_resolve_region_from_user_context() or '').strip()
@@ -2306,6 +2304,16 @@ def applicants_municipal_job_update_status(job_id):
             })
 
         doc_ref.set(update_payload, merge=True)
+
+        if new_status == 'APPROVED':
+            merged_data = dict(existing)
+            merged_data.update(update_payload)
+            employee_doc_id = _ensure_employee_from_applicant(db, job_id, merged_data, actor_email)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
 
         return jsonify({'success': True, 'status': new_status})
     except Exception as e:
