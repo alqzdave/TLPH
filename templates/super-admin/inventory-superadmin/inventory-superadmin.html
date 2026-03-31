@@ -149,6 +149,13 @@
                             <option value="{{ region }}">{{ region }}</option>
                             {% endfor %}
                         </select>
+                        <select id="statusFilter" onchange="renderTable()" class="gov-input h-7 cursor-pointer uppercase">
+                            <option value="all">-- ALL STATUS --</option>
+                            <option value="approved">Approved</option>
+                            <option value="pending">Pending</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="forwarded">Forwarded</option>
+                        </select>
                         <button onclick="clearFilters()" class="gov-btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 h-7 shadow-sm">
                             <i class="fa-solid fa-eraser"></i> Clear
                         </button>
@@ -301,17 +308,30 @@
 
         let myTrendChart, myCategoryChart, modalChartInstance = null;
 
+        function statusGroup(item) {
+            const key = String(item.statusKey || '').toLowerCase();
+            if (key.includes('approved')) return 'approved';
+            if (key.includes('rejected')) return 'rejected';
+            if (key.includes('forwarded')) return 'forwarded';
+            return 'pending';
+        }
+
         function renderTable() {
             const body = document.getElementById('inventoryTableBody');
             const search = document.getElementById('tableSearch').value.toLowerCase();
             const category = document.getElementById('catFilter').value;
             const region = document.getElementById('regFilter').value;
+            const status = document.getElementById('statusFilter').value;
             
-            const filtered = DATA.map((item, dataIndex) => ({ ...item, _dataIndex: dataIndex })).filter(item => {
+            const filtered = DATA
+            .map((item, dataIndex) => ({ ...item, _dataIndex: dataIndex }))
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+            .filter(item => {
                 const matchSearch = Object.values(item).join(" ").toLowerCase().includes(search);
                 const matchCat = category === 'all' || item.cat === category;
                 const matchReg = region === 'all' || item.reg === region;
-                return matchSearch && matchCat && matchReg;
+                const matchStatus = status === 'all' || statusGroup(item) === status;
+                return matchSearch && matchCat && matchReg && matchStatus;
             });
 
             body.innerHTML = '';
@@ -590,6 +610,7 @@
             document.getElementById('tableSearch').value = "";
             document.getElementById('catFilter').value = "all";
             document.getElementById('regFilter').value = "all";
+            document.getElementById('statusFilter').value = "all";
             renderTable();
         }
 
