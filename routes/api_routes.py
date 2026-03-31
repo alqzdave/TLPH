@@ -4730,3 +4730,103 @@ def get_system_logs():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/regions', methods=['GET'])
+@firebase_auth_required
+def get_regions():
+    """Get all regions from Firestore"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        
+        # Only superadmin/national admin can view regions
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized access to regions'}), 403
+        
+        db = firestore.client()
+        regions_ref = db.collection('regions')
+        docs = regions_ref.order_by('code').stream()
+        
+        regions = []
+        for doc in docs:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            regions.append(data)
+        
+        return jsonify({
+            'success': True,
+            'regions': regions,
+            'total_count': len(regions)
+        })
+        
+    except Exception as e:
+        print(f'[REGIONS_ERROR] get_regions failed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/regions', methods=['POST'])
+@firebase_auth_required
+def create_region():
+    """Create a new region in Firestore"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        user_email = session.get('user_email', '')
+        
+        # Only superadmin/national admin can create regions
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized to create regions'}), 403
+        
+        data = request.get_json() or {}
+        
+        # Validate required fields
+        required_fields = ['code', 'name', 'island', 'munic', 'staff', 'status']
+        for field in required_fields:
+            if field not in data or not str(data.get(field, '')).strip():
+                return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+        
+        # Prepare region document
+        region_data = {
+            'code': str(data.get('code', '')).strip().upper(),
+            'name': str(data.get('name', '')).strip(),
+            'island': str(data.get('island', '')).strip(),
+            'munic': int(data.get('munic', 0)),
+            'staff': int(data.get('staff', 0)),
+            'status': str(data.get('status', 'active')).strip().lower(),
+            'link': f"/superadmin/regions/{str(data.get('code', '')).strip().lower()}",
+            'created_by': user_email,
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'updated_at': firestore.SERVER_TIMESTAMP
+        }
+        
+        # Add to Firestore
+        db = firestore.client()
+        doc_ref = db.collection('regions').document(region_data['code'])
+        doc_ref.set(region_data)
+        
+        # Log the action
+        system_logs_storage.add_system_log(
+            municipality='National',
+            user=user_email,
+            action='REGION_CREATED',
+            target='Regions',
+            target_id=region_data['code'],
+            module='ADMINISTRATION',
+            outcome='SUCCESS',
+            message=f"Region {region_data['code']} created: {region_data['name']}",
+            device_type=detect_device_from_request(),
+            user_agent=request.headers.get('User-Agent', '')
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': f"Region {region_data['code']} registered successfully",
+            'region': region_data
+        })
+        
+    except Exception as e:
+        print(f'[REGIONS_ERROR] create_region failed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
