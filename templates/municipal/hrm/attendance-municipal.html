@@ -112,6 +112,25 @@
     </div>
   </div>
 
+  <div id="mv" class="gov-modal">
+    <div class="w-full max-w-2xl bg-white border border-slate-400 rounded-[2px] overflow-hidden" onclick="event.stopPropagation()">
+      <div class="bg-slate-900 text-white p-3 flex justify-between items-center"><h3 class="text-[11px] font-black uppercase">Attendance Details</h3><button id="mvx"><span class="material-icons-round">close</span></button></div>
+      <div class="p-4 bg-slate-50 grid grid-cols-2 gap-4">
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Date</label><p id="vdate" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Employee No.</label><p id="vno" class="text-[11px] font-bold mt-1">-</p></div>
+        <div class="col-span-2"><label class="text-[8px] font-black uppercase text-slate-500">Employee Name</label><p id="vnm" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Category</label><p id="vcat" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Region</label><p id="vreg" class="text-[11px] font-bold mt-1">-</p></div>
+        <div class="col-span-2"><label class="text-[8px] font-black uppercase text-slate-500">Municipality</label><p id="vmun" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Time In</label><p id="vti" class="text-[11px] font-bold mt-1 font-mono">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Time Out</label><p id="vto" class="text-[11px] font-bold mt-1 font-mono">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Type</label><p id="vtype" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Notes</label><p id="vnts" class="text-[11px] font-bold mt-1">-</p></div>
+      </div>
+      <div class="border-t border-slate-200 p-4 flex justify-end gap-2"><button id="mvc" class="gov-btn border border-slate-300 bg-white">Close</button></div>
+    </div>
+  </div>
+
   <div id="toast" class="fixed bottom-4 right-4 hidden z-[4000]"><div class="bg-emerald-50 border border-emerald-300 px-3 py-2 rounded-[2px] shadow"><div id="tt" class="text-[10px] font-black uppercase">Saved</div><div id="tm" class="text-[9px] text-slate-600">Done</div></div></div>
 
   <!-- Administrator's Municipality (populated by backend) -->
@@ -177,8 +196,8 @@
           <td class="px-2 py-1 border-r border-slate-100 text-center">${chipType(x.type)}${x.notes ? `<div class="text-[8px] mt-1 uppercase text-slate-500">${esc(x.notes)}</div>` : ''}</td>
           <td class="px-2 py-1 text-center">
             <div class="flex justify-center gap-1">
-              <button class="ed btn-action" data-id="${x.id}"><span class="material-icons-round text-[12px]">edit</span></button>
-              <button class="rm btn-action" data-id="${x.id}"><span class="material-icons-round text-[12px]">delete</span></button>
+              <button class="vw btn-action" data-id="${x.id}" title="View"><span class="material-icons-round text-[12px]">visibility</span></button>
+              <button class="ed btn-action" data-id="${x.id}" title="Edit"><span class="material-icons-round text-[12px]">edit</span></button>
             </div>
           </td>
         </tr>
@@ -199,6 +218,23 @@
       }
     };
     const closeM = () => $('mb').classList.remove('flex');
+
+    const openV = (id) => { 
+      const x = logs.find(z => z.id === id); 
+      if (!x) return; 
+      $('vdate').textContent = x.date || '-';
+      $('vno').textContent = x.no || '-';
+      $('vnm').textContent = x.name || '-';
+      $('vcat').textContent = x.cat || '-';
+      $('vreg').textContent = x.reg || '-';
+      $('vmun').textContent = x.mun || '-';
+      $('vti').textContent = x.in || '-';
+      $('vto').textContent = x.out || '-';
+      $('vtype').innerHTML = chipType(x.type);
+      $('vnts').textContent = x.notes || '-';
+      $('mv').classList.add('flex');
+    };
+    const closeV = () => $('mv').classList.remove('flex');
 
     const openD = (ids, label) => { pendingDelete = { ids }; $('dm').textContent = label; $('md').classList.add('flex'); };
     const closeD = () => { $('md').classList.remove('flex'); pendingDelete = { ids: [] }; };
