@@ -929,6 +929,82 @@ def _is_accepted_status(raw_status):
     return _normalize_superadmin_applicant_status(raw_status) == 'accepted'
 
 
+def _split_full_name(full_name):
+    name = str(full_name or '').strip()
+    if not name:
+        return '', ''
+    parts = [p for p in name.split() if p]
+    if len(parts) == 1:
+        return parts[0], parts[0]
+    return parts[0], ' '.join(parts[1:])
+
+
+def _ensure_employee_from_applicant(db, applicant_id, applicant_data, actor):
+    """Create an employee document from accepted applicant if not already created."""
+    try:
+        existing = db.collection('employees').where(
+            filter=firestore.FieldFilter('source_applicant_id', '==', applicant_id)
+        ).limit(1).stream()
+        for doc in existing:
+            return doc.id
+
+        first_name, last_name = _split_full_name(
+            applicant_data.get('full_name')
+            or applicant_data.get('applicant_name')
+            or applicant_data.get('fullName')
+            or applicant_data.get('name')
+        )
+
+        reference_id = str(applicant_data.get('reference_id') or '').strip().upper().replace(' ', '-')
+        employee_id = f"EMP-{reference_id}" if reference_id else f"EMP-APP-{applicant_id[:8].upper()}"
+
+        scope_type = str(applicant_data.get('scope_type') or '').strip().lower()
+        municipality = ''
+        if scope_type == 'municipality':
+            municipality = str(
+                applicant_data.get('municipality')
+                or applicant_data.get('scope')
+                or ''
+            ).strip()
+
+        candidate_type = str(
+            applicant_data.get('candidate_type')
+            or applicant_data.get('category')
+            or 'Applicant Hire'
+        ).strip()
+
+        employee_payload = {
+            'employee_id': employee_id,
+            'first_name': first_name,
+            'middle_name': '',
+            'last_name': last_name,
+            'email': str(applicant_data.get('email') or '').strip().lower(),
+            'contact_Number': str(applicant_data.get('phone') or applicant_data.get('mobile') or '').strip(),
+            'designation': str(applicant_data.get('position') or candidate_type or 'Applicant Hire').strip(),
+            'department_name': str(applicant_data.get('department_name') or 'Human Resource').strip(),
+            'division': str(applicant_data.get('division') or '').strip(),
+            'municipality': municipality,
+            'province': str(applicant_data.get('province') or '').strip(),
+            'region': str(applicant_data.get('region_office') or applicant_data.get('region') or '').strip(),
+            'status': 'Active',
+            'role': 'municipal' if scope_type == 'municipality' else 'regional',
+            'remarks': 'Auto-created from approved applicant',
+            'source_applicant_id': applicant_id,
+            'source_reference_id': reference_id,
+            'created_by': actor,
+            'updated_by': actor,
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'updated_at': firestore.SERVER_TIMESTAMP,
+        }
+
+        ref = db.collection('employees').document()
+        ref.set(employee_payload)
+        return ref.id
+    except Exception as create_err:
+        print(f'[ERROR] _ensure_employee_from_applicant: {create_err}')
+        return None
+
+
 def _format_firestore_timestamp(value):
     if not value:
         return 'N/A'
@@ -1114,6 +1190,15 @@ def superadmin_create_applicant():
             })
 
         doc_ref.set(data)
+
+        if status == 'accepted':
+            employee_doc_id = _ensure_employee_from_applicant(db, doc_ref.id, data, actor)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+
         return jsonify({'success': True, 'id': doc_ref.id})
     except Exception as e:
         print(f'[ERROR] superadmin_create_applicant: {e}')
@@ -1170,6 +1255,18 @@ def superadmin_update_applicant(applicant_id):
             return jsonify({'success': False, 'error': 'No valid updates provided'}), 400
 
         doc_ref.update(updates)
+
+        normalized_after = updates.get('status') or current_status
+        if normalized_after == 'accepted':
+            merged_data = dict(current)
+            merged_data.update(updates)
+            employee_doc_id = _ensure_employee_from_applicant(db, applicant_id, merged_data, actor)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+
         return jsonify({'success': True})
     except Exception as e:
         print(f'[ERROR] superadmin_update_applicant: {e}')
@@ -1209,6 +1306,17 @@ def superadmin_update_applicant_status(applicant_id):
             'accepted_by': actor if next_status == 'accepted' else 'N/A',
         }
         doc_ref.update(updates)
+
+        if next_status == 'accepted':
+            merged_data = dict(current)
+            merged_data.update(updates)
+            employee_doc_id = _ensure_employee_from_applicant(db, applicant_id, merged_data, actor)
+            if employee_doc_id:
+                doc_ref.set({
+                    'employee_doc_id': employee_doc_id,
+                    'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+
         return jsonify({'success': True})
     except Exception as e:
         print(f'[ERROR] superadmin_update_applicant_status: {e}')
