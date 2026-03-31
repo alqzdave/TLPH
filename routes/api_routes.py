@@ -4783,7 +4783,7 @@ def get_regions():
             users_docs = users_ref.stream()
             
             region_map = {}
-            municipalities_map = {}  # Track municipalities per region
+            municipalities_map = {}  # Track unique municipalities per region
             
             for doc in users_docs:
                 user_data = doc.to_dict()
@@ -4808,13 +4808,16 @@ def get_regions():
                     elif region_code:
                         region_map[region_code]['staff'] = region_map[region_code].get('staff', 1) + 1
                     
-                    # Collect municipalities from user's municipalities field
+                    # Collect municipalities ONLY from users who have municipality-level access
+                    # (i.e., users with municipalities field indicating they're municipal-level admins)
                     if region_code:
                         user_municipalities = user_data.get('municipalities', [])
+                        # If user has municipalities array, they are a municipal-level account
+                        # and belong to this region - add their municipalities
                         if user_municipalities and isinstance(user_municipalities, list):
                             for munic in user_municipalities:
-                                if isinstance(munic, str):
-                                    municipalities_map[region_code].add(munic)
+                                if isinstance(munic, str) and munic.strip():
+                                    municipalities_map[region_code].add(munic.strip())
             
             # Build final regions list with municipality count
             regions = []
