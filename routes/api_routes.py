@@ -11,7 +11,7 @@ import hashlib
 import uuid
 import requests
 from urllib.request import urlopen
-from urllib.parse import quote_plus, quote
+from urllib.parse import quote_plus, quote, urlparse, unquote
 from firebase_admin import firestore
 from firebase_auth_middleware import firebase_auth_required
 import system_logs_storage
@@ -107,6 +107,104 @@ def _upload_to_cloudinary(file_obj, folder: str):
             file_obj.stream.seek(0)
         except Exception:
             pass
+
+
+def _cloudinary_public_id_candidates_from_url(file_url: str):
+    """Extract likely public_id candidates and resource type from a Cloudinary delivery URL."""
+    try:
+        parsed = urlparse(str(file_url or '').strip())
+        if not parsed.netloc or 'res.cloudinary.com' not in parsed.netloc:
+            return [], ''
+
+        parts = [p for p in parsed.path.split('/') if p]
+        # Expected path format: /<cloud_name>/<resource_type>/upload[/v123]/<public_id...>
+        if len(parts) < 5:
+            return [], ''
+
+        resource_type = parts[1]
+        action = parts[2]
+        if action not in {'upload', 'private', 'authenticated'}:
+            return [], resource_type
+
+        public_parts = parts[3:]
+        if public_parts and public_parts[0].startswith('v') and public_parts[0][1:].isdigit():
+            public_parts = public_parts[1:]
+        if not public_parts:
+            return [], resource_type
+
+        public_id = unquote('/'.join(public_parts))
+        # For raw/image delivery, extension behavior varies across uploads, try both forms.
+        without_ext = public_id.rsplit('.', 1)[0] if '.' in public_id else public_id
+
+        candidates = []
+        for value in (public_id, without_ext):
+            value = str(value or '').strip()
+            if value and value not in candidates:
+                candidates.append(value)
+        return candidates, resource_type
+    except Exception:
+        return [], ''
+
+
+def _cloudinary_destroy_public_id(public_id: str, resource_type: str) -> bool:
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
+    api_key = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+    if not cloud_name or not api_key or not api_secret:
+        return False
+
+    public_id = str(public_id or '').strip()
+    resource_type = str(resource_type or '').strip() or 'image'
+    if not public_id:
+        return False
+
+    timestamp = int(time.time())
+    params_to_sign = {
+        'public_id': public_id,
+        'timestamp': timestamp,
+        'invalidate': 'true',
+    }
+    signature = _cloudinary_signature(params_to_sign, api_secret)
+    endpoint = f"https://api.cloudinary.com/v1_1/{cloud_name}/{resource_type}/destroy"
+
+    try:
+        resp = requests.post(
+            endpoint,
+            data={
+                'api_key': api_key,
+                'timestamp': timestamp,
+                'public_id': public_id,
+                'invalidate': 'true',
+                'signature': signature,
+            },
+            timeout=20,
+        )
+        if not resp.ok:
+            return False
+        payload = resp.json() or {}
+        # Cloudinary returns 'ok' or 'not found'. Either means remote URL is no longer valid for our cleanup goal.
+        result = str(payload.get('result') or '').strip().lower()
+        return result in {'ok', 'not found'}
+    except Exception:
+        return False
+
+
+def _delete_cloudinary_asset_by_url(file_url: str) -> bool:
+    candidates, detected_type = _cloudinary_public_id_candidates_from_url(file_url)
+    if not candidates:
+        return False
+
+    resource_types = []
+    for rt in (detected_type, 'image', 'raw'):
+        rt = str(rt or '').strip()
+        if rt and rt not in resource_types:
+            resource_types.append(rt)
+
+    for public_id in candidates:
+        for resource_type in resource_types:
+            if _cloudinary_destroy_public_id(public_id, resource_type):
+                return True
+    return False
 
 
 def _is_image_file(file_obj) -> bool:
@@ -3850,7 +3948,34 @@ def api_delete_inquiry_conversation(conversation_key):
         if not key:
             return jsonify({'success': False, 'message': 'Conversation key is required'}), 400
 
+        file_urls = []
+        try:
+            msgs = get_messages(key)
+            for msg in (msgs or []):
+                if not isinstance(msg, dict):
+                    continue
+                url = str(msg.get('file_url') or '').strip()
+                if url and url not in file_urls:
+                    file_urls.append(url)
+        except Exception:
+            file_urls = []
+
+        cloudinary_deleted = 0
+        cloudinary_attempted = 0
+        if _cloudinary_enabled():
+            for url in file_urls:
+                if 'res.cloudinary.com' not in url:
+                    continue
+                cloudinary_attempted += 1
+                if _delete_cloudinary_asset_by_url(url):
+                    cloudinary_deleted += 1
+
         deleted_count = delete_conversation(key)
-        return jsonify({'success': True, 'deleted_count': deleted_count})
+        return jsonify({
+            'success': True,
+            'deleted_count': deleted_count,
+            'cloudinary_attempted': cloudinary_attempted,
+            'cloudinary_deleted': cloudinary_deleted,
+        })
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
