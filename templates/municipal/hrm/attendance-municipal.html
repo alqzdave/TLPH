@@ -32,6 +32,7 @@
           <div>
             <h1 class="text-[12px] font-black uppercase tracking-tight">Municipal Attendance Registry</h1>
             <p class="text-[9px] font-bold uppercase tracking-widest text-slate-500">Daily Time Logs and Shift Defaults</p>
+            <p id="adminScope" class="text-[8px] font-bold uppercase tracking-widest text-slate-600 mt-1"></p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -113,6 +114,9 @@
 
   <div id="toast" class="fixed bottom-4 right-4 hidden z-[4000]"><div class="bg-emerald-50 border border-emerald-300 px-3 py-2 rounded-[2px] shadow"><div id="tt" class="text-[10px] font-black uppercase">Saved</div><div id="tm" class="text-[9px] text-slate-600">Done</div></div></div>
 
+  <!-- Administrator's Municipality (populated by backend) -->
+  <input type="hidden" id="adminMunicipality" value="{{ admin_municipality }}" />
+
   <script>
     const API_BASE = '/municipal/api/hrm/attendance';
     const $ = id => document.getElementById(id);
@@ -123,6 +127,7 @@
 
     let logs = [];
     let pendingDelete = { ids: [] };
+    let adminMunicipality = $('adminMunicipality').value.trim();
 
     const requestJson = async (url, options = {}) => {
       const res = await fetch(url, { headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
@@ -148,7 +153,7 @@
       const f = getF();
       return arr.filter(x => {
         const hay = [x.date,x.no,x.name,x.cat,x.reg,x.mun,x.in,x.out,x.type,x.notes].join(' ').toLowerCase();
-        return (f.c === 'ALL' || x.cat === f.c) && (!f.d || x.date === f.d) && (f.t === 'ALL' || x.type === f.t) && (!f.s || hay.includes(f.s));
+        return (f.c === 'ALL' || x.cat === f.c) && (!f.d || x.date === f.d) && (f.t === 'ALL' || x.type === f.t) && (!f.s || hay.includes(f.s)) && x.mun === adminMunicipality;
       });
     };
 
@@ -186,6 +191,8 @@
       $('eid').value = '';
       $('mt').textContent = mode === 'edit' ? 'Edit Attendance Log' : 'New Attendance Log';
       $('sb').textContent = mode === 'edit' ? 'Update' : 'Save';
+      $('m').value = adminMunicipality;
+      $('m').readOnly = true;
       if (mode === 'edit') {
         const x = logs.find(z => z.id === id); if (!x) return;
         $('eid').value = x.id; $('d').value = x.date; $('no').value = x.no; $('nm').value = x.name; $('c').value = x.cat; $('r').value = x.reg || ''; $('m').value = x.mun || ''; $('ti').value = x.in || ''; $('to').value = x.out || ''; $('t').value = x.type; $('nt').value = x.notes || '';
@@ -215,6 +222,12 @@
     };
 
     document.addEventListener('DOMContentLoaded', async () => {
+      if (!adminMunicipality) {
+        toast('Error','Admin municipality not set. Contact system administrator.');
+        return;
+      }
+      $('adminScope').textContent = `📍 Viewing: ${adminMunicipality}`;
+      
       $('btnOpenCreate').onclick = () => openM('create');
       $('mx').onclick = $('mc').onclick = closeM;
       $('mb').addEventListener('click', e => { if (e.target === $('mb')) closeM(); });
@@ -278,6 +291,7 @@
         };
 
         if (payload.in && payload.out && payload.out <= payload.in) return toast('Invalid time','Time out must be after time in.');
+        if (payload.mun !== adminMunicipality) return toast('Access Denied','You can only create logs for ' + adminMunicipality);
 
         const editId = $('eid').value.trim();
         let employeeDocId = editId;
