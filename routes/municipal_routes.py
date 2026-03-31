@@ -545,7 +545,8 @@ def hrm_attendance():
 
     return render_template(
         'municipal/hrm/attendance-municipal.html',
-        employees_data=employees
+        employees_data=employees,
+        admin_municipality=user_municipality or ''
     )
 
 
@@ -637,85 +638,99 @@ def api_get_municipal_attendance():
         shift_cache = {}
 
         user_municipality = (_resolve_municipality_from_user_context() or '').strip().lower()
-        docs = []
-        if user_municipality:
-            try:
-                docs = db.collection('employees').where(
-                    filter=firestore.FieldFilter('municipality', '==', user_municipality)
-                ).stream()
-            except Exception:
-                # Fallback for mixed data casing or SDK where() compatibility issues.
-                docs = [
-                    doc for doc in db.collection('employees').stream()
-                    if str((doc.to_dict() or {}).get('municipality') or '').strip().lower() == user_municipality
-                ]
-        else:
-            docs = db.collection('employees').stream()
+        if not user_municipality:
+            return jsonify({'success': False, 'error': 'User municipality not resolved'}), 403
+        
+        # Fetch employees filtered by municipality
+        try:
+            # Try using FieldFilter first (newer SDK)
+            docs = db.collection('employees').where(
+                filter=firestore.FieldFilter('municipality', '==', user_municipality)
+            ).stream()
+        except Exception:
+            # Fallback: fetch all and filter client-side
+            all_docs = db.collection('employees').stream()
+            docs = [
+                doc for doc in all_docs
+                if str((doc.to_dict() or {}).get('municipality') or '').strip() == user_municipality
+            ]
+        
+        records = []
 
         for employee_doc in docs:
             emp = employee_doc.to_dict() or {}
 
-            defaults = {}
-            if 'attendance_date' not in emp:
-                defaults['attendance_date'] = today_str
-            if 'attendance_status' not in emp:
-                defaults['attendance_status'] = 'Present'
-            if 'attendance_remarks' not in emp:
-                defaults['attendance_remarks'] = ''
-            if 'time_in' not in emp:
-                defaults['time_in'] = ''
-            if 'time_out' not in emp:
-                defaults['time_out'] = ''
-            if 'working_hours' not in emp:
-                defaults['working_hours'] = 0
-            if defaults:
-                emp.update(defaults)
-
-            role = str(emp.get('role') or '').strip().lower()
-            category = 'MUNICIPALITY' if 'municipal' in role else 'REGIONAL'
-
+            # Extract employee information
+            employee_id = str(emp.get('employee_id') or '').strip().upper()
             first_name = str(emp.get('first_name') or '').strip()
             middle_name = str(emp.get('middle_name') or '').strip()
             last_name = str(emp.get('last_name') or '').strip()
+            
+            # Build full name
             full_name = str(emp.get('name') or '').strip()
             if not full_name:
-                full_name = f"{last_name}, {first_name} {middle_name}".strip().strip(',')
-
-            attendance_status = str(emp.get('attendance_status') or '').strip().lower()
+                parts = [n for n in [last_name, first_name, middle_name] if n]
+                full_name = ' '.join(parts) if parts else 'N/A'
+            
+            # Get attendance details
+            attendance_status = str(emp.get('attendance_status') or 'On Duty').strip()
+            attendance_date = str(emp.get('attendance_date') or datetime.utcnow().date().isoformat()).strip()
             time_in = _format_attendance_time(emp.get('time_in'))
             time_out = _format_attendance_time(emp.get('time_out'))
-
-            if (not time_in or not time_out) and attendance_status not in {'absent', 'on leave', 'leave'}:
-                shift_in, shift_out = _get_employee_shift_times(db, emp, shift_cache)
-                time_in = time_in or shift_in
-                time_out = time_out or shift_out
-
-            rows.append({
+            attendance_remarks = str(emp.get('attendance_remarks') or '').strip()
+            
+            # Determine category
+            role = str(emp.get('role') or '').strip().lower()
+            category = 'MUNICIPALITY' if 'municipal' in role else 'REGIONAL'
+            
+            # Convert status to type
+            attendance_type = _attendance_type_from_status(attendance_status)
+            
+            # Build record
+            record = {
                 'id': employee_doc.id,
-                'date': str(emp.get('attendance_date') or today_str),
-                'no': str(emp.get('employee_id') or '').strip(),
-                'name': full_name or 'N/A',
+                'date': attendance_date,
+                'no': employee_id,
+                'name': full_name,
                 'cat': category,
                 'reg': str(emp.get('region') or '').strip(),
                 'mun': str(emp.get('municipality') or '').strip(),
                 'in': time_in,
                 'out': time_out,
-                'type': _attendance_type_from_status(emp.get('attendance_status')),
-                'notes': str(emp.get('attendance_remarks') or '').strip(),
-            })
+                'type': attendance_type,
+                'notes': attendance_remarks,
+            }
+            records.append(record)
 
-        rows.sort(key=lambda item: (item.get('no') or '', item.get('name') or ''))
-        return jsonify({'success': True, 'records': rows, 'count': len(rows)})
+        
+        # Sort by employee ID and name
+        records.sort(key=lambda x: (x.get('no') or '', x.get('name') or ''))
+        
+        return jsonify({
+            'success': True,
+            'records': records,
+            'count': len(records),
+            'municipality': user_municipality
+        })
+        
     except Exception as e:
         print(f'[ERROR] api_get_municipal_attendance: {e}')
+        import traceback
+        traceback.print_exc()
+        
         if 'quota exceeded' in str(e).strip().lower():
             return jsonify({
                 'success': True,
                 'records': [],
                 'count': 0,
                 'warning': 'Firestore quota exceeded. Attendance data is temporarily unavailable.'
-            })
-        return jsonify({'success': False, 'error': 'Failed to load attendance records'}), 500
+            }), 200
+        
+        return jsonify({
+            'success': False,
+            'error': 'Failed to load attendance records',
+            'details': str(e)
+        }), 500
 
 
 @bp.route('/api/hrm/attendance/adjust', methods=['PUT'])
