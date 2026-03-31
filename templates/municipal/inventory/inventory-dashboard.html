@@ -341,12 +341,6 @@
         <div class="p-3 bg-slate-100 max-h-[78vh] overflow-auto flex items-center justify-center">
           <img id="attachmentPreviewImage" src="" alt="Attachment Preview" class="hidden max-w-full max-h-[70vh] object-contain rounded" />
           <iframe id="attachmentPreviewFrame" src="" class="hidden w-full h-[70vh] bg-white rounded border border-slate-200"></iframe>
-          <div id="attachmentPreviewFallback" class="hidden text-center">
-            <p class="text-xs text-slate-600 font-semibold mb-3">Preview not available for this file type.</p>
-            <a id="attachmentPreviewOpenLink" href="#" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded text-[10px] font-black uppercase no-underline">
-              <i class="fa-solid fa-download"></i> Open / Download
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -514,8 +508,6 @@
       attachmentPreviewCloseBtn: $("attachmentPreviewCloseBtn"),
       attachmentPreviewImage: $("attachmentPreviewImage"),
       attachmentPreviewFrame: $("attachmentPreviewFrame"),
-      attachmentPreviewFallback: $("attachmentPreviewFallback"),
-      attachmentPreviewOpenLink: $("attachmentPreviewOpenLink"),
     };
 
     let allItems = [];
@@ -753,10 +745,6 @@
       return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url || '');
     }
 
-    function isPreviewableDoc(url) {
-      return /\.(pdf|doc|docx|txt)(\?.*)?$/i.test(url || '');
-    }
-
     function showAttachmentPreview(rawUrl, label) {
       const previewUrl = toProxyUrl(rawUrl) || rawUrl;
       if (!previewUrl) return;
@@ -764,23 +752,21 @@
       els.attachmentPreviewTitle.textContent = label || 'Attachment Preview';
       els.attachmentPreviewImage.classList.add('hidden');
       els.attachmentPreviewFrame.classList.add('hidden');
-      els.attachmentPreviewFallback.classList.add('hidden');
       els.attachmentPreviewImage.src = '';
       els.attachmentPreviewFrame.src = '';
-      els.attachmentPreviewOpenLink.href = previewUrl;
+      els.attachmentPreviewImage.onerror = null;
 
       if (isImageFile(rawUrl)) {
         els.attachmentPreviewImage.src = previewUrl;
         els.attachmentPreviewImage.onerror = function() {
           els.attachmentPreviewImage.classList.add('hidden');
-          els.attachmentPreviewFallback.classList.remove('hidden');
+          els.attachmentPreviewFrame.src = previewUrl;
+          els.attachmentPreviewFrame.classList.remove('hidden');
         };
         els.attachmentPreviewImage.classList.remove('hidden');
-      } else if (isPreviewableDoc(rawUrl)) {
+      } else {
         els.attachmentPreviewFrame.src = previewUrl;
         els.attachmentPreviewFrame.classList.remove('hidden');
-      } else {
-        els.attachmentPreviewFallback.classList.remove('hidden');
       }
 
       els.attachmentPreviewModal.classList.remove('hidden');
