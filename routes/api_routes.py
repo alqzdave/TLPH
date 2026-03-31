@@ -3510,7 +3510,7 @@ def api_update_notification(notification_id):
     
 
 
-from inquiries_storage import get_conversations, get_messages, add_message
+from inquiries_storage import get_conversations, get_messages, add_message, delete_conversation
 
 
 def _extract_user_photo(user_data):
@@ -3824,5 +3824,33 @@ def api_send_inquiry_message():
             is_admin=is_admin_sender,
         )
         return jsonify({'success': True, 'message': doc})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/inquiries/conversation/<conversation_key>', methods=['DELETE'])
+@firebase_auth_required
+def api_delete_inquiry_conversation(conversation_key):
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        allowed_roles = {
+            'superadmin',
+            'super-admin',
+            'municipal',
+            'municipal_admin',
+            'regional',
+            'regional_admin',
+            'national',
+            'national_admin',
+        }
+        if role not in allowed_roles:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        key = str(conversation_key or '').strip()
+        if not key:
+            return jsonify({'success': False, 'message': 'Conversation key is required'}), 400
+
+        deleted_count = delete_conversation(key)
+        return jsonify({'success': True, 'deleted_count': deleted_count})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500

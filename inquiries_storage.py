@@ -166,3 +166,51 @@ def add_message(
     }
     get_inquiries_collection().add(doc)
     return doc
+
+
+def delete_conversation(conversation_key):
+    """Delete all inquiry messages for a conversation key (user_id/email)."""
+    key = str(conversation_key or '').strip()
+    if not key:
+        return 0
+
+    key_l = key.lower()
+    collection = get_inquiries_collection()
+    deleted = 0
+    seen_ids = set()
+
+    for field, value in (('user_id', key), ('email', key_l), ('user_email', key_l)):
+        try:
+            docs = list(collection.where(field, '==', value).stream())
+        except Exception:
+            docs = []
+
+        for doc in docs:
+            if doc.id in seen_ids:
+                continue
+            try:
+                doc.reference.delete()
+                deleted += 1
+                seen_ids.add(doc.id)
+            except Exception:
+                continue
+
+    # Fallback full scan for inconsistent legacy rows.
+    if deleted == 0:
+        try:
+            for doc in collection.stream():
+                data = doc.to_dict() or {}
+                if not isinstance(data, dict):
+                    continue
+                msg_uid = str(data.get('user_id') or '').strip()
+                msg_email = str(data.get('email') or data.get('user_email') or '').strip().lower()
+                if msg_uid == key or msg_email == key_l:
+                    try:
+                        doc.reference.delete()
+                        deleted += 1
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+
+    return deleted

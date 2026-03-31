@@ -292,6 +292,24 @@
         .messenger-convo-info { flex: 1; min-width: 0; }
         .messenger-convo-name { font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 0.1rem; }
         .messenger-convo-last { font-size: 0.8rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .messenger-convo-actions { display: flex; align-items: center; }
+        .messenger-convo-delete {
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .messenger-convo-delete:hover {
+            color: #dc2626;
+            background: #fee2e2;
+        }
         .messenger-convo-unread { 
             background: #ef4444; color: #fff; font-size: 0.7rem; 
             border-radius: 999px; padding: 2px 7px; margin-left: 6px; 
@@ -986,8 +1004,47 @@
                     : `<div class="messenger-convo-avatar">${(c.user_name || '?')[0]}</div>`;
                 const active = convoKey === selectedConvoUserId ? 'active' : '';
                 const lastTime = c.last_time ? formatDateTime(c.last_time) : '';
-                return `<div class="messenger-convo-item ${active}" onclick="selectMessengerConvo('${convoKey}')">${avatar}<div class="messenger-convo-info"><div class="messenger-convo-name">${c.user_name || c.email || 'Unknown'}</div><div class="messenger-convo-last">${c.last_message || ''} <span style='color:#64748b;font-size:0.75em;'>${lastTime}</span></div></div></div>`;
+                const encodedKey = encodeURIComponent(convoKey);
+                return `<div class="messenger-convo-item ${active}" onclick="selectMessengerConvo('${convoKey}')">${avatar}<div class="messenger-convo-info"><div class="messenger-convo-name">${c.user_name || c.email || 'Unknown'}</div><div class="messenger-convo-last">${c.last_message || ''} <span style='color:#64748b;font-size:0.75em;'>${lastTime}</span></div></div><div class="messenger-convo-actions"><button class="messenger-convo-delete" title="Delete conversation" onclick="deleteMessengerConvo(event, '${encodedKey}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
             }).join('');
+        }
+
+        async function deleteMessengerConvo(event, encodedConvoKey) {
+            event.stopPropagation();
+
+            const convoKey = decodeURIComponent(encodedConvoKey || '');
+            if (!convoKey) return;
+
+            const convo = conversations.find(c => (c.user_id || c.email || c.user_email || '') === convoKey);
+            const displayName = (convo && (convo.user_name || convo.email)) || 'this user';
+            const confirmed = window.confirm(`Delete conversation with ${displayName}? This cannot be undone.`);
+            if (!confirmed) return;
+
+            try {
+                const resp = await fetch(`/api/inquiries/conversation/${encodeURIComponent(convoKey)}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+                const res = await resp.json();
+                if (!res.success) {
+                    alert(res.message || 'Failed to delete conversation.');
+                    return;
+                }
+
+                conversations = conversations.filter(c => (c.user_id || c.email || c.user_email || '') !== convoKey);
+
+                if (selectedConvoUserId === convoKey) {
+                    selectedConvoUserId = null;
+                    document.getElementById('messengerChatHeader').style.display = 'none';
+                    document.getElementById('messengerChatForm').style.display = 'none';
+                    document.getElementById('chatHeaderName').textContent = 'Select a conversation';
+                    document.getElementById('messengerChatBody').innerHTML = `<div style="margin:auto; color:#94a3b8; font-size:1rem; text-align:center;"><i class="fa-regular fa-comments" style="font-size:3rem; margin-bottom:10px; color:#cbd5e1;"></i><br>Select a conversation to start chatting</div>`;
+                }
+
+                renderMessengerConvos();
+            } catch (e) {
+                alert('Failed to delete conversation.');
+            }
         }
 
         async function selectMessengerConvo(userId) {
