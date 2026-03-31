@@ -588,6 +588,7 @@ def service_national_view():
 @role_required('national', 'national_admin')
 def inventory_national_view():
     try:
+        import json
         db = get_firestore_db()
         from models.region_province_map import region_province_map
 
@@ -703,6 +704,7 @@ def inventory_national_view():
                 'quantity': quantity,
                 'region': region,
                 'municipality': municipality,
+                'province': province or user_data.get('province', ''),
                 'applicant_name': full_name,
                 'status': data.get('status', 'pending'),
                 'regionalStatus': data.get('regionalStatus', ''),
@@ -712,9 +714,35 @@ def inventory_national_view():
                 'forwardedToLevel': data.get('forwardedToLevel', ''),
                 'registrationFee': data.get('registrationFee', 0),
                 'createdAt': data.get('createdAt'),
+                'createdAtIso': (
+                    data.get('createdAt').to_datetime().isoformat()
+                    if hasattr(data.get('createdAt'), 'to_datetime')
+                    else (
+                        data.get('createdAt').isoformat()
+                        if hasattr(data.get('createdAt'), 'isoformat')
+                        else ''
+                    )
+                ),
                 'unitOfMeasure': data.get('unitOfMeasure', 'pcs'),
-                'status_display': status_display
+                'status_display': status_display,
+                'farmerIdNumber': data.get('farmerIdNumber', ''),
+                'stockLatitude': data.get('stockLatitude', ''),
+                'stockLongitude': data.get('stockLongitude', ''),
+                'stockGpsLink': data.get('stockGpsLink', ''),
+                'propertyNumber': data.get('propertyNumber', ''),
+                'sourceLocation': data.get('sourceLocation', ''),
+                'imageUrl': data.get('imageUrl') or data.get('image') or data.get('photoUrl') or data.get('photo') or '',
+                'permitUrl': data.get('permitUrl') or data.get('permit') or data.get('permitFile') or data.get('permitFileUrl') or '',
+                'visitApprovalUrl': data.get('visitApprovalUrl') or (data.get('files') or {}).get('visitApproval') or '',
+                'scientificStudyUrl': data.get('scientificStudyUrl') or (data.get('files') or {}).get('scientificStudies') or '',
+                'newStockImageUrls': data.get('newStockImageUrls') or (data.get('files') or {}).get('newStockImages') or [],
+                'attachmentsJson': json.dumps(data.get('attachments') or data.get('documents') or data.get('files') or data.get('filePaths') or data.get('uploadedFiles') or {})
             })
+
+        inventory_records.sort(
+            key=lambda item: str(item.get('createdAtIso') or ''),
+            reverse=True
+        )
 
         chemical_count = category_count.get('Chemical Inventory', 0)
         natural_resources_count = category_count.get('Natural Resources', 0)

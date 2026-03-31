@@ -271,6 +271,25 @@
               </div>
             </div>
 
+            <div class="rounded-[4px] border border-slate-200 p-3 bg-slate-50">
+              <p class="text-[9px] font-black uppercase tracking-widest text-slate-500 m-0 mb-2">Farmer & Location</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">Farmer ID</p>
+                  <p id="modalFarmerId" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                </div>
+                <div>
+                  <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">GPS Coordinates</p>
+                  <p id="modalGpsCoords" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                </div>
+              </div>
+              <div class="mt-2">
+                <button id="btnViewMap" class="w-full rounded-[2px] border border-blue-500 bg-blue-50 px-2 py-1.5 text-[8px] font-bold uppercase tracking-widest text-blue-700 hover:bg-blue-100">
+                  📍 View on Map
+                </button>
+              </div>
+            </div>
+
             <div class="rounded-[4px] border border-slate-200 p-3">
               <p class="text-[9px] font-black uppercase tracking-widest text-slate-500 m-0 mb-2">Description</p>
               <p id="modalDescription" class="text-[10px] font-semibold text-slate-700 m-0 leading-relaxed">—</p>
@@ -309,6 +328,24 @@
     </div>
   </div>
 
+  <div id="attachmentPreviewModal" class="fixed inset-0 z-[140] hidden bg-slate-900/70 backdrop-blur-sm p-4">
+    <div class="h-full w-full flex items-center justify-center">
+      <div class="w-full max-w-5xl rounded-[4px] border border-slate-300 bg-white shadow-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+          <h3 id="attachmentPreviewTitle" class="text-[11px] font-black uppercase tracking-widest text-slate-700 m-0">Attachment Preview</h3>
+          <button id="attachmentPreviewCloseBtn" class="inline-flex items-center justify-center rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100">
+            Close
+          </button>
+        </div>
+
+        <div class="p-3 bg-slate-100 max-h-[78vh] overflow-auto flex items-center justify-center">
+          <img id="attachmentPreviewImage" src="" alt="Attachment Preview" class="hidden max-w-full max-h-[70vh] object-contain rounded" />
+          <iframe id="attachmentPreviewFrame" src="" class="hidden w-full h-[70vh] bg-white rounded border border-slate-200"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { auth, db } from '/static/js/firebase-config.js';
     import { collection, getDocs, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -321,7 +358,7 @@
     let activeModalItemId = null;
 
     class InventoryItem {
-      constructor({ id, category, description, quantity, region, municipality, province, owner, status, nationalStatus, regionalStatus, registrationFee, unitOfMeasure, imageUrl, permitUrl, createdAt, attachments }) {
+      constructor({ id, category, description, quantity, region, municipality, province, owner, status, nationalStatus, regionalStatus, registrationFee, unitOfMeasure, imageUrl, permitUrl, createdAt, attachments, farmerIdNumber, stockLatitude, stockLongitude, stockGpsLink, newStockImageUrls, visitApprovalUrl, scientificStudyUrl }) {
         this.id = String(id);
         this.category = String(category);
         this.description = String(description);
@@ -339,6 +376,13 @@
         this.permitUrl = String(permitUrl || "");
         this.createdAt = createdAt || null;
         this.attachments = attachments || null;
+        this.farmerIdNumber = String(farmerIdNumber || "");
+        this.stockLatitude = String(stockLatitude || "");
+        this.stockLongitude = String(stockLongitude || "");
+        this.stockGpsLink = String(stockGpsLink || "");
+        this.newStockImageUrls = Array.isArray(newStockImageUrls) ? newStockImageUrls : [];
+        this.visitApprovalUrl = String(visitApprovalUrl || "");
+        this.scientificStudyUrl = String(scientificStudyUrl || "");
       }
       inScope(municipality) {
         return this.municipality.toLowerCase() === String(municipality || '').toLowerCase();
@@ -399,7 +443,14 @@
               imageUrl: data.imageUrl || data.image || data.photoUrl || data.photo || '',
               permitUrl: data.permitUrl || data.permit || data.permitFile || data.permitFileUrl || '',
               createdAt: data.createdAt || data.submittedAt || null,
-              attachments: data.attachments || data.documents || data.files || data.filePaths || data.uploadedFiles || null
+              attachments: data.attachments || data.documents || data.files || data.filePaths || data.uploadedFiles || null,
+              farmerIdNumber: data.farmerIdNumber || '',
+              stockLatitude: data.stockLatitude || '',
+              stockLongitude: data.stockLongitude || '',
+              stockGpsLink: data.stockGpsLink || `https://maps.google.com/?q=${data.stockLatitude || 0},${data.stockLongitude || 0}`,
+              newStockImageUrls: data.newStockImageUrls || data.files?.newStockImages || [],
+              visitApprovalUrl: data.visitApprovalUrl || data.files?.visitApproval || '',
+              scientificStudyUrl: data.scientificStudyUrl || data.files?.scientificStudies || ''
             }));
           });
           
@@ -410,6 +461,13 @@
           return [];
         }
       }
+    }
+
+    function toProxyUrl(rawUrl) {
+      if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+      const trimmed = rawUrl.trim();
+      if (!trimmed.startsWith('http')) return trimmed;
+      return `/api/files/proxy?url=${encodeURIComponent(trimmed)}`;
     }
 
     const $ = (id) => document.getElementById(id);
@@ -439,10 +497,17 @@
       modalDescription: $("modalDescription"),
       modalDocuments: $("modalDocuments"),
       modalOwner: $("modalOwner"),
+      modalFarmerId: $("modalFarmerId"),
+      modalGpsCoords: $("modalGpsCoords"),
       modalActionNote: $("modalActionNote"),
       btnApproveStock: $("btnApproveStock"),
       btnForwardStock: $("btnForwardStock"),
       btnRejectStock: $("btnRejectStock"),
+      attachmentPreviewModal: $("attachmentPreviewModal"),
+      attachmentPreviewTitle: $("attachmentPreviewTitle"),
+      attachmentPreviewCloseBtn: $("attachmentPreviewCloseBtn"),
+      attachmentPreviewImage: $("attachmentPreviewImage"),
+      attachmentPreviewFrame: $("attachmentPreviewFrame"),
     };
 
     let allItems = [];
@@ -462,7 +527,30 @@
         i.inScope(MY_MUNICIPALITY) &&
         (cat === "All" || i.category === cat) &&
         i.matches(q)
-      );
+      ).sort((a, b) => toTimestampMs(b.createdAt) - toTimestampMs(a.createdAt));
+    }
+
+    function toTimestampMs(rawDate) {
+      if (!rawDate) return 0;
+      try {
+        if (typeof rawDate?.toDate === 'function') {
+          const d = rawDate.toDate();
+          return d instanceof Date && !Number.isNaN(d.getTime()) ? d.getTime() : 0;
+        }
+        if (rawDate?.seconds) {
+          return Number(rawDate.seconds) * 1000;
+        }
+        if (rawDate instanceof Date) {
+          return Number.isNaN(rawDate.getTime()) ? 0 : rawDate.getTime();
+        }
+        if (typeof rawDate === 'string' || typeof rawDate === 'number') {
+          const d = new Date(rawDate);
+          return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+        }
+      } catch (_) {
+        return 0;
+      }
+      return 0;
     }
 
     function renderKpis(list) {
@@ -599,8 +687,19 @@
       if (item.imageUrl) {
         pushDoc('Resource Photo', item.imageUrl);
       }
+      if (item.visitApprovalUrl) {
+        pushDoc('Visit Approval Document', item.visitApprovalUrl);
+      }
+      if (item.scientificStudyUrl) {
+        pushDoc('Scientific Studies of Origin', item.scientificStudyUrl);
+      }
       if (item.permitUrl) {
         pushDoc('Permit File', item.permitUrl);
+      }
+      if (Array.isArray(item.newStockImageUrls) && item.newStockImageUrls.length > 0) {
+        item.newStockImageUrls.forEach((url, idx) => {
+          pushDoc(`New Stock Image ${idx + 1}`, url);
+        });
       }
 
       const source = item.attachments;
@@ -637,10 +736,51 @@
       els.modalDocuments.innerHTML = docs.map(d => `
         <div class="rounded-[3px] border border-slate-200 bg-slate-50 p-2 flex items-center justify-between gap-2">
           <p class="text-[9px] font-bold uppercase tracking-widest text-slate-700 m-0">${d.label}</p>
-          <button class="rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100" onclick="window.open('${d.url}', '_blank')">View</button>
+          <button class="rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100" onclick="viewAttachment('${d.url}', '${d.label}')">View</button>
         </div>
       `).join('');
     }
+
+    function isImageFile(url) {
+      return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url || '');
+    }
+
+    function showAttachmentPreview(rawUrl, label) {
+      const previewUrl = toProxyUrl(rawUrl) || rawUrl;
+      if (!previewUrl) return;
+
+      els.attachmentPreviewTitle.textContent = label || 'Attachment Preview';
+      els.attachmentPreviewImage.classList.add('hidden');
+      els.attachmentPreviewFrame.classList.add('hidden');
+      els.attachmentPreviewImage.src = '';
+      els.attachmentPreviewFrame.src = '';
+      els.attachmentPreviewImage.onerror = null;
+
+      if (isImageFile(rawUrl)) {
+        els.attachmentPreviewImage.src = previewUrl;
+        els.attachmentPreviewImage.onerror = function() {
+          els.attachmentPreviewImage.classList.add('hidden');
+          els.attachmentPreviewFrame.src = previewUrl;
+          els.attachmentPreviewFrame.classList.remove('hidden');
+        };
+        els.attachmentPreviewImage.classList.remove('hidden');
+      } else {
+        els.attachmentPreviewFrame.src = previewUrl;
+        els.attachmentPreviewFrame.classList.remove('hidden');
+      }
+
+      els.attachmentPreviewModal.classList.remove('hidden');
+    }
+
+    function closeAttachmentPreview() {
+      els.attachmentPreviewImage.src = '';
+      els.attachmentPreviewFrame.src = '';
+      els.attachmentPreviewModal.classList.add('hidden');
+    }
+
+    window.viewAttachment = function(url, label) {
+      showAttachmentPreview(url, label);
+    };
 
     function openInventoryModal(item) {
       activeModalItemId = item.id;
@@ -659,6 +799,25 @@
       els.modalStatus.className = `text-[11px] font-black uppercase m-0 mt-1 ${statusMeta.className}`;
       els.modalDescription.textContent = item.description || 'N/A';
       els.modalOwner.textContent = item.owner || 'Unknown User';
+      
+      const farmerId = els.modalFarmerId || document.getElementById('modalFarmerId');
+      if (farmerId) farmerId.textContent = item.farmerIdNumber || 'N/A';
+      
+      const gpsCoords = els.modalGpsCoords || document.getElementById('modalGpsCoords');
+      if (gpsCoords && item.stockLatitude && item.stockLongitude) {
+        gpsCoords.textContent = `${item.stockLatitude}, ${item.stockLongitude}`;
+      } else if (gpsCoords) {
+        gpsCoords.textContent = 'N/A';
+      }
+      
+      const btnViewMap = document.getElementById('btnViewMap');
+      if (btnViewMap && item.stockGpsLink) {
+        btnViewMap.onclick = () => window.open(item.stockGpsLink, '_blank');
+        btnViewMap.style.display = 'block';
+      } else if (btnViewMap) {
+        btnViewMap.style.display = 'none';
+      }
+      
       els.modalActionNote.textContent = 'Decisions are logged and reflected in workflow.';
 
       const nationalFinal = ['approved', 'rejected'].includes((item.nationalStatus || '').toLowerCase());
@@ -816,9 +975,21 @@
         closeInventoryModal();
       }
     });
+    els.attachmentPreviewCloseBtn.addEventListener('click', closeAttachmentPreview);
+    els.attachmentPreviewModal.addEventListener('click', (event) => {
+      if (event.target === els.attachmentPreviewModal) {
+        closeAttachmentPreview();
+      }
+    });
     els.btnApproveStock.addEventListener('click', () => updateInventoryStatus('approved'));
     els.btnRejectStock.addEventListener('click', () => updateInventoryStatus('rejected'));
     els.btnForwardStock.addEventListener('click', () => updateInventoryStatus('to-review'));
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !els.attachmentPreviewModal.classList.contains('hidden')) {
+        closeAttachmentPreview();
+      }
+    });
 
     // Initialize with authentication
     onAuthStateChanged(auth, (user) => {

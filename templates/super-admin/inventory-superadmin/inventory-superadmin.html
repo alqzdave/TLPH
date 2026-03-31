@@ -149,6 +149,13 @@
                             <option value="{{ region }}">{{ region }}</option>
                             {% endfor %}
                         </select>
+                        <select id="statusFilter" onchange="renderTable()" class="gov-input h-7 cursor-pointer uppercase">
+                            <option value="all">-- ALL STATUS --</option>
+                            <option value="approved">Approved</option>
+                            <option value="pending">Pending</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="forwarded">Forwarded</option>
+                        </select>
                         <button onclick="clearFilters()" class="gov-btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 h-7 shadow-sm">
                             <i class="fa-solid fa-eraser"></i> Clear
                         </button>
@@ -163,7 +170,8 @@
                                 <th class="border-r border-slate-200">Resource Description</th>
                                 <th class="border-r border-slate-200" style="width: 100px;">Qty</th>
                                 <th class="border-r border-slate-200">Administrative Scope</th>
-                                <th class="text-center no-print" style="width: 80px;">Audit</th>
+                                <th class="border-r border-slate-200" style="width: 170px;">Status</th>
+                                <th class="text-center no-print" style="width: 140px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody" class="text-[10px] divide-y divide-slate-100"></tbody>
@@ -232,6 +240,64 @@
         </div>
     </div>
 
+    <div id="detailModalWrapper" class="gov-modal no-print">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeDetailModal()"></div>
+        <div class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-3xl overflow-hidden relative z-10 flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3 bg-slate-900 text-white shrink-0">
+                <h3 class="text-[11px] font-black uppercase tracking-widest m-0 flex items-center gap-2">
+                    <i class="fa-solid fa-eye text-blue-300"></i> Inventory Details
+                </h3>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer">
+                    <span class="material-icons-round text-sm">close</span>
+                </button>
+            </div>
+            <div class="p-4 bg-slate-50 space-y-3 overflow-y-auto max-h-[75vh]">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px]">
+                    <div><span class="font-black text-slate-500 uppercase">Record ID:</span> <span id="detailId" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Applicant:</span> <span id="detailApplicant" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Classification:</span> <span id="detailCategory" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Status:</span> <span id="detailStatus" class="font-black text-blue-800"></span></div>
+                    <div class="md:col-span-2"><span class="font-black text-slate-500 uppercase">Description:</span> <span id="detailDescription" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Quantity:</span> <span id="detailQuantity" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Registration Fee:</span> <span id="detailFee" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Region:</span> <span id="detailRegion" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Municipality:</span> <span id="detailMunicipality" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Province:</span> <span id="detailProvince" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Date Filed:</span> <span id="detailCreatedAt" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Farmer ID:</span> <span id="detailFarmerId" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">GPS Coordinates:</span> <span id="detailGpsCoords" class="font-bold text-slate-900"></span></div>
+                    <div class="md:col-span-2"><span class="font-black text-slate-500 uppercase">GPS Link:</span> <a id="detailGpsLink" href="#" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 hover:underline">N/A</a></div>
+                    <div><span class="font-black text-slate-500 uppercase">Property Number:</span> <span id="detailPropertyNumber" class="font-bold text-slate-900"></span></div>
+                    <div><span class="font-black text-slate-500 uppercase">Source Location:</span> <span id="detailSourceLocation" class="font-bold text-slate-900"></span></div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-200">
+                    <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Attachments</div>
+                    <div id="detailAttachments" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]"></div>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-3 border-t border-slate-200 flex justify-end">
+                <button onclick="closeDetailModal()" class="gov-btn bg-slate-800 text-white px-6">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="attachmentPreviewModal" class="gov-modal no-print">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeAttachmentPreview()"></div>
+        <div class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-5xl overflow-hidden relative z-10 flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3 bg-slate-900 text-white shrink-0">
+                <h3 id="attachmentPreviewTitle" class="text-[11px] font-black uppercase tracking-widest m-0">Attachment Preview</h3>
+                <button onclick="closeAttachmentPreview()" class="text-slate-400 hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer">
+                    <span class="material-icons-round text-sm">close</span>
+                </button>
+            </div>
+            <div class="p-3 bg-slate-100 max-h-[78vh] overflow-auto flex items-center justify-center">
+                <img id="attachmentPreviewImage" src="" alt="Attachment Preview" class="hidden max-w-full max-h-[70vh] object-contain rounded" />
+                <iframe id="attachmentPreviewFrame" src="" class="hidden w-full h-[70vh] bg-white rounded border border-slate-200"></iframe>
+            </div>
+        </div>
+    </div>
+
     <script>
         const TREND_LABELS = {{ trend_labels|default([])|tojson }};
         const TREND_DATA = {{ trend_data|default([])|tojson }};
@@ -242,32 +308,51 @@
 
         let myTrendChart, myCategoryChart, modalChartInstance = null;
 
+        function statusGroup(item) {
+            const key = String(item.statusKey || '').toLowerCase();
+            if (key.includes('approved')) return 'approved';
+            if (key.includes('rejected')) return 'rejected';
+            if (key.includes('forwarded')) return 'forwarded';
+            return 'pending';
+        }
+
         function renderTable() {
             const body = document.getElementById('inventoryTableBody');
             const search = document.getElementById('tableSearch').value.toLowerCase();
             const category = document.getElementById('catFilter').value;
             const region = document.getElementById('regFilter').value;
+            const status = document.getElementById('statusFilter').value;
             
-            const filtered = DATA.filter(item => {
+            const filtered = DATA
+            .map((item, dataIndex) => ({ ...item, _dataIndex: dataIndex }))
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+            .filter(item => {
                 const matchSearch = Object.values(item).join(" ").toLowerCase().includes(search);
                 const matchCat = category === 'all' || item.cat === category;
                 const matchReg = region === 'all' || item.reg === region;
-                return matchSearch && matchCat && matchReg;
+                const matchStatus = status === 'all' || statusGroup(item) === status;
+                return matchSearch && matchCat && matchReg && matchStatus;
             });
 
             body.innerHTML = '';
             document.getElementById('resCount').textContent = filtered.length;
 
             if (filtered.length === 0) {
-                body.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No records found.</td></tr>';
+                body.innerHTML = '<tr><td colspan="6" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No records found.</td></tr>';
                 return;
             }
 
-            filtered.forEach((row, index) => {
+            filtered.forEach((row) => {
                 let badgeStyle = "bg-slate-50 text-slate-700 border-slate-200";
                 if(row.cat === "CHEMICAL RESOURCES") badgeStyle = "bg-orange-50 text-orange-700 border-orange-200";
                 if(row.cat === "NATURAL ASSETS") badgeStyle = "bg-emerald-50 text-emerald-800 border-emerald-200";
                 if(row.cat === "PROTECTED AREAS") badgeStyle = "bg-indigo-50 text-indigo-800 border-indigo-200";
+
+                const statusKey = String(row.statusKey || '').toLowerCase();
+                let statusClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                if (statusKey.includes('approved')) statusClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                if (statusKey.includes('rejected')) statusClass = 'bg-rose-50 text-rose-700 border-rose-200';
+                if (statusKey.includes('forwarded')) statusClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-50 transition-colors data-row";
@@ -276,7 +361,13 @@
                     <td class="font-black uppercase tracking-tight text-slate-900 border-r border-slate-100">${row.desc}</td>
                     <td class="font-mono font-black text-slate-800 border-r border-slate-100">${row.qty.toLocaleString()}</td>
                     <td class="font-bold text-slate-600 border-r border-slate-100 uppercase text-[9px]">Region ${row.reg} | ${row.mun}</td>
-                    <td class="text-center no-print"><button onclick="openLogModal(${index})" class="text-[9px] font-bold uppercase text-gov-blue hover:underline bg-transparent border-none cursor-pointer">Log</button></td>
+                    <td class="border-r border-slate-100"><span class="status-badge ${statusClass}">${row.statusLabel || 'Pending Review'}</span></td>
+                    <td class="text-center no-print">
+                        <div class="inline-flex items-center gap-2">
+                            <button onclick="openDetailModal(${row._dataIndex})" class="text-[9px] font-bold uppercase text-emerald-700 hover:underline bg-transparent border-none cursor-pointer">View</button>
+                            <button onclick="openLogModal(${row._dataIndex})" class="text-[9px] font-bold uppercase text-gov-blue hover:underline bg-transparent border-none cursor-pointer">Log</button>
+                        </div>
+                    </td>
                 `;
                 body.appendChild(tr);
             });
@@ -291,6 +382,173 @@
 
         function closeLogModal() {
             document.getElementById('logModalWrapper').classList.remove('show');
+        }
+
+        function toProxyUrl(rawUrl) {
+            if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+            const trimmed = rawUrl.trim();
+            if (!trimmed) return '';
+            if (/^\/api\/files\/proxy\?/i.test(trimmed)) return trimmed;
+            if (!trimmed.startsWith('http')) return trimmed;
+            return `/api/files/proxy?url=${encodeURIComponent(trimmed)}`;
+        }
+
+        function isImageFile(url) {
+            return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url || '');
+        }
+
+        function showAttachmentPreview(url, label) {
+            const previewUrl = toProxyUrl(url) || url;
+            if (!previewUrl) return;
+
+            const modal = document.getElementById('attachmentPreviewModal');
+            const title = document.getElementById('attachmentPreviewTitle');
+            const image = document.getElementById('attachmentPreviewImage');
+            const frame = document.getElementById('attachmentPreviewFrame');
+
+            title.textContent = label || 'Attachment Preview';
+            image.classList.add('hidden');
+            frame.classList.add('hidden');
+            image.src = '';
+            frame.src = '';
+
+            if (isImageFile(url)) {
+                image.src = previewUrl;
+                image.classList.remove('hidden');
+            } else {
+                frame.src = previewUrl;
+                frame.classList.remove('hidden');
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeAttachmentPreview() {
+            const modal = document.getElementById('attachmentPreviewModal');
+            const image = document.getElementById('attachmentPreviewImage');
+            const frame = document.getElementById('attachmentPreviewFrame');
+            image.src = '';
+            frame.src = '';
+            modal.classList.remove('show');
+        }
+
+        window.openAttachmentPreviewFromEncoded = function(encodedUrl, encodedLabel = '') {
+            try {
+                const url = decodeURIComponent(encodedUrl || '');
+                const label = decodeURIComponent(encodedLabel || 'Attachment');
+                showAttachmentPreview(url, label);
+            } catch (err) {
+                console.error('Failed to open attachment preview:', err);
+            }
+        };
+
+        function normalizeAttachmentEntries(raw, fallbackLabelPrefix = 'Attachment') {
+            const out = [];
+            const values = Array.isArray(raw) ? raw : [raw];
+            values.forEach((entry, idx) => {
+                if (typeof entry === 'string') {
+                    const url = entry.trim();
+                    if (url) out.push({ label: `${fallbackLabelPrefix} ${idx + 1}`, url });
+                } else if (entry && typeof entry === 'object') {
+                    const url = String(entry.url || entry.path || entry.downloadURL || entry.downloadUrl || '').trim();
+                    if (url) out.push({ label: String(entry.name || entry.label || `${fallbackLabelPrefix} ${idx + 1}`), url });
+                }
+            });
+            return out;
+        }
+
+        function extractAttachmentLinks(item) {
+            const docs = [];
+            const seen = new Set();
+
+            function pushDoc(label, url) {
+                const u = String(url || '').trim();
+                if (!u || seen.has(u)) return;
+                if (!(u.startsWith('http') || u.startsWith('/'))) return;
+                seen.add(u);
+                docs.push({ label, url: u });
+            }
+
+            pushDoc('Resource Photo', item.imageUrl);
+            pushDoc('Visit Approval Document', item.visitApprovalUrl);
+            pushDoc('Scientific Studies of Origin', item.scientificStudyUrl);
+            pushDoc('Permit File', item.permitUrl);
+
+            normalizeAttachmentEntries(item.newStockImageUrls || [], 'New Stock Image').forEach(d => pushDoc(d.label, d.url));
+
+            const attachments = item.attachments || {};
+            if (Array.isArray(attachments)) {
+                normalizeAttachmentEntries(attachments, 'Attachment').forEach(d => pushDoc(d.label, d.url));
+            } else if (attachments && typeof attachments === 'object') {
+                Object.entries(attachments).forEach(([key, value]) => {
+                    normalizeAttachmentEntries(value, key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ').trim() || 'Attachment')
+                        .forEach(d => pushDoc(d.label, d.url));
+                });
+            }
+
+            return docs;
+        }
+
+        function openDetailModal(index) {
+            const item = DATA[index];
+            if (!item) return;
+
+            const createdAtDisplay = item.createdAt ? new Date(item.createdAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A';
+            const lat = String(item.stockLatitude || '').trim();
+            const lng = String(item.stockLongitude || '').trim();
+
+            document.getElementById('detailId').textContent = item.id || 'N/A';
+            document.getElementById('detailApplicant').textContent = item.applicant || 'N/A';
+            document.getElementById('detailCategory').textContent = item.cat || 'N/A';
+            document.getElementById('detailStatus').textContent = item.status || 'PENDING';
+            document.getElementById('detailDescription').textContent = item.desc || 'N/A';
+            document.getElementById('detailQuantity').textContent = `${Number(item.qty || 0).toLocaleString()} ${item.unit || 'pcs'}`;
+            document.getElementById('detailFee').textContent = `₱ ${Number(item.registrationFee || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('detailRegion').textContent = item.reg || 'N/A';
+            document.getElementById('detailMunicipality').textContent = item.mun || 'N/A';
+            document.getElementById('detailProvince').textContent = item.province || 'N/A';
+            document.getElementById('detailCreatedAt').textContent = createdAtDisplay;
+            document.getElementById('detailFarmerId').textContent = item.farmerIdNumber || 'N/A';
+            document.getElementById('detailGpsCoords').textContent = (lat && lng) ? `${lat}, ${lng}` : 'N/A';
+            const gpsLinkEl = document.getElementById('detailGpsLink');
+            const derivedGpsLink = (lat && lng) ? `https://maps.google.com/?q=${encodeURIComponent(`${lat},${lng}`)}` : '';
+            const gpsLink = String(item.stockGpsLink || derivedGpsLink || '').trim();
+            if (gpsLink) {
+                gpsLinkEl.href = gpsLink;
+                gpsLinkEl.textContent = 'Open Google Map';
+                gpsLinkEl.classList.remove('pointer-events-none', 'text-slate-900');
+                gpsLinkEl.classList.add('text-blue-700');
+            } else {
+                gpsLinkEl.href = '#';
+                gpsLinkEl.textContent = 'N/A';
+                gpsLinkEl.classList.add('pointer-events-none', 'text-slate-900');
+                gpsLinkEl.classList.remove('text-blue-700');
+            }
+            document.getElementById('detailPropertyNumber').textContent = item.propertyNumber || 'N/A';
+            document.getElementById('detailSourceLocation').textContent = item.sourceLocation || 'N/A';
+
+            const docs = extractAttachmentLinks(item);
+            const attachmentsContainer = document.getElementById('detailAttachments');
+            if (!docs.length) {
+                attachmentsContainer.innerHTML = '<p class="text-slate-500 italic col-span-2">No attachments uploaded.</p>';
+            } else {
+                attachmentsContainer.innerHTML = docs.map(d => {
+                    const encodedUrl = encodeURIComponent(d.url || '');
+                    const encodedLabel = encodeURIComponent(d.label || 'Attachment');
+                    return `
+                        <div class="rounded border border-slate-200 bg-white p-2 flex items-center justify-between gap-2">
+                            <span class="font-bold text-slate-700 uppercase text-[8px]">${d.label}</span>
+                            <button type="button" onclick="openAttachmentPreviewFromEncoded('${encodedUrl}','${encodedLabel}')" class="gov-btn border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-[8px]">View</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('detailModalWrapper').classList.add('show');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModalWrapper').classList.remove('show');
         }
 
         function initCharts() {
@@ -365,6 +623,7 @@
             document.getElementById('tableSearch').value = "";
             document.getElementById('catFilter').value = "all";
             document.getElementById('regFilter').value = "all";
+            document.getElementById('statusFilter').value = "all";
             renderTable();
         }
 
