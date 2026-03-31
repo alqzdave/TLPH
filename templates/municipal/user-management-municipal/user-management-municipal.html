@@ -6,10 +6,8 @@
   <title>DENR | User Management (Municipality View)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Synchronously load Alpine.js and Alpine helpers BEFORE any Alpine HTML -->
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script>
-    // Fallback Alpine data provider used by notification badge in the header.
     if (typeof window.notificationData !== 'function') {
       window.notificationData = function() {
         return {
@@ -19,24 +17,21 @@
         };
       };
     }
-    // Alpine.js global store for toast
     document.addEventListener('alpine:init', () => {
       if (!window.Alpine) return;
-      Alpine.store('globalToast', {
-        show: false,
-        type: 'success',
-        message: ''
-      });
+      Alpine.store('globalToast', { show: false, type: 'success', message: '' });
     });
-    // Global toast trigger function
     window.showGlobalToast = function(type, message, duration = 3000) {
       if (!window.Alpine || !Alpine.store('globalToast')) return;
       const toast = Alpine.store('globalToast');
-      toast.type = type;
-      toast.message = message;
-      toast.show = true;
+      toast.type = type; toast.message = message; toast.show = true;
       if (toast._timeout) clearTimeout(toast._timeout);
       toast._timeout = setTimeout(() => { toast.show = false; }, duration);
+    };
+
+    // GLOBAL FUNCTIONS FOR INLINE HTML ONCLICK
+    window.closeViewModal = function() {
+        document.getElementById('viewModal').classList.add('hidden');
     };
   </script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -46,9 +41,7 @@
       theme: {
         extend: {
           fontFamily: { gov: ['Verdana', 'Arial', 'sans-serif'] },
-          colors: {
-            gov: { text: '#111827', muted: '#4b5563', border: '#d1d5db', bg: '#f3f4f6', primary: '#0f172a' }
-          },
+          colors: { gov: { text: '#111827', muted: '#4b5563', border: '#d1d5db', bg: '#f3f4f6', primary: '#0f172a' } },
           letterSpacing: { gov: '0.12em', gov2: '0.14em', gov3: '0.18em' }
         }
       }
@@ -83,7 +76,7 @@
       <div class="shrink-0 mb-2 flex flex-col md:flex-row md:items-end justify-between border-b-2 border-emerald-800 pb-1.5 gap-2">
         <div>
           <h1 class="text-base font-bold uppercase tracking-gov3 text-gov-primary leading-none">User Management</h1>
-          <p class="mt-1 text-[10px] font-bold text-gov-muted uppercase tracking-gov2 leading-none">View, disable, and remove user accounts within your municipality.</p>
+          <p class="mt-1 text-[10px] font-bold text-gov-muted uppercase tracking-gov2 leading-none">View, approve, disable, and manage user accounts.</p>
         </div>
         <div class="flex items-center gap-2">
             <div id="scopeChip" class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-700">
@@ -98,97 +91,22 @@
         </div>
       </div>
 
-      <div id="addUserModal" class="fixed inset-0 z-[200] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-[4px] shadow-2xl w-full max-w-xl flex flex-col border-t-4 border-emerald-800">
-          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-slate-50">
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-800 m-0">Add Municipal User</h3>
-              <p class="text-[8px] text-slate-500 uppercase tracking-widest">Create a new user with municipal privileges</p>
-            </div>
-            <button id="btnCloseAddUserModal" type="button" class="text-slate-400 hover:text-rose-600 transition-colors"><span class="material-icons-round text-xl">close</span></button>
-          </div>
-          <form id="addUserForm" class="p-6 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-            
-            <div>
-              <label class="label-sm" for="add-lastName">Surname</label>
-              <input id="add-lastName" name="lastName" type="text" class="input-gov uppercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required>
-            </div>
-            <div>
-              <label class="label-sm" for="add-firstName">First Name</label>
-              <input id="add-firstName" name="firstName" type="text" class="input-gov uppercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required>
-            </div>
-            <div>
-              <label class="label-sm" for="add-middleName">Middle Name</label>
-              <input id="add-middleName" name="middleName" type="text" class="input-gov uppercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full">
-            </div>
-            
-            <div>
-              <label class="label-sm" for="add-employeeId">Employee ID No.</label>
-              <input id="add-employeeId" name="employeeId" type="text" class="input-gov font-mono text-slate-600 bg-gray-100 border border-gray-300 rounded px-3 py-2 w-full" readonly>
-            </div>
-            <div class="md:col-span-2">
-              <label class="label-sm" for="add-division">Division / Section Assignment</label>
-              <input id="add-division" name="division" type="text" class="input-gov uppercase font-bold text-slate-800 bg-white border border-gray-200 rounded px-3 py-2 w-full" readonly>
-            </div>
-            
-            <div>
-              <label class="label-sm" for="add-municipality">Municipality</label>
-              <input id="add-municipality" name="municipality" type="text" class="input-gov uppercase bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold rounded px-3 py-2 w-full" readonly>
-            </div>
-            <div>
-              <label class="label-sm" for="add-province">Province</label>
-              <input id="add-province" name="province" type="text" class="input-gov uppercase bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold rounded px-3 py-2 w-full" readonly>
-            </div>
-            
-            <div class="hidden md:block"></div>
-
-            <div>
-              <label class="label-sm" for="add-phone">Phone</label>
-              <input id="add-phone" name="phone" type="text" class="input-gov bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full">
-            </div>
-            <div class="md:col-span-2">
-              <label class="label-sm" for="add-email">Email</label>
-              <input id="add-email" name="email" type="email" class="input-gov lowercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required>
-            </div>
-            <div>
-              <label class="label-sm" for="add-password">Password</label>
-              <input id="add-password" name="password" type="password" class="input-gov bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required autocomplete="new-password" />
-            </div>
-
-            <div class="md:col-span-3 mt-2">
-              <div class="bg-[#fffbe6] border border-[#ffe58f] rounded p-3 flex gap-3 items-start">
-                <span class="material-icons-round text-[#d4b106] text-sm mt-0.5">lock</span>
-                <div>
-                  <p class="text-[10px] text-[#876800] m-0 leading-tight font-bold">DATA PRIVACY NOTICE</p>
-                  <p class="text-[9px] text-[#876800] opacity-80 mt-0.5">All personnel information is treated with strict confidentiality under RA 10173. Access is logged.</p>
-                </div>
-              </div>
-            </div>
-            <div class="md:col-span-3 flex justify-end mt-2">
-              <button type="submit" id="btnSubmitAddUser" class="inline-flex items-center gap-2 rounded bg-emerald-700 px-4 py-2 text-white font-bold text-xs uppercase tracking-widest hover:bg-emerald-800 transition-colors">
-                <span class="material-icons-round text-[14px]">person_add</span> Add User
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
       <section class="shrink-0 grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
         <div class="rounded-[3px] border border-gov-border bg-white px-3 py-2 shadow-sm flex flex-col justify-center">
           <p class="text-[8px] font-bold uppercase tracking-gov text-slate-500 leading-none">Total Users</p>
           <p class="mt-1 text-base font-black text-slate-900 leading-none" id="kpiTotal">0</p>
         </div>
+        <div class="rounded-[3px] border border-gov-border bg-white px-3 py-2 shadow-sm flex flex-col justify-center border-l-4 border-l-amber-500">
+          <p class="text-[8px] font-bold uppercase tracking-gov text-amber-600 leading-none">Pending Approval</p>
+          <p class="mt-1 text-base font-black text-amber-700 leading-none" id="kpiPending">0</p>
+        </div>
         <div class="rounded-[3px] border border-gov-border bg-white px-3 py-2 shadow-sm flex flex-col justify-center border-l-4 border-l-emerald-500">
-          <p class="text-[8px] font-bold uppercase tracking-gov text-slate-500 leading-none">Active</p>
+          <p class="text-[8px] font-bold uppercase tracking-gov text-emerald-600 leading-none">Active</p>
           <p class="mt-1 text-base font-black text-emerald-700 leading-none" id="kpiActive">0</p>
         </div>
         <div class="rounded-[3px] border border-gov-border bg-white px-3 py-2 shadow-sm flex flex-col justify-center border-l-4 border-l-rose-500">
-          <p class="text-[8px] font-bold uppercase tracking-gov text-slate-500 leading-none">Disabled</p>
+          <p class="text-[8px] font-bold uppercase tracking-gov text-rose-600 leading-none">Disabled</p>
           <p class="mt-1 text-base font-black text-rose-700 leading-none" id="kpiDisabled">0</p>
-        </div>
-        <div class="rounded-[3px] border border-gov-border bg-white px-3 py-2 shadow-sm flex flex-col justify-center">
-          <p class="text-[8px] font-bold uppercase tracking-gov text-slate-500 leading-none">Actions (Session)</p>
-          <p class="mt-1 text-base font-black text-blue-800 leading-none" id="kpiActions">0</p>
         </div>
       </section>
 
@@ -201,6 +119,7 @@
             <div class="relative w-[130px] shrink-0">
                 <select id="statusSelect" class="w-full appearance-none rounded-[2px] border border-gov-border bg-slate-50 px-2 py-1 pr-6 text-[9px] font-bold uppercase tracking-gov text-slate-700 outline-none focus:border-emerald-600 focus:bg-white truncate">
                   <option value="all">All Status</option>
+                  <option value="Pending">Pending</option>
                   <option value="Active">Active</option>
                   <option value="Disabled">Disabled</option>
                 </select>
@@ -230,16 +149,89 @@
     </main>
   </div>
 
-  <div id="viewModal" class="fixed inset-0 z-[100] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-[4px] shadow-2xl w-full max-w-lg flex flex-col border-t-4 border-emerald-800">
+  <div id="addUserModal" class="fixed inset-0 z-[200] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-[4px] shadow-2xl w-full max-w-xl flex flex-col border-t-4 border-emerald-800">
       <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-slate-50">
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-slate-800 m-0">Add Municipal User</h3>
+          <p class="text-[8px] text-slate-500 uppercase tracking-widest">Create a new user with municipal privileges</p>
+        </div>
+        <button id="btnCloseAddUserModal" type="button" class="text-slate-400 hover:text-rose-600 transition-colors"><span class="material-icons-round text-xl">close</span></button>
+      </div>
+      <form id="addUserForm" class="p-6 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-lastName">Surname</label>
+          <input id="add-lastName" name="lastName" type="text" class="input-gov text-[12px] uppercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required>
+        </div>
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-firstName">First Name</label>
+          <input id="add-firstName" name="firstName" type="text" class="input-gov text-[12px] uppercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required>
+        </div>
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-middleName">Middle Name</label>
+          <input id="add-middleName" name="middleName" type="text" class="input-gov text-[12px] uppercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full">
+        </div>
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-employeeId">Employee ID No.</label>
+          <input id="add-employeeId" name="employeeId" type="text" class="input-gov text-[12px] font-mono text-slate-600 bg-gray-100 border border-gray-300 rounded px-3 py-2 w-full" readonly>
+        </div>
+        <div class="md:col-span-2">
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-division">Division / Section Assignment</label>
+          <input id="add-division" name="division" type="text" class="input-gov text-[12px] uppercase font-bold text-slate-800 bg-white border border-gray-200 rounded px-3 py-2 w-full" readonly>
+        </div>
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-municipality">Municipality</label>
+          <input id="add-municipality" name="municipality" type="text" class="input-gov text-[12px] uppercase bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold rounded px-3 py-2 w-full" readonly>
+        </div>
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-province">Province</label>
+          <input id="add-province" name="province" type="text" class="input-gov text-[12px] uppercase bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold rounded px-3 py-2 w-full" readonly>
+        </div>
+        <div class="hidden md:block"></div>
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-phone">Phone</label>
+          <input id="add-phone" name="phone" type="text" class="input-gov text-[12px] bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full">
+        </div>
+        <div class="md:col-span-2">
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-email">Email</label>
+          <input id="add-email" name="email" type="email" class="input-gov text-[12px] lowercase bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required>
+        </div>
+        <div>
+          <label class="label-sm text-[10px] font-bold text-slate-600" for="add-password">Password</label>
+          <input id="add-password" name="password" type="password" class="input-gov text-[12px] bg-white border border-gray-300 rounded px-3 py-2 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition w-full" required autocomplete="new-password" />
+        </div>
+
+        <div class="md:col-span-3 mt-2">
+          <div class="bg-[#fffbe6] border border-[#ffe58f] rounded p-3 flex gap-3 items-start">
+            <span class="material-icons-round text-[#d4b106] text-sm mt-0.5">lock</span>
+            <div>
+              <p class="text-[10px] text-[#876800] m-0 leading-tight font-bold">DATA PRIVACY NOTICE</p>
+              <p class="text-[9px] text-[#876800] opacity-80 mt-0.5">All personnel information is treated with strict confidentiality under RA 10173. Access is logged.</p>
+            </div>
+          </div>
+        </div>
+        <div class="md:col-span-3 flex justify-end mt-2">
+          <button type="submit" id="btnSubmitAddUser" class="inline-flex items-center gap-2 rounded bg-emerald-700 px-4 py-2 text-white font-bold text-xs uppercase tracking-widest hover:bg-emerald-800 transition-colors">
+            <span class="material-icons-round text-[14px]">person_add</span> Add User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="viewModal" class="fixed inset-0 z-[100] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-[4px] shadow-2xl w-full max-w-2xl flex flex-col border-t-4 border-emerald-800 max-h-[90vh]">
+      
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-slate-50 shrink-0">
         <div>
           <h3 class="text-xs font-bold uppercase tracking-widest text-slate-800 m-0">User Details</h3>
           <p class="text-[8px] text-slate-500 uppercase tracking-widest">Official Record View</p>
         </div>
         <button id="btnCloseModal" class="text-slate-400 hover:text-rose-600 transition-colors"><span class="material-icons-round text-xl">close</span></button>
       </div>
-      <div class="p-4 space-y-2">
+      
+      <div class="p-4 overflow-y-auto custom-scroll flex-1 space-y-4">
+        
         <div class="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3">
             <img id="viewProfilePic"
                  src="/static/images/default-avatar.png"
@@ -251,7 +243,8 @@
                 <p id="viewStatus" class="text-[9px] font-bold uppercase tracking-widest m-0 mt-0.5">—</p>
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
             <div class="rounded-md border border-gray-200 bg-gray-50 p-2">
                 <span class="text-[8px] font-bold uppercase text-slate-500">Municipality</span>
                 <p id="viewMunicipality" class="text-xs font-bold text-emerald-800 m-0">—</p>
@@ -260,33 +253,38 @@
                 <span class="text-[8px] font-bold uppercase text-slate-500">Contact No.</span>
                 <p id="viewPhone" class="text-xs font-semibold text-slate-700 m-0">—</p>
             </div>
+            <div class="rounded-md border border-gray-200 bg-gray-50 p-2 md:col-span-1 col-span-2">
+                <span class="text-[8px] font-bold uppercase text-slate-500">Unique User ID (UID)</span>
+                <p id="viewId" class="text-[9px] font-mono text-slate-400 m-0">—</p>
+            </div>
         </div>
-        <div class="rounded-md border border-gray-200 bg-gray-50 p-2">
-            <span class="text-[8px] font-bold uppercase text-slate-500">Unique User ID (UID)</span>
-            <p id="viewId" class="text-[9px] font-mono text-slate-400 m-0">—</p>
+
+        <div>
+            <h4 class="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-gray-200 pb-1 mb-2">Application Information</h4>
+            <div id="viewExtraDetails" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                </div>
         </div>
+
+        <div id="viewModalPasswordOverride" class="mt-4 p-3 rounded-md border border-amber-200 bg-amber-50">
+            </div>
+
       </div>
+
+      <div class="px-4 py-3 shrink-0 flex justify-end gap-2 border-t border-gray-200 bg-slate-50" id="viewModalActions">
+          </div>
+
+    </div>
   </div>
 
-</main>
-</div>
-
-<!-- Move main script to end of body to ensure Alpine and helpers are loaded first -->
 <script type="module">
-  // Import shared Firebase config (prevents duplicate-app errors)
   import "/static/js/firebase-config.js";
   import { createUserWithEmailAndPassword, onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // Use globally exposed Firebase objects from firebase-config.js
-  const app = window.app;
-  const db = window.db;
-  const auth = window.auth;
+  const app = window.app; const db = window.db; const auth = window.auth;
 
-  // Initialize SECONDARY App (For Creating Users without logging out)
   import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  let secondaryApp;
-  const secondaryAppName = "SecondaryApp";
+  let secondaryApp; const secondaryAppName = "SecondaryApp";
   const firebaseConfig = {
     apiKey: "AIzaSyCj3EnEG1XhF7_xWgt1vQK_VkT7288yd64",
     authDomain: "denr-d02ae.firebaseapp.com",
@@ -296,77 +294,47 @@
     appId: "1:499245517370:web:c66598d7c86d5567a64303"
   };
   const existingSecondary = getApps().find(a => a.name === secondaryAppName);
-  if (existingSecondary) {
-    secondaryApp = existingSecondary;
-  } else {
-    secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
-  }
+  secondaryApp = existingSecondary ? existingSecondary : initializeApp(firebaseConfig, secondaryAppName);
   const secondaryAuth = getAuth(secondaryApp);
 
-  // Global State
-  let adminProfile = {
-    municipality: "",
-    province: ""
-  };
+  let adminProfile = { municipality: "", province: "" };
   let allUsers = [];
-  let actionCount = 0;
-
-  // Helper: Select DOM element
   const $ = (id) => document.getElementById(id);
 
-  // 1. AUTH & INITIAL LOADING
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      console.log("Logged in user:", user.uid);
       try {
         const uDoc = await getDoc(doc(db, 'users', user.uid));
         if (uDoc.exists()) {
           const data = uDoc.data();
-          
-          // Fix: Check for case sensitivity in Firestore fields
           adminProfile.municipality = data.municipality || data.Municipality || "";
           adminProfile.province = data.province || data.Province || "";
-          
-          console.log("Admin Profile Loaded:", adminProfile);
-
-          // Update Scope Chip
           $('scopeChip').textContent = `Municipality: ${adminProfile.municipality || 'Unknown'}`;
-          
-          // Load Users for this municipality
           loadUsers();
-        } else {
-          console.error("No profile document found for user.");
         }
-      } catch (error) {
-        console.error("Error loading admin profile:", error);
-      }
-    } else {
-      window.location.href = '/login'; 
-    }
+      } catch (error) { console.error("Error loading admin profile:", error); }
+    } else { window.location.href = '/login'; }
   });
 
-  // 2. FETCH USERS
   async function loadUsers() {
     if (!adminProfile.municipality) return;
     try {
       const usersRef = collection(db, 'users');
       const q = query(usersRef, where('municipality', '==', adminProfile.municipality));
       const snapshot = await getDocs(q);
-      
-      allUsers = snapshot.docs.map(d => ({ 
-          id: d.id, 
-          ...d.data(), 
-          name: (d.data().firstName || '') + ' ' + (d.data().lastName || ''),
-          status: d.data().status || 'Active'
-      }));
-      
+      allUsers = snapshot.docs.map(d => {
+          const data = d.data();
+          const rawStatus = (data.status || 'Pending').trim().toLowerCase();
+          let cleanStatus = 'Pending';
+          if (rawStatus === 'active') cleanStatus = 'Active';
+          else if (rawStatus === 'disabled') cleanStatus = 'Disabled';
+
+          return { id: d.id, ...data, name: (data.firstName || '') + ' ' + (data.lastName || ''), status: cleanStatus };
+      });
       renderAll();
-    } catch (err) { 
-      console.error("Error loading users:", err); 
-    }
+    } catch (err) { console.error("Error loading users:", err); }
   }
 
-  // 3. RENDER TABLE & FILTERS
   function renderTable(list) {
     const tbody = $('usersTbody');
     tbody.innerHTML = list.length === 0 
@@ -378,20 +346,27 @@
           <div class="text-[8px] font-mono text-slate-400 truncate">ID: ${u.employeeId || u.id.substring(0,8)}</div>
         </td>
         <td class="col-span-3 text-[10px] font-semibold text-slate-700 truncate">${u.email}</td>
-        <td class="col-span-2 text-[10px] font-bold text-slate-500 uppercase truncate">${u.municipality}</td>
+        <td class="col-span-2 text-[10px] font-bold text-slate-500 uppercase truncate">${u.municipality || u.coopMunicipality || u.businessMunicipality || u.institutionMunicipality || '—'}</td>
         <td class="col-span-1 text-center">
-          <span class="material-icons-round text-[18px] ${u.status === 'Active' ? 'text-emerald-500' : 'text-slate-400'}" title="${u.status}">
-            ${u.status === 'Active' ? 'check_circle' : 'do_not_disturb_on'}
+          <span class="material-icons-round text-[18px] ${
+            u.status === 'Active' ? 'text-emerald-500' : u.status === 'Pending' ? 'text-amber-500' : 'text-slate-400'
+          }" title="${u.status}">
+            ${u.status === 'Active' ? 'check_circle' : u.status === 'Pending' ? 'pending_actions' : 'do_not_disturb_on'}
           </span>
         </td>
         <td class="col-span-3 text-right flex justify-end gap-1">
           <button data-action="view" data-id="${u.id}" class="p-1 rounded-full text-blue-600 hover:bg-blue-100 transition-all" title="View Profile">
               <span class="material-icons-round text-[18px]">visibility</span>
           </button>
-          <button data-action="${u.status === 'Disabled' ? 'enable' : 'disable'}" data-id="${u.id}" class="p-1 rounded-full ${u.status === 'Disabled' ? 'text-emerald-600 hover:bg-emerald-100' : 'text-amber-600 hover:bg-amber-100'} transition-all" title="Toggle Access">
+          ${u.status === 'Pending' ? `
+          <button data-action="approve" data-id="${u.id}" class="p-1 rounded-full text-emerald-600 hover:bg-emerald-100 transition-all" title="Approve Account">
+              <span class="material-icons-round text-[18px]">how_to_reg</span>
+          </button>` : ''}
+          ${(u.status === 'Active' || u.status === 'Disabled') ? `
+          <button data-action="${u.status === 'Disabled' ? 'enable' : 'disable'}" data-id="${u.id}" class="p-1 rounded-full ${u.status === 'Disabled' ? 'text-blue-600 hover:bg-blue-100' : 'text-amber-600 hover:bg-amber-100'} transition-all" title="${u.status === 'Disabled' ? 'Enable Account' : 'Disable Account'}">
               <span class="material-icons-round text-[18px]">${u.status === 'Disabled' ? 'person_add' : 'person_off'}</span>
-          </button>
-          <button data-action="remove" data-id="${u.id}" class="p-1 rounded-full text-rose-600 hover:bg-rose-100 transition-all" title="Delete User">
+          </button>` : ''}
+          <button data-action="remove" data-id="${u.id}" class="p-1 rounded-full text-rose-600 hover:bg-rose-100 transition-all" title="${u.status === 'Pending' ? 'Reject Account' : 'Delete User'}">
               <span class="material-icons-round text-[18px]">delete_forever</span>
           </button>
         </td>
@@ -402,18 +377,22 @@
     const q = ($('searchInput').value || "").toLowerCase().trim();
     const s = $('statusSelect').value;
     const filtered = allUsers.filter(u => (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)) && (s === "all" || u.status === s));
-
     $('resultsChip').textContent = `Showing ${filtered.length} of ${allUsers.length}`;
     $('kpiTotal').textContent = allUsers.length;
+    $('kpiPending').textContent = allUsers.filter(u => u.status === "Pending").length;
     $('kpiActive').textContent = allUsers.filter(u => u.status === "Active").length;
     $('kpiDisabled').textContent = allUsers.filter(u => u.status === "Disabled").length;
-    $('kpiActions').textContent = actionCount;
     renderTable(filtered);
   }
 
-  // 4. EVENT LISTENERS
-  
-  // Table Actions
+  function detailItem(label, value) {
+      return `
+        <div class="rounded-md border border-gray-200 bg-gray-50 p-2">
+            <span class="text-[8px] font-bold uppercase text-slate-500">${label}</span>
+            <p class="text-[10px] font-semibold text-slate-800 m-0 break-words">${value || '—'}</p>
+        </div>`;
+  }
+
   $('usersTbody').addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
@@ -422,70 +401,174 @@
     const action = btn.dataset.action;
 
     if (action === "view") {
-        const photoURL = user.photoURL;
-        const picEl = $('viewProfilePic');
-        picEl.src = photoURL ? (photoURL + '?t=' + Date.now()) : '/static/images/default-avatar.png';
-
+        $('viewProfilePic').src = user.photoURL ? (user.photoURL + '?t=' + Date.now()) : '/static/images/default-avatar.png';
         $('viewName').textContent = user.name || '—';
         $('viewEmail').textContent = user.email || '—';
         $('viewId').textContent = user.id;
-        $('viewMunicipality').textContent = user.municipality || '—';
         $('viewPhone').textContent = user.contactNumber || user.phone || '—';
+        $('viewMunicipality').textContent = user.municipality || user.coopMunicipality || user.businessMunicipality || user.institutionMunicipality || '—';
 
         const statusEl = $('viewStatus');
-        statusEl.textContent = user.status || 'Active';
+        statusEl.textContent = user.status || 'Pending';
         statusEl.className = 'text-[9px] font-bold uppercase tracking-widest m-0 mt-0.5 ' +
-            (user.status === 'Disabled' ? 'text-rose-600' : 'text-emerald-600');
+            (user.status === 'Disabled' ? 'text-rose-600' : user.status === 'Pending' ? 'text-amber-600' : 'text-emerald-600');
+
+        const appType = (user.applicationType || 'N/A').toLowerCase();
+        let typeDisplay = appType.toUpperCase();
+        if (appType === 'tenant') typeDisplay = 'TENANT / INDIVIDUAL';
+        if (appType === 'cooperative') typeDisplay = 'COOPERATIVE';
+        if (appType === 'agribusiness') typeDisplay = 'AGRIBUSINESS COMPANY';
+        if (appType === 'research') typeDisplay = 'RESEARCH INSTITUTION';
+        if (appType === 'municipal') typeDisplay = 'MUNICIPAL ADMIN/USER';
+
+        let extraHtml = `
+            <div class="rounded-md border border-gray-200 bg-gray-50 p-2 md:col-span-2">
+                <span class="text-[8px] font-bold uppercase text-slate-500">Application Type</span>
+                <p class="text-[11px] font-black text-emerald-800 uppercase m-0">${typeDisplay}</p>
+            </div>
+        `;
+
+        if (appType === 'tenant') {
+            extraHtml += detailItem('Address', user.address); extraHtml += detailItem('Province', user.province);
+            extraHtml += detailItem('Farm Size (ha)', user.farmSize); extraHtml += detailItem('Primary Crop Type', user.cropType);
+        } else if (appType === 'cooperative') {
+            extraHtml += detailItem('CDA Reg Number', user.cdaNumber); extraHtml += detailItem('Registration Date', user.registrationDate);
+            extraHtml += detailItem('Office Address', user.officeAddress); extraHtml += detailItem('Province', user.coopProvince);
+            extraHtml += detailItem('Primary Activity/Crops', user.primaryActivity);
+        } else if (appType === 'agribusiness') {
+            extraHtml += detailItem('Business Reg Number (DTI/SEC)', user.businessRegNumber); extraHtml += detailItem('Type of Business', user.businessType);
+            extraHtml += detailItem('Registration Date', user.businessRegDate); extraHtml += detailItem('Business Address', user.businessAddress);
+            extraHtml += detailItem('Province', user.businessProvince); extraHtml += detailItem('Nature of Business', user.natureOfBusiness);
+            extraHtml += detailItem('Business Scale', user.businessScale);
+        } else if (appType === 'research') {
+            extraHtml += detailItem('Accreditation Number', user.accreditationNumber); extraHtml += detailItem('Institution Type', user.institutionType);
+            extraHtml += detailItem('Institution Address', user.institutionAddress); extraHtml += detailItem('Province', user.institutionProvince);
+            extraHtml += detailItem('Research Focus', user.researchFocus);
+        } else if (appType === 'municipal') {
+            extraHtml += detailItem('Division / Section', user.division); extraHtml += detailItem('Province', user.province);
+        } else {
+            extraHtml += detailItem('Province', user.province);
+        }
+        $('viewExtraDetails').innerHTML = extraHtml;
+
+        // NEW: PASSWORD OVERRIDE UI
+        const pwdDiv = $('viewModalPasswordOverride');
+        pwdDiv.innerHTML = `
+            <span class="text-[9px] font-bold uppercase tracking-widest text-amber-800">Force Update User Password</span>
+            <p class="text-[8px] text-amber-700 m-0 mb-2 leading-tight opacity-80">This requires backend Python integration to update Firebase Auth directly.</p>
+            <div class="flex gap-2">
+                <input type="text" id="adminNewPassword" placeholder="Enter new password (min 6 chars)" class="text-[12px] bg-white border border-gray-300 rounded px-2 py-1 outline-none focus:border-amber-500 w-full" autocomplete="off">
+                <button type="button" data-action="force-reset-password" data-id="${user.id}" data-email="${user.email}" class="px-3 py-1 text-[10px] font-bold uppercase text-white bg-amber-600 hover:bg-amber-700 rounded-[3px] shadow-sm shrink-0 whitespace-nowrap transition-colors">
+                    Set Password
+                </button>
+            </div>
+        `;
+
+        const actionsDiv = $('viewModalActions');
+        if (user.status === 'Pending') {
+            actionsDiv.innerHTML = `
+                <button type="button" onclick="closeViewModal()" class="px-4 py-2 text-[10px] font-bold uppercase text-slate-600 hover:bg-slate-100 rounded-[3px] border border-slate-300">Close</button>
+                <button type="button" data-action="approve" data-id="${user.id}" class="px-4 py-2 text-[10px] font-bold uppercase text-white bg-emerald-600 hover:bg-emerald-700 rounded-[3px] flex items-center gap-1 shadow-sm">
+                    <span class="material-icons-round text-[14px]">how_to_reg</span> Approve Account
+                </button>
+            `;
+        } else if (user.status === 'Active') {
+            actionsDiv.innerHTML = `
+                <button type="button" onclick="closeViewModal()" class="px-4 py-2 text-[10px] font-bold uppercase text-slate-600 hover:bg-slate-100 rounded-[3px] border border-slate-300">Close</button>
+                <button type="button" data-action="disable" data-id="${user.id}" class="px-4 py-2 text-[10px] font-bold uppercase text-white bg-amber-600 hover:bg-amber-700 rounded-[3px] flex items-center gap-1 shadow-sm">
+                    <span class="material-icons-round text-[14px]">person_off</span> Disable Account
+                </button>
+            `;
+        } else if (user.status === 'Disabled') {
+            actionsDiv.innerHTML = `
+                <button type="button" onclick="closeViewModal()" class="px-4 py-2 text-[10px] font-bold uppercase text-slate-600 hover:bg-slate-100 rounded-[3px] border border-slate-300">Close</button>
+                <button type="button" data-action="enable" data-id="${user.id}" class="px-4 py-2 text-[10px] font-bold uppercase text-white bg-blue-600 hover:bg-blue-700 rounded-[3px] flex items-center gap-1 shadow-sm">
+                    <span class="material-icons-round text-[14px]">person_add</span> Enable Account
+                </button>
+            `;
+        }
 
         $('viewModal').classList.remove('hidden');
+
+    } else if (action === "force-reset-password") {
+        const newPassword = $('adminNewPassword').value;
+        const targetEmail = btn.dataset.email;
+        const targetUid = btn.dataset.id;
+
+        if (!newPassword || newPassword.length < 6) {
+            alert("Password must be at least 6 characters.");
+            return;
+        }
+
+        if (confirm(`Are you sure you want to forcibly change the password for ${targetEmail}?`)) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Updating...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/admin/update-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: targetUid, newPassword: newPassword })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert("Password successfully updated!");
+                    $('adminNewPassword').value = '';
+                } else {
+                    alert("Failed to update password: " + (data.error || "Ensure your backend endpoint is configured."));
+                }
+            } catch (err) {
+                console.error("Error updating password:", err);
+                alert("Error communicating with server. Ensure the /api/admin/update-password endpoint is running in Python.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    } else if (action === "approve") {
+        if (confirm(`Approve account for ${user.name}? They will now be able to log in.`)) { 
+            await updateDoc(doc(db, 'users', id), { status: "Active" }); 
+            $('viewModal').classList.add('hidden');
+            loadUsers(); 
+        }
     } else if (action === "disable" || action === "enable") {
         const next = action === "disable" ? "Disabled" : "Active";
         if (confirm(`Set status of ${user.name} to ${next}?`)) { 
             await updateDoc(doc(db, 'users', id), { status: next }); 
-            actionCount++; 
+            $('viewModal').classList.add('hidden');
             loadUsers(); 
         }
     } else if (action === "remove") {
-        if (confirm(`Permanently delete account for ${user.name}? This cannot be undone.`)) { 
+        const verb = user.status === 'Pending' ? "reject and delete" : "permanently delete";
+        if (confirm(`Are you sure you want to ${verb} the account for ${user.name}? This cannot be undone.`)) { 
             await deleteDoc(doc(db, 'users', id)); 
-            actionCount++; 
             loadUsers(); 
         }
     }
   });
 
-  // Add User Modal Trigger
   $('btnAddMunicipalUser').addEventListener('click', () => {
-      // Validation: Ensure we actually have the admin's location before opening
       if (!adminProfile.municipality || !adminProfile.province) {
-          console.warn("Admin profile incomplete:", adminProfile);
-          alert("Your administrative data (Municipality/Province) hasn't loaded yet. Please wait a moment or refresh the page.");
+          alert("Your administrative data hasn't loaded yet. Please wait a moment or refresh the page.");
           return;
       }
-
-      // Generate Random ID
       const year = new Date().getFullYear();
       const rand = Math.floor(100 + Math.random() * 900);
       $('add-employeeId').value = `DENR-${year}-${rand}`;
-      
-      // AUTO-FILL - Explicitly setting values
       $('add-municipality').value = adminProfile.municipality;
       $('add-province').value = adminProfile.province;
-
       $('addUserModal').classList.remove('hidden');
   });
 
-  // Add User Form Submit
   $('addUserForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const form = e.target;
     const btn = $('btnSubmitAddUser');
-    
-    // Values
     const email = form['email'].value;
     const password = form['password'].value;
     
-    // UI State
     btn.disabled = true;
     btn.innerHTML = '<span class="material-icons-round animate-spin text-[14px]">sync</span> Saving...';
 
@@ -497,11 +580,8 @@
       phone: form['phone'].value,
       division: form['division'].value.toUpperCase(),
       employeeId: form['employeeId'].value,
-      
-      // Use value from form (which was auto-filled)
       municipality: form['municipality'].value, 
       province: form['province'].value,
-
       role: "municipal",
       applicationType: "municipal",
       status: "Active",
@@ -509,11 +589,8 @@
     };
 
     try {
-      // Fix: Use SECONDARY auth instance so Admin doesn't get logged out
       const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
       const user = userCredential.user;
-
-      // Save to Firestore using Main DB
       await setDoc(doc(db, "users", user.uid), newUser);
       
       alert('User added successfully!');
@@ -529,18 +606,22 @@
     }
   });
 
-  // Close Modals
   $('btnCloseAddUserModal').addEventListener('click', () => $('addUserModal').classList.add('hidden'));
   $('btnCloseModal').addEventListener('click', () => $('viewModal').classList.add('hidden'));
+  
+  // Close modals when clicking on the backdrop
+  $('viewModal').addEventListener('click', (e) => {
+      if (e.target === $('viewModal')) $('viewModal').classList.add('hidden');
+  });
+  $('addUserModal').addEventListener('click', (e) => {
+      if (e.target === $('addUserModal')) $('addUserModal').classList.add('hidden');
+  });
 
-  // Filters & Refresh
   $('searchInput').addEventListener("input", renderAll);
   $('statusSelect').addEventListener("change", renderAll);
   $('btnClear').addEventListener("click", () => { $('searchInput').value = ""; $('statusSelect').value = "all"; renderAll(); });
   $('btnRefresh').addEventListener("click", loadUsers);
 
 </script>
-</body>
-</html>
 </body>
 </html>

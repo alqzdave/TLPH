@@ -1,8 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_mail import Mail
 from config import Config
 import firebase_admin
-from firebase_admin import credentials
+from firebase_admin import credentials, auth
 from datetime import timedelta
 import os
 
@@ -110,3 +110,25 @@ def ensure_favicon_on_all_html(response):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+
+@app.route('/api/admin/update-password', methods=['POST'])
+def admin_update_password():
+    try:
+        data = request.get_json()
+        uid = data.get('uid')
+        new_password = data.get('newPassword')
+        
+        if not uid or not new_password:
+            return jsonify({"success": False, "error": "Missing UID or password"}), 400
+            
+        # Ito ang nagpapalit ng password sa Firebase Auth nang hindi kailangan ang old password
+        auth.update_user(
+            uid,
+            password=new_password
+        )
+        
+        return jsonify({"success": True})
+        
+    except Exception as e:
+        print("Error updating password:", str(e))
+        return jsonify({"success": False, "error": str(e)}), 500
