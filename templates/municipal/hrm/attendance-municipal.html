@@ -30,6 +30,65 @@
     }
   </script>
 
+  <script>
+    // Alpine can initialize early via shared includes. Provide a safe fallback factory.
+    window.attendancePage = window.attendancePage || function() {
+      return {
+        employees: [],
+        officeShifts: [],
+        attendanceRecords: [],
+        searchQuery: '',
+        showLogsOverlay: false,
+        showEditModal: false,
+        editForm: { id: null, employee_name: '', time_in: '', time_out: '', status: '' },
+        presentCount: 0,
+        lateCount: 0,
+        officialBusinessCount: 0,
+        currentDate: '',
+
+        get filteredAttendance() {
+          const query = String(this.searchQuery || '').toLowerCase();
+          return (this.attendanceRecords || []).filter(record => {
+            return !query ||
+              String(record.employee_name || '').toLowerCase().includes(query) ||
+              String(record.employee_id || '').toLowerCase().includes(query);
+          });
+        },
+
+        openLogs() { this.showLogsOverlay = true; },
+        closeLogs() { this.showLogsOverlay = false; },
+        openEdit(record) {
+          this.editForm = {
+            id: record?.id || null,
+            employee_name: record?.employee_name || '',
+            time_in: record?.time_in || '',
+            time_out: record?.time_out || '',
+            status: record?.status || 'Present'
+          };
+          this.showEditModal = true;
+        },
+        closeEdit() { this.showEditModal = false; },
+        saveEdit() { this.closeEdit(); },
+        exportDTR() {},
+
+        async loadData() {
+          // Upgrade to the real implementation once it is loaded by the page script.
+          for (let i = 0; i < 80; i++) {
+            if (typeof window.__attendancePageFactory === 'function') {
+              const real = window.__attendancePageFactory();
+              Object.assign(this, real);
+              if (typeof this.loadData === 'function') {
+                await this.loadData();
+              }
+              return;
+            }
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+        }
+      };
+    };
+  </script>
+
   <style>
     *:not(.material-icons-round):not(i) { font-family: 'Verdana', sans-serif !important; }
     .custom-scroll::-webkit-scrollbar { width: 4px; }
@@ -374,7 +433,7 @@
       }
     }
 
-    window.attendancePage = function() {
+    window.__attendancePageFactory = function() {
       return {
         employees: serverEmployees,
         officeShifts: [],
@@ -618,6 +677,10 @@
           }
         }
       }
+    }
+
+    window.attendancePage = function() {
+      return window.__attendancePageFactory();
     }
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
