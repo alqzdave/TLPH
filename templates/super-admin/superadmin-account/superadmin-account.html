@@ -188,19 +188,39 @@
             shipments: "Shipments", pos_voucher: "POS/Voucher", installment: "Installment"
         };
 
-        // MOCK USERS (rows)
-        const USERS = [
-            { id:"U-1001", name:"Dave Alquiz", email:"d.alquiz@denr.gov.ph", department:"Central Office" },
-            { id:"U-1002", name:"Maria Cruz", email:"m.cruz@denr.gov.ph", department:"Finance" },
-            { id:"U-1003", name:"Juan Ramos", email:"j.ramos@denr.gov.ph", department:"Regional Office IV-A" }
-        ];
+        // LIVE USERS (rows)
+        let USERS = [];
 
         // permissions[userId][module] = Set(actions)
         const permissions = {};
-        USERS.forEach(u => {
-            permissions[u.id] = {};
-            MODULES.forEach(m => permissions[u.id][m] = new Set());
-        });
+
+        function ensureUserPermissionState(userId){
+            if (!permissions[userId]) {
+                permissions[userId] = {};
+            }
+            MODULES.forEach(m => {
+                if (!(permissions[userId][m] instanceof Set)) {
+                    permissions[userId][m] = new Set();
+                }
+            });
+        }
+
+        function normalizePermissions(rawPerms){
+            const result = {};
+            MODULES.forEach(m => result[m] = new Set());
+            if (!rawPerms || typeof rawPerms !== 'object') return result;
+
+            MODULES.forEach(module => {
+                const arr = Array.isArray(rawPerms[module]) ? rawPerms[module] : [];
+                arr.forEach(action => {
+                    if (actionsForModule(module).includes(action)) {
+                        result[module].add(action);
+                    }
+                });
+            });
+
+            return result;
+        }
 
         // Templates based on matrix
         const TEMPLATE = {
@@ -274,6 +294,10 @@
 
         function buildBody(){
             const body = document.getElementById("permBody");
+            if (!USERS.length) {
+                body.innerHTML = `<tr><td colspan="${MODULES.length + 3}" class="text-center text-slate-500 py-6">No user accounts found.</td></tr>`;
+                return;
+            }
             body.innerHTML = USERS.map(u => `
                 <tr class="hover:bg-slate-50 transition-colors" data-user="${u.id}">
                     <td class="sticky-col-1 sticky-divider align-top bg-white group-hover:bg-slate-50">
@@ -377,8 +401,57 @@
         }
 
         function savePermissions(){
-            console.log("SAVE PAYLOAD:", serialize());
-            alert("Permissions Configuration Saved. Check console for JSON payload.");
+            const payload = {
+                users: USERS.map(u => {
+                    const mods = {};
+                    MODULES.forEach(m => mods[m] = Array.from(permissions[u.id][m] || []).sort());
+                    return { user_id: u.id, permissions: mods };
+                })
+            };
+
+            fetch('/api/superadmin/account-permissions', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) {
+                    alert(res.message || 'Failed to save permissions.');
+                    return;
+                }
+                alert(`Permissions saved for ${res.updated_count || 0} user(s).`);
+            })
+            .catch(() => alert('Failed to save permissions.'));
+        }
+
+        function loadPermissionsMatrix(){
+            const body = document.getElementById('permBody');
+            body.innerHTML = `<tr><td colspan="${MODULES.length + 3}" class="text-center text-slate-500 py-6">Loading accounts...</td></tr>`;
+
+            fetch('/api/superadmin/account-permissions', { credentials: 'same-origin' })
+                .then(r => r.json())
+                .then(res => {
+                    if (!res.success) {
+                        throw new Error(res.message || 'Failed to load accounts');
+                    }
+
+                    USERS = Array.isArray(res.users) ? res.users : [];
+
+                    // Reset and repopulate in-memory permissions map.
+                    Object.keys(permissions).forEach(k => delete permissions[k]);
+                    USERS.forEach(u => {
+                        permissions[u.id] = normalizePermissions(u.permissions || {});
+                        ensureUserPermissionState(u.id);
+                    });
+
+                    buildBody();
+                    syncStickyOffsets();
+                })
+                .catch((err) => {
+                    body.innerHTML = `<tr><td colspan="${MODULES.length + 3}" class="text-center text-rose-600 py-6">${escapeHtml(err.message || 'Failed to load accounts.')}</td></tr>`;
+                });
         }
 
         function escapeHtml(str){
@@ -397,8 +470,7 @@
         // Initialize
         window.addEventListener("DOMContentLoaded", () => {
             buildHeader();
-            buildBody();
-            syncStickyOffsets();
+            loadPermissionsMatrix();
         });
         window.addEventListener("resize", syncStickyOffsets);
     </script>
