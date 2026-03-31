@@ -236,6 +236,46 @@ def inventory_view():
                 return raw
             return None
 
+        def effective_status_payload(data):
+            normalize = lambda v: str(v or '').strip().lower().replace('_', '-').replace(' ', '-')
+            status = normalize(data.get('status'))
+            regional_status = normalize(data.get('regionalStatus'))
+            national_status = normalize(data.get('nationalStatus'))
+            approved_by_level = normalize(data.get('approvedByLevel'))
+            rejected_by_level = normalize(data.get('rejectedByLevel'))
+
+            if national_status == 'approved':
+                return {'key': 'approved-national', 'label': 'Approved by National'}
+            if national_status == 'rejected':
+                return {'key': 'rejected-national', 'label': 'Rejected by National'}
+
+            if status in {'forwarded-to-national', 'forwarded-national'}:
+                return {'key': 'forwarded-national', 'label': 'Forwarded to National'}
+
+            if status in {'to-review', 'to-review-regional', 'to_review'} or 'forward' in status:
+                return {'key': 'forwarded-regional', 'label': 'Forwarded to Regional'}
+
+            if status == 'approved':
+                if 'regional' in approved_by_level:
+                    return {'key': 'approved-regional', 'label': 'Approved by Regional'}
+                if 'national' in approved_by_level:
+                    return {'key': 'approved-national', 'label': 'Approved by National'}
+                return {'key': 'approved-municipal', 'label': 'Approved by Municipal'}
+
+            if status == 'rejected':
+                if 'regional' in rejected_by_level:
+                    return {'key': 'rejected-regional', 'label': 'Rejected by Regional'}
+                if 'national' in rejected_by_level:
+                    return {'key': 'rejected-national', 'label': 'Rejected by National'}
+                return {'key': 'rejected-municipal', 'label': 'Rejected by Municipal'}
+
+            if regional_status == 'approved':
+                return {'key': 'approved-regional', 'label': 'Approved by Regional'}
+            if regional_status == 'rejected':
+                return {'key': 'rejected-regional', 'label': 'Rejected by Regional'}
+
+            return {'key': 'pending', 'label': 'Pending Review'}
+
         for doc in docs:
             data = doc.to_dict() or {}
             form_data = data.get('formData') or {}
@@ -381,6 +421,10 @@ def inventory_view():
                 'attachments': attachments
             })
 
+            status_payload = effective_status_payload(data)
+            inventory_records[-1]['status_key'] = status_payload['key']
+            inventory_records[-1]['status_label'] = status_payload['label']
+
             summary['total_assets'] += quantity
             if normalized_category == 'CHEMICAL RESOURCES':
                 summary['chemicals'] += quantity
@@ -420,6 +464,8 @@ def inventory_view():
                 'applicant': rec.get('applicant_name', 'N/A'),
                 'province': rec.get('province', 'N/A'),
                 'status': rec.get('status', 'pending'),
+                'statusKey': rec.get('status_key', 'pending'),
+                'statusLabel': rec.get('status_label', 'Pending Review'),
                 'createdAt': rec.get('created_at').isoformat() if rec.get('created_at') else '',
                 'unit': rec.get('unit', 'pcs'),
                 'registrationFee': rec.get('registration_fee', 0),
