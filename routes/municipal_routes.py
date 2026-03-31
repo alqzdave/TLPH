@@ -633,33 +633,37 @@ def _get_employee_shift_times(db, employee_data, shift_cache):
 def api_get_municipal_attendance():
     try:
         db = get_firestore_db()
-        rows = []
-        today_str = datetime.utcnow().date().isoformat()
-        shift_cache = {}
-
-        user_municipality = (_resolve_municipality_from_user_context() or '').strip().lower()
-        if not user_municipality:
-            return jsonify({'success': False, 'error': 'User municipality not resolved'}), 403
-        
-        # Fetch employees filtered by municipality
-        try:
-            # Try using FieldFilter first (newer SDK)
-            docs = db.collection('employees').where(
-                filter=firestore.FieldFilter('municipality', '==', user_municipality)
-            ).stream()
-        except Exception:
-            # Fallback: fetch all and filter client-side
-            all_docs = db.collection('employees').stream()
-            docs = [
-                doc for doc in all_docs
-                if str((doc.to_dict() or {}).get('municipality') or '').strip() == user_municipality
-            ]
-        
         records = []
-
-        for employee_doc in docs:
-            emp = employee_doc.to_dict() or {}
-
+        today_str = datetime.utcnow().date().isoformat()
+        
+        # Get the logged-in user's municipality
+        user_municipality = _resolve_municipality_from_user_context()
+        
+        # Fetch employees: use same logic as employees page
+        employees_list = []
+        
+        if user_municipality:
+            # Try exact match first via Firestore
+            try:
+                query = db.collection('employees').where('municipality', '==', user_municipality)
+                for doc in query.stream():
+                    emp = doc.to_dict() or {}
+                    employees_list.append((doc.id, emp))
+            except Exception:
+                # Fallback: fetch all and filter client-side (case-insensitive)
+                for doc in db.collection('employees').stream():
+                    emp = doc.to_dict() or {}
+                    emp_mun = str(emp.get('municipality') or '').strip()
+                    if emp_mun.lower() == user_municipality.lower():
+                        employees_list.append((doc.id, emp))
+        else:
+            # No municipality context: fetch all employees
+            for doc in db.collection('employees').stream():
+                emp = doc.to_dict() or {}
+                employees_list.append((doc.id, emp))
+        
+        # Transform to attendance records
+        for employee_doc_id, emp in employees_list:
             # Extract employee information
             employee_id = str(emp.get('employee_id') or '').strip().upper()
             first_name = str(emp.get('first_name') or '').strip()
@@ -674,7 +678,7 @@ def api_get_municipal_attendance():
             
             # Get attendance details
             attendance_status = str(emp.get('attendance_status') or 'On Duty').strip()
-            attendance_date = str(emp.get('attendance_date') or datetime.utcnow().date().isoformat()).strip()
+            attendance_date = str(emp.get('attendance_date') or today_str).strip()
             time_in = _format_attendance_time(emp.get('time_in'))
             time_out = _format_attendance_time(emp.get('time_out'))
             attendance_remarks = str(emp.get('attendance_remarks') or '').strip()
@@ -688,7 +692,7 @@ def api_get_municipal_attendance():
             
             # Build record
             record = {
-                'id': employee_doc.id,
+                'id': employee_doc_id,
                 'date': attendance_date,
                 'no': employee_id,
                 'name': full_name,
@@ -701,7 +705,6 @@ def api_get_municipal_attendance():
                 'notes': attendance_remarks,
             }
             records.append(record)
-
         
         # Sort by employee ID and name
         records.sort(key=lambda x: (x.get('no') or '', x.get('name') or ''))
@@ -710,7 +713,7 @@ def api_get_municipal_attendance():
             'success': True,
             'records': records,
             'count': len(records),
-            'municipality': user_municipality
+            'municipality': user_municipality or 'All'
         })
         
     except Exception as e:
