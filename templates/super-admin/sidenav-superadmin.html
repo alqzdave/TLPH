@@ -12,12 +12,12 @@
 
   <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between shrink-0 bg-white">
     <div class="flex items-center gap-2 overflow-hidden">
-      <div class="w-7 h-7 rounded-[2px] bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-black text-[10px] shrink-0">
-        AD
+      <div id="saIdentityAvatar" class="w-7 h-7 rounded-[2px] bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-black text-[10px] shrink-0">
+        SA
       </div>
       <div class="overflow-hidden">
-        <p class="text-[10px] font-black text-slate-900 uppercase tracking-widest m-0 truncate">Alqz Dave</p>
-        <p class="text-[8px] text-slate-500 font-bold uppercase m-0 truncate">Root Access</p>
+        <p id="saIdentityName" class="text-[10px] font-black text-slate-900 uppercase tracking-widest m-0 truncate">Super Admin</p>
+        <p id="saIdentityRole" class="text-[8px] text-slate-500 font-bold uppercase m-0 truncate">Root Access</p>
       </div>
     </div>
     <button onclick="handleLogout()" class="text-rose-600 hover:text-rose-800 transition-colors bg-transparent border-none p-1 cursor-pointer" title="Sign Out">
@@ -237,6 +237,37 @@
     const navLinks = document.querySelectorAll('#sidebarNav .nav-link');
     const sidebarNav = document.getElementById('sidebarNav');
 
+    function initialsFromName(fullName) {
+      const tokens = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+      if (!tokens.length) return 'SA';
+      const first = tokens[0][0] || '';
+      const second = tokens.length > 1 ? (tokens[1][0] || '') : '';
+      return (first + second).toUpperCase() || 'SA';
+    }
+
+    async function loadSidebarIdentity() {
+      const avatarEl = document.getElementById('saIdentityAvatar');
+      const nameEl = document.getElementById('saIdentityName');
+      const roleEl = document.getElementById('saIdentityRole');
+      if (!avatarEl || !nameEl || !roleEl) return;
+
+      try {
+        const resp = await fetch('/api/superadmin/profile', { credentials: 'same-origin' });
+        const res = await resp.json();
+        if (!resp.ok || !res.success || !res.profile) {
+          return;
+        }
+
+        const profile = res.profile || {};
+        const fullName = String(profile.full_name || 'Super Admin').trim();
+        nameEl.textContent = fullName.toUpperCase();
+        roleEl.textContent = String(profile.role_label || 'Root Access').toUpperCase();
+        avatarEl.textContent = initialsFromName(fullName);
+      } catch (e) {
+        // Keep default identity if request fails.
+      }
+    }
+
     // 1. HIGHLIGHT ACTIVE PAGE
     navLinks.forEach(link => {
       const linkHref = link.getAttribute('href');
@@ -259,6 +290,8 @@
     sidebarNav.addEventListener('scroll', function() {
       localStorage.setItem('saSidebarScrollPosLight', sidebarNav.scrollTop);
     });
+
+    loadSidebarIdentity();
   });
 </script>
 
