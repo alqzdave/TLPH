@@ -1933,6 +1933,214 @@ def api_save_superadmin_account_permissions():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+def _is_superadmin_session() -> bool:
+    role = str(session.get('user_role') or '').strip().lower()
+    return role in {'superadmin', 'super-admin'}
+
+
+def _compute_group_member_counts(db, groups):
+    counts_by_id = {}
+    counts_by_name = {}
+
+    for g in groups:
+        gid = str(g.get('id') or '').strip()
+        gname = str(g.get('name') or '').strip().lower()
+        if gid:
+            counts_by_id.setdefault(gid, 0)
+        if gname:
+            counts_by_name.setdefault(gname, 0)
+
+    for doc in db.collection('users').stream():
+        data = doc.to_dict() or {}
+        if not isinstance(data, dict):
+            continue
+
+        role = str(data.get('role') or '').strip().lower()
+        if role in {'superadmin', 'super-admin'}:
+            continue
+
+        group_id_candidates = [
+            str(data.get('user_group_id') or '').strip(),
+            str(data.get('group_id') or '').strip(),
+            str(data.get('userGroupId') or '').strip(),
+            str(data.get('groupId') or '').strip(),
+        ]
+        group_name_candidates = [
+            str(data.get('user_group') or '').strip().lower(),
+            str(data.get('group') or '').strip().lower(),
+            str(data.get('userGroup') or '').strip().lower(),
+            str(data.get('groupName') or '').strip().lower(),
+        ]
+
+        matched = False
+        for gid in group_id_candidates:
+            if gid and gid in counts_by_id:
+                counts_by_id[gid] += 1
+                matched = True
+                break
+
+        if matched:
+            continue
+
+        for gname in group_name_candidates:
+            if gname and gname in counts_by_name:
+                counts_by_name[gname] += 1
+                break
+
+    return counts_by_id, counts_by_name
+
+
+@bp.route('/superadmin/user-groups', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_user_groups():
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        rows = []
+        for doc in db.collection('superadmin_user_groups').stream():
+            data = doc.to_dict() or {}
+            if not isinstance(data, dict):
+                continue
+            rows.append({
+                'id': doc.id,
+                'name': str(data.get('name') or '').strip(),
+                'desc': str(data.get('desc') or '').strip(),
+                'clearance': str(data.get('clearance') or 'Level 1').strip(),
+                'status': str(data.get('status') or 'active').strip().lower(),
+                'members_stored': int(data.get('members') or 0),
+            })
+
+        counts_by_id, counts_by_name = _compute_group_member_counts(db, rows)
+
+        groups = []
+        for row in rows:
+            gid = str(row.get('id') or '').strip()
+            gname = str(row.get('name') or '').strip().lower()
+            inferred = counts_by_id.get(gid, 0) if gid else 0
+            if not inferred and gname:
+                inferred = counts_by_name.get(gname, 0)
+            members = inferred if inferred > 0 else int(row.get('members_stored') or 0)
+
+            groups.append({
+                'id': gid,
+                'name': row.get('name') or 'UNNAMED GROUP',
+                'desc': row.get('desc') or '',
+                'clearance': row.get('clearance') or 'Level 1',
+                'status': row.get('status') or 'active',
+                'members': max(0, int(members or 0)),
+            })
+
+        groups.sort(key=lambda g: str(g.get('name') or '').lower())
+        active_members = sum(int(g.get('members') or 0) for g in groups if str(g.get('status') or '').lower() == 'active')
+        inactive_members = sum(int(g.get('members') or 0) for g in groups if str(g.get('status') or '').lower() != 'active')
+
+        stats = {
+            'total_groups': len(groups),
+            'total_members': sum(int(g.get('members') or 0) for g in groups),
+            'active_users': active_members,
+            'inactive_users': inactive_members,
+        }
+
+        return jsonify({'success': True, 'groups': groups, 'stats': stats})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/user-groups', methods=['POST'])
+@firebase_auth_required
+def api_create_superadmin_user_group():
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        data = request.get_json() or {}
+        name = str(data.get('name') or '').strip().upper()
+        desc = str(data.get('desc') or '').strip()
+        clearance = str(data.get('clearance') or '').strip()
+        status = str(data.get('status') or 'active').strip().lower()
+        members = max(0, int(data.get('members') or 0))
+
+        if not name:
+            return jsonify({'success': False, 'message': 'Group name is required'}), 400
+        if not clearance:
+            return jsonify({'success': False, 'message': 'Clearance level is required'}), 400
+        if status not in {'active', 'inactive'}:
+            status = 'active'
+
+        doc = {
+            'name': name,
+            'desc': desc,
+            'clearance': clearance,
+            'status': status,
+            'members': members,
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow(),
+            'created_by': str(session.get('user_email') or '').strip().lower(),
+        }
+
+        ref = firestore.client().collection('superadmin_user_groups').document()
+        ref.set(doc)
+        return jsonify({'success': True, 'group': {'id': ref.id, **doc}}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/user-groups/<group_id>', methods=['PUT'])
+@firebase_auth_required
+def api_update_superadmin_user_group(group_id):
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        gid = str(group_id or '').strip()
+        if not gid:
+            return jsonify({'success': False, 'message': 'Invalid group id'}), 400
+
+        data = request.get_json() or {}
+        update_fields = {
+            'updated_at': datetime.utcnow(),
+        }
+
+        if 'name' in data:
+            update_fields['name'] = str(data.get('name') or '').strip().upper()
+        if 'desc' in data:
+            update_fields['desc'] = str(data.get('desc') or '').strip()
+        if 'clearance' in data:
+            update_fields['clearance'] = str(data.get('clearance') or '').strip()
+        if 'status' in data:
+            status = str(data.get('status') or '').strip().lower()
+            update_fields['status'] = status if status in {'active', 'inactive'} else 'active'
+        if 'members' in data:
+            update_fields['members'] = max(0, int(data.get('members') or 0))
+
+        if not str(update_fields.get('name', '')).strip() and 'name' in update_fields:
+            return jsonify({'success': False, 'message': 'Group name cannot be empty'}), 400
+
+        firestore.client().collection('superadmin_user_groups').document(gid).set(update_fields, merge=True)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/user-groups/<group_id>', methods=['DELETE'])
+@firebase_auth_required
+def api_delete_superadmin_user_group(group_id):
+    try:
+        if not _is_superadmin_session():
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        gid = str(group_id or '').strip()
+        if not gid:
+            return jsonify({'success': False, 'message': 'Invalid group id'}), 400
+
+        firestore.client().collection('superadmin_user_groups').document(gid).delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @bp.route('/upload-profile-photo', methods=['POST'])
 @firebase_auth_required
 def upload_profile_photo():
