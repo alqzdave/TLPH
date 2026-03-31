@@ -2419,6 +2419,41 @@ def _format_attendance_time(raw_value):
     return ''
 
 
+def _get_employee_shift_times(db, employee_data, shift_cache):
+    shift_id = str(employee_data.get('shift_id') or employee_data.get('shiftId') or '').strip()
+    if not shift_id:
+        return '', ''
+
+    if shift_id in shift_cache:
+        return shift_cache[shift_id]
+
+    start = ''
+    end = ''
+
+    try:
+        shift_doc = db.collection('office_shifts').document(shift_id).get()
+        if shift_doc.exists:
+            shift_data = shift_doc.to_dict() or {}
+            start = _format_attendance_time(shift_data.get('time_in') or shift_data.get('start'))
+            end = _format_attendance_time(shift_data.get('time_out') or shift_data.get('end'))
+        else:
+            # Backward compatibility: some records may store shift_code instead of doc id
+            found = db.collection('office_shifts').where(
+                filter=firestore.FieldFilter('shift_code', '==', shift_id)
+            ).limit(1).stream()
+            for doc in found:
+                shift_data = doc.to_dict() or {}
+                start = _format_attendance_time(shift_data.get('time_in') or shift_data.get('start'))
+                end = _format_attendance_time(shift_data.get('time_out') or shift_data.get('end'))
+                break
+    except Exception:
+        start = ''
+        end = ''
+
+    shift_cache[shift_id] = (start, end)
+    return shift_cache[shift_id]
+
+
 @bp.route('/api/hrm/attendance', methods=['GET'])
 @role_required('super-admin', 'superadmin')
 def api_get_superadmin_attendance():
@@ -2426,6 +2461,7 @@ def api_get_superadmin_attendance():
         db = get_firestore_db()
         rows = []
         today_str = datetime.utcnow().date().isoformat()
+        shift_cache = {}
 
         for employee_doc in db.collection('employees').stream():
             emp = employee_doc.to_dict() or {}
@@ -2457,6 +2493,16 @@ def api_get_superadmin_attendance():
             if not full_name:
                 full_name = f"{last_name}, {first_name} {middle_name}".strip().strip(',')
 
+            attendance_status = str(emp.get('attendance_status') or '').strip().lower()
+            time_in = _format_attendance_time(emp.get('time_in'))
+            time_out = _format_attendance_time(emp.get('time_out'))
+
+            # If employee has assigned shift and current log has no time values, use shift schedule defaults.
+            if (not time_in or not time_out) and attendance_status not in {'absent', 'on leave', 'leave'}:
+                shift_in, shift_out = _get_employee_shift_times(db, emp, shift_cache)
+                time_in = time_in or shift_in
+                time_out = time_out or shift_out
+
             rows.append({
                 'id': employee_doc.id,
                 'date': str(emp.get('attendance_date') or today_str),
@@ -2465,8 +2511,8 @@ def api_get_superadmin_attendance():
                 'cat': category,
                 'reg': str(emp.get('region') or '').strip(),
                 'mun': str(emp.get('municipality') or '').strip(),
-                'in': _format_attendance_time(emp.get('time_in')),
-                'out': _format_attendance_time(emp.get('time_out')),
+                'in': time_in,
+                'out': time_out,
                 'type': _attendance_type_from_status(emp.get('attendance_status')),
                 'notes': str(emp.get('attendance_remarks') or '').strip(),
             })
@@ -2494,6 +2540,21 @@ def api_adjust_superadmin_attendance():
         attendance_type = str(payload.get('type') or '').strip().upper()
         notes = str(payload.get('notes') or payload.get('reason') or '').strip()
 
+        db = get_firestore_db()
+        ref = db.collection('employees').document(employee_doc_id)
+        snap = ref.get()
+        if not snap.exists:
+            return jsonify({'success': False, 'error': 'Employee not found'}), 404
+
+        employee_data = snap.to_dict() or {}
+        if not time_in or not time_out:
+            shift_in, shift_out = _get_employee_shift_times(db, employee_data, {})
+            time_in = time_in or shift_in
+            time_out = time_out or shift_out
+
+        if not attendance_type:
+            attendance_type = 'ABSENT' if not time_in and not time_out else 'PRESENT'
+
         working_hours = 0
         if time_in and time_out:
             try:
@@ -2503,15 +2564,6 @@ def api_adjust_superadmin_attendance():
                 working_hours = round(max(diff, 0), 2)
             except Exception:
                 working_hours = 0
-
-        if not attendance_type:
-            attendance_type = 'ABSENT' if not time_in and not time_out else 'PRESENT'
-
-        db = get_firestore_db()
-        ref = db.collection('employees').document(employee_doc_id)
-        snap = ref.get()
-        if not snap.exists:
-            return jsonify({'success': False, 'error': 'Employee not found'}), 404
 
         updates = {
             'attendance_date': attendance_date,
