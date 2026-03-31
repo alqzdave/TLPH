@@ -4735,7 +4735,7 @@ def get_system_logs():
 @bp.route('/superadmin/regions', methods=['GET'])
 @firebase_auth_required
 def get_regions():
-    """Get all regions from combined users + regions collection"""
+    """Get all regions from combined users + regions collection with municipality scopes"""
     try:
         user_role = session.get('user_role', '').lower()
         
@@ -4744,6 +4744,28 @@ def get_regions():
             return jsonify({'success': False, 'message': 'Unauthorized access to regions'}), 403
         
         db = firestore.client()
+        
+        # Region to Island Group mapping (Philippines DENR regions)
+        region_island_map = {
+            'NCR': 'Luzon',
+            'CAR': 'Luzon',
+            'I': 'Luzon',
+            'II': 'Luzon',
+            'III': 'Luzon',
+            'IV-A': 'Luzon',
+            'IV-B': 'MIMAROPA',
+            'V': 'Bicol',
+            'VI': 'Visayas',
+            'VII': 'Visayas',
+            'VIII': 'Visayas',
+            'IX': 'Mindanao',
+            'X': 'Mindanao',
+            'XI': 'Mindanao',
+            'XII': 'Mindanao',
+            'XIII': 'Caraga',
+            'ARMM': 'Mindanao',
+            'BARMM': 'Mindanao'
+        }
         
         # First, try to get regions from the dedicated regions collection
         regions_ref = db.collection('regions')
@@ -4755,33 +4777,51 @@ def get_regions():
             data['id'] = doc.id
             regions.append(data)
         
-        # If regions collection is empty, extract from users collection
+        # If regions collection is empty, extract from users collection with municipalities
         if not regions:
             users_ref = db.collection('users')
-            # Query users who have a region field (regional or national scope)
             users_docs = users_ref.stream()
             
             region_map = {}
+            municipalities_map = {}  # Track municipalities per region
+            
             for doc in users_docs:
                 user_data = doc.to_dict()
-                region = user_data.get('region', '').strip()
+                region_field = user_data.get('region', '').strip()
                 
-                if region and region not in region_map:
-                    # Create basic region from user data
-                    region_map[region] = {
-                        'code': region.upper(),
-                        'name': user_data.get('region_name', region),
-                        'island': user_data.get('island_group', 'Unknown'),
-                        'munic': user_data.get('municipalities', 0),
-                        'staff': 1,  # Will increment
-                        'status': 'active',
-                        'link': f"/superadmin/regions/{region.lower()}"
-                    }
-                elif region:
-                    # Increment staff count
-                    region_map[region]['staff'] = region_map[region].get('staff', 1) + 1
+                # Extract region code from format like "REGION-IV-B" or "REGION IV-B"
+                if region_field:
+                    # Remove "REGION-" or "REGION " prefix
+                    region_code = region_field.replace('REGION-', '').replace('REGION ', '').strip()
+                    
+                    # Count staff per region
+                    if region_code and region_code not in region_map:
+                        region_map[region_code] = {
+                            'code': region_code,
+                            'name': user_data.get('region_name', region_code),
+                            'island': region_island_map.get(region_code, 'Unknown'),
+                            'staff': 1,
+                            'status': 'active',
+                            'link': f"/superadmin/regions/{region_code.lower()}"
+                        }
+                        municipalities_map[region_code] = set()
+                    elif region_code:
+                        region_map[region_code]['staff'] = region_map[region_code].get('staff', 1) + 1
+                    
+                    # Collect municipalities from user's municipalities field
+                    if region_code:
+                        user_municipalities = user_data.get('municipalities', [])
+                        if user_municipalities and isinstance(user_municipalities, list):
+                            for munic in user_municipalities:
+                                if isinstance(munic, str):
+                                    municipalities_map[region_code].add(munic)
             
-            regions = list(region_map.values())
+            # Build final regions list with municipality count
+            regions = []
+            for region_code, data in region_map.items():
+                munic_count = len(municipalities_map.get(region_code, set()))
+                data['munic'] = munic_count if munic_count > 0 else 0
+                regions.append(data)
         
         return jsonify({
             'success': True,

@@ -51,6 +51,7 @@
         /* Modal Transitions */
         .gov-modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 2050; backdrop-filter: blur(2px); padding: 16px; }
         .gov-modal.flex { display: flex !important; animation: fadeIn 0.15s ease-out; }
+        .gov-modal.right-align { justify-content: flex-end !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         @media print {
@@ -239,16 +240,6 @@
                     <input type="text" id="regionName" placeholder="e.g., National Capital Region" class="gov-input w-full h-8" required>
                 </div>
 
-                <div>
-                    <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Island Group <span class="text-red-600">*</span></label>
-                    <select id="islandGroup" class="gov-input w-full h-8 cursor-pointer" required>
-                        <option value="" disabled selected>Select categorization...</option>
-                        <option value="Luzon">Luzon</option>
-                        <option value="Visayas">Visayas</option>
-                        <option value="Mindanao">Mindanao</option>
-                    </select>
-                </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1 ml-0.5">Municipalities <span class="text-red-600">*</span></label>
@@ -294,9 +285,9 @@
         </div>
     </div>
 
-    <div id="fillMissingModal" class="gov-modal no-print">
+    <div id="fillMissingModal" class="gov-modal right-align no-print hidden">
         <div class="absolute inset-0 cursor-pointer" onclick="closeFillMissingModal()"></div>
-        <div id="fillMissingBody" class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-150 overflow-hidden relative z-10 flex flex-col">
+        <div id="fillMissingBody" class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-150 overflow-hidden relative z-10 flex flex-col mr-4">
             <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3 bg-slate-900 text-white shrink-0">
                 <h3 class="text-[11px] font-black uppercase tracking-widest m-0 flex items-center gap-2">
                     <i class="fa-solid fa-fill-drip text-slate-400"></i> Complete Region Information
@@ -317,16 +308,6 @@
                     <div>
                         <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Official Name</label>
                         <input type="text" id="fillName" placeholder="e.g., National Capital Region" class="gov-input w-full h-8" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Island Group</label>
-                        <select id="fillIsland" class="gov-input w-full h-8 cursor-pointer" required>
-                            <option value="" disabled selected>Select...</option>
-                            <option value="Luzon">Luzon</option>
-                            <option value="Visayas">Visayas</option>
-                            <option value="Mindanao">Mindanao</option>
-                        </select>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-2">
@@ -530,7 +511,6 @@
             e.preventDefault();
             const code = document.getElementById('regionCode').value.trim();
             const name = document.getElementById('regionName').value.trim();
-            const island = document.getElementById('islandGroup').value;
             const munic = document.getElementById('regionMunic').value;
             const staff = document.getElementById('regionStaff').value;
             const status = document.getElementById('regionFormStatus').value;
@@ -542,7 +522,6 @@
                     body: JSON.stringify({
                         code: code,
                         name: name,
-                        island: island,
                         munic: parseInt(munic),
                         staff: parseInt(staff),
                         status: status
@@ -561,7 +540,6 @@
                 const newRegion = {
                     code: code,
                     name: name,
-                    island: island,
                     munic: parseInt(munic),
                     staff: parseInt(staff),
                     status: status,
@@ -707,7 +685,6 @@
             currentRegionForFill = regionCode;
             document.getElementById('fillCode').value = regionCode;
             document.getElementById('fillName').value = '';
-            document.getElementById('fillIsland').value = '';
             document.getElementById('fillMunic').value = '';
             document.getElementById('fillStaff').value = '';
             document.getElementById('fillStatus').value = 'active';
@@ -728,7 +705,6 @@
             const payload = {
                 code: currentRegionForFill,
                 name: document.getElementById('fillName').value.trim(),
-                island: document.getElementById('fillIsland').value,
                 munic: parseInt(document.getElementById('fillMunic').value) || 0,
                 staff: parseInt(document.getElementById('fillStaff').value) || 0,
                 status: document.getElementById('fillStatus').value
