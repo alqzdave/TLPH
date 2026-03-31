@@ -200,7 +200,7 @@
         </div>
       </div>
       
-    </div>
+</div>
 
 <div class="px-4 pb-4 flex-1 flex flex-col min-h-0">
       
@@ -261,6 +261,90 @@
       </div>
     </div>
 
+    <!-- Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 z-[3000] hidden items-center justify-center bg-slate-900/55 backdrop-blur-[1px] p-4">
+      <div class="w-full max-w-4xl bg-white border border-slate-200 shadow-2xl rounded-sm overflow-hidden flex flex-col max-h-[80vh]">
+        <div class="flex items-center justify-between px-4 py-2 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-sm border border-slate-200 bg-white flex items-center justify-center text-slate-700 shadow-sm">
+              <span class="material-icons-round text-[16px]">analytics</span>
+            </div>
+            <div>
+              <h3 class="m-0 text-[12px] font-bold uppercase tracking-gov2 text-slate-800">Details</h3>
+              <p class="m-0 text-[10px] text-slate-500">Municipal analytics breakdown</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-1 rounded-sm border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-gov2 text-slate-500">
+              <span class="material-icons-round text-[12px]">shield</span> DENR
+            </span>
+            <button id="detailsModalClose" type="button" class="inline-flex items-center justify-center h-7 w-7 rounded-sm border border-slate-300 bg-white text-slate-600 hover:bg-slate-100">
+              <span class="material-icons-round text-[16px]">close</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="px-4 py-2 border-b border-slate-100 bg-white">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-2">
+              <div class="flex items-center gap-1 text-[9px] uppercase tracking-gov2 text-slate-500 font-bold">
+                <span class="material-icons-round text-[12px] text-slate-400">assignment</span> Service Requests
+              </div>
+              <div id="modalService" class="text-lg font-bold text-slate-800 leading-tight">0</div>
+            </div>
+            <div class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-2">
+              <div class="flex items-center gap-1 text-[9px] uppercase tracking-gov2 text-slate-500 font-bold">
+                <span class="material-icons-round text-[12px] text-slate-400">badge</span> Licenses/Permits
+              </div>
+              <div id="modalLicense" class="text-lg font-bold text-slate-800 leading-tight">0</div>
+            </div>
+            <div class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-2">
+              <div class="flex items-center gap-1 text-[9px] uppercase tracking-gov2 text-slate-500 font-bold">
+                <span class="material-icons-round text-[12px] text-slate-400">payments</span> Transactions
+              </div>
+              <div id="modalPermit" class="text-lg font-bold text-slate-800 leading-tight">0</div>
+            </div>
+            <div class="rounded-sm border border-slate-200 bg-slate-50 px-3 py-2">
+              <div class="flex items-center gap-1 text-[9px] uppercase tracking-gov2 text-slate-500 font-bold">
+                <span class="material-icons-round text-[12px] text-slate-400">description</span> Applications
+              </div>
+              <div id="modalApps" class="text-lg font-bold text-slate-800 leading-tight">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-slate-50">
+          <div class="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm">
+            <div class="px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-gov2 text-slate-700 flex items-center gap-1.5">
+              <span class="material-icons-round text-[13px] text-slate-500">description</span> Applications
+            </div>
+            <div id="modalApplicationsBody" class="overflow-x-auto"></div>
+          </div>
+
+          <div class="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm">
+            <div class="px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-gov2 text-slate-700 flex items-center gap-1.5">
+              <span class="material-icons-round text-[13px] text-slate-500">assignment</span> Service Requests
+            </div>
+            <div id="modalServiceBody" class="overflow-x-auto"></div>
+          </div>
+
+          <div class="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm">
+            <div class="px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-gov2 text-slate-700 flex items-center gap-1.5">
+              <span class="material-icons-round text-[13px] text-slate-500">badge</span> Licenses and Permits
+            </div>
+            <div id="modalLicenseBody" class="overflow-x-auto"></div>
+          </div>
+
+          <div class="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm">
+            <div class="px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-gov2 text-slate-700 flex items-center gap-1.5">
+              <span class="material-icons-round text-[13px] text-slate-500">payments</span> Transactions
+            </div>
+            <div id="modalTransactionBody" class="overflow-x-auto"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       document.getElementById('liveSearch').addEventListener('keyup', function() {
         let filter = this.value.toLowerCase();
@@ -312,6 +396,17 @@
       btnRandomize: document.getElementById("btnRandomize"),
       btnExport: document.getElementById("btnExport"),
       btnPrint: document.getElementById("btnPrint"),
+      btnViewDetails: document.getElementById("btnViewDetails"),
+      modalWrapper: document.getElementById("detailsModal"),
+      modalClose: document.getElementById("detailsModalClose"),
+      modalService: document.getElementById("modalService"),
+      modalLicense: document.getElementById("modalLicense"),
+      modalPermit: document.getElementById("modalPermit"),
+      modalApps: document.getElementById("modalApps"),
+      modalApplicationsBody: document.getElementById("modalApplicationsBody"),
+      modalServiceBody: document.getElementById("modalServiceBody"),
+      modalLicenseBody: document.getElementById("modalLicenseBody"),
+      modalTransactionBody: document.getElementById("modalTransactionBody"),
     };
 
     function sumApps() {
@@ -495,6 +590,22 @@
           `;
         }
       }
+    }
+
+    function openDetailsModal() {
+      if (!els.modalWrapper) return;
+      renderModalDetails();
+      renderKPIs();
+      els.modalWrapper.classList.remove("hidden");
+      els.modalWrapper.classList.add("flex");
+      document.body.classList.add("overflow-hidden");
+    }
+
+    function closeDetailsModal() {
+      if (!els.modalWrapper) return;
+      els.modalWrapper.classList.add("hidden");
+      els.modalWrapper.classList.remove("flex");
+      document.body.classList.remove("overflow-hidden");
     }
 
     function renderTable() {
@@ -1142,6 +1253,25 @@
     });
 
     els.btnPrint.addEventListener("click", () => window.print());
+
+    if (els.btnViewDetails) {
+      els.btnViewDetails.addEventListener("click", openDetailsModal);
+    }
+    if (els.modalClose) {
+      els.modalClose.addEventListener("click", closeDetailsModal);
+    }
+    if (els.modalWrapper) {
+      els.modalWrapper.addEventListener("click", (event) => {
+        if (event.target === els.modalWrapper) {
+          closeDetailsModal();
+        }
+      });
+    }
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && els.modalWrapper && !els.modalWrapper.classList.contains("hidden")) {
+        closeDetailsModal();
+      }
+    });
 
     // Initialize dashboard with authentication
     onAuthStateChanged(auth, (user) => {
