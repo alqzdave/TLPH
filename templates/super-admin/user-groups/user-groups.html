@@ -330,16 +330,13 @@
 
     <script>
         // ----------------------------------------------------
-        // TABLE & FILTER LOGIC
+        // TABLE, API & FILTER LOGIC
         // ----------------------------------------------------
-        const groups = [
-            {id: 1, name:'Super Admin', desc:'Unrestricted system privileges', members:5, color:'red', clearance:'Level 5', status:'active'},
-            {id: 2, name:'Regional Director', desc:'Full region-level administrative control', members:16, color:'orange', clearance:'Level 4', status:'active'},
-            {id: 3, name:'Secretary', desc:'Manage official records & communications', members:32, color:'blue', clearance:'Level 3', status:'active'},
-            {id: 4, name:'Treasurer', desc:'Handle payments & financial audits', members:14, color:'green', clearance:'Level 3', status:'inactive'},
-            {id: 5, name:'Data Encoder', desc:'Standard data entry and file uploads', members:89, color:'slate', clearance:'Level 2', status:'active'}
-        ];
-        let nextGroupId = 6;
+        let groups = [];
+        let doughnutData = { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }] };
+        let barData = { labels: [], datasets: [{ label: 'Accounts', data: [], backgroundColor: [], borderRadius: 2, borderWidth: 0 }] };
+        let groupChartInstance = null;
+        let accessChartInstance = null;
 
         function getBadgeStyle(color) {
             const styles = {
@@ -352,9 +349,113 @@
             return styles[color] || styles['slate'];
         }
 
+        function colorForClearance(clearance, status) {
+            if (String(status || '').toLowerCase() !== 'active') return 'slate';
+            const c = String(clearance || '').toLowerCase();
+            if (c.includes('5')) return 'red';
+            if (c.includes('4')) return 'orange';
+            if (c.includes('3')) return 'blue';
+            if (c.includes('2')) return 'green';
+            return 'slate';
+        }
+
         function renderStatusBadge(status) {
             if(status === 'active') return '<span class="status-badge bg-emerald-50 text-emerald-800 border-emerald-200 w-16 text-center">Active</span>';
             return '<span class="status-badge bg-slate-100 text-slate-600 border-slate-300 w-16 text-center">Inactive</span>';
+        }
+
+        function updateStatsCards(stats) {
+            const safeStats = stats || {};
+            document.getElementById('statTotalGroups').textContent = String(safeStats.total_groups || groups.length || 0);
+            document.getElementById('statTotalMembers').textContent = String(safeStats.total_members || 0);
+            document.getElementById('statActiveUsers').textContent = String(safeStats.active_users || 0);
+            document.getElementById('statInactiveUsers').textContent = String(safeStats.inactive_users || 0);
+        }
+
+        function rebuildChartDataFromGroups() {
+            const activeGroups = groups.filter(g => String(g.status || '').toLowerCase() === 'active');
+            doughnutData = {
+                labels: activeGroups.map(g => g.name),
+                datasets: [{
+                    data: activeGroups.map(g => Number(g.members || 0)),
+                    backgroundColor: activeGroups.map(g => {
+                        const color = colorForClearance(g.clearance, g.status);
+                        return color === 'red' ? '#be123c'
+                            : color === 'orange' ? '#ea580c'
+                            : color === 'blue' ? '#0ea5e9'
+                            : color === 'green' ? '#15803d'
+                            : '#64748b';
+                    }),
+                    borderWidth: 0
+                }]
+            };
+
+            const clearanceMap = {};
+            groups.forEach(g => {
+                const key = String(g.clearance || 'Unknown').toUpperCase();
+                clearanceMap[key] = (clearanceMap[key] || 0) + Number(g.members || 0);
+            });
+            const clearanceLabels = Object.keys(clearanceMap).sort();
+            barData = {
+                labels: clearanceLabels,
+                datasets: [{
+                    label: 'Accounts',
+                    data: clearanceLabels.map(k => clearanceMap[k]),
+                    backgroundColor: clearanceLabels.map(k => k.includes('5') ? '#be123c' : k.includes('4') ? '#ea580c' : k.includes('3') ? '#0ea5e9' : k.includes('2') ? '#15803d' : '#64748b'),
+                    borderRadius: 2,
+                    borderWidth: 0
+                }]
+            };
+        }
+
+        function renderDashboardCharts() {
+            const chartFont = { size: 9, weight: 'bold', family: 'Verdana, Arial, sans-serif' };
+
+            if (groupChartInstance) groupChartInstance.destroy();
+            if (accessChartInstance) accessChartInstance.destroy();
+
+            groupChartInstance = new Chart(document.getElementById('groupChart'), {
+                type: 'doughnut', data: doughnutData,
+                options: {
+                    responsive: true, maintainAspectRatio: false, devicePixelRatio: window.devicePixelRatio || 2,
+                    plugins: { legend: {position: 'right', labels: {boxWidth: 8, font: chartFont, color: '#475569'}}, tooltip: {enabled: false} },
+                    cutout: '70%'
+                }
+            });
+
+            accessChartInstance = new Chart(document.getElementById('accessChart'), {
+                type: 'bar', data: barData,
+                options: {
+                    indexAxis: 'x', responsive: true, maintainAspectRatio: false, devicePixelRatio: window.devicePixelRatio || 2,
+                    plugins: { legend: {display: false}, tooltip: {enabled: false} },
+                    scales: {
+                        y: {beginAtZero: true, display: false},
+                        x: {grid: {display: false}, ticks: {font: chartFont, color: '#475569'}}
+                    }
+                }
+            });
+        }
+
+        async function fetchGroups() {
+            const resp = await fetch('/api/superadmin/user-groups', { credentials: 'same-origin' });
+            const res = await resp.json();
+            if (!resp.ok || !res.success) {
+                throw new Error(res.message || 'Failed to load groups');
+            }
+            groups = (res.groups || []).map(g => ({
+                id: g.id,
+                name: String(g.name || '').toUpperCase(),
+                desc: String(g.desc || ''),
+                members: Math.max(0, Number(g.members || 0)),
+                color: colorForClearance(g.clearance, g.status),
+                clearance: String(g.clearance || 'Level 1'),
+                status: String(g.status || 'active').toLowerCase() === 'inactive' ? 'inactive' : 'active'
+            }));
+
+            updateStatsCards(res.stats || {});
+            rebuildChartDataFromGroups();
+            renderDashboardCharts();
+            filterGroups();
         }
 
         function filterGroups(){
@@ -382,9 +483,14 @@
                     </td>
                     <td class="px-3 py-1.5 align-middle text-center border-r border-slate-100">${renderStatusBadge(g.status)}</td>
                     <td class="px-3 py-1.5 align-middle text-center no-print">
-                        <button class="btn-action btn-edit w-full" title="Configure" data-group-id="${g.id}">
-                            <span class="material-icons-round text-[12px]">settings</span>
-                        </button>
+                        <div class="flex items-center justify-center gap-1">
+                            <button class="btn-action btn-edit" title="Configure" data-group-id="${g.id}" data-action="configure">
+                                <span class="material-icons-round text-[12px]">settings</span>
+                            </button>
+                            <button class="btn-action btn-delete" title="Delete" data-group-id="${g.id}" data-action="delete">
+                                <span class="material-icons-round text-[12px]">delete</span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('') : '<tr><td colspan="6" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No groups found.</td></tr>';
@@ -398,55 +504,6 @@
 
         document.getElementById('groupSearch').addEventListener('input', filterGroups);
         document.getElementById('groupStatus').addEventListener('change', filterGroups);
-        filterGroups();
-
-        // ----------------------------------------------------
-        // CHART DATA & INITIALIZATION
-        // ----------------------------------------------------
-        const doughnutData = {
-            labels: ['Admin', 'Director', 'Encoder', 'Guest'],
-            datasets: [{
-                data: [5, 16, 89, 46],
-                backgroundColor: ['#1e3a8a', '#15803d', '#0ea5e9', '#64748b'],
-                borderWidth: 0
-            }]
-        };
-
-        const barData = {
-            labels: ['Root', 'Admin', 'Regional', 'Local User'],
-            datasets: [{
-                label: 'Accounts',
-                data: [2, 18, 54, 82],
-                backgroundColor: ['#be123c', '#ea580c', '#0ea5e9', '#15803d'],
-                borderRadius: 2,
-                borderWidth: 0
-            }]
-        };
-
-        const chartFont = { size: 9, weight: 'bold', family: 'Verdana, Arial, sans-serif' };
-
-        setTimeout(() => {
-            new Chart(document.getElementById('groupChart'), {
-                type: 'doughnut', data: doughnutData,
-                options: { 
-                    responsive: true, maintainAspectRatio: false, devicePixelRatio: window.devicePixelRatio || 2, 
-                    plugins: { legend: {position: 'right', labels: {boxWidth: 8, font: chartFont, color: '#475569'}}, tooltip: {enabled: false} },
-                    cutout: '70%'
-                }
-            });
-            
-            new Chart(document.getElementById('accessChart'), {
-                type: 'bar', data: barData,
-                options: { 
-                    indexAxis: 'x', responsive: true, maintainAspectRatio: false, devicePixelRatio: window.devicePixelRatio || 2,
-                    plugins: { legend: {display: false}, tooltip: {enabled: false} }, 
-                    scales: { 
-                        y: {beginAtZero: true, display: false},
-                        x: {grid: {display: false}, ticks: {font: chartFont, color: '#475569'}}
-                    } 
-                }
-            });
-        }, 100);
 
         // ----------------------------------------------------
         // CHART MODAL LOGIC
