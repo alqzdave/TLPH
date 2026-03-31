@@ -8,6 +8,7 @@ import coa_storage
 from firebase_admin import firestore
 import hashlib
 import os
+import re
 import requests
 import time
 
@@ -939,13 +940,102 @@ def _split_full_name(full_name):
     return parts[0], ' '.join(parts[1:])
 
 
+def _safe_float(value, default=0.0):
+    try:
+        if isinstance(value, (int, float)):
+            return float(value)
+        raw = str(value or '').strip()
+        if not raw or raw.upper() in {'N/A', 'NONE', 'NULL'}:
+            return float(default)
+        cleaned = re.sub(r'[^0-9.\-]', '', raw.replace(',', ''))
+        if cleaned in {'', '-', '.', '-.'}:
+            return float(default)
+        return float(cleaned)
+    except Exception:
+        return float(default)
+
+
+def _derive_applicant_salary(db, applicant_data):
+    salary_candidates = [
+        applicant_data.get('starting_salary'),
+        applicant_data.get('salary'),
+        applicant_data.get('basic_pay'),
+        applicant_data.get('net_pay'),
+        applicant_data.get('expected_salary'),
+    ]
+    for candidate in salary_candidates:
+        amount = _safe_float(candidate, 0)
+        if amount > 0:
+            return amount
+
+    source_collection = str(applicant_data.get('source_collection') or '').strip().lower()
+    source_id = str(applicant_data.get('source_id') or '').strip()
+    if source_collection == 'hiring_positions' and source_id:
+        try:
+            source_doc = db.collection('hiring_positions').document(source_id).get()
+            if source_doc.exists:
+                source_data = source_doc.to_dict() or {}
+                amount = _safe_float(source_data.get('starting_salary'), 0)
+                if amount > 0:
+                    return amount
+        except Exception:
+            pass
+
+    return 0.0
+
+
+def _build_default_payroll_fields(base_salary):
+    base = max(_safe_float(base_salary, 0), 0)
+    allowances = 0.0
+    deductions = 0.0
+    gross = base + allowances
+    net = gross - deductions
+    return {
+        'starting_salary': base,
+        'basic_pay': base,
+        'allowances': allowances,
+        'gross_pay': gross,
+        'deductions': deductions,
+        'net_pay': net,
+        'period': 'MONTHLY',
+        'status': 'DRAFT',
+    }
+
+
 def _ensure_employee_from_applicant(db, applicant_id, applicant_data, actor):
     """Create an employee document from accepted applicant if not already created."""
     try:
+        payroll_defaults = _build_default_payroll_fields(_derive_applicant_salary(db, applicant_data))
+
         existing = db.collection('employees').where(
             filter=firestore.FieldFilter('source_applicant_id', '==', applicant_id)
         ).limit(1).stream()
         for doc in existing:
+            existing_data = doc.to_dict() or {}
+            updates = {}
+            if payroll_defaults['starting_salary'] > 0:
+                if _safe_float(existing_data.get('starting_salary'), 0) <= 0:
+                    updates['starting_salary'] = payroll_defaults['starting_salary']
+                if _safe_float(existing_data.get('basic_pay'), 0) <= 0:
+                    updates['basic_pay'] = payroll_defaults['basic_pay']
+                if _safe_float(existing_data.get('gross_pay'), 0) <= 0:
+                    updates['gross_pay'] = payroll_defaults['gross_pay']
+                if _safe_float(existing_data.get('net_pay'), 0) <= 0:
+                    updates['net_pay'] = payroll_defaults['net_pay']
+
+            if existing_data.get('allowances') is None:
+                updates['allowances'] = payroll_defaults['allowances']
+            if existing_data.get('deductions') is None:
+                updates['deductions'] = payroll_defaults['deductions']
+            if not existing_data.get('period'):
+                updates['period'] = payroll_defaults['period']
+            if not existing_data.get('status'):
+                updates['status'] = payroll_defaults['status']
+
+            if updates:
+                updates['updated_by'] = actor
+                updates['updated_at'] = firestore.SERVER_TIMESTAMP
+                doc.reference.set(updates, merge=True)
             return doc.id
 
         first_name, last_name = _split_full_name(
@@ -989,6 +1079,14 @@ def _ensure_employee_from_applicant(db, applicant_id, applicant_data, actor):
             'status': 'Active',
             'role': 'municipal' if scope_type == 'municipality' else 'regional',
             'remarks': 'Auto-created from approved applicant',
+            'starting_salary': payroll_defaults['starting_salary'],
+            'basic_pay': payroll_defaults['basic_pay'],
+            'allowances': payroll_defaults['allowances'],
+            'gross_pay': payroll_defaults['gross_pay'],
+            'deductions': payroll_defaults['deductions'],
+            'net_pay': payroll_defaults['net_pay'],
+            'period': payroll_defaults['period'],
+            'status': payroll_defaults['status'],
             'source_applicant_id': applicant_id,
             'source_reference_id': reference_id,
             'created_by': actor,
@@ -1112,10 +1210,10 @@ def superadmin_applicants_data():
                 data.get('status') or data.get('employeeStatus') or data.get('application_status')
             )
 
-            # Backfill: ensure already-approved applicants are also in employees collection
-            if status == 'accepted' and not data.get('employee_doc_id'):
+            # Backfill: ensure already-approved applicants are in employees and have payroll fields
+            if status == 'accepted':
                 employee_doc_id = _ensure_employee_from_applicant(db, doc.id, data, actor)
-                if employee_doc_id:
+                if employee_doc_id and not data.get('employee_doc_id'):
                     doc.reference.set({
                         'employee_doc_id': employee_doc_id,
                         'converted_to_employee_at': firestore.SERVER_TIMESTAMP,
@@ -1789,6 +1887,7 @@ def api_get_superadmin_payroll():
         for doc in docs:
             data = doc.to_dict() or {}
             data['id'] = doc.id
+            fallback_salary = _safe_float(data.get('starting_salary'), 0)
             # Compose full name if missing
             if not data.get('name'):
                 fn = data.get('first_name', '')
@@ -1799,7 +1898,10 @@ def api_get_superadmin_payroll():
             for field in required_fields:
                 if field not in data or data[field] is None:
                     if field in ['basic_pay', 'allowances', 'gross_pay', 'deductions', 'net_pay']:
-                        data[field] = 0
+                        if field in ['basic_pay', 'gross_pay', 'net_pay'] and fallback_salary > 0:
+                            data[field] = fallback_salary
+                        else:
+                            data[field] = 0
                     elif field == 'status':
                         data[field] = 'DRAFT'
                     elif field == 'period':
