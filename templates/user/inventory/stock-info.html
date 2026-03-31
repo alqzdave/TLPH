@@ -84,6 +84,26 @@
                             <span id="sourceLocation" class="text-sm font-semibold text-slate-700"></span>
                         </div>
 
+                        <div class="mt-4 pt-4 border-t border-slate-100">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Farmer ID Number</label>
+                                    <span id="inventoryFarmerId" class="text-sm font-semibold text-slate-700">—</span>
+                                </div>
+                                <div>
+                                    <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">GPS Coordinates</label>
+                                    <span id="inventoryGpsCoords" class="text-sm font-semibold text-slate-700">—</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">GPS Map Link</label>
+                                <a id="inventoryGpsLink" href="#" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-emerald-700 hover:text-emerald-800 break-all no-underline hidden">
+                                    Open GPS Location
+                                </a>
+                                <span id="inventoryGpsLinkFallback" class="text-sm font-semibold text-slate-700">N/A</span>
+                            </div>
+                        </div>
+
                         <div id="protectedRow" class="hidden mt-4 pt-4 border-t border-slate-100">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="text-[8px] font-black text-orange-600 uppercase tracking-widest">Protected Species</span>
@@ -330,6 +350,48 @@
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+        }
+
+        function renderDocumentGroups(documentsList, groupedItems, docIcons = {}) {
+            documentsList.innerHTML = groupedItems
+                .map(({ key, label, files }) => {
+                    return `
+                        <div class="p-2 bg-white border border-gray-200 rounded-lg hover:border-emerald-500 transition-all">
+                            <div class="flex items-center justify-between gap-2 min-w-0">
+                                <div class="flex items-center gap-2 min-w-0">
+                                <span class="material-icons-round text-slate-400 text-sm">${docIcons[key] || 'description'}</span>
+                                <span class="text-[8px] font-black text-slate-600 uppercase truncate">${escapeHtml(label)} ${files.length > 1 ? `(${files.length})` : ''}</span>
+                                ${(() => {
+                                    const encodedUrls = encodeURIComponent(JSON.stringify(files.map(f => f.url)));
+                                    const encodedLabel = encodeURIComponent(label);
+                                    return `
+                                        <button type="button"
+                                            onclick="openApplicationAttachmentGroupFromEncoded('${encodedUrls}','${encodedLabel}')"
+                                            class="inline-flex items-center justify-center gap-1 text-[8px] font-black uppercase bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded whitespace-nowrap">
+                                            <i class="fa-solid fa-eye"></i> View
+                                        </button>
+                                    `;
+                                })()}
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+            if (!documentsList.innerHTML.trim()) {
+                documentsList.innerHTML = '<p class="col-span-full text-center text-xs text-gray-400">No documents available</p>';
+            }
+        }
+
+        function normalizeGroupedFiles(raw) {
+            const values = Array.isArray(raw) ? raw : [raw];
+            return values
+                .filter(Boolean)
+                .map(rawUrl => normalizeFileUrl(rawUrl))
+                .filter(Boolean)
+                .map((url) => ({
+                    url,
+                    fileName: decodeURIComponent(String(url).split('?')[0].split('/').pop() || 'file')
+                }));
         }
 
         function closeAttachmentPreview() {
@@ -675,7 +737,7 @@
                 const imgEl = document.getElementById('productImage');
                 const noPhoto = document.getElementById('noPhotoState');
                 if (imageUrl) {
-                    imgEl.src = imageUrl;
+                    imgEl.src = toProxyUrl(imageUrl) || imageUrl;
                     imgEl.classList.remove('hidden');
                     imgEl.onerror = function() {
                         // URL stored but file not accessible — show no-photo state
@@ -730,12 +792,30 @@
                     document.getElementById('sourceLocation').textContent = app.sourceLocation || '—';
                     document.getElementById('submittedDate').textContent = formatDate(app.createdAt || app.submittedAt);
 
+                    const inventoryFarmerId = app.farmerIdNumber || app?.formData?.farmerIdNumber || 'N/A';
+                    const inventoryLat = String(app.stockLatitude || app?.formData?.stockLatitude || '').trim();
+                    const inventoryLng = String(app.stockLongitude || app?.formData?.stockLongitude || '').trim();
+                    const inventoryGpsLink = String(app.stockGpsLink || app?.formData?.stockGpsLink || '').trim();
+                    document.getElementById('inventoryFarmerId').textContent = inventoryFarmerId;
+                    document.getElementById('inventoryGpsCoords').textContent = inventoryLat && inventoryLng ? `${inventoryLat}, ${inventoryLng}` : 'N/A';
+                    const gpsAnchor = document.getElementById('inventoryGpsLink');
+                    const gpsFallback = document.getElementById('inventoryGpsLinkFallback');
+                    if (inventoryGpsLink) {
+                        gpsAnchor.href = inventoryGpsLink;
+                        gpsAnchor.classList.remove('hidden');
+                        gpsFallback.classList.add('hidden');
+                    } else {
+                        gpsAnchor.href = '#';
+                        gpsAnchor.classList.add('hidden');
+                        gpsFallback.classList.remove('hidden');
+                    }
+
                     if (app.isProtected) {
                         document.getElementById('protectedRow').classList.remove('hidden');
                         document.getElementById('permitNumber').textContent = app.permitNumber || '—';
                         const permitLink = document.getElementById('permitFileLink');
                         if (app.permitUrl) {
-                            permitLink.href = app.permitUrl;
+                            permitLink.href = toProxyUrl(app.permitUrl) || app.permitUrl;
                         } else {
                             permitLink.outerHTML = '<span class="text-sm text-slate-400 italic">No file attached</span>';
                         }
@@ -763,8 +843,55 @@
 
                     document.getElementById('inventoryFields').classList.remove('hidden');
 
-                    // Hide documents section for inventory (uses imageUrl directly in header)
-                    document.getElementById('documentsList').closest('.bg-gray-50').classList.add('hidden');
+                    // Show inventory attachments and supporting documents
+                    const documentsList = document.getElementById('documentsList');
+                    const docIcons = {
+                        image: 'photo_camera',
+                        visitApproval: 'task_alt',
+                        scientificStudies: 'science',
+                        permit: 'description',
+                        newStockImages: 'collections',
+                        attachments: 'folder'
+                    };
+                    const docLabels = {
+                        image: 'Main Resource Photo',
+                        visitApproval: 'Visit Approval Document',
+                        scientificStudies: 'Scientific Studies of Origin',
+                        permit: 'Permit File',
+                        newStockImages: 'New Stock Images'
+                    };
+
+                    const groupedItems = [];
+                    const pushGroup = (key, label, rawFiles) => {
+                        const files = normalizeGroupedFiles(rawFiles);
+                        if (!files.length) return;
+                        groupedItems.push({ key, label, files });
+                    };
+
+                    pushGroup('image', docLabels.image, app.imageUrl || app.image || app.photoUrl || app.photo);
+                    pushGroup('visitApproval', docLabels.visitApproval, app.visitApprovalUrl || app?.files?.visitApproval);
+                    pushGroup('scientificStudies', docLabels.scientificStudies, app.scientificStudyUrl || app?.files?.scientificStudies);
+                    pushGroup('newStockImages', docLabels.newStockImages, app.newStockImageUrls || app?.files?.newStockImages);
+                    pushGroup('permit', docLabels.permit, app.permitUrl || app?.files?.permit || app.permitFile || app.permitFileUrl);
+
+                    if (app.files && typeof app.files === 'object') {
+                        Object.entries(app.files).forEach(([key, value]) => {
+                            if (String(key).endsWith('Primary')) return;
+                            const existing = groupedItems.find(item => item.key === key);
+                            if (existing) return;
+                            const files = normalizeGroupedFiles(value);
+                            if (!files.length) return;
+                            groupedItems.push({
+                                key,
+                                label: docLabels[key] || key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ').trim(),
+                                files
+                            });
+                        });
+                    }
+
+                    renderDocumentGroups(documentsList, groupedItems, docIcons);
+
+                    documentsList.closest('.bg-gray-50').classList.remove('hidden');
 
                 } else {
                     // --- Application view ---
@@ -849,15 +976,7 @@
                         const groupedItems = [];
                         Object.entries(app.files).forEach(([key, value]) => {
                             if (String(key).endsWith('Primary')) return;
-                            const values = Array.isArray(value) ? value : [value];
-                            const files = values
-                                .filter(Boolean)
-                                .map(rawUrl => normalizeFileUrl(rawUrl))
-                                .filter(Boolean)
-                                .map((url) => ({
-                                    url,
-                                    fileName: decodeURIComponent(String(url).split('?')[0].split('/').pop() || 'file')
-                                }));
+                            const files = normalizeGroupedFiles(value);
                             if (!files.length) return;
 
                             groupedItems.push({
@@ -867,33 +986,7 @@
                             });
                         });
 
-                        documentsList.innerHTML = groupedItems
-                            .map(({ key, label, files }) => {
-                                return `
-                                    <div class="p-2 bg-white border border-gray-200 rounded-lg hover:border-emerald-500 transition-all">
-                                        <div class="flex items-center justify-between gap-2 min-w-0">
-                                            <div class="flex items-center gap-2 min-w-0">
-                                            <span class="material-icons-round text-slate-400 text-sm">${docIcons[key] || 'description'}</span>
-                                            <span class="text-[8px] font-black text-slate-600 uppercase truncate">${escapeHtml(label)} ${files.length > 1 ? `(${files.length})` : ''}</span>
-                                            ${(() => {
-                                                const encodedUrls = encodeURIComponent(JSON.stringify(files.map(f => f.url)));
-                                                const encodedLabel = encodeURIComponent(label);
-                                                return `
-                                                    <button type="button"
-                                                        onclick="openApplicationAttachmentGroupFromEncoded('${encodedUrls}','${encodedLabel}')"
-                                                        class="inline-flex items-center justify-center gap-1 text-[8px] font-black uppercase bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded whitespace-nowrap">
-                                                        <i class="fa-solid fa-eye"></i> View
-                                                    </button>
-                                                `;
-                                            })()}
-                                            </div>
-                                        </div>
-                                    </div>`;
-                            }).join('');
-
-                        if (!documentsList.innerHTML.trim()) {
-                            documentsList.innerHTML = '<p class="col-span-full text-center text-xs text-gray-400">No documents available</p>';
-                        }
+                        renderDocumentGroups(documentsList, groupedItems, docIcons);
                     } else if (app.fileReferences) {
                         documentsList.innerHTML = Object.entries(app.fileReferences).map(([key, fileName]) => `
                             <div class="flex items-center gap-2 p-2 bg-white border border-gray-200 rounded-lg">

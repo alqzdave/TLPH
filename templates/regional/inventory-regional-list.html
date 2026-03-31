@@ -269,6 +269,33 @@
                             <p class="text-[9px] font-black uppercase tracking-widest text-slate-500 m-0 mb-2">Description</p>
                             <p id="modalDescription" class="text-[10px] font-semibold text-slate-700 m-0 leading-relaxed">—</p>
                         </div>
+
+                        <div class="rounded-[4px] border border-slate-200 p-3 bg-slate-50">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-500 m-0 mb-2">Farmer & Location</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">Farmer ID</p>
+                                    <p id="modalFarmerId" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">GPS Coordinates</p>
+                                    <p id="modalGpsCoords" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">Property Number</p>
+                                    <p id="modalPropertyNumber" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] font-bold uppercase tracking-widest text-slate-400 m-0">Source Location</p>
+                                    <p id="modalSourceLocation" class="text-[11px] font-bold text-slate-700 m-0 mt-1">—</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-[4px] border border-slate-200 p-3">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-500 m-0 mb-2">Attachments</p>
+                            <div id="modalDocuments" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+                        </div>
                     </div>
 
                     <div class="space-y-3">
@@ -286,6 +313,21 @@
                             <p id="modalActionNote" class="text-[8px] font-bold uppercase tracking-widest text-slate-400 mt-3 m-0">Actions are final and logged.</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="attachmentPreviewModal" class="fixed inset-0 z-[140] hidden bg-slate-900/70 backdrop-blur-sm p-4">
+        <div class="h-full w-full flex items-center justify-center">
+            <div class="w-full max-w-5xl rounded-[4px] border border-slate-300 bg-white shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+                    <h3 id="attachmentPreviewTitle" class="text-[11px] font-black uppercase tracking-widest text-slate-700 m-0">Attachment Preview</h3>
+                    <button id="attachmentPreviewCloseBtn" class="inline-flex items-center justify-center rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100">Close</button>
+                </div>
+                <div class="p-3 bg-slate-100 max-h-[78vh] overflow-auto flex items-center justify-center">
+                    <img id="attachmentPreviewImage" src="" alt="Attachment Preview" class="hidden max-w-full max-h-[70vh] object-contain rounded" />
+                    <iframe id="attachmentPreviewFrame" src="" class="hidden w-full h-[70vh] bg-white rounded border border-slate-200"></iframe>
                 </div>
             </div>
         </div>
@@ -320,12 +362,138 @@
             modalDateFiled: document.getElementById('modalDateFiled'),
             modalStatus: document.getElementById('modalStatus'),
             modalDescription: document.getElementById('modalDescription'),
+            modalFarmerId: document.getElementById('modalFarmerId'),
+            modalGpsCoords: document.getElementById('modalGpsCoords'),
+            modalPropertyNumber: document.getElementById('modalPropertyNumber'),
+            modalSourceLocation: document.getElementById('modalSourceLocation'),
+            modalDocuments: document.getElementById('modalDocuments'),
             modalOwner: document.getElementById('modalOwner'),
             modalActionNote: document.getElementById('modalActionNote'),
             btnApproveStock: document.getElementById('btnApproveStock'),
             btnForwardStock: document.getElementById('btnForwardStock'),
-            btnRejectStock: document.getElementById('btnRejectStock')
+            btnRejectStock: document.getElementById('btnRejectStock'),
+            attachmentPreviewModal: document.getElementById('attachmentPreviewModal'),
+            attachmentPreviewTitle: document.getElementById('attachmentPreviewTitle'),
+            attachmentPreviewCloseBtn: document.getElementById('attachmentPreviewCloseBtn'),
+            attachmentPreviewImage: document.getElementById('attachmentPreviewImage'),
+            attachmentPreviewFrame: document.getElementById('attachmentPreviewFrame')
         };
+
+        function toProxyUrl(rawUrl) {
+            if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+            const trimmed = rawUrl.trim();
+            if (!trimmed) return '';
+            if (/^\/api\/files\/proxy\?/i.test(trimmed)) return trimmed;
+            if (!trimmed.startsWith('http')) return trimmed;
+            return `/api/files/proxy?url=${encodeURIComponent(trimmed)}`;
+        }
+
+        function isImageFile(url) {
+            return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url || '');
+        }
+
+        function showAttachmentPreview(rawUrl, label) {
+            const previewUrl = toProxyUrl(rawUrl) || rawUrl;
+            if (!previewUrl) return;
+
+            modalEls.attachmentPreviewTitle.textContent = label || 'Attachment Preview';
+            modalEls.attachmentPreviewImage.classList.add('hidden');
+            modalEls.attachmentPreviewFrame.classList.add('hidden');
+            modalEls.attachmentPreviewImage.src = '';
+            modalEls.attachmentPreviewImage.onerror = null;
+            modalEls.attachmentPreviewFrame.src = '';
+
+            if (isImageFile(rawUrl)) {
+                modalEls.attachmentPreviewImage.src = previewUrl;
+                modalEls.attachmentPreviewImage.classList.remove('hidden');
+            } else {
+                modalEls.attachmentPreviewFrame.src = previewUrl;
+                modalEls.attachmentPreviewFrame.classList.remove('hidden');
+            }
+
+            modalEls.attachmentPreviewModal.classList.remove('hidden');
+        }
+
+        function closeAttachmentPreview() {
+            modalEls.attachmentPreviewImage.src = '';
+            modalEls.attachmentPreviewImage.onerror = null;
+            modalEls.attachmentPreviewFrame.src = '';
+            modalEls.attachmentPreviewModal.classList.add('hidden');
+        }
+
+        window.openRegionalAttachmentFromEncoded = function(encodedUrl, encodedLabel = '') {
+            try {
+                const url = decodeURIComponent(encodedUrl || '');
+                const label = decodeURIComponent(encodedLabel || 'Attachment Preview');
+                showAttachmentPreview(url, label);
+            } catch (err) {
+                console.error('Failed to open regional attachment preview:', err);
+            }
+        };
+
+        function extractAttachmentLinks(item) {
+            const docs = [];
+            const seen = new Set();
+
+            function pushDoc(label, url) {
+                if (!url || typeof url !== 'string') return;
+                const normalizedUrl = url.trim();
+                if (!normalizedUrl || seen.has(normalizedUrl)) return;
+                if (!(normalizedUrl.startsWith('http') || normalizedUrl.startsWith('/'))) return;
+                seen.add(normalizedUrl);
+                docs.push({ label, url: normalizedUrl });
+            }
+
+            pushDoc('Resource Photo', item.imageUrl);
+            pushDoc('Visit Approval Document', item.visitApprovalUrl);
+            pushDoc('Scientific Studies of Origin', item.scientificStudyUrl);
+            pushDoc('Permit File', item.permitUrl);
+
+            if (Array.isArray(item.newStockImageUrls)) {
+                item.newStockImageUrls.forEach((url, idx) => pushDoc(`New Stock Image ${idx + 1}`, url));
+            }
+
+            const source = item.attachments;
+            if (Array.isArray(source)) {
+                source.forEach((entry, index) => {
+                    if (typeof entry === 'string') {
+                        pushDoc(`Attachment ${index + 1}`, entry);
+                    } else if (entry && typeof entry === 'object') {
+                        pushDoc(entry.name || entry.label || `Attachment ${index + 1}`, entry.url || entry.path || entry.downloadURL || entry.downloadUrl);
+                    }
+                });
+            } else if (source && typeof source === 'object') {
+                Object.entries(source).forEach(([key, value]) => {
+                    if (typeof value === 'string') {
+                        const label = key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ').trim();
+                        pushDoc(label ? label.toUpperCase() : 'Attachment', value);
+                    } else if (value && typeof value === 'object') {
+                        pushDoc(value.name || value.label || key, value.url || value.path || value.downloadURL || value.downloadUrl);
+                    }
+                });
+            }
+
+            return docs;
+        }
+
+        function renderInventoryDocuments(item) {
+            const docs = extractAttachmentLinks(item);
+            if (!docs.length) {
+                modalEls.modalDocuments.innerHTML = '<p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 m-0">No attachments uploaded.</p>';
+                return;
+            }
+
+            modalEls.modalDocuments.innerHTML = docs.map(d => `
+                <div class="rounded-[3px] border border-slate-200 bg-slate-50 p-2 flex items-center justify-between gap-2">
+                    <p class="text-[9px] font-bold uppercase tracking-widest text-slate-700 m-0">${d.label}</p>
+                    ${(() => {
+                        const encodedUrl = encodeURIComponent(d.url || '');
+                        const encodedLabel = encodeURIComponent(d.label || 'Attachment Preview');
+                        return `<button type="button" onclick="openRegionalAttachmentFromEncoded('${encodedUrl}','${encodedLabel}')" class="rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-700 hover:bg-slate-100">View</button>`;
+                    })()}
+                </div>
+            `).join('');
+        }
 
         function normalizeStatus(value) {
             return String(value || '').toLowerCase().trim().replace(/\s+/g, '-');
@@ -335,6 +503,10 @@
             const nationalStatus = normalizeStatus(item.nationalStatus);
             const regionalStatus = normalizeStatus(item.regionalStatus);
             const baseStatus = normalizeStatus(item.status || 'pending');
+            const approvedByLevelRaw = String(item.approvedByLevel || '').trim();
+            const rejectedByLevelRaw = String(item.rejectedByLevel || '').trim();
+            const approvedByLevelLower = approvedByLevelRaw.toLowerCase();
+            const rejectedByLevelLower = rejectedByLevelRaw.toLowerCase();
             const approvedByLevel = String(item.approvedByLevel || '').trim().toUpperCase();
             const rejectedByLevel = String(item.rejectedByLevel || '').trim().toUpperCase();
             const forwardedToLevel = String(item.forwardedToLevel || '').trim().toUpperCase();
@@ -348,21 +520,34 @@
                     badge: 'bg-violet-50 text-violet-700 border-violet-200'
                 };
             }
-            if (regionalStatus === 'approved' || baseStatus === 'approved') {
+
+            const municipalApprovedAwaitingRegional = (
+                baseStatus === 'approved' &&
+                approvedByLevelLower === 'municipal' &&
+                regionalStatus !== 'approved' &&
+                regionalStatus !== 'rejected' &&
+                nationalStatus !== 'approved' &&
+                nationalStatus !== 'rejected'
+            );
+
+            if (municipalApprovedAwaitingRegional || baseStatus === 'to-review') {
+                return { code: 'to-review', label: 'PENDING REGIONAL REVIEW', badge: 'bg-amber-50 text-amber-700 border-amber-200' };
+            }
+
+            if (regionalStatus === 'approved' || (baseStatus === 'approved' && approvedByLevelLower !== 'municipal')) {
                 return {
                     code: 'approved',
                     label: approvedByLevel ? `APPROVED BY ${approvedByLevel}` : (regionalStatus === 'approved' ? 'APPROVED BY REGIONAL' : 'APPROVED'),
                     badge: 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 };
             }
-            if (regionalStatus === 'rejected' || baseStatus === 'rejected') {
+            if (regionalStatus === 'rejected' || (baseStatus === 'rejected' && rejectedByLevelLower !== 'municipal')) {
                 return {
                     code: 'rejected',
                     label: rejectedByLevel ? `REJECTED BY ${rejectedByLevel}` : (regionalStatus === 'rejected' ? 'REJECTED BY REGIONAL' : 'REJECTED'),
                     badge: 'bg-rose-50 text-rose-700 border-rose-200'
                 };
             }
-            if (baseStatus === 'to-review') return { code: 'to-review', label: 'PENDING REGIONAL REVIEW', badge: 'bg-amber-50 text-amber-700 border-amber-200' };
             return { code: 'pending', label: 'PENDING', badge: 'bg-slate-50 text-slate-700 border-slate-200' };
         }
 
@@ -383,11 +568,17 @@
             const st = normalizeStatus(item.status);
             const regionalStatus = normalizeStatus(item.regionalStatus);
             const nationalStatus = normalizeStatus(item.nationalStatus);
+            const approvedByLevel = String(item.approvedByLevel || '').trim().toLowerCase();
+            const rejectedByLevel = String(item.rejectedByLevel || '').trim().toLowerCase();
+
+            const approvedFinalByRegionalOrNational = st === 'approved' && ['regional', 'national'].includes(approvedByLevel);
+            const rejectedFinalByRegionalOrNational = st === 'rejected' && ['regional', 'national'].includes(rejectedByLevel);
+
             return (
                 nationalStatus === 'approved' ||
                 nationalStatus === 'rejected' ||
-                st === 'approved' ||
-                st === 'rejected' ||
+                approvedFinalByRegionalOrNational ||
+                rejectedFinalByRegionalOrNational ||
                 st === 'forwarded-to-national' ||
                 regionalStatus === 'approved' ||
                 regionalStatus === 'rejected'
@@ -418,12 +609,19 @@
             modalEls.modalDateFiled.textContent = formatDate(item.createdAt || item.addedDate);
             modalEls.modalStatus.textContent = statusMeta.label;
             modalEls.modalDescription.textContent = item.description || 'N/A';
+            modalEls.modalFarmerId.textContent = item.farmerIdNumber || 'N/A';
+            modalEls.modalGpsCoords.textContent = (item.stockLatitude && item.stockLongitude)
+                ? `${item.stockLatitude}, ${item.stockLongitude}`
+                : 'N/A';
+            modalEls.modalPropertyNumber.textContent = item.propertyNumber || 'N/A';
+            modalEls.modalSourceLocation.textContent = item.sourceLocation || 'N/A';
             modalEls.modalOwner.textContent = item.owner || 'Unknown';
             modalEls.modalActionNote.textContent = isFinal
                 ? 'This record has a final regional action. Buttons are disabled.'
                 : 'Select an action to continue the regional workflow.';
 
             setActionButtonsDisabled(isFinal);
+            renderInventoryDocuments(item);
             modalEls.inventoryDetailsModal.classList.remove('hidden');
         }
 
@@ -520,7 +718,8 @@
                 inventorySnapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     const userInfo = usersMap[data.userId] || { name: 'Unknown', municipality: 'N/A', province: 'UNKNOWN' };
-                    const itemProvince = userInfo.province.toUpperCase();
+                    const itemProvince = String(data.province || userInfo.province || 'UNKNOWN').toUpperCase();
+                    const itemMunicipality = String(data.municipality || userInfo.municipality || 'N/A');
                     
                     // Only include items from user's provinces
                     if (userProvinces.length === 0 || userProvinces.includes(itemProvince)) {
@@ -528,7 +727,7 @@
                             id: docSnap.id,
                             name: data.resourceName || data.productName || data.name || 'Unnamed',
                             category: data.sector || data.category || 'General',
-                            municipality: userInfo.municipality,
+                            municipality: itemMunicipality,
                             province: itemProvince,
                             currentQty: Number(data.stockAvailable || data.currentQuantity || data.quantity || 0),
                             addedDate: data.createdAt ? data.createdAt.toDate().toISOString().split('T')[0] : '',
@@ -542,7 +741,19 @@
                             forwardedToLevel: data.forwardedToLevel || '',
                             registrationFee: Number(data.registrationFee || 0),
                             unitOfMeasure: data.unitOfMeasure || 'pcs',
-                            createdAt: data.createdAt || null
+                            createdAt: data.createdAt || null,
+                            farmerIdNumber: data.farmerIdNumber || '',
+                            stockLatitude: data.stockLatitude || '',
+                            stockLongitude: data.stockLongitude || '',
+                            stockGpsLink: data.stockGpsLink || '',
+                            propertyNumber: data.propertyNumber || '',
+                            sourceLocation: data.sourceLocation || '',
+                            imageUrl: data.imageUrl || data.image || data.photoUrl || data.photo || '',
+                            permitUrl: data.permitUrl || data.permit || data.permitFile || data.permitFileUrl || '',
+                            visitApprovalUrl: data.visitApprovalUrl || data.files?.visitApproval || '',
+                            scientificStudyUrl: data.scientificStudyUrl || data.files?.scientificStudies || '',
+                            newStockImageUrls: data.newStockImageUrls || data.files?.newStockImages || [],
+                            attachments: data.attachments || data.documents || data.files || data.filePaths || data.uploadedFiles || null
                         });
                     }
                 });
@@ -658,9 +869,19 @@
         modalEls.inventoryDetailsModal.addEventListener('click', (event) => {
             if (event.target === modalEls.inventoryDetailsModal) closeInventoryModal();
         });
+        modalEls.attachmentPreviewCloseBtn.addEventListener('click', closeAttachmentPreview);
+        modalEls.attachmentPreviewModal.addEventListener('click', (event) => {
+            if (event.target === modalEls.attachmentPreviewModal) closeAttachmentPreview();
+        });
         modalEls.btnApproveStock.addEventListener('click', () => updateInventoryStatus('approved'));
         modalEls.btnForwardStock.addEventListener('click', () => updateInventoryStatus('forwarded-to-national'));
         modalEls.btnRejectStock.addEventListener('click', () => updateInventoryStatus('rejected'));
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modalEls.attachmentPreviewModal.classList.contains('hidden')) {
+                closeAttachmentPreview();
+            }
+        });
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {

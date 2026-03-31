@@ -2429,15 +2429,22 @@ def upload_profile_photo():
 
 @bp.route('/upload-inventory-image', methods=['POST'])
 def upload_inventory_image():
-    """Upload inventory image/permit to server filesystem (no Firebase Storage CORS issues)"""
+    """Upload inventory attachments and return the stored file URL."""
     try:
         from werkzeug.utils import secure_filename
 
         user_id = request.form.get('userId', 'unknown')
-        file_type = request.form.get('fileType', 'image')  # 'image' or 'permit'
+        file_type = request.form.get('fileType', 'image').strip()  # e.g. image/permit/visitApprovalFile/etc
 
-        file_key = 'image' if file_type == 'image' else 'permit'
-        if file_key not in request.files:
+        # Backward-compatible: fallback to legacy keys when caller sends a generic fileType.
+        candidate_keys = [file_type]
+        if file_type == 'image':
+            candidate_keys.extend(['image'])
+        elif file_type == 'permit':
+            candidate_keys.extend(['permit'])
+
+        file_key = next((k for k in candidate_keys if k in request.files), None)
+        if not file_key:
             return jsonify({'success': False, 'error': 'No file provided'}), 400
 
         file = request.files[file_key]
@@ -2450,7 +2457,7 @@ def upload_inventory_image():
             or request.host.startswith('localhost')
         )
 
-        allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
+        allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'doc', 'docx'}
         ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
         if ext not in allowed:
             return jsonify({'success': False, 'error': f'Invalid file type: {ext}'}), 400

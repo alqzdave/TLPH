@@ -236,10 +236,63 @@ def inventory_view():
                 return raw
             return None
 
+        def effective_status_payload(data):
+            normalize = lambda v: str(v or '').strip().lower().replace('_', '-').replace(' ', '-')
+            status = normalize(data.get('status'))
+            regional_status = normalize(data.get('regionalStatus'))
+            national_status = normalize(data.get('nationalStatus'))
+            approved_by_level = normalize(data.get('approvedByLevel'))
+            rejected_by_level = normalize(data.get('rejectedByLevel'))
+
+            if national_status == 'approved':
+                return {'key': 'approved-national', 'label': 'Approved by National'}
+            if national_status == 'rejected':
+                return {'key': 'rejected-national', 'label': 'Rejected by National'}
+
+            if status in {'forwarded-to-national', 'forwarded-national'}:
+                return {'key': 'forwarded-national', 'label': 'Forwarded to National'}
+
+            if status in {'to-review', 'to-review-regional', 'to_review'} or 'forward' in status:
+                return {'key': 'forwarded-regional', 'label': 'Forwarded to Regional'}
+
+            if status == 'approved':
+                if 'regional' in approved_by_level:
+                    return {'key': 'approved-regional', 'label': 'Approved by Regional'}
+                if 'national' in approved_by_level:
+                    return {'key': 'approved-national', 'label': 'Approved by National'}
+                return {'key': 'approved-municipal', 'label': 'Approved by Municipal'}
+
+            if status == 'rejected':
+                if 'regional' in rejected_by_level:
+                    return {'key': 'rejected-regional', 'label': 'Rejected by Regional'}
+                if 'national' in rejected_by_level:
+                    return {'key': 'rejected-national', 'label': 'Rejected by National'}
+                return {'key': 'rejected-municipal', 'label': 'Rejected by Municipal'}
+
+            if regional_status == 'approved':
+                return {'key': 'approved-regional', 'label': 'Approved by Regional'}
+            if regional_status == 'rejected':
+                return {'key': 'rejected-regional', 'label': 'Rejected by Regional'}
+
+            return {'key': 'pending', 'label': 'Pending Review'}
+
         for doc in docs:
             data = doc.to_dict() or {}
             form_data = data.get('formData') or {}
             user_data = users_map.get(data.get('userId', ''), {})
+
+            full_name = (
+                data.get('userName')
+                or data.get('ownerName')
+                or data.get('applicantName')
+                or f"{str(user_data.get('firstName') or '').strip()} {str(user_data.get('lastName') or '').strip()}".strip()
+                or user_data.get('displayName')
+                or user_data.get('userName')
+                or data.get('userEmail')
+                or user_data.get('email')
+                or data.get('email')
+                or 'Unknown User'
+            )
 
             quantity = to_number(
                 data.get('stockAvailable')
@@ -297,6 +350,38 @@ def inventory_view():
                 or 'N/A'
             )
 
+            farmer_id_number = (
+                data.get('farmerIdNumber')
+                or form_data.get('farmerIdNumber')
+                or ''
+            )
+
+            stock_latitude = (
+                data.get('stockLatitude')
+                or form_data.get('stockLatitude')
+                or ''
+            )
+            stock_longitude = (
+                data.get('stockLongitude')
+                or form_data.get('stockLongitude')
+                or ''
+            )
+            stock_gps_link = (
+                data.get('stockGpsLink')
+                or form_data.get('stockGpsLink')
+                or ''
+            )
+
+            property_number = data.get('propertyNumber') or form_data.get('propertyNumber') or ''
+            source_location = data.get('sourceLocation') or form_data.get('sourceLocation') or ''
+
+            image_url = data.get('imageUrl') or data.get('image') or data.get('photoUrl') or data.get('photo') or ''
+            permit_url = data.get('permitUrl') or data.get('permit') or data.get('permitFile') or data.get('permitFileUrl') or ''
+            visit_approval_url = data.get('visitApprovalUrl') or (data.get('files') or {}).get('visitApproval') or ''
+            scientific_study_url = data.get('scientificStudyUrl') or (data.get('files') or {}).get('scientificStudies') or ''
+            new_stock_image_urls = data.get('newStockImageUrls') or (data.get('files') or {}).get('newStockImages') or []
+            attachments = data.get('attachments') or data.get('documents') or data.get('files') or data.get('filePaths') or data.get('uploadedFiles') or {}
+
             normalized_category = (
                 normalize_category(raw_category)
                 or category_from_sector(data.get('sector'))
@@ -316,9 +401,29 @@ def inventory_view():
                 'quantity': quantity,
                 'region': str(region).strip(),
                 'municipality': str(municipality).strip(),
+                'province': str(province or '').strip() or 'N/A',
+                'applicant_name': full_name,
                 'created_at': created_at,
-                'status': (data.get('status') or '').strip()
+                'status': (data.get('status') or '').strip(),
+                'unit': data.get('unitOfMeasure') or form_data.get('unitOfMeasure') or 'pcs',
+                'registration_fee': to_number(data.get('registrationFee') or form_data.get('registrationFee') or 0),
+                'farmer_id_number': str(farmer_id_number or '').strip(),
+                'stock_latitude': str(stock_latitude or '').strip(),
+                'stock_longitude': str(stock_longitude or '').strip(),
+                'stock_gps_link': str(stock_gps_link or '').strip(),
+                'property_number': str(property_number or '').strip(),
+                'source_location': str(source_location or '').strip(),
+                'image_url': str(image_url or '').strip(),
+                'permit_url': str(permit_url or '').strip(),
+                'visit_approval_url': str(visit_approval_url or '').strip(),
+                'scientific_study_url': str(scientific_study_url or '').strip(),
+                'new_stock_image_urls': new_stock_image_urls if isinstance(new_stock_image_urls, list) else [],
+                'attachments': attachments
             })
+
+            status_payload = effective_status_payload(data)
+            inventory_records[-1]['status_key'] = status_payload['key']
+            inventory_records[-1]['status_label'] = status_payload['label']
 
             summary['total_assets'] += quantity
             if normalized_category == 'CHEMICAL RESOURCES':
@@ -354,7 +459,28 @@ def inventory_view():
                 'desc': rec.get('description', 'N/A'),
                 'qty': qty,
                 'reg': rec.get('region', 'N/A'),
-                'mun': rec.get('municipality', 'N/A')
+                'mun': rec.get('municipality', 'N/A'),
+                'id': rec.get('id'),
+                'applicant': rec.get('applicant_name', 'N/A'),
+                'province': rec.get('province', 'N/A'),
+                'status': rec.get('status', 'pending'),
+                'statusKey': rec.get('status_key', 'pending'),
+                'statusLabel': rec.get('status_label', 'Pending Review'),
+                'createdAt': rec.get('created_at').isoformat() if rec.get('created_at') else '',
+                'unit': rec.get('unit', 'pcs'),
+                'registrationFee': rec.get('registration_fee', 0),
+                'farmerIdNumber': rec.get('farmer_id_number', ''),
+                'stockLatitude': rec.get('stock_latitude', ''),
+                'stockLongitude': rec.get('stock_longitude', ''),
+                'stockGpsLink': rec.get('stock_gps_link', ''),
+                'propertyNumber': rec.get('property_number', ''),
+                'sourceLocation': rec.get('source_location', ''),
+                'imageUrl': rec.get('image_url', ''),
+                'permitUrl': rec.get('permit_url', ''),
+                'visitApprovalUrl': rec.get('visit_approval_url', ''),
+                'scientificStudyUrl': rec.get('scientific_study_url', ''),
+                'newStockImageUrls': rec.get('new_stock_image_urls', []),
+                'attachments': rec.get('attachments', {})
             })
 
         now = datetime.now()
