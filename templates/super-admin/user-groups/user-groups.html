@@ -582,18 +582,28 @@
 
             if (!name || !desc || !clearance || Number.isNaN(members)) return;
 
-            groups.push({
-                id: nextGroupId++,
-                name: name.toUpperCase(),
-                desc,
-                members: members < 0 ? 0 : members,
-                color: status === 'active' ? 'green' : 'slate',
-                clearance,
-                status
-            });
-
-            closeAddGroupModal();
-            filterGroups();
+            fetch('/api/superadmin/user-groups', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    desc,
+                    clearance,
+                    members: members < 0 ? 0 : members,
+                    status,
+                })
+            })
+            .then(r => r.json())
+            .then(async res => {
+                if (!res.success) {
+                    alert(res.message || 'Failed to add group.');
+                    return;
+                }
+                closeAddGroupModal();
+                await fetchGroups();
+            })
+            .catch(() => alert('Failed to add group.'));
         });
 
         // ----------------------------------------------------
@@ -604,7 +614,8 @@
         const configureGroupForm = document.getElementById('configureGroupForm');
 
         function openConfigureGroupModal(groupId) {
-            const group = groups.find(g => g.id === groupId);
+            const gid = String(groupId || '');
+            const group = groups.find(g => String(g.id) === gid);
             if (!group) return;
 
             document.getElementById('configureGroupId').value = String(group.id);
@@ -626,37 +637,75 @@
             setTimeout(() => { configureGroupWrapper.classList.add('hidden'); configureGroupForm.reset(); }, 300);
         }
 
+        async function deleteGroup(groupId) {
+            const gid = String(groupId || '').trim();
+            if (!gid) return;
+            if (!confirm('Delete this user group?')) return;
+
+            try {
+                const resp = await fetch(`/api/superadmin/user-groups/${encodeURIComponent(gid)}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+                const res = await resp.json();
+                if (!res.success) {
+                    alert(res.message || 'Failed to delete group.');
+                    return;
+                }
+                await fetchGroups();
+            } catch (e) {
+                alert('Failed to delete group.');
+            }
+        }
+
         document.getElementById('groupTable').addEventListener('click', (e) => {
             const button = e.target.closest('button[data-group-id]');
             if (!button) return;
-            const id = parseInt(button.getAttribute('data-group-id'), 10);
-            if (Number.isNaN(id)) return;
+
+            const id = String(button.getAttribute('data-group-id') || '').trim();
+            const action = String(button.getAttribute('data-action') || 'configure').trim();
+            if (!id) return;
+
+            if (action === 'delete') {
+                deleteGroup(id);
+                return;
+            }
             openConfigureGroupModal(id);
         });
 
         configureGroupForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const id = parseInt(document.getElementById('configureGroupId').value, 10);
+            const id = String(document.getElementById('configureGroupId').value || '').trim();
             const name = document.getElementById('configureGroupName').value.trim();
             const desc = document.getElementById('configureGroupDesc').value.trim();
             const clearance = document.getElementById('configureGroupClearance').value.trim();
             const members = parseInt(document.getElementById('configureGroupMembers').value, 10);
             const status = document.getElementById('configureGroupStatus').value;
 
-            if (Number.isNaN(id) || !name || !desc || !clearance || Number.isNaN(members)) return;
+            if (!id || !name || !desc || !clearance || Number.isNaN(members)) return;
 
-            const group = groups.find(g => g.id === id);
-            if (!group) return;
-
-            group.name = name.toUpperCase();
-            group.desc = desc;
-            group.clearance = clearance;
-            group.members = members < 0 ? 0 : members;
-            group.status = status;
-            group.color = status === 'active' ? 'green' : 'slate';
-
-            closeConfigureGroupModal();
-            filterGroups();
+            fetch(`/api/superadmin/user-groups/${encodeURIComponent(id)}`, {
+                method: 'PUT',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    desc,
+                    clearance,
+                    members: members < 0 ? 0 : members,
+                    status,
+                })
+            })
+            .then(r => r.json())
+            .then(async res => {
+                if (!res.success) {
+                    alert(res.message || 'Failed to update group.');
+                    return;
+                }
+                closeConfigureGroupModal();
+                await fetchGroups();
+            })
+            .catch(() => alert('Failed to update group.'));
         });
 
         // ----------------------------------------------------
@@ -693,6 +742,14 @@
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await fetchGroups();
+            } catch (e) {
+                document.getElementById('groupTable').innerHTML = '<tr><td colspan="6" class="py-10 text-center text-rose-600 font-bold uppercase tracking-widest text-[9px]">Failed to load user groups.</td></tr>';
+            }
+        });
     </script>
 </body>
 </html>
