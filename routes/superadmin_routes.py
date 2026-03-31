@@ -241,6 +241,19 @@ def inventory_view():
             form_data = data.get('formData') or {}
             user_data = users_map.get(data.get('userId', ''), {})
 
+            full_name = (
+                data.get('userName')
+                or data.get('ownerName')
+                or data.get('applicantName')
+                or f"{str(user_data.get('firstName') or '').strip()} {str(user_data.get('lastName') or '').strip()}".strip()
+                or user_data.get('displayName')
+                or user_data.get('userName')
+                or data.get('userEmail')
+                or user_data.get('email')
+                or data.get('email')
+                or 'Unknown User'
+            )
+
             quantity = to_number(
                 data.get('stockAvailable')
                 or data.get('quantity')
