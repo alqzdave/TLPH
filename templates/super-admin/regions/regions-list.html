@@ -294,8 +294,68 @@
         </div>
     </div>
 
-    <div id="reviewModalWrapper" class="gov-modal no-print">
-        <div class="absolute inset-0 cursor-pointer" onclick="closeReviewModal()"></div>
+    <div id="fillMissingModal" class="gov-modal no-print">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeFillMissingModal()"></div>
+        <div id="fillMissingBody" class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-150 overflow-hidden relative z-10 flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3 bg-slate-900 text-white shrink-0">
+                <h3 class="text-[11px] font-black uppercase tracking-widest m-0 flex items-center gap-2">
+                    <i class="fa-solid fa-fill-drip text-slate-400"></i> Complete Region Information
+                </h3>
+                <button onclick="closeFillMissingModal()" class="text-slate-400 hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer">
+                    <span class="material-icons-round text-sm">close</span>
+                </button>
+            </div>
+            <div class="p-4 bg-slate-50">
+                <form id="fillMissingForm" class="space-y-3">
+                    <p class="text-[8px] text-slate-500 font-bold uppercase tracking-widest m-0">Fill in missing details for this region</p>
+                    
+                    <div>
+                        <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Region Code</label>
+                        <input type="text" id="fillCode" placeholder="e.g., NCR" class="gov-input w-full h-8 uppercase font-mono" disabled>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Official Name</label>
+                        <input type="text" id="fillName" placeholder="e.g., National Capital Region" class="gov-input w-full h-8" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Island Group</label>
+                        <select id="fillIsland" class="gov-input w-full h-8 cursor-pointer" required>
+                            <option value="" disabled selected>Select...</option>
+                            <option value="Luzon">Luzon</option>
+                            <option value="Visayas">Visayas</option>
+                            <option value="Mindanao">Mindanao</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Municipalities</label>
+                            <input type="number" id="fillMunic" min="0" placeholder="0" class="gov-input w-full h-8 font-mono" required>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Staff</label>
+                            <input type="number" id="fillStaff" min="0" placeholder="0" class="gov-input w-full h-8 font-mono" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Status</label>
+                        <select id="fillStatus" class="gov-input w-full h-8 cursor-pointer" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" class="gov-btn bg-slate-800 text-white hover:bg-slate-900 flex-1 py-2">Save</button>
+                        <button type="button" onclick="closeFillMissingModal()" class="gov-btn bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 flex-1 py-2">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
         <div id="reviewModalBody" class="bg-white rounded-[2px] border border-slate-400 shadow-2xl w-full max-w-xl transform scale-95 transition-transform duration-150 overflow-hidden relative z-10 flex flex-col">
             <div class="flex justify-between items-center border-b border-slate-800 px-4 py-3 bg-slate-900 text-white shrink-0">
                 <h3 class="text-[11px] font-black uppercase tracking-widest m-0 flex items-center gap-2">
@@ -393,15 +453,20 @@
             document.getElementById('regionTable').innerHTML = filtered.length ? filtered.map(r => `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="font-mono font-black text-slate-700 border-r border-slate-100 uppercase tracking-tighter">${r.code}</td>
-                    <td class="font-black text-slate-900 border-r border-slate-100 uppercase tracking-tight">${r.name}</td>
-                    <td class="text-center text-slate-700 uppercase tracking-widest font-bold border-r border-slate-100">${r.island}</td>
-                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.munic}</td>
-                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.staff}</td>
+                    <td class="font-black text-slate-900 border-r border-slate-100 uppercase tracking-tight">${r.name || '<span class="text-amber-600">—</span>'}</td>
+                    <td class="text-center text-slate-700 uppercase tracking-widest font-bold border-r border-slate-100">${r.island || '<span class="text-amber-600">—</span>'}</td>
+                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.munic || '0'}</td>
+                    <td class="text-center border-r border-slate-100 font-mono font-black text-slate-800">${r.staff || '0'}</td>
                     <td class="text-center border-r border-slate-100">${renderStatusBadge(r.status)}</td>
                     <td class="text-center no-print">
-                        <button type="button" data-action="review" data-code="${r.code}" class="text-[9px] font-bold uppercase text-gov-blue hover:underline tracking-widest cursor-pointer bg-transparent border-none">
-                            Review
-                        </button>
+                        <div class="flex gap-1 justify-center items-center">
+                            <button type="button" data-action="review" data-code="${r.code}" class="text-[9px] font-bold uppercase text-gov-blue hover:underline tracking-widest cursor-pointer bg-transparent border-none">
+                                Review
+                            </button>
+                            ${(!r.name || !r.island) ? `<button type="button" onclick="openFillMissingModal('${r.code}')" title="Fill missing data" class="text-[9px] font-bold uppercase text-amber-600 hover:text-amber-700 tracking-widest cursor-pointer bg-transparent border-none hover:underline">
+                                Fill
+                            </button>` : ''}
+                        </div>
                     </td>
                 </tr>`).join('') : '<tr><td colspan="7" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No registry records found.</td></tr>';
             
@@ -631,6 +696,76 @@
             const code = btn.dataset.code;
             const region = regions.find(r => r.code === code);
             if (region) openReviewModal(region);
+        });
+
+        // --- Fill Missing Modal Logic ---
+        const fillMissingModal = document.getElementById('fillMissingModal');
+        const fillMissingBody = document.getElementById('fillMissingBody');
+        let currentRegionForFill = null;
+
+        function openFillMissingModal(regionCode) {
+            currentRegionForFill = regionCode;
+            document.getElementById('fillCode').value = regionCode;
+            document.getElementById('fillName').value = '';
+            document.getElementById('fillIsland').value = '';
+            document.getElementById('fillMunic').value = '';
+            document.getElementById('fillStaff').value = '';
+            document.getElementById('fillStatus').value = 'active';
+            
+            fillMissingModal.classList.remove('hidden');
+            setTimeout(() => { fillMissingModal.classList.add('flex'); fillMissingBody.classList.replace('scale-95', 'scale-100'); }, 10);
+        }
+
+        function closeFillMissingModal() {
+            fillMissingModal.classList.remove('flex');
+            fillMissingBody.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => fillMissingModal.classList.add('hidden'), 150);
+        }
+
+        document.getElementById('fillMissingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const payload = {
+                code: currentRegionForFill,
+                name: document.getElementById('fillName').value.trim(),
+                island: document.getElementById('fillIsland').value,
+                munic: parseInt(document.getElementById('fillMunic').value) || 0,
+                staff: parseInt(document.getElementById('fillStaff').value) || 0,
+                status: document.getElementById('fillStatus').value
+            };
+            
+            try {
+                const response = await fetch('/api/superadmin/regions/fill-missing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    alert('Error: ' + data.message);
+                    return;
+                }
+                
+                alert('Region information completed successfully!');
+                
+                // Update local region data
+                const regionIdx = regions.findIndex(r => r.code === currentRegionForFill);
+                if (regionIdx >= 0) {
+                    regions[regionIdx] = {
+                        ...regions[regionIdx],
+                        ...payload
+                    };
+                } else {
+                    regions.push(payload);
+                }
+                
+                filterRegions();
+                closeFillMissingModal();
+            } catch (err) {
+                console.error('Error filling missing data:', err);
+                alert('Error: ' + err.message);
+            }
         });
     </script>
 </body>

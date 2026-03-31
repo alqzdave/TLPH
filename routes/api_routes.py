@@ -4735,7 +4735,7 @@ def get_system_logs():
 @bp.route('/superadmin/regions', methods=['GET'])
 @firebase_auth_required
 def get_regions():
-    """Get all regions from Firestore"""
+    """Get all regions from combined users + regions collection"""
     try:
         user_role = session.get('user_role', '').lower()
         
@@ -4744,14 +4744,44 @@ def get_regions():
             return jsonify({'success': False, 'message': 'Unauthorized access to regions'}), 403
         
         db = firestore.client()
+        
+        # First, try to get regions from the dedicated regions collection
         regions_ref = db.collection('regions')
-        docs = regions_ref.order_by('code').stream()
+        regions_docs = regions_ref.order_by('code').stream()
         
         regions = []
-        for doc in docs:
+        for doc in regions_docs:
             data = doc.to_dict()
             data['id'] = doc.id
             regions.append(data)
+        
+        # If regions collection is empty, extract from users collection
+        if not regions:
+            users_ref = db.collection('users')
+            # Query users who have a region field (regional or national scope)
+            users_docs = users_ref.stream()
+            
+            region_map = {}
+            for doc in users_docs:
+                user_data = doc.to_dict()
+                region = user_data.get('region', '').strip()
+                
+                if region and region not in region_map:
+                    # Create basic region from user data
+                    region_map[region] = {
+                        'code': region.upper(),
+                        'name': user_data.get('region_name', region),
+                        'island': user_data.get('island_group', 'Unknown'),
+                        'munic': user_data.get('municipalities', 0),
+                        'staff': 1,  # Will increment
+                        'status': 'active',
+                        'link': f"/superadmin/regions/{region.lower()}"
+                    }
+                elif region:
+                    # Increment staff count
+                    region_map[region]['staff'] = region_map[region].get('staff', 1) + 1
+            
+            regions = list(region_map.values())
         
         return jsonify({
             'success': True,
@@ -4769,7 +4799,7 @@ def get_regions():
 @bp.route('/superadmin/regions', methods=['POST'])
 @firebase_auth_required
 def create_region():
-    """Create a new region in Firestore"""
+    """Create/update region in dedicated regions collection"""
     try:
         user_role = session.get('user_role', '').lower()
         user_email = session.get('user_email', '')
@@ -4800,7 +4830,7 @@ def create_region():
             'updated_at': firestore.SERVER_TIMESTAMP
         }
         
-        # Add to Firestore
+        # Save to dedicated regions collection
         db = firestore.client()
         doc_ref = db.collection('regions').document(region_data['code'])
         doc_ref.set(region_data)
@@ -4827,6 +4857,55 @@ def create_region():
         
     except Exception as e:
         print(f'[REGIONS_ERROR] create_region failed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/regions/fill-missing', methods=['POST'])
+@firebase_auth_required
+def fill_missing_region_data():
+    """Fill in missing region data from form submission"""
+    try:
+        user_role = session.get('user_role', '').lower()
+        user_email = session.get('user_email', '')
+        
+        # Only superadmin/national admin can fill region data
+        if user_role not in ['superadmin', 'super-admin', 'national', 'national_admin']:
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        
+        data = request.get_json() or {}
+        
+        # Get region code and other fields
+        region_code = str(data.get('code', '')).strip().upper()
+        if not region_code:
+            return jsonify({'success': False, 'message': 'Region code required'}), 400
+        
+        # Update region with complete information
+        region_data = {
+            'code': region_code,
+            'name': str(data.get('name', '')).strip(),
+            'island': str(data.get('island', '')).strip(),
+            'munic': int(data.get('munic', 0)),
+            'staff': int(data.get('staff', 0)),
+            'status': str(data.get('status', 'active')).strip().lower(),
+            'link': f"/superadmin/regions/{region_code.lower()}",
+            'updated_by': user_email,
+            'updated_at': firestore.SERVER_TIMESTAMP
+        }
+        
+        # Save/update in regions collection
+        db = firestore.client()
+        db.collection('regions').document(region_code).update(region_data)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Region {region_code} data completed',
+            'region': region_data
+        })
+        
+    except Exception as e:
+        print(f'[REGIONS_ERROR] fill_missing_region_data failed: {e}')
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500
