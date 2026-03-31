@@ -669,7 +669,6 @@ def api_get_municipal_attendance():
             if 'working_hours' not in emp:
                 defaults['working_hours'] = 0
             if defaults:
-                employee_doc.reference.set(defaults, merge=True)
                 emp.update(defaults)
 
             role = str(emp.get('role') or '').strip().lower()
