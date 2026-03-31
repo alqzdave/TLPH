@@ -72,17 +72,20 @@
 
 <!-- Sign Out Modal -->
 <div id="logoutModal" class="fixed inset-0 z-[5000] hidden items-center justify-center">
-    <div class="absolute inset-0 bg-slate-900/40" onclick="closeLogoutModal()"></div>
-    <div class="relative w-[92%] max-w-sm rounded-sm border border-slate-300 bg-white shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-2">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" onclick="closeLogoutModal()"></div>
+    <div class="relative w-[92%] max-w-md rounded-[10px] border border-slate-300 bg-white shadow-2xl">
+        <div class="flex items-center gap-2 px-4 py-2">
+            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 text-emerald-800">
+                <span class="material-icons-round text-[16px]">logout</span>
+            </span>
             <h2 class="text-[11px] font-black uppercase tracking-wide text-slate-800 m-0">Confirm Sign Out</h2>
-            <button class="text-slate-400 hover:text-slate-700" onclick="closeLogoutModal()" aria-label="Close">
+            <button class="ml-auto text-slate-400 hover:text-slate-700" onclick="closeLogoutModal()" aria-label="Close">
                 <span class="material-icons-round text-[16px]">close</span>
             </button>
         </div>
-        <div class="px-4 py-3">
-            <p class="text-[11px] text-slate-600 m-0">
-                Are you sure you want to sign out? Any unsaved work will be lost.
+        <div class="px-4 pb-3">
+            <p class="text-[11px] text-slate-600 m-0 tracking-tight">
+                Your session will end and you will be returned to the login page.
             </p>
         </div>
         <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-2">
