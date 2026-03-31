@@ -32,6 +32,7 @@
           <div>
             <h1 class="text-[12px] font-black uppercase tracking-tight">Municipal Attendance Registry</h1>
             <p class="text-[9px] font-bold uppercase tracking-widest text-slate-500">Daily Time Logs and Shift Defaults</p>
+            <p id="adminScope" class="text-[8px] font-bold uppercase tracking-widest text-slate-600 mt-1"></p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -111,7 +112,29 @@
     </div>
   </div>
 
+  <div id="mv" class="gov-modal">
+    <div class="w-full max-w-2xl bg-white border border-slate-400 rounded-[2px] overflow-hidden" onclick="event.stopPropagation()">
+      <div class="bg-slate-900 text-white p-3 flex justify-between items-center"><h3 class="text-[11px] font-black uppercase">Attendance Details</h3><button id="mvx"><span class="material-icons-round">close</span></button></div>
+      <div class="p-4 bg-slate-50 grid grid-cols-2 gap-4">
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Date</label><p id="vdate" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Employee No.</label><p id="vno" class="text-[11px] font-bold mt-1">-</p></div>
+        <div class="col-span-2"><label class="text-[8px] font-black uppercase text-slate-500">Employee Name</label><p id="vnm" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Category</label><p id="vcat" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Region</label><p id="vreg" class="text-[11px] font-bold mt-1">-</p></div>
+        <div class="col-span-2"><label class="text-[8px] font-black uppercase text-slate-500">Municipality</label><p id="vmun" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Time In</label><p id="vti" class="text-[11px] font-bold mt-1 font-mono">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Time Out</label><p id="vto" class="text-[11px] font-bold mt-1 font-mono">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Type</label><p id="vtype" class="text-[11px] font-bold mt-1">-</p></div>
+        <div><label class="text-[8px] font-black uppercase text-slate-500">Notes</label><p id="vnts" class="text-[11px] font-bold mt-1">-</p></div>
+      </div>
+      <div class="border-t border-slate-200 p-4 flex justify-end gap-2"><button id="mvc" class="gov-btn border border-slate-300 bg-white">Close</button></div>
+    </div>
+  </div>
+
   <div id="toast" class="fixed bottom-4 right-4 hidden z-[4000]"><div class="bg-emerald-50 border border-emerald-300 px-3 py-2 rounded-[2px] shadow"><div id="tt" class="text-[10px] font-black uppercase">Saved</div><div id="tm" class="text-[9px] text-slate-600">Done</div></div></div>
+
+  <!-- Administrator's Municipality (populated by backend) -->
+  <input type="hidden" id="adminMunicipality" value="{{ admin_municipality }}" />
 
   <script>
     const API_BASE = '/municipal/api/hrm/attendance';
@@ -123,6 +146,7 @@
 
     let logs = [];
     let pendingDelete = { ids: [] };
+    let adminMunicipality = $('adminMunicipality').value.trim();
 
     const requestJson = async (url, options = {}) => {
       const res = await fetch(url, { headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
@@ -148,7 +172,7 @@
       const f = getF();
       return arr.filter(x => {
         const hay = [x.date,x.no,x.name,x.cat,x.reg,x.mun,x.in,x.out,x.type,x.notes].join(' ').toLowerCase();
-        return (f.c === 'ALL' || x.cat === f.c) && (!f.d || x.date === f.d) && (f.t === 'ALL' || x.type === f.t) && (!f.s || hay.includes(f.s));
+        return (f.c === 'ALL' || x.cat === f.c) && (!f.d || x.date === f.d) && (f.t === 'ALL' || x.type === f.t) && (!f.s || hay.includes(f.s)) && x.mun === adminMunicipality;
       });
     };
 
@@ -172,8 +196,8 @@
           <td class="px-2 py-1 border-r border-slate-100 text-center">${chipType(x.type)}${x.notes ? `<div class="text-[8px] mt-1 uppercase text-slate-500">${esc(x.notes)}</div>` : ''}</td>
           <td class="px-2 py-1 text-center">
             <div class="flex justify-center gap-1">
-              <button class="ed btn-action" data-id="${x.id}"><span class="material-icons-round text-[12px]">edit</span></button>
-              <button class="rm btn-action" data-id="${x.id}"><span class="material-icons-round text-[12px]">delete</span></button>
+              <button class="vw btn-action" data-id="${x.id}" title="View"><span class="material-icons-round text-[12px]">visibility</span></button>
+              <button class="ed btn-action" data-id="${x.id}" title="Edit"><span class="material-icons-round text-[12px]">edit</span></button>
             </div>
           </td>
         </tr>
@@ -186,12 +210,35 @@
       $('eid').value = '';
       $('mt').textContent = mode === 'edit' ? 'Edit Attendance Log' : 'New Attendance Log';
       $('sb').textContent = mode === 'edit' ? 'Update' : 'Save';
+      $('m').value = adminMunicipality;
+      $('m').readOnly = true;
       if (mode === 'edit') {
         const x = logs.find(z => z.id === id); if (!x) return;
         $('eid').value = x.id; $('d').value = x.date; $('no').value = x.no; $('nm').value = x.name; $('c').value = x.cat; $('r').value = x.reg || ''; $('m').value = x.mun || ''; $('ti').value = x.in || ''; $('to').value = x.out || ''; $('t').value = x.type; $('nt').value = x.notes || '';
       }
     };
     const closeM = () => $('mb').classList.remove('flex');
+
+    const openV = (id) => { 
+      console.log('openV called with id:', id, 'logs:', logs);
+      const x = logs.find(z => z.id === id); 
+      console.log('Found record:', x);
+      if (!x) { console.log('No record found'); return; } 
+      $('vdate').textContent = x.date || '-';
+      $('vno').textContent = x.no || '-';
+      $('vnm').textContent = x.name || '-';
+      $('vcat').textContent = x.cat || '-';
+      $('vreg').textContent = x.reg || '-';
+      $('vmun').textContent = x.mun || '-';
+      $('vti').textContent = x.in || '-';
+      $('vto').textContent = x.out || '-';
+      $('vtype').innerHTML = chipType(x.type);
+      $('vnts').textContent = x.notes || '-';
+      console.log('Adding flex class to mv');
+      $('mv').classList.add('flex');
+      console.log('mv element:', $('mv'), 'classes:', $('mv').className);
+    };
+    const closeV = () => $('mv').classList.remove('flex');
 
     const openD = (ids, label) => { pendingDelete = { ids }; $('dm').textContent = label; $('md').classList.add('flex'); };
     const closeD = () => { $('md').classList.remove('flex'); pendingDelete = { ids: [] }; };
@@ -215,9 +262,17 @@
     };
 
     document.addEventListener('DOMContentLoaded', async () => {
+      if (!adminMunicipality) {
+        toast('Error','Admin municipality not set. Contact system administrator.');
+        return;
+      }
+      $('adminScope').textContent = `📍 Viewing: ${adminMunicipality}`;
+      
       $('btnOpenCreate').onclick = () => openM('create');
       $('mx').onclick = $('mc').onclick = closeM;
       $('mb').addEventListener('click', e => { if (e.target === $('mb')) closeM(); });
+      $('mvx').onclick = $('mvc').onclick = closeV;
+      $('mv').addEventListener('click', e => { if (e.target === $('mv')) closeV(); });
       $('dx').onclick = $('dc').onclick = closeD;
       $('md').addEventListener('click', e => { if (e.target === $('md')) closeD(); });
 
@@ -235,14 +290,11 @@
       };
 
       document.addEventListener('click', e => {
+        const vw = e.target.closest('.vw');
         const ed = e.target.closest('.ed');
-        const rm = e.target.closest('.rm');
-        if (ed) openM('edit', ed.dataset.id);
-        if (rm) {
-          const id = rm.dataset.id;
-          const x = logs.find(z => z.id === id); if (!x) return;
-          openD([id], `Clear attendance for ${x.name} on ${x.date}?`);
-        }
+        console.log('Document click detected, vw:', vw, 'ed:', ed);
+        if (vw) { console.log('View button clicked'); openV(vw.dataset.id); }
+        if (ed) { console.log('Edit button clicked'); openM('edit', ed.dataset.id); }
       });
 
       $('dd').onclick = async () => {
@@ -278,6 +330,7 @@
         };
 
         if (payload.in && payload.out && payload.out <= payload.in) return toast('Invalid time','Time out must be after time in.');
+        if (payload.mun !== adminMunicipality) return toast('Access Denied','You can only create logs for ' + adminMunicipality);
 
         const editId = $('eid').value.trim();
         let employeeDocId = editId;
