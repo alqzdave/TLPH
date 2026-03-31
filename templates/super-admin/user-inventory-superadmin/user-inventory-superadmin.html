@@ -108,23 +108,23 @@
             <div class="grid grid-cols-2 md:grid-cols-5 gap-2 shrink-0">
                 <div class="gov-card border-t-2 border-t-slate-800 p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Total Issued Assets</p>
-                    <h3 class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">2,105</h3>
+                    <h3 id="totalIssued" class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-asset-indigo p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-asset-indigo uppercase tracking-widest m-0 leading-none">Active Personnel</p>
-                    <h3 class="text-[14px] font-black text-asset-indigo m-0 mt-1 leading-none">482</h3>
+                    <h3 id="activePersonnel" class="text-[14px] font-black text-asset-indigo m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-amber-500 p-2 text-center bg-amber-50/30 transition-colors hover:bg-amber-50">
                     <p class="text-[8px] font-black text-amber-600 uppercase tracking-widest m-0 leading-none">Maintenance Required</p>
-                    <h3 class="text-[14px] font-black text-amber-700 m-0 mt-1 leading-none">24</h3>
+                    <h3 id="maintenanceReq" class="text-[14px] font-black text-amber-700 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-emerald-600 p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Operational Status</p>
-                    <h3 class="text-[14px] font-black text-emerald-700 m-0 mt-1 leading-none">98.2%</h3>
+                    <h3 id="operationalStatus" class="text-[14px] font-black text-emerald-700 m-0 mt-1 leading-none">0%</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-gov-red p-2 text-center bg-red-50/30 transition-colors hover:bg-red-50 animate-pulse">
                     <p class="text-[8px] font-black text-gov-red uppercase tracking-widest m-0 leading-none">Lost / Unaccounted</p>
-                    <h3 class="text-[14px] font-black text-gov-red m-0 mt-1 leading-none">12</h3>
+                    <h3 id="lostUnaccounted" class="text-[14px] font-black text-gov-red m-0 mt-1 leading-none">0</h3>
                 </div>
             </div>
           
@@ -332,6 +332,88 @@
 
         let myTrendChart, myCategoryChart, modalChartInstance = null;
 
+        function safeNumber(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? num : 0;
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US').format(value);
+        }
+
+        function computeSummary(data) {
+            const totalIssued = data.reduce((sum, row) => sum + safeNumber(row.init), 0);
+            const totalCurrent = data.reduce((sum, row) => sum + safeNumber(row.curr), 0);
+            const lost = data.reduce((sum, row) => sum + Math.max(0, safeNumber(row.init) - safeNumber(row.curr)), 0);
+            const activePersonnel = new Set(data.map(row => row.owner).filter(Boolean)).size;
+            const maintenanceRequired = data.filter(row => {
+                const status = String(row.status || '').toLowerCase();
+                return row.needs_maint === true || row.maintenance === true || status === 'maintenance' || status === 'needs_maintenance';
+            }).length;
+            const operationalPct = totalIssued > 0 ? (totalCurrent / totalIssued) * 100 : 0;
+
+            return {
+                totalIssued,
+                totalCurrent,
+                lost,
+                activePersonnel,
+                maintenanceRequired,
+                operationalPct
+            };
+        }
+
+        function updateSummaryCards(data) {
+            const summary = computeSummary(data);
+            document.getElementById('totalIssued').textContent = formatNumber(summary.totalIssued);
+            document.getElementById('activePersonnel').textContent = formatNumber(summary.activePersonnel);
+            document.getElementById('maintenanceReq').textContent = formatNumber(summary.maintenanceRequired);
+            document.getElementById('operationalStatus').textContent = `${summary.operationalPct.toFixed(1)}%`;
+            document.getElementById('lostUnaccounted').textContent = formatNumber(summary.lost);
+        }
+
+        function buildCategoryChartData(data) {
+            const categoryTotals = {};
+            data.forEach(row => {
+                const label = row.cat || 'Unclassified';
+                categoryTotals[label] = (categoryTotals[label] || 0) + safeNumber(row.curr);
+            });
+            const labels = Object.keys(categoryTotals);
+            const values = labels.map(label => categoryTotals[label]);
+            return { labels, values };
+        }
+
+        function buildTrendChartData(data) {
+            const buckets = {};
+            data.forEach(row => {
+                if (!Array.isArray(row.history)) return;
+                row.history.forEach(point => {
+                    const label = point.label || point.month || point.date || 'Unknown';
+                    buckets[label] = (buckets[label] || 0) + safeNumber(point.value);
+                });
+            });
+
+            const labels = Object.keys(buckets);
+            if (labels.length === 0) {
+                const totalIssued = data.reduce((sum, row) => sum + safeNumber(row.init), 0);
+                return { labels: ['Current'], values: [totalIssued] };
+            }
+
+            const values = labels.map(label => buckets[label]);
+            return { labels, values };
+        }
+
+        function refreshCharts(data) {
+            const trendData = buildTrendChartData(data);
+            myTrendChart.data.labels = trendData.labels;
+            myTrendChart.data.datasets[0].data = trendData.values;
+            myTrendChart.update();
+
+            const categoryData = buildCategoryChartData(data);
+            myCategoryChart.data.labels = categoryData.labels;
+            myCategoryChart.data.datasets[0].data = categoryData.values;
+            myCategoryChart.update();
+        }
+
         function renderTable() {
             const body = document.getElementById('userInvBody');
             const search = document.getElementById('tableSearch').value.toLowerCase();
@@ -347,6 +429,8 @@
 
             body.innerHTML = '';
             document.getElementById('resCount').textContent = filtered.length;
+            updateSummaryCards(filtered);
+            refreshCharts(filtered);
 
             if(filtered.length === 0) {
                 body.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No records found.</td></tr>';
@@ -398,14 +482,16 @@
         // --- CHART LOGIC PRESERVED ---
         function initCharts() {
             const chartFont = { size: 9, weight: 'bold', family: 'Verdana, Arial, sans-serif' };
+            const trendData = buildTrendChartData(USER_INV_DATA);
             myTrendChart = new Chart(document.getElementById('deploymentTrendChart'), {
                 type: 'line',
-                data: { labels: ['Sep','Oct','Nov','Dec','Jan','Feb'], datasets: [{ data: [950, 1200, 1400, 1650, 1900, 2105], borderColor: '#4338ca', backgroundColor: 'rgba(67, 56, 202, 0.05)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 2 }] },
+                data: { labels: trendData.labels, datasets: [{ data: trendData.values, borderColor: '#4338ca', backgroundColor: 'rgba(67, 56, 202, 0.05)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 2 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: chartFont, color: '#64748b' }, grid: { display: false } }, y: { ticks: { font: chartFont, color: '#64748b' }, grid: { color: '#f1f5f9' } } } }
             });
+            const categoryData = buildCategoryChartData(USER_INV_DATA);
             myCategoryChart = new Chart(document.getElementById('categoryChart'), {
                 type: 'doughnut',
-                data: { labels: ['Crop', 'Fish', 'Comp', 'Res'], datasets: [{ data: [450, 320, 280, 150], backgroundColor: ['#4338ca', '#15803d', '#d97706', '#be123c'], borderWidth: 0 }] },
+                data: { labels: categoryData.labels, datasets: [{ data: categoryData.values, backgroundColor: ['#4338ca', '#15803d', '#d97706', '#be123c', '#0ea5e9', '#7c3aed', '#9f1239'], borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { font: chartFont, boxWidth: 10, color: '#475569' } } } }
             });
         }

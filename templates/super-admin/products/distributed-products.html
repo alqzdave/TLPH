@@ -104,19 +104,19 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 shrink-0">
                 <div class="gov-card border-t-2 border-t-slate-800 p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Distributed Units</p>
-                    <h3 id="statTotalUnits" class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">2.8M</h3>
+                    <h3 id="statTotalUnits" class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-denr-green p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Regions Served</p>
-                    <h3 id="statRegions" class="text-[14px] font-black text-denr-green m-0 mt-1 leading-none">16</h3>
+                    <h3 id="statRegions" class="text-[14px] font-black text-denr-green m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-amber-500 p-2 text-center bg-amber-50/30 transition-colors hover:bg-amber-50">
                     <p class="text-[8px] font-black text-amber-700 uppercase tracking-widest m-0 leading-none">In Transit</p>
-                    <h3 id="statInTransit" class="text-[14px] font-black text-amber-600 m-0 mt-1 leading-none">3</h3>
+                    <h3 id="statInTransit" class="text-[14px] font-black text-amber-600 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-gov-blue p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Batches Cleared</p>
-                    <h3 id="statCleared" class="text-[14px] font-black text-gov-blue m-0 mt-1 leading-none">284</h3>
+                    <h3 id="statCleared" class="text-[14px] font-black text-gov-blue m-0 mt-1 leading-none">0</h3>
                 </div>
             </div>
           
@@ -306,6 +306,66 @@
             {id:'DIST-002', product:'Soil Analysis Kits', qty:800, region:'Region VII', status:'In Transit', date:'2026-02-05'}
         ];
 
+        function safeNumber(value) {
+            const num = Number(String(value).replace(/[^0-9.\-]/g, ''));
+            return Number.isFinite(num) ? num : 0;
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US').format(value);
+        }
+
+        function normalizeStatus(status) {
+            return String(status || '').trim().toLowerCase().replace(/\s+/g, '_');
+        }
+
+        function updateSummaryCards(data) {
+            const totalUnits = data.reduce((sum, row) => sum + safeNumber(row.qty), 0);
+            const regions = new Set(data.map(row => row.region).filter(Boolean)).size;
+            const inTransit = data.filter(row => normalizeStatus(row.status) === 'in_transit').length;
+            const cleared = data.filter(row => normalizeStatus(row.status) === 'delivered').length;
+
+            document.getElementById('statTotalUnits').textContent = formatNumber(totalUnits);
+            document.getElementById('statRegions').textContent = formatNumber(regions);
+            document.getElementById('statInTransit').textContent = formatNumber(inTransit);
+            document.getElementById('statCleared').textContent = formatNumber(cleared);
+        }
+
+        function buildRegionData(data) {
+            const totals = {};
+            data.forEach(row => {
+                const key = row.region || 'Unknown';
+                totals[key] = (totals[key] || 0) + safeNumber(row.qty);
+            });
+            const labels = Object.keys(totals);
+            const values = labels.map(label => totals[label]);
+            return { labels, values };
+        }
+
+        function buildStatusData(data) {
+            const counts = { Delivered: 0, 'In Transit': 0, Pending: 0 };
+            data.forEach(row => {
+                const status = normalizeStatus(row.status);
+                if (status === 'delivered') counts.Delivered += 1;
+                else if (status === 'in_transit') counts['In Transit'] += 1;
+                else counts.Pending += 1;
+            });
+            return { labels: Object.keys(counts), values: Object.values(counts) };
+        }
+
+        function refreshCharts(data) {
+            if (!regionChart || !statusChart) return;
+            const region = buildRegionData(data);
+            regionChart.data.labels = region.labels;
+            regionChart.data.datasets[0].data = region.values;
+            regionChart.update();
+
+            const status = buildStatusData(data);
+            statusChart.data.labels = status.labels;
+            statusChart.data.datasets[0].data = status.values;
+            statusChart.update();
+        }
+
         // 2. LIVE SEARCH & TABLE LOGIC
         function filterDist() {
             const q = document.getElementById('distSearch').value.toLowerCase();
@@ -319,6 +379,8 @@
                 return matchesSearch && matchesRegion && matchesDate;
             });
             renderTable(filtered);
+            updateSummaryCards(filtered);
+            refreshCharts(filtered);
         }
 
         function renderTable(data) {
@@ -342,6 +404,9 @@
                     </td>
                 </tr>
             `).join('') : '<tr><td colspan="7" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No records found.</td></tr>';
+
+            updateSummaryCards(data);
+            refreshCharts(data);
         }
 
         // 3. UI CONTROLS
@@ -418,23 +483,27 @@
         }
 
         // 4. CHARTS LOGIC
-        const regData = { labels:['IV-B','VII','I','III','VI'], datasets:[{label:'Units', data:[3200, 800, 1500, 400, 600], backgroundColor:['#1e3a8a','#15803d','#d97706','#be123c','#64748b']}]};
-        const statusData = { labels:['Delivered','In Transit'], datasets:[{data:[284, 3], backgroundColor:['#15803d','#f59e0b'], borderWidth: 0}]};
         let modalChart;
+        let regionChart;
+        let statusChart;
 
         window.onload = () => {
             renderTable(distData);
             const chartFont = { size: 9, weight: 'bold' };
 
-            new Chart(document.getElementById('regionDistChart').getContext('2d'), { 
-                type:'bar', data:regData, 
+            const region = buildRegionData(distData);
+            regionChart = new Chart(document.getElementById('regionDistChart').getContext('2d'), { 
+                type:'bar', 
+                data:{ labels: region.labels, datasets:[{label:'Units', data: region.values, backgroundColor:['#1e3a8a','#15803d','#d97706','#be123c','#64748b','#0ea5e9','#7c3aed']}]}, 
                 options:{ 
                     responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, 
                     scales:{ y:{beginAtZero:true, grid:{color:'#f1f5f9'}, ticks:{display:false}}, x:{grid:{display:false}, ticks:{font:chartFont}}}
                 } 
             });
-            new Chart(document.getElementById('statusDistChart').getContext('2d'), { 
-                type:'doughnut', data:statusData, 
+            const status = buildStatusData(distData);
+            statusChart = new Chart(document.getElementById('statusDistChart').getContext('2d'), { 
+                type:'doughnut', 
+                data:{ labels: status.labels, datasets:[{data: status.values, backgroundColor:['#15803d','#f59e0b','#64748b'], borderWidth: 0}]}, 
                 options:{ 
                     responsive:true, maintainAspectRatio:false, 
                     plugins:{legend:{position:'right', labels:{boxWidth:10, font:chartFont}}}, cutout:'75%'
@@ -454,10 +523,10 @@
 
             if(type === 'region') {
                 document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-chart-bar text-gov-blue mr-2"></i> Regional Distribution Volume';
-                modalChart = new Chart(ctx, { type:'bar', data:regData, options:{responsive:true, maintainAspectRatio:false, scales:{x:{ticks:{font:chartFont}}, y:{ticks:{font:chartFont}}}}});
+                modalChart = new Chart(ctx, { type:'bar', data:regionChart.data, options:{responsive:true, maintainAspectRatio:false, scales:{x:{ticks:{font:chartFont}}, y:{ticks:{font:chartFont}}}}});
             } else {
                 document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-chart-pie text-amber-500 mr-2"></i> Shipment Fulfillment Breakdown';
-                modalChart = new Chart(ctx, { type:'doughnut', data:statusData, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:chartFont}}}}});
+                modalChart = new Chart(ctx, { type:'doughnut', data:statusChart.data, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:chartFont}}}}});
             }
         }
 

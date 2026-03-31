@@ -63,6 +63,12 @@
             tr { page-break-inside: avoid; page-break-after: auto; }
             .gov-card { box-shadow: none !important; border: 1px solid #000 !important; break-inside: avoid; }
         }
+
+        /* Mobile layout fixes */
+        @media (max-width: 640px) {
+            main { top: 86px !important; }
+            th, td { white-space: nowrap; }
+        }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col bg-slate-50">
@@ -104,19 +110,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 shrink-0">
                 <div class="gov-card border-t-2 border-t-slate-800 p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Total Orders</p>
-                    <h3 id="statTotal" class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">127</h3>
+                    <h3 id="statTotal" class="text-[14px] font-black text-slate-900 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-emerald-600 p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Completed</p>
-                    <h3 id="statCompleted" class="text-[14px] font-black text-emerald-700 m-0 mt-1 leading-none">98</h3>
+                    <h3 id="statCompleted" class="text-[14px] font-black text-emerald-700 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-amber-500 p-2 text-center transition-colors hover:bg-slate-50">
                     <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest m-0 leading-none">Pending Delivery</p>
-                    <h3 id="statPending" class="text-[14px] font-black text-amber-600 m-0 mt-1 leading-none">24</h3>
+                    <h3 id="statPending" class="text-[14px] font-black text-amber-600 m-0 mt-1 leading-none">0</h3>
                 </div>
                 <div class="gov-card border-t-2 border-t-gov-red p-2 text-center bg-red-50/30 transition-colors hover:bg-red-50">
                     <p class="text-[8px] font-black text-gov-red uppercase tracking-widest m-0 leading-none">Issue/Dispute</p>
-                    <h3 id="statIssues" class="text-[14px] font-black text-gov-red m-0 mt-1 leading-none">5</h3>
+                    <h3 id="statIssues" class="text-[14px] font-black text-gov-red m-0 mt-1 leading-none">0</h3>
                 </div>
             </div>
           
@@ -331,6 +337,9 @@
                     </td>
                 </tr>
             `).join('') : '<tr><td colspan="7" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No purchase orders found.</td></tr>';
+
+            updateSummaryCards(data);
+            refreshCharts(data);
         }
 
         function getStatusColor(s) {
@@ -389,18 +398,98 @@
             document.getElementById('newPOForm').reset();
         });
 
-        // 4. CHARTS
+        // 4. CHARTS + SUMMARY
         let modalChart;
-        const trendData = { labels:['Oct','Nov','Dec','Jan','Feb'], datasets:[{label:'Spend (PHP)', data:[450, 780, 520, 910, 640], borderColor:'#15803d', backgroundColor:'rgba(21, 128, 61, 0.1)', fill:true, tension:0.4, borderWidth: 2, devicePixelRatio:2}]};
-        const fulfillData = { labels:['Delivered','Pending','Issues'], datasets:[{data:[98, 24, 5], backgroundColor:['#15803d','#f59e0b','#be123c'], borderWidth: 0, devicePixelRatio:2}]};
+        let spendChart;
+        let statusChart;
+        const ISSUE_STATUSES = new Set(['issue', 'dispute', 'cancelled', 'problem']);
+
+        function safeNumber(value) {
+            const num = Number(String(value).replace(/[^0-9.\-]/g, ''));
+            return Number.isFinite(num) ? num : 0;
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US').format(value);
+        }
+
+        function getSpendValue(po) {
+            if (po.amount != null) return safeNumber(po.amount);
+            if (po.total != null) return safeNumber(po.total);
+            if (po.cost != null) return safeNumber(po.cost);
+            return 1;
+        }
+
+        function formatMonthLabel(dateStr) {
+            if (!dateStr) return 'Unknown';
+            const d = new Date(dateStr);
+            if (Number.isNaN(d.getTime())) return 'Unknown';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            return `${year}-${month}`;
+        }
+
+        function updateSummaryCards(data) {
+            const total = data.length;
+            const completed = data.filter(p => p.status === 'delivered').length;
+            const pending = data.filter(p => p.status === 'pending').length;
+            const issues = data.filter(p => ISSUE_STATUSES.has(String(p.status || '').toLowerCase())).length;
+
+            document.getElementById('statTotal').textContent = formatNumber(total);
+            document.getElementById('statCompleted').textContent = formatNumber(completed);
+            document.getElementById('statPending').textContent = formatNumber(pending);
+            document.getElementById('statIssues').textContent = formatNumber(issues);
+        }
+
+        function buildTrendData(data) {
+            const buckets = {};
+            data.forEach(po => {
+                const label = formatMonthLabel(po.date);
+                buckets[label] = (buckets[label] || 0) + getSpendValue(po);
+            });
+
+            let labels = Object.keys(buckets);
+            labels = labels.filter(l => l !== 'Unknown');
+            labels.sort((a, b) => new Date(`${a}-01`) - new Date(`${b}-01`));
+            if (labels.length === 0) {
+                return { labels: ['Current'], values: [0] };
+            }
+
+            const values = labels.map(label => buckets[label]);
+            return { labels, values };
+        }
+
+        function buildStatusData(data) {
+            const delivered = data.filter(p => p.status === 'delivered').length;
+            const pending = data.filter(p => p.status === 'pending').length;
+            const issues = data.filter(p => ISSUE_STATUSES.has(String(p.status || '').toLowerCase())).length;
+            return { labels: ['Delivered', 'Pending', 'Issues'], values: [delivered, pending, issues] };
+        }
+
+        function refreshCharts(data) {
+            if (!spendChart || !statusChart) return;
+            const trend = buildTrendData(data);
+            spendChart.data.labels = trend.labels;
+            spendChart.data.datasets[0].data = trend.values;
+            spendChart.update();
+
+            const status = buildStatusData(data);
+            statusChart.data.labels = status.labels;
+            statusChart.data.datasets[0].data = status.values;
+            statusChart.update();
+        }
 
         window.onload = () => {
             filterPOs();
             const chartFont = { size: 9, weight: 'bold' };
 
-            new Chart(document.getElementById('spendChart').getContext('2d'), { 
+            const trend = buildTrendData(poData);
+            spendChart = new Chart(document.getElementById('spendChart').getContext('2d'), { 
                 type:'line', 
-                data:trendData, 
+                data:{ 
+                    labels: trend.labels, 
+                    datasets:[{label:'Spend (PHP)', data: trend.values, borderColor:'#15803d', backgroundColor:'rgba(21, 128, 61, 0.1)', fill:true, tension:0.4, borderWidth: 2, devicePixelRatio:2}]
+                }, 
                 options:{ 
                     responsive:true, 
                     maintainAspectRatio:false, 
@@ -411,9 +500,13 @@
                     }
                 } 
             });
-            new Chart(document.getElementById('statusChart').getContext('2d'), { 
+            const status = buildStatusData(poData);
+            statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), { 
                 type:'doughnut', 
-                data:fulfillData, 
+                data:{ 
+                    labels: status.labels, 
+                    datasets:[{data: status.values, backgroundColor:['#15803d','#f59e0b','#be123c'], borderWidth: 0, devicePixelRatio:2}]
+                }, 
                 options:{ 
                     responsive:true, 
                     maintainAspectRatio:false, 
@@ -438,10 +531,10 @@
 
             if(type === 'spend') {
                 document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-chart-line text-denr-green mr-2"></i> Monthly Procurement Spend';
-                modalChart = new Chart(ctx, { type:'line', data:trendData, options:{responsive:true, maintainAspectRatio:false, scales:{x:{ticks:{font:chartFont}}, y:{ticks:{font:chartFont}}}}});
+                modalChart = new Chart(ctx, { type:'line', data:spendChart.data, options:{responsive:true, maintainAspectRatio:false, scales:{x:{ticks:{font:chartFont}}, y:{ticks:{font:chartFont}}}}});
             } else {
                 document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-chart-pie text-amber-500 mr-2"></i> Order Fulfillment Ratio';
-                modalChart = new Chart(ctx, { type:'doughnut', data:fulfillData, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:chartFont}}}}});
+                modalChart = new Chart(ctx, { type:'doughnut', data:statusChart.data, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:chartFont}}}}});
             }
         }
 
@@ -484,8 +577,3 @@
     </script>
 </body>
 </html>
-        /* Mobile layout fixes */
-        @media (max-width: 640px) {
-            main { top: 86px !important; }
-            th, td { white-space: nowrap; }
-        }

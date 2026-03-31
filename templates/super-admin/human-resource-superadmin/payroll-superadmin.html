@@ -250,6 +250,7 @@
                                 <th class="border-r border-slate-200 text-right">Deductions</th>
                                 <th class="border-r border-slate-200 text-right">Net Pay</th>
                                 <th class="border-r border-slate-200 text-center">Status</th>
+                                <th class="border-r border-slate-200 text-center">Payment Status</th>
                                 <th class="text-center no-print w-[100px]">Actions</th>
                             </tr>
                         </thead>
@@ -438,7 +439,13 @@
     const $ = id => document.getElementById(id);
     const q = s => document.querySelectorAll(s);
     const esc = s => String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    const num = v => Number(v||0);
+    const num = v => {
+      if (v === null || v === undefined) return 0;
+      if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+      const cleaned = String(v).replace(/[^0-9.\-]/g, "");
+      const parsed = Number(cleaned);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
     const money = n => new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP"}).format(Number(n||0));
     const low = s => String(s||"").trim().toLowerCase();
 
@@ -545,6 +552,60 @@
 
     let rows = [];
 
+    const normalizeStatus = (value) => {
+        const raw = String(value || "").trim().toUpperCase();
+        if (!raw) return "DRAFT";
+        if (raw.startsWith("DRA")) return "DRAFT";
+        if (raw.startsWith("POST")) return "POSTED";
+        if (raw.startsWith("PAI")) return "PAID";
+        if (raw.startsWith("CAN")) return "CANCELLED";
+        return raw;
+    };
+
+    const normalizeCategory = (value) => {
+        const raw = String(value || "").trim().toUpperCase();
+        if (raw.includes("MUNI")) return "MUNICIPALITY";
+        if (raw.includes("REG")) return "REGIONAL";
+        return raw || "REGIONAL";
+    };
+
+    const normalizeMonth = (value) => {
+        if (!value) return "";
+        const str = String(value);
+        if (/^\d{4}-\d{2}$/.test(str)) return str;
+        const d = new Date(str);
+        if (Number.isNaN(d.getTime())) return str.slice(0, 7);
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        return `${d.getFullYear()}-${m}`;
+    };
+
+    const safeText = (value) => {
+        if (value === null || value === undefined) return "";
+        if (typeof value === "object") {
+            return value.name || value.label || value.code || "";
+        }
+        return String(value);
+    };
+
+    const buildName = (x) => {
+        const direct = x.name || x.employee_name;
+        if (direct) return safeText(direct).trim();
+        const first = safeText(x.first_name).trim();
+        const mid = safeText(x.middle_name).trim();
+        const last = safeText(x.last_name).trim();
+        return [first, mid, last].filter(Boolean).join(" ").trim();
+    };
+
+    const shortRegionLabel = (value) => {
+        const raw = String(value || "").trim();
+        if (!raw) return "—";
+        const upper = raw.toUpperCase();
+        if (upper === "NCR" || upper === "CAR" || upper === "BARMM") return upper;
+        const match = raw.match(/Region\s+([IVX]+(?:-?[A-Z])?|\d+)/i);
+        if (match) return match[1].toUpperCase();
+        return raw.length > 10 ? raw.slice(0, 10) : raw;
+    };
+
     async function fetchPayrollRecords() {
         try {
             const resp = await fetch('/superadmin/api/hrm/payroll');
@@ -552,23 +613,23 @@
             if (data.success && Array.isArray(data.payrolls)) {
                 rows = data.payrolls.map(x => ({
                     id: x.id,
-                    payNo: x.payNo || x.pay_no || x.payroll_no || '',
-                    month: x.month || '',
+                    payNo: safeText(x.payNo || x.pay_no || x.payroll_no),
+                    month: normalizeMonth(x.month || x.payroll_month || x.date || x.pay_date || x.created_at || x.createdAt || x.created_on),
                     period: x.period || '',
-                    no: x.no || x.employee_no || x.employee_id || '',
-                    name: x.name || x.employee_name || x.first_name + ' ' + (x.middle_name || '') + ' ' + (x.last_name || ''),
-                    cat: x.cat || x.category || x.designation || '',
-                    reg: x.reg || x.region || '',
-                    mun: x.mun || x.municipality || '',
-                    status: x.status || 'DRAFT',
-                    status_payment: x.status_payment || x.statusPayment || '',
-                    basic: Number(x.basic) || Number(x.basic_pay) || 0,
-                    allow: Number(x.allow) || Number(x.allowances) || 0,
-                    ot: Number(x.ot) || 0,
-                    ded: Number(x.ded) || Number(x.deductions) || 0,
-                    gross: Number(x.gross) || Number(x.gross_pay) || (Number(x.basic_pay) + Number(x.allowances)),
-                    net: Number(x.net) || Number(x.net_pay) || ((Number(x.basic_pay) + Number(x.allowances)) - Number(x.deductions)),
-                    remarks: x.remarks || ''
+                    no: safeText(x.no || x.employee_no || x.employee_id),
+                    name: buildName(x) || '',
+                    cat: normalizeCategory(x.cat || x.category || x.designation),
+                    reg: safeText(x.reg || x.region || x.region_name),
+                    mun: safeText(x.mun || x.municipality || x.municipality_name),
+                    status: normalizeStatus(x.status),
+                    status_payment: safeText(x.status_payment || x.statusPayment),
+                    basic: num(x.basic ?? x.basic_pay),
+                    allow: num(x.allow ?? x.allowances),
+                    ot: num(x.ot ?? x.overtime),
+                    ded: num(x.ded ?? x.deductions),
+                    gross: num(x.gross ?? x.gross_pay ?? (num(x.basic_pay) + num(x.allowances))),
+                    net: num(x.net ?? x.net_pay ?? ((num(x.basic_pay) + num(x.allowances)) - num(x.deductions))),
+                    remarks: safeText(x.remarks)
                 }));
             } else {
                 rows = [];
@@ -760,7 +821,13 @@
         render();
     });
 
-    const calc = (x) => ({gross:num(x.basic)+num(x.allow)+num(x.ot), net:(num(x.basic)+num(x.allow)+num(x.ot))-num(x.ded)});
+    const hasVal = (v) => v !== null && v !== undefined && String(v).trim() !== "";
+    const calc = (x) => {
+      const gross = hasVal(x.gross) ? num(x.gross) : (num(x.basic) + num(x.allow) + num(x.ot));
+      const ded = hasVal(x.ded) ? num(x.ded) : 0;
+      const net = hasVal(x.net) ? num(x.net) : (gross - ded);
+      return { gross, ded, net };
+    };
 
     const getF = () => ({c:$("fc").value, r:$("fr").value, m:$("fm").value, s:$("fs").value, mo:$("fMonth").value, p:$("fPeriod").value, ss:low($("fSearch").value)});
     const filt = (arr) => {
@@ -778,14 +845,27 @@
     let chTrend, chTotals, chStatus, chRegion, modalChartInstance = null;
 
     const countBy = (arr, fn) => { const m = new Map(); arr.forEach(r => { const k=fn(r); m.set(k,(m.get(k)||0)+1); }); return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]); };
-    const sumBy = (arr, fnKey, fnVal) => { const m = new Map(); arr.forEach(r => { const k=fnKey(r); m.set(k,(m.get(k)||0)+fnVal(r)); }); return Array.from(m.entries()).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))); };
+    const sumBy = (arr, fnKey, fnVal) => { const m = new Map(); arr.forEach(r => { const k=fnKey(r); if(!k) return; m.set(k,(m.get(k)||0)+fnVal(r)); }); return Array.from(m.entries()).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))); };
+    const sortMonthLabels = (entries) => {
+      return entries.sort((a, b) => {
+        const ax = String(a[0] || "");
+        const bx = String(b[0] || "");
+        const aDate = /^\d{4}-\d{2}$/.test(ax) ? new Date(`${ax}-01`) : null;
+        const bDate = /^\d{4}-\d{2}$/.test(bx) ? new Date(`${bx}-01`) : null;
+        if (aDate && bDate) return aDate - bDate;
+        if (aDate) return -1;
+        if (bDate) return 1;
+        return ax.localeCompare(bx);
+      });
+    };
 
     const renderCharts = () => {
       const view = filt(rows).map(x=>({ ...x, ...calc(x) }));
-      const byMonth = sumBy(view, x=>x.month||"—", x=>num(x.net));
+      const byMonthRaw = sumBy(view, x=>normalizeMonth(x.month) || "Unknown", x=>num(x.net));
+      const byMonth = sortMonthLabels(byMonthRaw);
       const totalGross = view.reduce((a,x)=>a+num(x.gross),0);
       const totalDed = view.reduce((a,x)=>a+num(x.ded),0);
-      const byStatus = countBy(view, x=>x.status||"—");
+      const byStatus = countBy(view, x=>normalizeStatus(x.status)||"DRAFT");
       const byReg = countBy(view.filter(x=>x.reg), x=>x.reg||"—").slice(0,10);
 
       [chTrend,chTotals,chStatus,chRegion].forEach(c=>{ if(c) c.destroy(); });
@@ -797,7 +877,7 @@
       chTrend = new Chart($("chTrend"), { type:"line", data:{ labels:byMonth.map(x=>x[0]), datasets:[{ label:"Net Pay", data:byMonth.map(x=>x[1]), borderColor:'#1e3a8a', backgroundColor:'rgba(30, 58, 138, 0.05)', fill:true, borderWidth: 2, tension: 0.3 }] }, options:{ ...common, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, display:false }, x:{display:false} } } });
       chTotals = new Chart($("chTotals"), { type:"bar", data:{ labels:["Gross","Deductions"], datasets:[{ label:"Amount", data:[totalGross,totalDed], backgroundColor:['#1e3a8a','#be123c'], borderRadius:2, borderWidth: 0 }] }, options:{ ...common, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, display:false }, x:{grid:{display:false}, ticks:{font:chartFont}} } } });
       chStatus = new Chart($("chStatus"), { type:"doughnut", data:{ labels:byStatus.map(x=>x[0]), datasets:[{ data:byStatus.map(x=>x[1]), backgroundColor:['#64748b','#0ea5e9','#15803d','#be123c'], borderWidth:0 }] }, options:{ ...common, cutout:'65%', layout:{padding:{bottom:10}}, plugins:{ legend:{ position:"bottom", labels:{boxWidth:6, font:chartFont} } } } });
-      chRegion = new Chart($("chRegion"), { type:"bar", data:{ labels:byReg.map(x=>x[0].substring(0,8)), datasets:[{ label:"Count", data:byReg.map(x=>x[1]), backgroundColor:barColors, borderRadius:2, borderWidth: 0 }] }, options:{ ...common, indexAxis: 'y', plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true, display:false }, y:{grid:{display:false}, ticks:{font:chartFont}} } } });
+      chRegion = new Chart($("chRegion"), { type:"bar", data:{ labels:byReg.map(x=>shortRegionLabel(x[0])), datasets:[{ label:"Count", data:byReg.map(x=>x[1]), backgroundColor:barColors, borderRadius:2, borderWidth: 0 }] }, options:{ ...common, indexAxis: 'y', plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true, display:false }, y:{grid:{display:false}, ticks:{font:chartFont}} } } });
     };
 
     // --- MODAL CHART LOGIC ---
@@ -899,7 +979,7 @@
             </div>
           </td>
         </tr>
-      `).join("") : '<tr><td colspan="9" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No payroll records found.</td></tr>';
+      `).join("") : '<tr><td colspan="10" class="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">No payroll records found.</td></tr>';
 
       renderCharts();
     };
