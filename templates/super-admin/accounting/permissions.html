@@ -320,11 +320,90 @@
     </div>
 
     <script>
-        // --- LIVE SEARCH AND FILTER ---
+        // --- GLOBAL STATE ---
+        let accountingUsers = [];
         const searchInput = document.getElementById('searchInput');
         const levelFilter = document.getElementById('levelFilter');
         const permissionsTableBody = document.getElementById('permissionsTableBody');
 
+        // --- LOAD ACCOUNTING PERMISSIONS DATA ---
+        async function loadAccountingPermissions() {
+            try {
+                const response = await fetch('/api/superadmin/accounting-permissions', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Failed to load permissions:', data.message);
+                    return;
+                }
+
+                accountingUsers = data.users || [];
+                renderPermissionsTable();
+            } catch (err) {
+                console.error('Error loading accounting permissions:', err);
+            }
+        }
+
+        // --- RENDER PERMISSIONS TABLE FROM LIVE DATA ---
+        function renderPermissionsTable() {
+            permissionsTableBody.innerHTML = '';
+
+            accountingUsers.forEach((user, idx) => {
+                const perms = user.permissions || {};
+                const scopes = user.scopes || [];
+                const scopeContainerId = `scope-container-user-${user.id}`;
+
+                // Determine row background color based on level
+                let rowBgClass = '';
+                if (user.level === 'municipal') {
+                    rowBgClass = '';
+                } else if (user.level === 'regional') {
+                    rowBgClass = 'bg-blue-50/20';
+                } else if (user.level === 'national') {
+                    rowBgClass = 'bg-purple-50/20';
+                }
+
+                const row = document.createElement('tr');
+                row.className = `hover:bg-blue-50 transition-colors ${rowBgClass}`;
+                row.innerHTML = `
+                    <td class="px-3 py-1.5 sticky left-0 bg-white group-hover:bg-blue-50 border-r border-slate-200 shadow-[1px_0_0_#f1f5f9] z-10">
+                        <div class="font-black text-slate-900 uppercase user-name leading-tight">${user.name}</div>
+                        <div class="text-[8px] text-slate-500 uppercase font-bold tracking-widest user-role">${user.department}</div>
+                    </td>
+                    <td class="px-3 py-1.5 text-center font-bold text-slate-700 uppercase user-level border-r border-slate-100">${user.level.toUpperCase()}</td>
+                    <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" data-user-id="${user.id}" data-action="view" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${perms.view ? 'checked' : ''}></td>
+                    <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" data-user-id="${user.id}" data-action="create" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${perms.create ? 'checked' : ''}></td>
+                    <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" data-user-id="${user.id}" data-action="edit" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${perms.edit ? 'checked' : ''}></td>
+                    <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" data-user-id="${user.id}" data-action="submit" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${perms.submit ? 'checked' : ''}></td>
+                    <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" data-user-id="${user.id}" data-action="approve" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${perms.approve ? 'checked' : ''}></td>
+                    <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" data-user-id="${user.id}" data-action="export" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${perms.export ? 'checked' : ''}></td>
+                    <td class="px-3 py-1.5">
+                        <div class="flex flex-col items-start gap-1">
+                            <div class="flex flex-wrap items-center gap-1" id="${scopeContainerId}">
+                                ${scopes.length > 0 ? scopes.map(s => `<span class="px-1.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-[2px] font-black text-[8px] uppercase leading-none flex items-center gap-1">
+                                    ${s}
+                                    <button onclick="removeScope(this, event)" class="hover:text-red-600 focus:outline-none transition-colors ml-0.5 flex items-center" title="Revoke Access">
+                                        <i class="fa-solid fa-xmark text-[7px]"></i>
+                                    </button>
+                                </span>`).join('') : '<span class="px-1.5 py-0.5 bg-slate-50 text-slate-500 border border-slate-200 rounded-[2px] font-black text-[8px] uppercase leading-none">No Access</span>'}
+                            </div>
+                            <button onclick="openScopeModal('${user.name}', '${scopeContainerId}', '${user.level.toUpperCase()}', '${user.parent_code}', '${user.parent_name}')" class="text-[8px] font-black text-violet-700 hover:text-white hover:bg-violet-700 flex items-center gap-0.5 bg-violet-50 px-1.5 py-0.5 rounded-[2px] border border-violet-200 transition-colors cursor-pointer uppercase tracking-widest mt-0.5">
+                                <i class="fa-solid fa-plus text-[7px]"></i> Extend
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                permissionsTableBody.appendChild(row);
+            });
+
+            filterTable();
+        }
+
+        // --- LIVE SEARCH AND FILTER ---
         function filterTable() {
             const searchTerm = searchInput.value.toLowerCase();
             const filterLevel = levelFilter.value.toLowerCase();
@@ -344,7 +423,7 @@
         searchInput.addEventListener('input', filterTable);
         levelFilter.addEventListener('change', filterTable);
 
-        // --- SAVE BUTTON LOGIC ---
+        // --- PERMISSION CHANGE TRACKING ---
         const saveBtn = document.getElementById('saveChangesBtn');
         let hasChanges = false;
 
@@ -360,16 +439,53 @@
             saveBtn.classList.remove('bg-emerald-700', 'hover:bg-emerald-800', 'cursor-pointer');
         }
 
+        // Listen for permission changes
         permissionsTableBody.addEventListener('change', (event) => {
             const target = event.target;
-            if (target && target.matches('input[type="checkbox"]')) enableSaveButton();
+            if (target && target.matches('input[type="checkbox"][data-user-id]')) {
+                const userId = target.dataset.userId;
+                const action = target.dataset.action;
+                const user = accountingUsers.find(u => u.id === userId);
+                if (user) {
+                    user.permissions[action] = target.checked;
+                    enableSaveButton();
+                }
+            }
         });
 
-        window.handleSaveChanges = function() {
-            if (!hasChanges) return; 
-            if (confirm('Are you sure you want to save all permission and scope changes?')) {
-                alert('Permissions and Scopes updated successfully!');
-                resetSaveButton();
+        // --- SAVE PERMISSIONS TO API ---
+        window.handleSaveChanges = async function() {
+            if (!hasChanges) return;
+
+            if (!confirm('Are you sure you want to save all permission and scope changes?')) {
+                return;
+            }
+
+            try {
+                const payload = {
+                    users: accountingUsers.map(u => ({
+                        user_id: u.id,
+                        permissions: u.permissions || {},
+                        scopes: u.scopes || []
+                    }))
+                };
+
+                const response = await fetch('/api/superadmin/accounting-permissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`Permissions saved successfully! Updated ${data.updated_count} user(s).`);
+                    resetSaveButton();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                console.error('Error saving permissions:', err);
+                alert('Error saving permissions: ' + err.message);
             }
         }
 
@@ -414,6 +530,7 @@
         // --- PSGC API HIERARCHY LOGIC ---
         const PSGC_API_BASE = "https://psgc.gitlab.io/api";
         let currentTargetContainerId = null;
+        let currentUserIdForScope = null;
 
         async function loadScopeOptions(level, parentCode, parentName, selectElement, isNationalSubQuery = false) {
             selectElement.innerHTML = '<option value="" disabled selected>Fetching from Gov API...</option>';
@@ -556,16 +673,40 @@
             }
 
             const newBadge = document.createElement('span');
-            newBadge.className = "px-1.5 py-0.5 bg-violet-100 text-violet-800 border border-violet-300 rounded-[2px] font-black text-[8px] uppercase leading-none flex items-center gap-1 shadow-sm mt-0.5";
+            newBadge.className = "px-1.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-[2px] font-black text-[8px] uppercase leading-none flex items-center gap-1 shadow-sm";
             newBadge.innerHTML = `
                 ${selectedOffice}
                 <button onclick="removeScope(this, event)" class="hover:text-red-600 focus:outline-none transition-colors ml-0.5 flex items-center" title="Revoke Access">
-                    <i class="fa-solid fa-xmark text-[8px]"></i>
+                    <i class="fa-solid fa-xmark text-[7px]"></i>
                 </button>
             `;
 
-            // Insert before the extend button
-            container.insertBefore(newBadge, container.lastElementChild);
+            // Remove "No Access" placeholder if present
+            const noAccessSpan = container.querySelector('span:contains("No Access")');
+            if (noAccessSpan) {
+                noAccessSpan.remove();
+            }
+
+            // Find the Extend button and insert before it
+            const extendBtn = container.parentElement.querySelector('button');
+            if (extendBtn) {
+                container.insertBefore(newBadge, extendBtn.parentElement);
+            } else {
+                container.appendChild(newBadge);
+            }
+            
+            // Update user scopes
+            const containerId = currentTargetContainerId;
+            const scopesArray = Array.from(container.querySelectorAll('span:not(:has(button))'))
+                .filter(s => !s.textContent.includes('No Access'))
+                .map(s => s.textContent.trim());
+            
+            // Find and update the user's scopes array
+            accountingUsers.forEach(user => {
+                if (`scope-container-user-${user.id}` === containerId) {
+                    user.scopes = scopesArray;
+                }
+            });
             
             enableSaveButton();
             closeScopeModal();
@@ -576,12 +717,34 @@
             
             if (confirm("Are you sure you want to revoke access to this office?")) {
                 const badge = btnElement.closest('span');
+                const container = badge.parentElement;
+                const scopeName = badge.textContent.replace('×', '').trim();
                 badge.remove();
+                
+                // If container is empty, add "No Access" badge
+                const scopeBadges = container.querySelectorAll('span:not(:has(button))');
+                if (scopeBadges.length === 0) {
+                    const noAccessSpan = document.createElement('span');
+                    noAccessSpan.className = "px-1.5 py-0.5 bg-slate-50 text-slate-500 border border-slate-200 rounded-[2px] font-black text-[8px] uppercase leading-none";
+                    noAccessSpan.textContent = "No Access";
+                    container.insertBefore(noAccessSpan, container.firstChild);
+                }
+                
+                // Update user scopes
+                const containerId = container.id;
+                accountingUsers.forEach(user => {
+                    if (`scope-container-user-${user.id}` === containerId) {
+                        user.scopes = Array.from(container.querySelectorAll('span:not(:has(button))'))
+                            .filter(s => !s.textContent.includes('No Access'))
+                            .map(s => s.textContent.trim());
+                    }
+                });
+                
                 enableSaveButton(); 
             }
         }
 
-        // Close modal on outside click
+        // Close modals on outside click
         document.getElementById('customRoleModal').addEventListener('click', function(e) {
             if (e.target === this) closeCustomRoleModal();
         });
@@ -593,7 +756,6 @@
         // --- CUSTOM ROLE MODAL LOGIC ---
         const customRoleModal = document.getElementById('customRoleModal');
         const customRoleForm = document.getElementById('customRoleForm');
-        let customRoleCount = 1;
 
         function openCustomRoleModal() {
             customRoleModal.classList.remove('hidden');
@@ -607,7 +769,7 @@
             customRoleForm.reset();
         }
 
-        customRoleForm.addEventListener('submit', (e) => {
+        customRoleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('customRoleName').value.trim();
             const level = document.getElementById('customRoleLevel').value.trim();
@@ -615,59 +777,47 @@
 
             if (!name || !level || !desc) return;
 
-            const roleLabel = `Custom Role: ${name.toUpperCase()}`;
-            const levelDisplay = level.charAt(0).toUpperCase() + level.slice(1);
-            const rowId = `custom-role-${customRoleCount++}`;
-            const containerId = `scope-container-${rowId}`;
+            const perms = {
+                view: document.getElementById('permView').checked,
+                create: document.getElementById('permCreate').checked,
+                edit: document.getElementById('permEdit').checked,
+                submit: document.getElementById('permSubmit').checked,
+                approve: document.getElementById('permApprove').checked,
+                export: document.getElementById('permExport').checked,
+            };
 
-            const permView = document.getElementById('permView').checked;
-            const permCreate = document.getElementById('permCreate').checked;
-            const permEdit = document.getElementById('permEdit').checked;
-            const permSubmit = document.getElementById('permSubmit').checked;
-            const permApprove = document.getElementById('permApprove').checked;
-            const permExport = document.getElementById('permExport').checked;
+            // Add new custom role to the table
+            const scopeContainerId = `scope-container-custom-${Date.now()}`;
+            const newUser = {
+                id: `custom-${Date.now()}`,
+                name: name,
+                email: `custom-role-${Date.now()}@internal`,
+                department: desc,
+                role: level,
+                level: level,
+                parent_code: '',
+                parent_name: '',
+                permissions: perms,
+                scopes: []
+            };
 
-            const badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-200";
-
-            const scopeBadge = level === 'national'
-                ? "Nationwide Access"
-                : "Unassigned Scope";
-
-            const extendArgs = level === 'national'
-                ? `'${roleLabel}', '${containerId}', 'National', 'all', 'Nationwide'`
-                : `'${roleLabel}', '${containerId}', 'National', 'all', 'Nationwide', '${level}'`;
-
-            const row = document.createElement('tr');
-            row.className = "hover:bg-blue-50 transition-colors";
-            row.innerHTML = `
-                <td class="px-3 py-1.5 sticky left-0 bg-white group-hover:bg-blue-50 border-r border-slate-200 shadow-[1px_0_0_#f1f5f9] z-10">
-                    <div class="font-black text-slate-900 uppercase user-name leading-tight">${name}</div>
-                    <div class="text-[8px] text-slate-500 uppercase font-bold tracking-widest user-role">Custom Role • ${desc}</div>
-                </td>
-                <td class="px-3 py-1.5 text-center font-bold text-slate-700 uppercase user-level border-r border-slate-100">${levelDisplay}</td>
-                <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${permView ? "checked" : ""}></td>
-                <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${permCreate ? "checked" : ""}></td>
-                <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${permEdit ? "checked" : ""}></td>
-                <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${permSubmit ? "checked" : ""}></td>
-                <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${permApprove ? "checked" : ""}></td>
-                <td class="px-3 py-1.5 text-center border-r border-slate-100"><input type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 cursor-pointer" ${permExport ? "checked" : ""}></td>
-                <td class="px-3 py-1.5">
-                    <div class="flex flex-col items-start gap-1">
-                        <div class="flex flex-wrap items-center gap-1" id="${containerId}">
-                            <span class="px-1.5 py-0.5 border rounded-[2px] font-black text-[8px] uppercase leading-none ${badgeClass}">${scopeBadge}</span>
-                        </div>
-                        <button onclick="openScopeModal(${extendArgs})" class="text-[8px] font-black text-violet-700 hover:text-white hover:bg-violet-700 flex items-center gap-0.5 bg-violet-50 px-1.5 py-0.5 rounded-[2px] border border-violet-200 transition-colors cursor-pointer uppercase tracking-widest mt-0.5">
-                            <i class="fa-solid fa-plus text-[7px]"></i> Extend
-                        </button>
-                    </div>
-                </td>
-            `;
-
-            permissionsTableBody.prepend(row);
+            accountingUsers.unshift(newUser);
             enableSaveButton();
+            renderPermissionsTable();
             closeCustomRoleModal();
-            filterTable();
         });
+
+        // --- INITIALIZE ON PAGE LOAD ---
+        Document.addEventListener('DOMContentLoaded', function() {
+            loadAccountingPermissions();
+        });
+
+        // Also try immediate load in case DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadAccountingPermissions);
+        } else {
+            loadAccountingPermissions();
+        }
     </script>
 </body>
 </html>

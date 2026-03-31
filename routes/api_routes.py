@@ -2224,6 +2224,164 @@ def api_delete_superadmin_user_group(group_id):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+@bp.route('/superadmin/accounting-permissions', methods=['GET'])
+@firebase_auth_required
+def api_get_superadmin_accounting_permissions():
+    """Get accounting users with their permission and scope assignments"""
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        db = firestore.client()
+        users = []
+        
+        # Fetch all non-superadmin users
+        for doc in db.collection('users').stream():
+            data = doc.to_dict() or {}
+            if not isinstance(data, dict):
+                continue
+
+            user_role = str(data.get('role') or '').strip().lower()
+            if user_role in {'superadmin', 'super-admin'}:
+                continue
+
+            email = str(data.get('email') or '').strip().lower()
+            if not email:
+                continue
+
+            first_name = str(data.get('firstName') or data.get('first_name') or '').strip()
+            last_name = str(data.get('lastName') or data.get('last_name') or '').strip()
+            full_name = f"{first_name} {last_name}".strip() or str(data.get('name') or data.get('username') or '').strip()
+            if not full_name and '@' in email:
+                full_name = email.split('@', 1)[0]
+
+            # Get department/municipality/region info
+            department = (
+                str(data.get('department') or '').strip()
+                or str(data.get('office_location') or data.get('officeLocation') or '').strip()
+                or str(data.get('municipality') or '').strip()
+                or str(data.get('region') or data.get('regionName') or '').strip()
+                or 'N/A'
+            )
+
+            # Get accounting permissions - stored in a dedicated field
+            acct_perms = data.get('accounting_permissions') or {}
+            if not isinstance(acct_perms, dict):
+                acct_perms = {}
+
+            # Default permission structure if not present
+            if not acct_perms:
+                acct_perms = {
+                    'view': True,
+                    'create': True,
+                    'edit': False,
+                    'submit': False,
+                    'approve': False,
+                    'export': True,
+                }
+
+            # Get scope assignments - list of office/jurisdiction names they can access
+            scopes = data.get('accounting_scopes') or []
+            if not isinstance(scopes, list):
+                scopes = []
+
+            # Get the user's level/hierarchy for scope restrictions
+            user_level = user_role
+            if user_role in {'municipal', 'municipal_admin'}:
+                user_level = 'municipal'
+            elif user_role in {'regional', 'regional_admin'}:
+                user_level = 'regional'
+            elif user_role in {'national', 'national_admin'}:
+                user_level = 'national'
+
+            # Get the user's municipality/region code for parent hierarchy
+            parent_code = ''
+            parent_name = ''
+            if user_role in {'municipal', 'municipal_admin'}:
+                # For municipal users, parent is their municipality
+                municipality = data.get('municipality') or data.get('municipality_name') or ''
+                parent_code = municipality  # In real implementation, fetch PSGC code
+                parent_name = municipality
+            elif user_role in {'regional', 'regional_admin'}:
+                # For regional users, parent is their region
+                region = data.get('region') or data.get('regionName') or data.get('region_name') or ''
+                parent_code = region
+                parent_name = region
+
+            users.append({
+                'id': doc.id,
+                'name': full_name,
+                'email': email,
+                'department': department,
+                'role': user_role,
+                'level': user_level,
+                'parent_code': parent_code,
+                'parent_name': parent_name,
+                'permissions': acct_perms,
+                'scopes': scopes,
+            })
+
+        users.sort(key=lambda u: (str(u.get('name') or '').lower(), str(u.get('email') or '').lower()))
+        return jsonify({'success': True, 'users': users})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@bp.route('/superadmin/accounting-permissions', methods=['POST'])
+@firebase_auth_required
+def api_save_superadmin_accounting_permissions():
+    """Save accounting permissions and scope assignments for users"""
+    try:
+        role = str(session.get('user_role') or '').strip().lower()
+        if role not in {'superadmin', 'super-admin'}:
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+
+        payload = request.get_json() or {}
+        users_payload = payload.get('users') or []
+        if not isinstance(users_payload, list):
+            return jsonify({'success': False, 'message': 'Invalid payload'}), 400
+
+        db = firestore.client()
+        batch = db.batch()
+        updated = 0
+
+        for row in users_payload:
+            if not isinstance(row, dict):
+                continue
+            
+            user_id = str(row.get('user_id') or '').strip()
+            acct_perms = row.get('permissions')
+            scopes = row.get('scopes')
+            
+            if not user_id or not isinstance(acct_perms, dict):
+                continue
+
+            # Validate scopes if provided
+            if scopes is not None and not isinstance(scopes, list):
+                scopes = []
+
+            update_data = {
+                'accounting_permissions': acct_perms,
+                'accounting_permissions_updated_at': datetime.utcnow(),
+            }
+
+            if scopes is not None:
+                update_data['accounting_scopes'] = scopes
+
+            doc_ref = db.collection('users').document(user_id)
+            batch.set(doc_ref, update_data, merge=True)
+            updated += 1
+
+        if updated:
+            batch.commit()
+
+        return jsonify({'success': True, 'updated_count': updated})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
 @bp.route('/upload-profile-photo', methods=['POST'])
 @firebase_auth_required
 def upload_profile_photo():
